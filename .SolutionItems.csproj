@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Target Name="Build" />
+  <Target Name="Restore" />
+  <Target Name="Publish" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoBuild>true</NoBuild>
+    <IsPackable>false</IsPackable>
+    <NuGetAudit>false</NuGetAudit>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup Label="Remove BLOBs">
+    <Compile Remove="**\*.cs" />
+    <None Remove="src\**\*.*" />
+    <None Remove="tests\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup Label="Include BLOBs">
+    <None Include=".config\**\*.*" />
+    <None Include=".github\**\*.*" />
+    <None Include="artifacts\**\*.*" />
+    <None Include="TestResults\**\*.*" />
+    <None Include="wiki\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup Label="Include BLOBs in ZIP">
+    <MySolutionBlobs Include="$(SolutionDir)SharedConfigs\**\*.*" />
+    <MySolutionBlobs Include="$(SolutionDir)DeployScripts\**\*.ps1" />
+    <MySolutionBlobs Include="$(SolutionDir)global.json" />
+    <MySolutionBlobs Include="$(SolutionDir)LICENSE" />
+    <MySolutionBlobs Include="$(SolutionDir)README.md" />
+  </ItemGroup>
+
+  <!--
+  <Target Name="PackageSolutionBlobs" AfterTargets="Build">
+    <PropertyGroup>
+      <TargetBlobFolder>$(TargetDir)SolutionBlobs\</TargetBlobFolder>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Dynamic Blob Packaging Started" />
+
+    <RemoveDir Directories="$(TargetBlobFolder)" Condition="Exists('$(TargetBlobFolder)')" />
+
+    <Copy SourceFiles="@(MySolutionBlobs)" DestinationFiles="@(MySolutionBlobs->'$(TargetBlobFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <ZipDirectory SourceDirectory="$(TargetBlobFolder)" DestinationFile="$(TargetDir)SolutionItems_Blob.zip" Overwrite="true" />
+
+    <Message Importance="high" Text="Blob created successfully at: $(TargetDir)SolutionItems_Blob.zip" />
+  </Target>
+  -->
+
+</Project>
