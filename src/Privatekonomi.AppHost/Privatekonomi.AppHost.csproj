@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Packages">
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.2" />
+    <PackageReference Include="Aspire.Hosting.AppHost" />
   </ItemGroup>
 
   <ItemGroup Label="Projects">

@@ -5,6 +5,7 @@
   <Target Name="Publish" />
 
   <PropertyGroup>
+    <NoBuild>true</NoBuild>
     <OutputType>Library</OutputType>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -12,7 +13,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoBuild>true</NoBuild>
     <IsPackable>false</IsPackable>
     <NuGetAudit>false</NuGetAudit>
     <IsTrimmable>true</IsTrimmable>
