@@ -7,10 +7,6 @@
     <UserSecretsId>a1d43a2c-e345-4da9-b866-2a39d5009e40</UserSecretsId>
   </PropertyGroup>
 
-  <ItemGroup Label="Packages">
-    <PackageReference Include="Aspire.Hosting.AppHost" />
-  </ItemGroup>
-
   <ItemGroup Label="Projects">
     <ProjectReference Include="..\Privatekonomi.Api\Privatekonomi.Api.csproj" />
     <ProjectReference Include="..\Privatekonomi.Web\Privatekonomi.Web.csproj" />
