@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Raspberry Pi Felsökningsskript för Nätverksåtkomst
 # Kör detta på din Raspberry Pi för att diagnostisera anslutningsproblem
@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║     Privatekonomi Raspberry Pi Felsökning             ║${NC}"
+echo -e "${BLUE}║     Privatekonomi Raspberry Pi Felsökning              ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -238,7 +238,7 @@ echo ""
 
 # Sammanfattning och rekommendationer
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║     Sammanfattning och Rekommendationer              ║${NC}"
+echo -e "${BLUE}║     Sammanfattning och Rekommendationer                ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
