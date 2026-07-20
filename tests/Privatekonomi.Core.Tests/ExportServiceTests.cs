@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class ExportServiceTests
+public class ExportServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
@@ -33,8 +33,14 @@ public class ExportServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task SeedTestData()

@@ -8,7 +8,7 @@ using Privatekonomi.Core.Data;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class KalpServiceTests
+public class KalpServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<IKonsumentverketComparisonService> _mockKonsumentverketService;
@@ -26,10 +26,16 @@ public class KalpServiceTests
     }
 
     [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
     public void Dispose()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

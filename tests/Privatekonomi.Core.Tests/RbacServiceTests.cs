@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class RbacServiceTests
+public class RbacServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<IAuditLogService> _mockAuditService;
@@ -29,6 +29,19 @@ public class RbacServiceTests
 
         // Setup test data synchronously using GetAwaiter().GetResult() to avoid deadlocks
         SetupTestDataSync();
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void SetupTestDataSync()
@@ -86,13 +99,6 @@ public class RbacServiceTests
         _context.HouseholdRoles.Add(adminRole);
 
         await _context.SaveChangesAsync();
-    }
-
-    [TestCleanup]
-    public void Cleanup()
-    {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
     }
 
     // ==================== Role Management Tests ====================

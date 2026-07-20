@@ -11,7 +11,7 @@ using System.Globalization;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class NotificationServiceTests
+public class NotificationServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly NotificationPreferenceService _preferenceService;
@@ -35,6 +35,19 @@ public class NotificationServiceTests
             _preferenceService,
             loggerMock.Object,
             serviceProvider);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

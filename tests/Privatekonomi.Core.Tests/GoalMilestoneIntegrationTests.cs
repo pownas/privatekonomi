@@ -11,7 +11,7 @@ namespace Privatekonomi.Core.Tests;
 /// Integration test to verify the complete goal milestone workflow
 /// </summary>
 [TestClass]
-public class GoalMilestoneIntegrationTests
+public class GoalMilestoneIntegrationTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly GoalService _goalService;
@@ -38,8 +38,14 @@ public class GoalMilestoneIntegrationTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

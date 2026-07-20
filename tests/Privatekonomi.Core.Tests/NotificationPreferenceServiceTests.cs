@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class NotificationPreferenceServiceTests
+public class NotificationPreferenceServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly NotificationPreferenceService _preferenceService;
@@ -21,6 +21,19 @@ public class NotificationPreferenceServiceTests
 
         _context = new PrivatekonomyContext(options);
         _preferenceService = new NotificationPreferenceService(_context);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

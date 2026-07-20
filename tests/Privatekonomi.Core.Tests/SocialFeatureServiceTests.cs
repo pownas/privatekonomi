@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class SocialFeatureServiceTests
+public class SocialFeatureServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
@@ -32,8 +32,14 @@ public class SocialFeatureServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private Goal CreateGoal(string name, string? userId = null, decimal targetAmount = 1000, decimal currentAmount = 0)

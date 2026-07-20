@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class LifeTimelinePlannerServiceTests
+public class LifeTimelinePlannerServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly LifeTimelinePlannerService _service;
@@ -25,8 +25,14 @@ public class LifeTimelinePlannerServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region Milestone Tests

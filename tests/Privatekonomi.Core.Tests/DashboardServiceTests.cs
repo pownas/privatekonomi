@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class DashboardServiceTests
+public class DashboardServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly DashboardService _service;
@@ -49,6 +49,19 @@ public class DashboardServiceTests
             _mockBillService.Object,
             _mockNotificationService.Object,
             _mockCurrentUserService.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

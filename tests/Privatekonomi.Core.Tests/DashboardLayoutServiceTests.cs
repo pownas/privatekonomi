@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class DashboardLayoutServiceTests
+public class DashboardLayoutServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly DashboardLayoutService _service;
@@ -27,6 +27,19 @@ public class DashboardLayoutServiceTests
         _mockCurrentUserService.Setup(x => x.IsAuthenticated).Returns(true);
 
         _service = new DashboardLayoutService(_context, _mockCurrentUserService.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]
