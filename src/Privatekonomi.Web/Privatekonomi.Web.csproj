@@ -4,6 +4,20 @@
     <UserSecretsId>2b2d9b8c-52d5-49e1-8a2b-4fcf76e8ae78</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Remove="appsettings.JsonFile.example.json" />
+    <Content Remove="appsettings.MySql.example.json" />
+    <Content Remove="appsettings.Sqlite.example.json" />
+    <Content Remove="appsettings.SqlServer.example.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.JsonFile.example.json" />
+    <None Include="appsettings.MySql.example.json" />
+    <None Include="appsettings.Sqlite.example.json" />
+    <None Include="appsettings.SqlServer.example.json" />
+  </ItemGroup>
+
   <ItemGroup Label="Projects">
     <ProjectReference Include="..\Privatekonomi.Core\Privatekonomi.Core.csproj" />
     <ProjectReference Include="..\Privatekonomi.ServiceDefaults\Privatekonomi.ServiceDefaults.csproj" />
