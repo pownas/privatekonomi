@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,6 +6,7 @@ using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -193,8 +194,8 @@ public class NotificationServiceTests
     {
         // Arrange
         var now = DateTime.Now;
-        var startTime = now.AddMinutes(-30).ToString("HH:mm");
-        var endTime = now.AddMinutes(30).ToString("HH:mm");
+        var startTime = now.AddMinutes(-30).ToString("HH:mm", CultureInfo.InvariantCulture);
+        var endTime = now.AddMinutes(30).ToString("HH:mm", CultureInfo.InvariantCulture);
 
         var dndSchedule = new DoNotDisturbSchedule
         {

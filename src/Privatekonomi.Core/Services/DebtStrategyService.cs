@@ -1,7 +1,8 @@
-﻿using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
+using System.Text;
 
 namespace Privatekonomi.Core.Services;
 
@@ -228,13 +229,13 @@ public class DebtStrategyService : IDebtStrategyService
         var csv = new StringBuilder();
         
         // Header with loan information
-        csv.AppendLine($"Amorteringsplan för: {loan.Name}");
-        csv.AppendLine($"Lånebelopp: {loan.Amount:N2} kr");
-        csv.AppendLine($"Ränta: {loan.InterestRate:F2}%");
-        csv.AppendLine($"Månatlig amortering: {loan.Amortization:N2} kr");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Amorteringsplan för: {loan.Name}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Lånebelopp: {loan.Amount:N2} kr");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Ränta: {loan.InterestRate:F2}%");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Månatlig amortering: {loan.Amortization:N2} kr");
         if (extraMonthlyPayment > 0)
         {
-            csv.AppendLine($"Extra månatlig amortering: {extraMonthlyPayment:N2} kr");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"Extra månatlig amortering: {extraMonthlyPayment:N2} kr");
         }
         csv.AppendLine();
         
@@ -244,7 +245,7 @@ public class DebtStrategyService : IDebtStrategyService
         // Data rows
         foreach (var entry in schedule)
         {
-            csv.AppendLine($"{entry.PaymentNumber}," +
+            csv.AppendLine(CultureInfo.InvariantCulture, $"{entry.PaymentNumber}," +
                           $"{entry.PaymentDate:yyyy-MM-dd}," +
                           $"{entry.BeginningBalance:F2}," +
                           $"{entry.Payment:F2}," +
@@ -260,10 +261,10 @@ public class DebtStrategyService : IDebtStrategyService
         var lastEntry = schedule.LastOrDefault();
         if (lastEntry != null)
         {
-            csv.AppendLine($"Antal betalningar,{schedule.Count}");
-            csv.AppendLine($"Total ränta,{lastEntry.TotalInterestPaid:N2} kr");
-            csv.AppendLine($"Total kostnad,{(loan.Amount + lastEntry.TotalInterestPaid):N2} kr");
-            csv.AppendLine($"Betalt datum,{lastEntry.PaymentDate:yyyy-MM-dd}");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"Antal betalningar,{schedule.Count}");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"Total ränta,{lastEntry.TotalInterestPaid:N2} kr");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"Total kostnad,{(loan.Amount + lastEntry.TotalInterestPaid):N2} kr");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"Betalt datum,{lastEntry.PaymentDate:yyyy-MM-dd}");
         }
         
         // Use UTF-8 with BOM for proper Excel compatibility with Swedish characters
@@ -280,12 +281,12 @@ public class DebtStrategyService : IDebtStrategyService
         var csv = new StringBuilder();
         
         // Header with strategy information
-        csv.AppendLine($"Avbetalningsstrategi: {strategy.StrategyName}");
-        csv.AppendLine($"Beskrivning: {strategy.Description}");
-        csv.AppendLine($"Skuldfri datum: {strategy.DebtFreeDate:yyyy-MM-dd}");
-        csv.AppendLine($"Total ränta: {strategy.TotalInterestPaid:N2} kr");
-        csv.AppendLine($"Total kostnad: {strategy.TotalAmountPaid:N2} kr");
-        csv.AppendLine($"Antal månader: {strategy.TotalMonths}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Avbetalningsstrategi: {strategy.StrategyName}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Beskrivning: {strategy.Description}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Skuldfri datum: {strategy.DebtFreeDate:yyyy-MM-dd}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Total ränta: {strategy.TotalInterestPaid:N2} kr");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Total kostnad: {strategy.TotalAmountPaid:N2} kr");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Antal månader: {strategy.TotalMonths}");
         csv.AppendLine();
         
         // Payoff order
@@ -297,7 +298,7 @@ public class DebtStrategyService : IDebtStrategyService
             var amount = loan?.Amount ?? 0;
             var interestRate = loan?.InterestRate ?? 0;
             
-            csv.AppendLine($"{plan.PayoffOrder}," +
+            csv.AppendLine(CultureInfo.InvariantCulture, $"{plan.PayoffOrder}," +
                           $"\"{plan.LoanName}\"," +
                           $"{amount:F2}," +
                           $"{interestRate:F2}%," +

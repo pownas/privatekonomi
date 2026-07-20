@@ -19,7 +19,7 @@ public class SwedbankParser : ICsvParser
         var headerIndex = FindHeaderRow(lines);
         if (headerIndex == -1) return false;
         
-        var header = lines[headerIndex].ToLower();
+        var header = lines[headerIndex].ToLowerInvariant();
         
         // Check for new CSN format (Swedish column names, tab-separated)
         if (header.Contains("radnummer") && header.Contains("bokföringsdag") && 
@@ -211,7 +211,7 @@ public class SwedbankParser : ICsvParser
 
                 var dateStr = columns[dateIndex].Trim();
                 var amountStr = columns[amountIndex].Trim().Replace(",", ".");
-                var debitCredit = columns[debitCreditIndex].Trim().ToUpper();
+                var debitCredit = columns[debitCreditIndex].Trim().ToUpperInvariant();
                 var details = columns[detailsIndex].Trim();
                 var beneficiary = beneficiaryIndex != -1 && columns.Length > beneficiaryIndex 
                     ? columns[beneficiaryIndex].Trim() 

@@ -1,11 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Target Name="Build" />
-  <Target Name="Restore" />
-  <Target Name="Publish" />
+
 
   <PropertyGroup>
-    <NoBuild>true</NoBuild>
     <OutputType>Library</OutputType>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>

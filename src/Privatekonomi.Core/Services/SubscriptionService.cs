@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Services;
 
@@ -98,7 +99,7 @@ public class SubscriptionService : ISubscriptionService
 
         foreach (var subscription in subscriptions)
         {
-            monthlyCost += subscription.BillingFrequency.ToLower() switch
+            monthlyCost += subscription.BillingFrequency.ToLowerInvariant() switch
             {
                 "monthly" => subscription.Price,
                 "yearly" => subscription.Price / 12,
@@ -117,7 +118,7 @@ public class SubscriptionService : ISubscriptionService
 
         foreach (var subscription in subscriptions)
         {
-            yearlyCost += subscription.BillingFrequency.ToLower() switch
+            yearlyCost += subscription.BillingFrequency.ToLowerInvariant() switch
             {
                 "monthly" => subscription.Price * 12,
                 "yearly" => subscription.Price,
@@ -211,7 +212,7 @@ public class SubscriptionService : ISubscriptionService
         await _context.SaveChangesAsync();
         
         await _auditLogService.LogAsync("UpdateLastUsed", "Subscription", subscriptionId,
-            $"Updated last used date for {subscription.Name} to {lastUsedDate?.ToString("yyyy-MM-dd") ?? "N/A"}", subscription.UserId);
+            $"Updated last used date for {subscription.Name} to {lastUsedDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "N/A"}", subscription.UserId);
     }
 
     public async Task<List<Subscription>> DetectSubscriptionsFromTransactionsAsync(string userId)
@@ -220,7 +221,7 @@ public class SubscriptionService : ISubscriptionService
         
         // Get all existing subscriptions for this user
         var existingSubscriptions = await GetActiveSubscriptionsAsync(userId);
-        var existingNames = existingSubscriptions.Select(s => s.Name.ToLower()).ToHashSet();
+        var existingNames = existingSubscriptions.Select(s => s.Name.ToLowerInvariant()).ToHashSet();
         
         // Get transactions from the last year
         var oneYearAgo = DateTime.UtcNow.AddYears(-1);
@@ -232,7 +233,7 @@ public class SubscriptionService : ISubscriptionService
         // Group transactions by payee/description
         var groupedTransactions = transactions
             .Where(t => !string.IsNullOrWhiteSpace(t.Payee ?? t.Description))
-            .GroupBy(t => (t.Payee ?? t.Description).ToLower().Trim())
+            .GroupBy(t => (t.Payee ?? t.Description).ToLowerInvariant().Trim())
             .Where(g => g.Count() >= 3) // At least 3 occurrences to consider it recurring
             .ToList();
         
@@ -347,7 +348,7 @@ public class SubscriptionService : ISubscriptionService
         if (name.Length > 0)
         {
             // Capitalize first letter
-            return char.ToUpper(name[0]) + name.Substring(1);
+            return char.ToUpperInvariant(name[0]) + name.Substring(1);
         }
         return name;
     }

@@ -186,7 +186,7 @@ public class BulkOperationsControllerTests
         Assert.AreEqual("text/csv", fileResult.ContentType);
         StringAssert.Contains(fileResult.FileDownloadName, "transaktioner_");
         StringAssert.EndsWith(fileResult.FileDownloadName, ".csv");
-        Assert.AreEqual(csvData, fileResult.FileContents);
+        Assert.AreSequenceEqual(csvData, fileResult.FileContents);
     }
 
     [TestMethod]
@@ -211,7 +211,7 @@ public class BulkOperationsControllerTests
         Assert.AreEqual("application/json", fileResult.ContentType);
         StringAssert.Contains(fileResult.FileDownloadName, "transaktioner_");
         StringAssert.EndsWith(fileResult.FileDownloadName, ".json");
-        Assert.AreEqual(jsonData, fileResult.FileContents);
+        Assert.AreSequenceEqual(jsonData, fileResult.FileContents);
     }
 
     [TestMethod]

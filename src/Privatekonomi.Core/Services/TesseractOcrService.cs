@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -386,7 +386,7 @@ public class TesseractOcrService : IOcrService
                     var qtyMatch = Regex.Match(description, @"^(\d+)\s*(?:x|st)\s+(.+)");
                     if (qtyMatch.Success)
                     {
-                        var qty = int.Parse(qtyMatch.Groups[1].Value);
+                        var qty = int.Parse(qtyMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                         description = qtyMatch.Groups[2].Value.Trim();
                         
                         items.Add(new OcrLineItem

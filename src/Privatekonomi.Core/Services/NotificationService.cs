@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Services;
 
@@ -207,8 +208,8 @@ public class NotificationService : INotificationService
                 continue;
             }
 
-            var startTime = TimeSpan.Parse(schedule.StartTime);
-            var endTime = TimeSpan.Parse(schedule.EndTime);
+            var startTime = TimeSpan.Parse(schedule.StartTime, CultureInfo.InvariantCulture);
+            var endTime = TimeSpan.Parse(schedule.EndTime, CultureInfo.InvariantCulture);
 
             // Handle schedules that span midnight
             if (startTime > endTime)
