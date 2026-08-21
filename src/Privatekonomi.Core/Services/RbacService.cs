@@ -468,7 +468,7 @@ public class RbacService : IRbacService
 
     // ==================== Utility ====================
 
-    public async Task<IEnumerable<RolePermission>> GetRolePermissionsAsync(HouseholdRoleType roleType)
+    public async Task<IEnumerable<RolePrivilege>> GetRolePermissionsAsync(HouseholdRoleType roleType)
     {
         return await _context.RolePermissions
             .Where(p => p.RoleType == roleType)

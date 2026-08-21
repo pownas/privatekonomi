@@ -52,8 +52,8 @@ Mobile gesture handler exponeras globalt via `window.mobileGestureHandler`:
 // Initiera med .NET interop
 window.mobileGestureHandler.init(dotNetHelper);
 
-// Fäst swipe-lyssnare på ett element
-window.mobileGestureHandler.attachSwipeListeners(element, itemId);
+// Fäst swipe-lyssnare på hela griden (event delegation – EN lyssnare för alla rader)
+window.mobileGestureHandler.attachGesturesToGrid();
 
 // Kontrollera om enheten är mobil
 const isMobile = window.mobileGestureHandler.isMobileDevice();
@@ -61,6 +61,10 @@ const isMobile = window.mobileGestureHandler.isMobileDevice();
 // Uppdatera gesttillstånd baserat på viewport
 window.mobileGestureHandler.updateGestureState();
 ```
+
+> **Observera:** Använd alltid `attachGesturesToGrid()` istället för att anropa
+> `attachSwipeListeners(element, itemId)` per rad. Per-rad-registrering genererar ett
+> SignalR-anrop per rad och kan orsaka tusentals bakgrundsanrop vid stora datamängder.
 
 ### CSS-klasser
 
@@ -89,6 +93,8 @@ Exempel på hur gestures implementeras i en Blazor-komponent:
         {
             _dotNetHelper = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("mobileGestureHandler.init", _dotNetHelper);
+            // Fäst EN lyssnare på hela griden via event delegation
+            await JSRuntime.InvokeVoidAsync("mobileGestureHandler.attachGesturesToGrid");
         }
     }
 
@@ -200,7 +206,7 @@ Implementationen följer WCAG 2.1 Level AA:
 
 1. **Kontrollera console**: Öppna devtools och kolla efter JavaScript-fel
 2. **Verifiera viewport**: Testa att `window.mobileGestureHandler.isMobileDevice()` returnerar `true`
-3. **Kontrollera element-ID**: Se till att transaction rows har rätt ID (`transaction-row-{id}`)
+3. **Kontrollera grid-container**: Se till att `.mud-table-container` finns i DOM innan `attachGesturesToGrid()` anropas
 4. **Testa på riktig mobil**: Emulatorer kan bete sig annorlunda
 
 ### Pull-to-refresh triggas inte

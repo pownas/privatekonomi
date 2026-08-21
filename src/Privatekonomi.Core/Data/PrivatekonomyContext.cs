@@ -131,7 +131,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     
     // RBAC - Role-Based Access Control
     public DbSet<HouseholdRole> HouseholdRoles { get; set; }
-    public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<RolePrivilege> RolePermissions { get; set; }
     public DbSet<AuditLogEntry> AuditLogEntries { get; set; }
     
     // Monthly Reports
@@ -142,11 +142,11 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     // Import Jobs
     public DbSet<ImportJob> ImportJobs { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.Entity<BankSource>(entity =>
+        builder.Entity<BankSource>(entity =>
         {
             entity.HasKey(e => e.BankSourceId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -176,7 +176,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Ignore(e => e.CurrentBalance);
         });
 
-        modelBuilder.Entity<BankConnection>(entity =>
+        builder.Entity<BankConnection>(entity =>
         {
             entity.HasKey(e => e.BankConnectionId);
             entity.Property(e => e.ApiType).IsRequired().HasMaxLength(50);
@@ -195,7 +195,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.ExternalAccountId);
         });
 
-        modelBuilder.Entity<AuditLog>(entity =>
+        builder.Entity<AuditLog>(entity =>
         {
             entity.HasKey(e => e.AuditLogId);
             entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
@@ -210,7 +210,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.CreatedAt);
         });
 
-        modelBuilder.Entity<Category>(entity =>
+        builder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.CategoryId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -231,7 +231,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<CategoryRule>(entity =>
+        builder.Entity<CategoryRule>(entity =>
         {
             entity.HasKey(e => e.CategoryRuleId);
             entity.Property(e => e.Pattern).IsRequired().HasMaxLength(500);
@@ -270,7 +270,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.RuleType, e.UserId });
         });
 
-        modelBuilder.Entity<Transaction>(entity =>
+        builder.Entity<Transaction>(entity =>
         {
             entity.HasKey(e => e.TransactionId);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
@@ -327,7 +327,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.ValidFrom, e.ValidTo });
         });
 
-        modelBuilder.Entity<TransactionCategory>(entity =>
+        builder.Entity<TransactionCategory>(entity =>
         {
             entity.HasKey(e => e.TransactionCategoryId);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
@@ -344,7 +344,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<Loan>(entity =>
+        builder.Entity<Loan>(entity =>
         {
             entity.HasKey(e => e.LoanId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -379,7 +379,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Ignore(e => e.UtilizationRate);
         });
         
-        modelBuilder.Entity<Asset>(entity =>
+        builder.Entity<Asset>(entity =>
         {
             entity.HasKey(e => e.AssetId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -410,7 +410,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Ignore(e => e.ValueChangePercentage);
         });
         
-        modelBuilder.Entity<Investment>(entity =>
+        builder.Entity<Investment>(entity =>
         {
             entity.HasKey(e => e.InvestmentId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -460,7 +460,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Ignore(e => e.ProfitLossPercentage);
         });
 
-        modelBuilder.Entity<Budget>(entity =>
+        builder.Entity<Budget>(entity =>
         {
             entity.HasKey(e => e.BudgetId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -490,7 +490,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<BudgetCategory>(entity =>
+        builder.Entity<BudgetCategory>(entity =>
         {
             entity.HasKey(e => e.BudgetCategoryId);
             entity.Property(e => e.PlannedAmount).HasPrecision(18, 2);
@@ -511,7 +511,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // Budget Suggestion configuration
-        modelBuilder.Entity<BudgetSuggestion>(entity =>
+        builder.Entity<BudgetSuggestion>(entity =>
         {
             entity.HasKey(e => e.BudgetSuggestionId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -538,7 +538,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.IsAccepted);
         });
 
-        modelBuilder.Entity<BudgetSuggestionItem>(entity =>
+        builder.Entity<BudgetSuggestionItem>(entity =>
         {
             entity.HasKey(e => e.BudgetSuggestionItemId);
             entity.Property(e => e.SuggestedAmount).HasPrecision(18, 2);
@@ -557,7 +557,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<BudgetAdjustment>(entity =>
+        builder.Entity<BudgetAdjustment>(entity =>
         {
             entity.HasKey(e => e.BudgetAdjustmentId);
             entity.Property(e => e.PreviousAmount).HasPrecision(18, 2);
@@ -583,7 +583,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // Goal configuration
-        modelBuilder.Entity<Goal>(entity =>
+        builder.Entity<Goal>(entity =>
         {
             entity.HasKey(e => e.GoalId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -614,7 +614,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // GoalMilestone configuration
-        modelBuilder.Entity<GoalMilestone>(entity =>
+        builder.Entity<GoalMilestone>(entity =>
         {
             entity.HasKey(e => e.GoalMilestoneId);
             entity.Property(e => e.TargetAmount).HasPrecision(18, 2);
@@ -635,7 +635,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // SalaryHistory configuration
-        modelBuilder.Entity<SalaryHistory>(entity =>
+        builder.Entity<SalaryHistory>(entity =>
         {
             entity.HasKey(e => e.SalaryHistoryId);
             entity.Property(e => e.MonthlySalary).HasPrecision(18, 2).IsRequired();
@@ -661,7 +661,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // Pocket configuration
-        modelBuilder.Entity<Pocket>(entity =>
+        builder.Entity<Pocket>(entity =>
         {
             entity.HasKey(e => e.PocketId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -698,7 +698,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // PocketTransaction configuration
-        modelBuilder.Entity<PocketTransaction>(entity =>
+        builder.Entity<PocketTransaction>(entity =>
         {
             entity.HasKey(e => e.PocketTransactionId);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
@@ -739,7 +739,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         // Note: BAS 2026 contains ~255 changes from BAS 2025, mostly business-specific (reverse charge VAT,
         // periodization funds, shareholder loans). The personal finance categories (3000-8999) are not affected
         // by these business-focused changes.
-        modelBuilder.Entity<Category>().HasData(
+        builder.Entity<Category>().HasData(
             new Category { CategoryId = 1, Name = "Mat & Dryck", AccountNumber = "5000", Color = "#FF6B6B", TaxRelated = false, IsSystemCategory = true, OriginalName = "Mat & Dryck", OriginalColor = "#FF6B6B", OriginalAccountNumber = "5000", CreatedAt = DateTime.UtcNow },
             new Category { CategoryId = 2, Name = "Transport", AccountNumber = "6000", Color = "#4ECDC4", TaxRelated = false, IsSystemCategory = true, OriginalName = "Transport", OriginalColor = "#4ECDC4", OriginalAccountNumber = "6000", CreatedAt = DateTime.UtcNow },
             new Category { CategoryId = 3, Name = "Boende", AccountNumber = "4000", Color = "#45B7D1", TaxRelated = false, IsSystemCategory = true, OriginalName = "Boende", OriginalColor = "#45B7D1", OriginalAccountNumber = "4000", CreatedAt = DateTime.UtcNow },
@@ -793,7 +793,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         );
 
         // Seed initial bank sources
-        modelBuilder.Entity<BankSource>().HasData(
+        builder.Entity<BankSource>().HasData(
             new BankSource { BankSourceId = 1, Name = "ICA-banken", Color = "#DC143C", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // röd (Crimson)
             new BankSource { BankSourceId = 2, Name = "Swedbank", Color = "#FF8C00", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // mörk orange (Dark Orange)
             new BankSource { BankSourceId = 3, Name = "SEB", Color = "#0066CC", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // blå
@@ -803,7 +803,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         );
 
         // Swedish-specific entities configuration
-        modelBuilder.Entity<TaxDeduction>(entity =>
+        builder.Entity<TaxDeduction>(entity =>
         {
             entity.HasKey(e => e.TaxDeductionId);
             entity.Property(e => e.Type).IsRequired().HasMaxLength(10);
@@ -823,7 +823,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Type);
         });
         
-        modelBuilder.Entity<CapitalGain>(entity =>
+        builder.Entity<CapitalGain>(entity =>
         {
             entity.HasKey(e => e.CapitalGainId);
             entity.Property(e => e.Quantity).HasPrecision(18, 4);
@@ -849,7 +849,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.SaleDate);
         });
         
-        modelBuilder.Entity<CommuteDeduction>(entity =>
+        builder.Entity<CommuteDeduction>(entity =>
         {
             entity.HasKey(e => e.CommuteDeductionId);
             entity.Property(e => e.FromAddress).IsRequired().HasMaxLength(200);
@@ -867,7 +867,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Ignore(e => e.TotalDistanceKm);
         });
         
-        modelBuilder.Entity<CreditRating>(entity =>
+        builder.Entity<CreditRating>(entity =>
         {
             entity.HasKey(e => e.CreditRatingId);
             entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
@@ -887,7 +887,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Swedish-specific Investment properties
-        modelBuilder.Entity<Investment>(entity =>
+        builder.Entity<Investment>(entity =>
         {
             entity.Property(e => e.AccountType).HasMaxLength(20);
             entity.Property(e => e.SchablonTax).HasPrecision(18, 2);
@@ -897,7 +897,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Swedish-specific Transaction properties
-        modelBuilder.Entity<Transaction>(entity =>
+        builder.Entity<Transaction>(entity =>
         {
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.RecipientBankgiro).HasMaxLength(20);
@@ -910,21 +910,21 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Swedish-specific Loan properties
-        modelBuilder.Entity<Loan>(entity =>
+        builder.Entity<Loan>(entity =>
         {
             entity.Property(e => e.PropertyAddress).HasMaxLength(200);
             entity.Property(e => e.PropertyValue).HasPrecision(18, 2);
             entity.Property(e => e.LoanProvider).HasMaxLength(100);
-            entity.Property(e => e.CSN_LoanType).HasMaxLength(50);
-            entity.Property(e => e.CSN_MonthlyPayment).HasPrecision(18, 2);
-            entity.Property(e => e.CSN_RemainingAmount).HasPrecision(18, 2);
+            entity.Property(e => e.CsnLoanType).HasMaxLength(50);
+            entity.Property(e => e.CsnMonthlyPayment).HasPrecision(18, 2);
+            entity.Property(e => e.CsnRemainingAmount).HasPrecision(18, 2);
             
             entity.HasIndex(e => e.Type);
             entity.Ignore(e => e.LTV);
         });
 
         // Household configuration
-        modelBuilder.Entity<Household>(entity =>
+        builder.Entity<Household>(entity =>
         {
             entity.HasKey(e => e.HouseholdId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -933,7 +933,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // ApplicationUser configuration
-        modelBuilder.Entity<ApplicationUser>(entity =>
+        builder.Entity<ApplicationUser>(entity =>
         {
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
@@ -945,7 +945,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<HouseholdMember>(entity =>
+        builder.Entity<HouseholdMember>(entity =>
         {
             entity.HasKey(e => e.HouseholdMemberId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -959,7 +959,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<SharedExpense>(entity =>
+        builder.Entity<SharedExpense>(entity =>
         {
             entity.HasKey(e => e.SharedExpenseId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -976,7 +976,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ExpenseShare>(entity =>
+        builder.Entity<ExpenseShare>(entity =>
         {
             entity.HasKey(e => e.ExpenseShareId);
             entity.Property(e => e.ShareAmount).HasPrecision(18, 2);
@@ -995,7 +995,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // Child Allowance configuration
-        modelBuilder.Entity<ChildAllowance>(entity =>
+        builder.Entity<ChildAllowance>(entity =>
         {
             entity.HasKey(e => e.ChildAllowanceId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1012,7 +1012,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<AllowanceTransaction>(entity =>
+        builder.Entity<AllowanceTransaction>(entity =>
         {
             entity.HasKey(e => e.AllowanceTransactionId);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
@@ -1032,7 +1032,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<AllowanceTask>(entity =>
+        builder.Entity<AllowanceTask>(entity =>
         {
             entity.HasKey(e => e.AllowanceTaskId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1050,7 +1050,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // Shared Goals configuration
-        modelBuilder.Entity<SharedGoal>(entity =>
+        builder.Entity<SharedGoal>(entity =>
         {
             entity.HasKey(e => e.SharedGoalId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1070,7 +1070,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Status);
         });
 
-        modelBuilder.Entity<SharedGoalParticipant>(entity =>
+        builder.Entity<SharedGoalParticipant>(entity =>
         {
             entity.HasKey(e => e.SharedGoalParticipantId);
             entity.Property(e => e.Role).IsRequired();
@@ -1098,7 +1098,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.SharedGoalId, e.UserId }).IsUnique();
         });
 
-        modelBuilder.Entity<SharedGoalProposal>(entity =>
+        builder.Entity<SharedGoalProposal>(entity =>
         {
             entity.HasKey(e => e.SharedGoalProposalId);
             entity.Property(e => e.ProposalType).IsRequired();
@@ -1122,7 +1122,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Status);
         });
 
-        modelBuilder.Entity<SharedGoalProposalVote>(entity =>
+        builder.Entity<SharedGoalProposalVote>(entity =>
         {
             entity.HasKey(e => e.SharedGoalProposalVoteId);
             entity.Property(e => e.Vote).IsRequired();
@@ -1143,7 +1143,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.SharedGoalProposalId, e.UserId }).IsUnique();
         });
 
-        modelBuilder.Entity<SharedGoalTransaction>(entity =>
+        builder.Entity<SharedGoalTransaction>(entity =>
         {
             entity.HasKey(e => e.SharedGoalTransactionId);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
@@ -1166,7 +1166,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.TransactionDate);
         });
 
-        modelBuilder.Entity<SharedGoalNotification>(entity =>
+        builder.Entity<SharedGoalNotification>(entity =>
         {
             entity.HasKey(e => e.SharedGoalNotificationId);
             entity.Property(e => e.Type).IsRequired();
@@ -1191,7 +1191,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Net Worth Snapshot configuration
-        modelBuilder.Entity<NetWorthSnapshot>(entity =>
+        builder.Entity<NetWorthSnapshot>(entity =>
         {
             entity.HasKey(e => e.NetWorthSnapshotId);
             entity.Property(e => e.Date).IsRequired();
@@ -1217,7 +1217,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Currency Account configuration
-        modelBuilder.Entity<CurrencyAccount>(entity =>
+        builder.Entity<CurrencyAccount>(entity =>
         {
             entity.HasKey(e => e.CurrencyAccountId);
             entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
@@ -1240,7 +1240,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Receipt configuration
-        modelBuilder.Entity<Receipt>(entity =>
+        builder.Entity<Receipt>(entity =>
         {
             entity.HasKey(e => e.ReceiptId);
             entity.Property(e => e.Merchant).IsRequired().HasMaxLength(200);
@@ -1264,7 +1264,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // ReceiptLineItem configuration
-        modelBuilder.Entity<ReceiptLineItem>(entity =>
+        builder.Entity<ReceiptLineItem>(entity =>
         {
             entity.HasKey(e => e.ReceiptLineItemId);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
@@ -1289,7 +1289,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Subscription configuration
-        modelBuilder.Entity<Subscription>(entity =>
+        builder.Entity<Subscription>(entity =>
         {
             entity.HasKey(e => e.SubscriptionId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1321,7 +1321,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // SubscriptionPriceHistory configuration
-        modelBuilder.Entity<SubscriptionPriceHistory>(entity =>
+        builder.Entity<SubscriptionPriceHistory>(entity =>
         {
             entity.HasKey(e => e.SubscriptionPriceHistoryId);
             entity.Property(e => e.OldPrice).HasPrecision(18, 2);
@@ -1341,7 +1341,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Bill configuration
-        modelBuilder.Entity<Bill>(entity =>
+        builder.Entity<Bill>(entity =>
         {
             entity.HasKey(e => e.BillId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1363,7 +1363,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Notes).HasMaxLength(500);
             
         // Pension configuration
-        modelBuilder.Entity<Pension>(entity =>
+        builder.Entity<Pension>(entity =>
         {
             entity.HasKey(e => e.PensionId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1392,7 +1392,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // Dividend configuration
-        modelBuilder.Entity<Dividend>(entity =>
+        builder.Entity<Dividend>(entity =>
         {
             entity.HasKey(e => e.DividendId);
             entity.Property(e => e.AmountPerShare).HasPrecision(18, 4);
@@ -1422,7 +1422,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // InvestmentTransaction configuration
-        modelBuilder.Entity<InvestmentTransaction>(entity =>
+        builder.Entity<InvestmentTransaction>(entity =>
         {
             entity.HasKey(e => e.InvestmentTransactionId);
             entity.Property(e => e.TransactionType).IsRequired().HasMaxLength(20);
@@ -1476,7 +1476,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // BillReminder configuration
-        modelBuilder.Entity<BillReminder>(entity =>
+        builder.Entity<BillReminder>(entity =>
         {
             entity.HasKey(e => e.BillReminderId);
             entity.Property(e => e.ReminderDate).IsRequired();
@@ -1496,7 +1496,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // BillSchedule configuration
-        modelBuilder.Entity<BillSchedule>(entity =>
+        builder.Entity<BillSchedule>(entity =>
         {
             entity.HasKey(e => e.BillScheduleId);
             entity.Property(e => e.Frequency).IsRequired().HasMaxLength(50);
@@ -1516,7 +1516,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // PortfolioAllocation configuration
-        modelBuilder.Entity<PortfolioAllocation>(entity =>
+        builder.Entity<PortfolioAllocation>(entity =>
         {
             entity.HasKey(e => e.PortfolioAllocationId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1538,7 +1538,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // ML Model configuration
-        modelBuilder.Entity<MLModel>(entity =>
+        builder.Entity<MLModel>(entity =>
         {
             entity.HasKey(e => e.ModelId);
             entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
@@ -1559,7 +1559,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // LifeTimelineMilestone configuration
-        modelBuilder.Entity<LifeTimelineMilestone>(entity =>
+        builder.Entity<LifeTimelineMilestone>(entity =>
         {
             entity.HasKey(e => e.LifeTimelineMilestoneId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1588,7 +1588,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // User Feedback configuration
-        modelBuilder.Entity<UserFeedback>(entity =>
+        builder.Entity<UserFeedback>(entity =>
         {
             entity.HasKey(e => e.FeedbackId);
             entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
@@ -1615,7 +1615,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // LifeTimelineScenario configuration
-        modelBuilder.Entity<LifeTimelineScenario>(entity =>
+        builder.Entity<LifeTimelineScenario>(entity =>
         {
             entity.HasKey(e => e.LifeTimelineScenarioId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -1643,7 +1643,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // RBAC - HouseholdRole configuration
-        modelBuilder.Entity<HouseholdRole>(entity =>
+        builder.Entity<HouseholdRole>(entity =>
         {
             entity.HasKey(e => e.HouseholdRoleId);
             entity.Property(e => e.RoleType).IsRequired();
@@ -1666,8 +1666,8 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.DelegationEndDate);
         });
         
-        // RBAC - RolePermission configuration
-        modelBuilder.Entity<RolePermission>(entity =>
+        // RBAC - RolePrivilege configuration
+        builder.Entity<RolePrivilege>(entity =>
         {
             entity.HasKey(e => e.RolePermissionId);
             entity.Property(e => e.RoleType).IsRequired();
@@ -1681,7 +1681,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // RBAC - AuditLogEntry configuration
-        modelBuilder.Entity<AuditLogEntry>(entity =>
+        builder.Entity<AuditLogEntry>(entity =>
         {
             entity.HasKey(e => e.AuditLogEntryId);
             entity.Property(e => e.Timestamp).IsRequired();
@@ -1711,7 +1711,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // DashboardLayout configuration
-        modelBuilder.Entity<DashboardLayout>(entity =>
+        builder.Entity<DashboardLayout>(entity =>
         {
             entity.HasKey(e => e.LayoutId);
             entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
@@ -1735,7 +1735,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
 
         // WidgetConfiguration configuration
-        modelBuilder.Entity<WidgetConfiguration>(entity =>
+        builder.Entity<WidgetConfiguration>(entity =>
         {
             entity.HasKey(e => e.WidgetConfigId);
             entity.Property(e => e.LayoutId).IsRequired();
@@ -1750,7 +1750,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // MonthlyReport configuration
-        modelBuilder.Entity<MonthlyReport>(entity =>
+        builder.Entity<MonthlyReport>(entity =>
         {
             entity.HasKey(e => e.MonthlyReportId);
             entity.Property(e => e.ReportMonth).IsRequired();
@@ -1789,7 +1789,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // ReportDelivery configuration
-        modelBuilder.Entity<ReportDelivery>(entity =>
+        builder.Entity<ReportDelivery>(entity =>
         {
             entity.HasKey(e => e.ReportDeliveryId);
             entity.Property(e => e.DeliveryMethod).IsRequired();
@@ -1811,7 +1811,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // ReportPreference configuration
-        modelBuilder.Entity<ReportPreference>(entity =>
+        builder.Entity<ReportPreference>(entity =>
         {
             entity.HasKey(e => e.ReportPreferenceId);
             entity.Property(e => e.SendEmail).IsRequired();
@@ -1834,7 +1834,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         });
         
         // ImportJob configuration
-        modelBuilder.Entity<ImportJob>(entity =>
+        builder.Entity<ImportJob>(entity =>
         {
             entity.HasKey(e => e.ImportJobId);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);

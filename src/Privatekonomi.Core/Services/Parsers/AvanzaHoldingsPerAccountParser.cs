@@ -14,7 +14,7 @@ public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
         var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2) return false;
 
-        var header = lines[0].ToLower();
+        var header = lines[0].ToLower(CultureInfo.InvariantCulture);
         return header.Contains("kontonummer") && 
                header.Contains("namn") && 
                header.Contains("volym") && 
@@ -86,7 +86,7 @@ public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
                 decimal gav = 0;
                 if (!string.IsNullOrEmpty(gavStr))
                 {
-                    decimal.TryParse(gavStr, NumberStyles.Any, CultureInfo.InvariantCulture, out gav);
+                    decimal.TryParse(gavStr, NumberStyles.Any, CultureInfo.CurrentCulture, out gav);
                 }
 
                 var currentPrice = volume > 0 ? marketValue / volume : 0;
@@ -159,7 +159,7 @@ public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
 
     private string MapAvanzaTypeToInvestmentType(string avanzaType)
     {
-        return avanzaType.ToUpper() switch
+        return avanzaType.ToUpper(CultureInfo.InvariantCulture) switch
         {
             "STOCK" => "Aktie",
             "FUND" => "Fond",

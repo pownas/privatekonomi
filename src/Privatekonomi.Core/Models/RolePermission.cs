@@ -3,7 +3,7 @@ namespace Privatekonomi.Core.Models;
 /// <summary>
 /// Defines permissions for each role type (for future fine-grained control)
 /// </summary>
-public class RolePermission
+public class RolePrivilege
 {
     public int RolePermissionId { get; set; }
     public HouseholdRoleType RoleType { get; set; }

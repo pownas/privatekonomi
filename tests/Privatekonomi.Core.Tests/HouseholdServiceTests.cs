@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class HouseholdServiceTests
+public class HouseholdServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly HouseholdService _householdService;
@@ -25,8 +25,14 @@ public class HouseholdServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region Household CRUD Tests

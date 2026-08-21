@@ -1,8 +1,9 @@
+﻿using Privatekonomi.Core.Data;
+using Privatekonomi.Core.Models;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Privatekonomi.Core.Data;
-using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services.BankApi;
 
@@ -37,7 +38,7 @@ public class AvanzaApiService : BankApiServiceBase
         // For Avanza, "code" contains username:password:totp (if 2FA enabled)
         var parts = code.Split(':');
         if (parts.Length < 2)
-            throw new Exception("Invalid credentials format");
+            throw new InvalidOperationException("Invalid credentials format");
 
         var username = parts[0];
         var password = parts[1];
@@ -51,13 +52,13 @@ public class AvanzaApiService : BankApiServiceBase
         };
 
         var content = new StringContent(JsonSerializer.Serialize(loginData), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"{BaseUrl}{ApiVersion}/authentication/sessions/usercredentials", content);
+        var response = await HttpClient.PostAsync($"{BaseUrl}{ApiVersion}/authentication/sessions/usercredentials", content);
         
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             // May need TOTP
             if (string.IsNullOrEmpty(totp))
-                throw new Exception("2FA required. Please provide TOTP code.");
+                throw new InvalidOperationException("2FA required. Please provide TOTP code.");
                 
             // TODO: Handle TOTP authentication
             throw new NotImplementedException("TOTP authentication not yet implemented");
@@ -69,7 +70,7 @@ public class AvanzaApiService : BankApiServiceBase
         var authResponse = JsonSerializer.Deserialize<AuthResponse>(jsonResponse);
 
         if (authResponse == null || string.IsNullOrEmpty(authResponse.AuthenticationSession))
-            throw new Exception("Failed to authenticate");
+            throw new InvalidOperationException("Failed to authenticate");
 
         // Extract session cookies
         var cookies = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
@@ -92,12 +93,12 @@ public class AvanzaApiService : BankApiServiceBase
         var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}{ApiVersion}/customer/all");
         AddAuthHeaders(request, connection);
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await HttpClient.SendAsync(request);
         
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             connection.Status = "Expired";
-            throw new Exception("Session expired. Please re-authenticate.");
+            throw new InvalidOperationException("Session expired. Please re-authenticate.");
         }
 
         connection.TokenExpiresAt = DateTime.UtcNow.AddMinutes(240);
@@ -112,7 +113,7 @@ public class AvanzaApiService : BankApiServiceBase
         var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}{ApiVersion}/account-overview/overview/accountlist");
         AddAuthHeaders(request, connection);
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -147,7 +148,7 @@ public class AvanzaApiService : BankApiServiceBase
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         AddAuthHeaders(request, connection);
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -159,7 +160,7 @@ public class AvanzaApiService : BankApiServiceBase
         return transactionsResponse.Transactions.Select(t => new BankApiTransaction
         {
             TransactionId = t.TransactionId ?? Guid.NewGuid().ToString(),
-            Date = DateTime.Parse(t.TransactionDate),
+            Date = DateTime.Parse(t.TransactionDate, CultureInfo.CurrentCulture),
             Amount = t.Amount,
             Currency = t.Currency ?? "SEK",
             Description = t.Description ?? t.TransactionType ?? "Transaction",
@@ -174,8 +175,8 @@ public class AvanzaApiService : BankApiServiceBase
         if (connection.TokenExpiresAt.HasValue && connection.TokenExpiresAt.Value <= DateTime.UtcNow.AddMinutes(5))
         {
             await RefreshTokenAsync(connection);
-            _context.BankConnections.Update(connection);
-            await _context.SaveChangesAsync();
+            Context.BankConnections.Update(connection);
+            await Context.SaveChangesAsync();
         }
     }
 
@@ -194,7 +195,7 @@ public class AvanzaApiService : BankApiServiceBase
 
     private string MapAccountType(string? accountType)
     {
-        return accountType?.ToLower() switch
+        return accountType?.ToLower(CultureInfo.CurrentCulture) switch
         {
             "depå" => "investment",
             "sparkonto" => "savings",
@@ -205,19 +206,19 @@ public class AvanzaApiService : BankApiServiceBase
     }
 
     // DTOs for JSON serialization
-    private class AuthResponse
+    private sealed class AuthResponse
     {
         public string AuthenticationSession { get; set; } = string.Empty;
         public string CustomerId { get; set; } = string.Empty;
         public bool TwoFactorLogin { get; set; }
     }
 
-    private class AvanzaAccountsResponse
+    private sealed class AvanzaAccountsResponse
     {
         public List<AvanzaAccountDto> Accounts { get; set; } = new();
     }
 
-    private class AvanzaAccountDto
+    private sealed class AvanzaAccountDto
     {
         public string Id { get; set; } = string.Empty;
         public string? Name { get; set; }
@@ -226,12 +227,12 @@ public class AvanzaApiService : BankApiServiceBase
         public decimal TotalBalance { get; set; }
     }
 
-    private class AvanzaTransactionsResponse
+    private sealed class AvanzaTransactionsResponse
     {
         public List<AvanzaTransactionDto> Transactions { get; set; } = new();
     }
 
-    private class AvanzaTransactionDto
+    private sealed class AvanzaTransactionDto
     {
         public string? TransactionId { get; set; }
         public string TransactionDate { get; set; } = string.Empty;

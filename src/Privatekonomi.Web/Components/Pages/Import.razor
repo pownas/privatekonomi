@@ -120,7 +120,7 @@ else if (_currentStep == ImportStep.FileSelection)
         }
         
         <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept="@GetAcceptedFileTypes()">
-            <ActivatorContent>
+            <CustomContent>
                 <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;">
                     <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h6">Dra och släpp @GetFileTypeDescription() här</MudText>
@@ -129,7 +129,7 @@ else if (_currentStep == ImportStep.FileSelection)
                         Välj fil från dator
                     </MudButton>
                 </MudPaper>
-            </ActivatorContent>
+            </CustomContent>
         </MudFileUpload>
         
         @if (_selectedFile != null)

@@ -3,6 +3,8 @@ using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
+#pragma warning disable CA1305 // Specify IFormatProvider
+
 namespace Privatekonomi.Core.Services;
 
 /// <summary>
@@ -157,7 +159,7 @@ public class SieExporter : ISieExporter
     private string FormatAmount(decimal amount)
     {
         // SIE uses dot as decimal separator and no thousand separators
-        return amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+        return amount.ToString("F2", System.Globalization.CultureInfo.CurrentCulture);
     }
     
     private string EscapeString(string input)

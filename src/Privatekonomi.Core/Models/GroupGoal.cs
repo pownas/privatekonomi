@@ -22,7 +22,7 @@ public class GroupGoal
     /// <summary>
     /// Whether to show this goal anonymously in the group
     /// </summary>
-    public bool IsAnonymous { get; set; } = false;
+    public bool IsAnonymous { get; set; }
     
     /// <summary>
     /// Custom display name for the goal in the group

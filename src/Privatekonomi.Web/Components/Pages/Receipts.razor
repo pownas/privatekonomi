@@ -95,7 +95,7 @@
         <MudGrid>
             <MudItem xs="12">
                 <MudFileUpload T="IBrowserFile" FilesChanged="OnReceiptImageSelected" Accept="image/*">
-                    <ActivatorContent>
+                    <CustomContent>
                         <MudPaper Outlined="true" Class="pa-4 d-flex flex-column align-center justify-center" Style="min-height: 150px; cursor: pointer;">
                             <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Class="mb-2" />
                             <MudText Typo="Typo.body1">Ladda upp kvittobild</MudText>
@@ -104,7 +104,7 @@
                                 Välj bild
                             </MudButton>
                         </MudPaper>
-                    </ActivatorContent>
+                    </CustomContent>
                 </MudFileUpload>
             </MudItem>
             @if (_selectedReceiptImage != null)

@@ -41,7 +41,7 @@ public class Reminder
     /// <summary>
     /// Number of times this reminder has been snoozed
     /// </summary>
-    public int SnoozeCount { get; set; } = 0;
+    public int SnoozeCount { get; set; }
     
     /// <summary>
     /// Date when reminder was completed
@@ -73,7 +73,7 @@ public class Reminder
     /// <summary>
     /// Escalation level for critical reminders (0 = none, 1-3 = escalation levels)
     /// </summary>
-    public int EscalationLevel { get; set; } = 0;
+    public int EscalationLevel { get; set; }
     
     /// <summary>
     /// Last time a follow-up notification was sent
@@ -83,7 +83,7 @@ public class Reminder
     /// <summary>
     /// Whether to send follow-up notifications
     /// </summary>
-    public bool EnableFollowUp { get; set; } = false;
+    public bool EnableFollowUp { get; set; }
     
     /// <summary>
     /// Follow-up interval in hours

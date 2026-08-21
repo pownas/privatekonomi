@@ -18,5 +18,5 @@ public class StorageSettings
     /// <summary>
     /// Whether to seed test data (only for development)
     /// </summary>
-    public bool SeedTestData { get; set; } = false;
+    public bool SeedTestData { get; set; }
 }

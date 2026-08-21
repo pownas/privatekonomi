@@ -12,11 +12,22 @@ dotnet_diagnostic.CA1860.severity = suggestion
 dotnet_diagnostic.CA1861.severity = suggestion
 dotnet_diagnostic.CA1873.severity = suggestion
 
+# CA1848: Use LoggerMessage delegates for performance - suppressed as a style/performance choice
+dotnet_diagnostic.CA1848.severity = none
+
 # Default severity for analyzer diagnostics with category 'Style'
 dotnet_analyzer_diagnostic.category-Style.severity = none
 
 [*.razor]
 dotnet_analyzer_diagnostic.severity = suggestion
+# MUD0002: MudBlazor illegal attribute warnings on Razor components - suppressed pending MudBlazor upgrade
+dotnet_diagnostic.MUD0002.severity = none
 
 # set blocked scope namespace to avoid conflicts with generated code
 dotnet_code_quality.CA1031.blocked_scope = namespace
+
+# Test files: allow underscore naming convention (e.g. MethodName_Scenario_Expected)
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+# Test files: DataTestMethod is a valid MSTest attribute
+dotnet_diagnostic.MSTEST0044.severity = none

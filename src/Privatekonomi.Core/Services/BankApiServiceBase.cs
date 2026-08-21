@@ -9,13 +9,16 @@ namespace Privatekonomi.Core.Services;
 /// </summary>
 public abstract class BankApiServiceBase : IBankApiService
 {
-    protected readonly PrivatekonomyContext _context;
-    protected readonly HttpClient _httpClient;
+    private readonly PrivatekonomyContext _contextField;
+    private readonly HttpClient _httpClientField;
+
+    protected PrivatekonomyContext Context => _contextField;
+    protected HttpClient HttpClient => _httpClientField;
 
     protected BankApiServiceBase(PrivatekonomyContext context, HttpClient httpClient)
     {
-        _context = context;
-        _httpClient = httpClient;
+        _contextField = context;
+        _httpClientField = httpClient;
     }
 
     public abstract string BankName { get; }
@@ -72,16 +75,16 @@ public abstract class BankApiServiceBase : IBankApiService
             foreach (var transaction in transactions)
             {
                 transaction.BankSourceId = connection.BankSourceId;
-                _context.Transactions.Add(transaction);
+                Context.Transactions.Add(transaction);
             }
 
-            await _context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
             
             // Update last synced timestamp
             connection.LastSyncedAt = DateTime.UtcNow;
             connection.UpdatedAt = DateTime.UtcNow;
-            _context.BankConnections.Update(connection);
-            await _context.SaveChangesAsync();
+            Context.BankConnections.Update(connection);
+            await Context.SaveChangesAsync();
 
             result.Success = true;
             result.ImportedCount = transactions.Count;
@@ -140,7 +143,7 @@ public abstract class BankApiServiceBase : IBankApiService
     protected virtual async Task<List<Transaction>> FindDuplicatesAsync(List<Transaction> transactions)
     {
         var duplicates = new List<Transaction>();
-        var existingTransactions = await _context.Transactions.ToListAsync();
+        var existingTransactions = await Context.Transactions.ToListAsync();
 
         foreach (var transaction in transactions)
         {

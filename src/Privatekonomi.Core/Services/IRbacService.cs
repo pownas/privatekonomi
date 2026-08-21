@@ -104,7 +104,7 @@ public interface IRbacService
     /// <summary>
     /// Gets all role permissions for a role type
     /// </summary>
-    Task<IEnumerable<RolePermission>> GetRolePermissionsAsync(HouseholdRoleType roleType);
+    Task<IEnumerable<RolePrivilege>> GetRolePermissionsAsync(HouseholdRoleType roleType);
     
     /// <summary>
     /// Checks if a delegation is allowed based on delegator's role

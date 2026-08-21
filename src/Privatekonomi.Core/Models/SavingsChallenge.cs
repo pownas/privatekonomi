@@ -12,8 +12,8 @@ public class SavingsChallenge
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public ChallengeStatus Status { get; set; } = ChallengeStatus.Active;
-    public int CurrentStreak { get; set; } = 0;
-    public int BestStreak { get; set; } = 0;
+    public int CurrentStreak { get; set; }
+    public int BestStreak { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     
@@ -23,7 +23,7 @@ public class SavingsChallenge
     public ChallengeCategory Category { get; set; } = ChallengeCategory.Individual;
     public decimal? EstimatedSavingsMin { get; set; }
     public decimal? EstimatedSavingsMax { get; set; }
-    public bool IsTemplate { get; set; } = false; // True for predefined challenge templates
+    public bool IsTemplate { get; set; } // True for predefined challenge templates
     
     // User ownership
     public string? UserId { get; set; }

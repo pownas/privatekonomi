@@ -1,4 +1,4 @@
-using Privatekonomi.Core.Models;
+﻿using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services;
 
@@ -62,7 +62,7 @@ public class BudgetTemplateService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLowerInvariant();
             
             // 50% - Needs (Behov)
             if (categoryName.Contains("boende") || 
@@ -125,7 +125,7 @@ public class BudgetTemplateService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLowerInvariant();
             
             // Typical Swedish household budget percentages
             if (categoryName.Contains("boende"))
@@ -173,7 +173,7 @@ public class BudgetTemplateService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLowerInvariant();
             
             // Envelope budgeting with conservative allocations
             if (categoryName.Contains("boende"))
@@ -216,7 +216,7 @@ public class BudgetTemplateService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLowerInvariant();
             
             // Fasta månadskostnader (Fixed monthly costs)
             if (categoryName.Contains("boende"))
@@ -275,7 +275,7 @@ public class BudgetTemplateService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLowerInvariant();
             
             // Fasta månadskostnader (Fixed monthly costs)
             if (categoryName.Contains("boende"))

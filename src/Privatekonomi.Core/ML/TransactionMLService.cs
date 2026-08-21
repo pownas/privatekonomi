@@ -357,7 +357,7 @@ public class TransactionMLService : ITransactionMLService
         };
     }
 
-    private IEstimator<ITransformer> BuildTrainingPipeline()
+    private Microsoft.ML.Data.EstimatorChain<Microsoft.ML.Transforms.KeyToValueMappingTransformer> BuildTrainingPipeline()
     {
         // Convert boolean features to float
         var pipeline = _mlContext.Transforms.Conversion.ConvertType(
@@ -476,7 +476,7 @@ public class TransactionMLService : ITransactionMLService
     }
 
     // Internal class for ML.NET prediction
-    private class CategoryPredictionInternal
+    private sealed class CategoryPredictionInternal
     {
         public string PredictedCategory { get; set; } = string.Empty;
         

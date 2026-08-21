@@ -79,7 +79,7 @@ public class Notification
     /// <summary>
     /// Number of times this notification has been snoozed
     /// </summary>
-    public int SnoozeCount { get; set; } = 0;
+    public int SnoozeCount { get; set; }
     
     /// <summary>
     /// Related BillReminder ID if this is a bill reminder notification

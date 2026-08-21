@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class GoalServiceTests
+public class GoalServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly GoalService _service;
@@ -34,8 +34,14 @@ public class GoalServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

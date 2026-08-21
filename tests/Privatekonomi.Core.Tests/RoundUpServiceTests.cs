@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class RoundUpServiceTests
+public class RoundUpServiceTests : IDisposable
 {
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
     private readonly Mock<IGoalService> _mockGoalService;
@@ -32,6 +32,19 @@ public class RoundUpServiceTests
         _mockGoalService = new Mock<IGoalService>();
 
         _service = new RoundUpService(_context, _mockGoalService.Object, _mockCurrentUserService.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

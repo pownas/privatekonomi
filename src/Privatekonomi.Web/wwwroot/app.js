@@ -625,5 +625,73 @@ window.pwaManager = {
         return window.matchMedia('(display-mode: standalone)').matches ||
                window.navigator.standalone === true ||
                document.referrer.includes('android-app://');
+    },
+
+    // Register .NET callbacks for the OfflineIndicator component
+    registerOfflineIndicator: function(dotNetRef) {
+        window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
+        window.blazorPwaCallbacks.onOnline = () => {
+            dotNetRef.invokeMethodAsync('OnOnlineStatusChanged', true);
+        };
+        window.blazorPwaCallbacks.onOffline = () => {
+            dotNetRef.invokeMethodAsync('OnOnlineStatusChanged', false);
+        };
+        window.blazorPwaCallbacks.onPendingCountChanged = (count) => {
+            dotNetRef.invokeMethodAsync('OnPendingCountChanged', count);
+        };
+        window.blazorPwaCallbacks.offlineIndicatorRef = dotNetRef;
+    },
+
+    // Unregister OfflineIndicator callbacks
+    unregisterOfflineIndicator: function() {
+        if (window.blazorPwaCallbacks) {
+            delete window.blazorPwaCallbacks.onOnline;
+            delete window.blazorPwaCallbacks.onOffline;
+            delete window.blazorPwaCallbacks.onPendingCountChanged;
+            delete window.blazorPwaCallbacks.offlineIndicatorRef;
+        }
+    },
+
+    // Get current online status
+    getOnlineStatus: function() {
+        return navigator.onLine;
+    },
+
+    // Register .NET callback for the UpdateNotification component
+    registerUpdateNotification: function(dotNetRef) {
+        window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
+        window.blazorPwaCallbacks.onUpdateAvailable = () => {
+            dotNetRef.invokeMethodAsync('OnUpdateAvailable');
+        };
+        window.blazorPwaCallbacks.updateNotificationRef = dotNetRef;
+    },
+
+    // Unregister UpdateNotification callbacks
+    unregisterUpdateNotification: function() {
+        if (window.blazorPwaCallbacks) {
+            delete window.blazorPwaCallbacks.onUpdateAvailable;
+            delete window.blazorPwaCallbacks.updateNotificationRef;
+        }
+    },
+
+    // Register .NET callbacks for the InstallPwaPrompt component
+    registerInstallPrompt: function(dotNetRef) {
+        window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
+        window.blazorPwaCallbacks.onInstallAvailable = () => {
+            dotNetRef.invokeMethodAsync('OnInstallAvailable');
+        };
+        window.blazorPwaCallbacks.onInstalled = () => {
+            dotNetRef.invokeMethodAsync('OnInstalled');
+        };
+        window.blazorPwaCallbacks.installPromptRef = dotNetRef;
+    },
+
+    // Unregister InstallPwaPrompt callbacks
+    unregisterInstallPrompt: function() {
+        if (window.blazorPwaCallbacks) {
+            delete window.blazorPwaCallbacks.onInstallAvailable;
+            delete window.blazorPwaCallbacks.onInstalled;
+            delete window.blazorPwaCallbacks.installPromptRef;
+        }
     }
 };

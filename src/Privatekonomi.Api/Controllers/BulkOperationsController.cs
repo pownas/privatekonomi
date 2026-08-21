@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Api.Models;
@@ -93,7 +93,7 @@ public class BulkOperationsController : ControllerBase
         try
         {
             _logger.LogInformation("Bulk link household requested for {Count} transactions to household {HouseholdId}", 
-                request.TransactionIds.Count, request.HouseholdId?.ToString() ?? "null");
+                request.TransactionIds.Count, request.HouseholdId ?? null);
             
             var result = await _transactionService.BulkLinkToHouseholdAsync(
                 request.TransactionIds, 

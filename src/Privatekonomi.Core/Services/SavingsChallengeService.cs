@@ -132,7 +132,7 @@ public class SavingsChallengeService : ISavingsChallengeService
         return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
     }
 
-    public async Task<SavingsChallengeProgress> RecordProgressAsync(int challengeId, DateTime date, bool completed, decimal amountSaved, string? notes = null)
+    public async Task<SavingsChallengeProgress> RecordProgressAsync(int challengeId, DateTime progressDate, bool completed, decimal amountSaved, string? notes = null)
     {
         var challenge = await _context.SavingsChallenges
             .Include(c => c.ProgressEntries)
@@ -152,7 +152,7 @@ public class SavingsChallengeService : ISavingsChallengeService
         }
 
         // Check if progress for this date already exists
-        var existingProgress = challenge.ProgressEntries.FirstOrDefault(p => p.Date.Date == date.Date);
+        var existingProgress = challenge.ProgressEntries.FirstOrDefault(p => p.Date.Date == progressDate.Date);
         
         if (existingProgress != null)
         {
@@ -172,7 +172,7 @@ public class SavingsChallengeService : ISavingsChallengeService
             var progress = new SavingsChallengeProgress
             {
                 SavingsChallengeId = challengeId,
-                Date = date.Date,
+                Date = progressDate.Date,
                 Completed = completed,
                 AmountSaved = amountSaved,
                 Notes = notes,

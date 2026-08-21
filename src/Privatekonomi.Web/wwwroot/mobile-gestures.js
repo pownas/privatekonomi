@@ -20,6 +20,39 @@ class MobileGestureHandler {
         this.setupPullToRefresh();
     }
 
+    // Attach gesture listeners to the data grid via event delegation.
+    // This replaces per-row registration and avoids one JS call per transaction.
+    attachGesturesToGrid() {
+        const grid = document.querySelector('.mud-table-container');
+        if (!grid) return;
+
+        // Avoid attaching duplicate listeners if called more than once
+        if (grid._gesturesAttached) return;
+        grid._gesturesAttached = true;
+
+        grid.addEventListener('touchstart', (e) => {
+            const row = e.target.closest('tr.mud-table-row');
+            if (!row) return;
+            const idAttr = row.getAttribute('data-transaction-id');
+            const parsed = idAttr ? parseInt(idAttr, 10) : NaN;
+            if (isNaN(parsed)) return;
+            const itemId = parsed;
+            this.handleTouchStart(e, itemId);
+            this._activeRow = row;
+        }, { passive: true });
+
+        grid.addEventListener('touchmove', (e) => {
+            if (!this._activeRow) return;
+            this.handleTouchMove(e, this._activeRow);
+        }, { passive: false });
+
+        grid.addEventListener('touchend', (e) => {
+            if (!this._activeRow) return;
+            this.handleTouchEnd(e, this._activeRow, this.activeElement);
+            this._activeRow = null;
+        }, { passive: true });
+    }
+
     // Attach swipe listeners to an element
     attachSwipeListeners(element, itemId) {
         if (!element) return;

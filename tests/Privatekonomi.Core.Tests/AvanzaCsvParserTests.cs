@@ -476,6 +476,10 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
             base.Dispose(disposing);
         }
 
-        public override ValueTask DisposeAsync() => inner.DisposeAsync();
+        public override async ValueTask DisposeAsync()
+        {
+            await inner.DisposeAsync();
+            await base.DisposeAsync();
+        }
     }
 }

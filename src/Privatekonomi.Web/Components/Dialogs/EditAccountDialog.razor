@@ -1,4 +1,4 @@
-@using Privatekonomi.Core.Models
+﻿@using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @inject IBankSourceService BankSourceService
 @inject ISnackbar Snackbar
@@ -224,7 +224,7 @@
             return;
         }
 
-        await _form.Validate();
+        await _form.ValidateAsync();
         if (!_form.IsValid)
         {
             return;

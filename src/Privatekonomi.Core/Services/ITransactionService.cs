@@ -27,7 +27,7 @@ public interface ITransactionService
     Task<Transaction> UpdateTransactionWithAuditAsync(
         int id,
         decimal amount,
-        DateTime date,
+        DateTime transactionDate,
         string description,
         string? payee,
         string? notes,
@@ -38,11 +38,11 @@ public interface ITransactionService
         string? ipAddress);
     
     Task DeleteTransactionAsync(int id);
-    Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime to);
+    Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime toDate);
     Task<IEnumerable<Transaction>> GetUnmappedTransactionsAsync();
     Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories);
     Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAsync(int householdId);
-    Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAndDateRangeAsync(int householdId, DateTime from, DateTime to);
+    Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAndDateRangeAsync(int householdId, DateTime from, DateTime toDate);
     
     // Bulk operations
     Task<BulkOperationResult> BulkDeleteTransactionsAsync(List<int> transactionIds);

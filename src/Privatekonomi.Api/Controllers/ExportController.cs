@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Privatekonomi.Core.Configuration;
 using Privatekonomi.Core.Data;
@@ -146,7 +146,7 @@ public class ExportController : ControllerBase
                 return BadRequest(new { error = "Filen är för stor. Max storlek är 50 MB." });
             }
 
-            var extension = Path.GetExtension(request.File.FileName).ToLower();
+            var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
             if (extension != ".json")
             {
                 return BadRequest(new { error = "Filtypen stöds inte. Endast .json-filer accepteras." });
@@ -193,7 +193,7 @@ public class ExportController : ControllerBase
         /// <summary>
         /// If true, merges with existing data; if false, replaces all data
         /// </summary>
-        public bool MergeMode { get; set; } = false;
+        public bool MergeMode { get; set; }
     }
 
     /// <summary>

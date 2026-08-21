@@ -16,6 +16,7 @@
   <PropertyGroup Label="Package manager configuration">
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
     <SatelliteResourceLanguages>sv;en</SatelliteResourceLanguages>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
   </PropertyGroup>
 
   <PropertyGroup Label="Suppress warnings">

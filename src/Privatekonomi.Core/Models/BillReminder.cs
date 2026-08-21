@@ -21,7 +21,7 @@ public class BillReminder
     /// <summary>
     /// Whether reminder was sent
     /// </summary>
-    public bool IsSent { get; set; } = false;
+    public bool IsSent { get; set; }
     
     /// <summary>
     /// Date reminder was sent
@@ -45,12 +45,12 @@ public class BillReminder
     /// <summary>
     /// Number of times this reminder has been snoozed
     /// </summary>
-    public int SnoozeCount { get; set; } = 0;
+    public int SnoozeCount { get; set; }
     
     /// <summary>
     /// Whether reminder has been marked as completed
     /// </summary>
-    public bool IsCompleted { get; set; } = false;
+    public bool IsCompleted { get; set; }
     
     /// <summary>
     /// Date reminder was completed
@@ -60,7 +60,7 @@ public class BillReminder
     /// <summary>
     /// Escalation level for critical reminders (0 = none, 1-3 = escalation levels)
     /// </summary>
-    public int EscalationLevel { get; set; } = 0;
+    public int EscalationLevel { get; set; }
     
     /// <summary>
     /// Last time a follow-up notification was sent

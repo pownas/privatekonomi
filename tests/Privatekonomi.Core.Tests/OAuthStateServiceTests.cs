@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 [TestClass]
 public class OAuthStateServiceTests
 {
-    private readonly IOAuthStateService _stateService;
+    private readonly OAuthStateService _stateService;
 
     public OAuthStateServiceTests()
     {

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class BudgetSuggestionServiceTests
+public class BudgetSuggestionServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<ICategoryService> _mockCategoryService;
@@ -56,6 +56,19 @@ public class BudgetSuggestionServiceTests
             _mockCategoryService.Object,
             _mockTransactionService.Object,
             _mockCurrentUserService.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

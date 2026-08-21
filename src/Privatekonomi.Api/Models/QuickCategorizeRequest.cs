@@ -15,7 +15,7 @@ public class QuickCategorizeRequest
     /// <summary>
     /// Optional: Whether to create a categorization rule from this transaction
     /// </summary>
-    public bool CreateRule { get; set; } = false;
+    public bool CreateRule { get; set; }
 
     /// <summary>
     /// Optional: Pattern for the rule (defaults to transaction description if CreateRule is true)

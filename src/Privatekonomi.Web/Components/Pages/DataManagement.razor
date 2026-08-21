@@ -122,7 +122,7 @@
     </MudText>
     
     <MudFileUpload T="IBrowserFile" FilesChanged="OnImportFileSelected" Accept=".json">
-        <ActivatorContent>
+        <CustomContent>
             <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 150px; cursor: pointer;">
                 <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
                 <MudText Typo="Typo.h6">Välj backup-fil (.json)</MudText>
@@ -130,7 +130,7 @@
                     Välj fil
                 </MudButton>
             </MudPaper>
-        </ActivatorContent>
+        </CustomContent>
     </MudFileUpload>
     
     @if (_importFile != null)

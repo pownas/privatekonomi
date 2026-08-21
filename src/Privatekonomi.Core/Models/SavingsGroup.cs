@@ -28,7 +28,7 @@ public class SavingsGroup
     /// <summary>
     /// Whether members are shown anonymously
     /// </summary>
-    public bool AnonymousMembers { get; set; } = false;
+    public bool AnonymousMembers { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

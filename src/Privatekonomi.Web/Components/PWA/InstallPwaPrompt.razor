@@ -1,4 +1,4 @@
-@inject IJSRuntime JSRuntime
+﻿@inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
 @implements IAsyncDisposable
 
@@ -38,25 +38,12 @@
         if (firstRender && !_hasRendered)
         {
             _hasRendered = true;
-            objRef = DotNetObjectReference.Create(this);
             
             try
             {
                 // Register callbacks with JavaScript
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
-                    window.blazorPwaCallbacks.onInstallAvailable = () => {
-                        if (window.blazorPwaCallbacks.installPromptRef) {
-                            window.blazorPwaCallbacks.installPromptRef.invokeMethodAsync('OnInstallAvailable');
-                        }
-                    };
-                    window.blazorPwaCallbacks.onInstalled = () => {
-                        if (window.blazorPwaCallbacks.installPromptRef) {
-                            window.blazorPwaCallbacks.installPromptRef.invokeMethodAsync('OnInstalled');
-                        }
-                    };
-                    window.blazorPwaCallbacks.installPromptRef = arguments[0];
-                ", objRef);
+                objRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("pwaManager.registerInstallPrompt", objRef);
                 
                 // Check if running as PWA
                 try
@@ -144,13 +131,7 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    if (window.blazorPwaCallbacks) {
-                        delete window.blazorPwaCallbacks.onInstallAvailable;
-                        delete window.blazorPwaCallbacks.onInstalled;
-                        delete window.blazorPwaCallbacks.installPromptRef;
-                    }
-                ");
+                await JSRuntime.InvokeVoidAsync("pwaManager.unregisterInstallPrompt");
             }
             catch
             {
@@ -165,30 +146,25 @@
     .install-prompt {
         position: fixed;
         bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 22%;
         z-index: 9998;
         max-width: 500px;
         width: 90%;
-        animation: slideUp 0.3s ease-out;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        background-color: rgba(40, 40, 60, 0.98);
+        animation: fadeIn 0.4s ease;
     }
 
     @@media (max-width: 600px) {
         .install-prompt {
             bottom: 10px;
+            left: 1%;
             width: 95%;
         }
     }
 
-    @@keyframes slideUp {
-        from {
-            transform: translate(-50%, 100%);
-            opacity: 0;
-        }
-        to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-        }
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 </style>

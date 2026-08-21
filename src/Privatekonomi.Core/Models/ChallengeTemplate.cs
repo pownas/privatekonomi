@@ -19,7 +19,7 @@ public class ChallengeTemplate
     public string? Rules { get; set; } // JSON or text describing the rules
     public List<string> Tags { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
-    public int SortOrder { get; set; } = 0;
+    public int SortOrder { get; set; }
     public DateTime CreatedAt { get; set; }
     
     /// <summary>

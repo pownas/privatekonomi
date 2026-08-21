@@ -1,15 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Aspire.AppHost.Sdk" Version="13.1.2" />
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
 
   <PropertyGroup Label="General">
     <OutputType>Exe</OutputType>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>a1d43a2c-e345-4da9-b866-2a39d5009e40</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup Label="Packages">
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.2" />
-  </ItemGroup>
 
   <ItemGroup Label="Projects">
     <ProjectReference Include="..\Privatekonomi.Api\Privatekonomi.Api.csproj" />

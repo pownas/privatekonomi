@@ -278,7 +278,7 @@ else
             <div role="img" aria-label="Graf som visar kapitalutveckling över tid">
                 <MudChart ChartType="ChartType.Line"
                           ChartSeries="@_chartSeries"
-                          XAxisLabels="@_xAxisLabels"
+                          ChartLabels="@_xAxisLabels"
                           Width="100%"
                           Height="450px"
                           ChartOptions="@_chartOptions" />
@@ -364,7 +364,7 @@ else
                 
                 <MudChart ChartType="ChartType.Line"
                           ChartSeries="@_comparisonChartSeries"
-                          XAxisLabels="@_comparisonXAxisLabels"
+                          ChartLabels="@_comparisonXAxisLabels"
                           Width="100%"
                           Height="400px"
                           ChartOptions="@_chartOptions"
@@ -740,10 +740,9 @@ else
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
             var base64 = Convert.ToBase64String(bytes);
-            var dataUrl = $"data:text/csv;base64,{base64}";
-            
-            await JSRuntime.InvokeVoidAsync("eval", 
-                $"(function(){{var link=document.createElement('a');link.download='scenarioanalys_{DateTime.Now:yyyyMMdd}.csv';link.href='{dataUrl}';link.click();}})()");
+            var fileName = $"scenarioanalys_{DateTime.Now:yyyyMMdd}.csv";
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, "text/csv", base64);
             
             Snackbar.Add("CSV-fil exporterad", Severity.Success);
         }

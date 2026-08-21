@@ -27,7 +27,7 @@ public class CategoryRule
     /// Priority of the rule (higher priority rules are evaluated first).
     /// Useful when multiple rules could match the same transaction.
     /// </summary>
-    public int Priority { get; set; } = 0;
+    public int Priority { get; set; }
     
     /// <summary>
     /// Whether the rule is currently active.
@@ -42,7 +42,7 @@ public class CategoryRule
     /// <summary>
     /// Case-sensitive matching (default is case-insensitive).
     /// </summary>
-    public bool CaseSensitive { get; set; } = false;
+    public bool CaseSensitive { get; set; }
     
     /// <summary>
     /// Field to match against (Description, Payee, or Both).

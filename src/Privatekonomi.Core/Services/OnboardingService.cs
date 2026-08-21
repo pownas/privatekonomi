@@ -45,7 +45,7 @@ public class OnboardingService : IOnboardingService
         return hasCompleted ? -1 : 0;
     }
 
-    public async Task SetCurrentStepAsync(string userId, int step)
+    public async Task SetCurrentStepAsync(string userId, int stepNumber)
     {
         // For now, this is a placeholder
         // In the future, we could store step progress in UserPreferences or a separate table

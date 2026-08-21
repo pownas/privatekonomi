@@ -23,5 +23,5 @@ public interface IOnboardingService
     /// <summary>
     /// Set the current onboarding step for the user
     /// </summary>
-    Task SetCurrentStepAsync(string userId, int step);
+    Task SetCurrentStepAsync(string userId, int stepNumber);
 }

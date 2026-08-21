@@ -162,14 +162,14 @@ public class BankConnectionService : IBankConnectionService
     {
         var connection = await GetConnectionAsync(connectionId);
         if (connection == null)
-            throw new Exception($"Bank connection {connectionId} not found");
+            throw new InvalidOperationException($"Bank connection {connectionId} not found");
 
         if (connection.BankSource == null)
-            throw new Exception("Bank source not found for connection");
+            throw new InvalidOperationException("Bank source not found for connection");
 
         var bankService = GetBankApiService(connection.BankSource.Name);
         if (bankService == null)
-            throw new Exception($"No API service available for {connection.BankSource.Name}");
+            throw new InvalidOperationException($"No API service available for {connection.BankSource.Name}");
 
         // Default date range: last 90 days
         var from = fromDate ?? (connection.LastSyncedAt ?? DateTime.Now.AddDays(-90));

@@ -22,7 +22,7 @@ public interface ISavingsChallengeService
     Task<SavingsChallenge> CreateChallengeFromTemplateAsync(int templateId);
     
     // Progress tracking
-    Task<SavingsChallengeProgress> RecordProgressAsync(int challengeId, DateTime date, bool completed, decimal amountSaved, string? notes = null);
+    Task<SavingsChallengeProgress> RecordProgressAsync(int challengeId, DateTime progressDate, bool completed, decimal amountSaved, string? notes = null);
     Task<IEnumerable<SavingsChallengeProgress>> GetChallengeProgressAsync(int challengeId);
     Task UpdateChallengeStatusAsync(int challengeId, ChallengeStatus status);
     Task<int> CalculateCurrentStreakAsync(int challengeId);

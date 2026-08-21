@@ -17,7 +17,6 @@
         
         <form method="post" action="/Account/PerformRegister">
             <MudTextField Label="Förnamn" 
-                          Name="FirstName"
                           @bind-Value="FirstName"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
@@ -26,7 +25,6 @@
                           Required="true" />
             
             <MudTextField Label="Efternamn" 
-                          Name="LastName"
                           @bind-Value="LastName"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
@@ -35,7 +33,6 @@
                           Required="true" />
             
             <MudTextField Label="E-post" 
-                          Name="Email"
                           @bind-Value="Email"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
@@ -44,7 +41,6 @@
                           Required="true" />
             
             <MudTextField Label="Lösenord" 
-                          Name="Password"
                           @bind-Value="Password"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"
@@ -54,7 +50,6 @@
                           Required="true" />
             
             <MudTextField Label="Bekräfta lösenord" 
-                          Name="ConfirmPassword"
                           @bind-Value="ConfirmPassword"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"

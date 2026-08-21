@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Services;
 
@@ -62,7 +63,7 @@ public class NotificationService : INotificationService
             {
                 UserId = userId,
                 NotificationType = type,
-                EnabledChannels = NotificationChannelFlags.InApp | NotificationChannelFlags.Email,
+                EnabledChannels = NotificationChannels.InApp | NotificationChannels.Email,
                 MinimumPriority = NotificationPriority.Normal
             };
         }
@@ -86,37 +87,37 @@ public class NotificationService : INotificationService
         var notifications = new List<Notification>();
         var enabledChannels = preference.EnabledChannels;
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.InApp))
+        if (enabledChannels.HasFlag(NotificationChannels.InApp))
         {
             var notification = await CreateNotificationAsync(userId, type, title, message, NotificationChannel.InApp, priority, data, actionUrl);
             notifications.Add(notification);
         }
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.Email))
+        if (enabledChannels.HasFlag(NotificationChannels.Email))
         {
             var notification = await SendEmailNotificationAsync(userId, type, title, message, priority, data, actionUrl);
             notifications.Add(notification);
         }
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.SMS) && priority >= NotificationPriority.High)
+        if (enabledChannels.HasFlag(NotificationChannels.SMS) && priority >= NotificationPriority.High)
         {
             var notification = await SendSmsNotificationAsync(userId, type, title, message, priority, data, actionUrl);
             notifications.Add(notification);
         }
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.Push))
+        if (enabledChannels.HasFlag(NotificationChannels.Push))
         {
             var notification = await SendPushNotificationAsync(userId, type, title, message, priority, data, actionUrl);
             notifications.Add(notification);
         }
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.Slack))
+        if (enabledChannels.HasFlag(NotificationChannels.Slack))
         {
             var notification = await SendSlackNotificationAsync(userId, type, title, message, priority, data, actionUrl);
             notifications.Add(notification);
         }
 
-        if (enabledChannels.HasFlag(NotificationChannelFlags.Teams))
+        if (enabledChannels.HasFlag(NotificationChannels.Teams))
         {
             var notification = await SendTeamsNotificationAsync(userId, type, title, message, priority, data, actionUrl);
             notifications.Add(notification);
@@ -207,8 +208,8 @@ public class NotificationService : INotificationService
                 continue;
             }
 
-            var startTime = TimeSpan.Parse(schedule.StartTime);
-            var endTime = TimeSpan.Parse(schedule.EndTime);
+            var startTime = TimeSpan.Parse(schedule.StartTime, CultureInfo.InvariantCulture);
+            var endTime = TimeSpan.Parse(schedule.EndTime, CultureInfo.InvariantCulture);
 
             // Handle schedules that span midnight
             if (startTime > endTime)

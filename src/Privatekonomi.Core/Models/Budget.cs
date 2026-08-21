@@ -9,7 +9,7 @@ public class Budget : ITemporalEntity
     public DateTime EndDate { get; set; }
     public BudgetPeriod Period { get; set; }
     public BudgetTemplateType? TemplateType { get; set; }
-    public bool RolloverUnspent { get; set; } = false;
+    public bool RolloverUnspent { get; set; }
     public int? HouseholdId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

@@ -186,7 +186,7 @@ public class BulkOperationsControllerTests
         Assert.AreEqual("text/csv", fileResult.ContentType);
         StringAssert.Contains(fileResult.FileDownloadName, "transaktioner_");
         StringAssert.EndsWith(fileResult.FileDownloadName, ".csv");
-        Assert.AreEqual(csvData, fileResult.FileContents);
+        Assert.AreSequenceEqual(csvData, fileResult.FileContents);
     }
 
     [TestMethod]
@@ -211,7 +211,7 @@ public class BulkOperationsControllerTests
         Assert.AreEqual("application/json", fileResult.ContentType);
         StringAssert.Contains(fileResult.FileDownloadName, "transaktioner_");
         StringAssert.EndsWith(fileResult.FileDownloadName, ".json");
-        Assert.AreEqual(jsonData, fileResult.FileContents);
+        Assert.AreSequenceEqual(jsonData, fileResult.FileContents);
     }
 
     [TestMethod]
@@ -266,9 +266,9 @@ public class BulkOperationsControllerTests
         var result = await _controller.Undo(snapshot);
 
         // Assert
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        Assert.IsInstanceOfType<OkObjectResult>(result.Result);
         var okResult = (OkObjectResult)result.Result;
-        Assert.IsInstanceOfType(okResult.Value, typeof(BulkOperationResult));
+        Assert.IsInstanceOfType<BulkOperationResult>(okResult.Value);
         var undoResult = (BulkOperationResult)okResult.Value;
         Assert.AreEqual(2, undoResult.SuccessCount);
     }

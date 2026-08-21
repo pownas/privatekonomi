@@ -210,7 +210,7 @@ else
                                 {
                                     <MudChart ChartType="ChartType.Line" 
                                               ChartSeries="@_netWorthSeries" 
-                                              XAxisLabels="@_netWorthLabels"
+                                              ChartLabels="@_netWorthLabels"
                                               Width="100%" 
                                               Height="250px"
                                               ChartOptions="@_chartOptions" />
@@ -273,19 +273,18 @@ else
                     <div class="chart-header">
                         <MudText Typo="Typo.h6" Class="chart-title">Utgiftsfördelning per Kategori</MudText>
                     </div>
-                    @if (_expensePieData.Any())
+                    @if (_expensePieSeries.Any())
                     {
                         <div role="img" aria-label="Cirkeldiagram som visar utgiftsfördelning per kategori">
                         <MudChart T="double" ChartType="ChartType.Pie" 
-                                  InputData="@_expensePieData" 
-                                  InputLabels="@_expensePieLabels"
+                                  ChartSeries="@_expensePieSeries"
                                   Width="100%" 
                                   Height="300px"
                                   LegendPosition="Position.Bottom"
                                   Class="chart-responsive chart-height-md" />
                         </div>
                         <p class="chart-sr-only">
-                            Cirkeldiagram visar utgifter fördelade på kategorier: @string.Join(", ", _expensePieLabels).
+                            Cirkeldiagram visar utgifter fördelade på kategorier: @string.Join(", ", _expensePieSeries.Select(s => s.Name)).
                         </p>
                     }
                     else
@@ -309,19 +308,18 @@ else
                     <div class="chart-header">
                         <MudText Typo="Typo.h6" Class="chart-title">Inkomstfördelning per Kategori</MudText>
                     </div>
-                    @if (_incomePieData.Any())
+                    @if (_incomePieSeries.Any())
                     {
                         <div role="img" aria-label="Cirkeldiagram som visar inkomstfördelning per kategori">
                         <MudChart T="double" ChartType="ChartType.Pie" 
-                                  InputData="@_incomePieData" 
-                                  InputLabels="@_incomePieLabels"
+                                  ChartSeries="@_incomePieSeries"
                                   Width="100%" 
                                   Height="300px"
                                   LegendPosition="Position.Bottom"
                                   Class="chart-responsive chart-height-md" />
                         </div>
                         <p class="chart-sr-only">
-                            Cirkeldiagram visar inkomster fördelade på kategorier: @string.Join(", ", _incomePieLabels).
+                            Cirkeldiagram visar inkomster fördelade på kategorier: @string.Join(", ", _incomePieSeries.Select(s => s.Name)).
                         </p>
                     }
                     else
@@ -350,7 +348,7 @@ else
                         <div role="img" aria-label="Linjediagram som visar kassaflöde över tid med inkomster och utgifter">
                             <MudChart ChartType="ChartType.Line" 
                                       ChartSeries="@_cashFlowSeries" 
-                                      XAxisLabels="@_cashFlowLabels"
+                                      ChartLabels="@_cashFlowLabels"
                                       Width="100%" 
                                       Height="350px"
                                       ChartOptions="@_chartOptions"
@@ -389,7 +387,7 @@ else
                         <div role="img" aria-label="Stapeldiagram som visar utgifter per kategori månadsvis">
                             <MudChart ChartType="ChartType.Bar" 
                                       ChartSeries="@_barChartSeries" 
-                                      XAxisLabels="@_barChartLabels"
+                                      ChartLabels="@_barChartLabels"
                                       Width="100%" 
                                       Height="400px"
                                       ChartOptions="@_chartOptions"
@@ -579,10 +577,8 @@ else
     private FinancialTrendSummary? _trendData;
 
     // Chart data
-    private double[] _expensePieData = Array.Empty<double>();
-    private string[] _expensePieLabels = Array.Empty<string>();
-    private double[] _incomePieData = Array.Empty<double>();
-    private string[] _incomePieLabels = Array.Empty<string>();
+    private List<ChartSeries<double>> _expensePieSeries = [];
+    private List<ChartSeries<double>> _incomePieSeries = [];
     private List<ChartSeries<double>> _barChartSeries = new();
     private string[] _barChartLabels = Array.Empty<string>();
     private List<ChartSeries<double>> _cashFlowSeries = new();
@@ -710,8 +706,9 @@ else
             .OrderByDescending(x => x.Total)
             .ToList();
 
-        _expensePieLabels = expensesByCategory.Select(x => x.Category).ToArray();
-        _expensePieData = expensesByCategory.Select(x => (double)x.Total).ToArray();
+        _expensePieSeries = expensesByCategory
+            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total) })
+            .ToList();
 
         // Pie chart for income by category
         var incomeByCategory = filteredTransactions
@@ -722,8 +719,9 @@ else
             .OrderByDescending(x => x.Total)
             .ToList();
 
-        _incomePieLabels = incomeByCategory.Select(x => x.Category).ToArray();
-        _incomePieData = incomeByCategory.Select(x => (double)x.Total).ToArray();
+        _incomePieSeries = incomeByCategory
+            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total) })
+            .ToList();
 
         // Bar chart for monthly category comparison (expenses only)
         var monthlyData = filteredTransactions

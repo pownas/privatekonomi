@@ -27,7 +27,7 @@ public class SubscriptionPriceHistory
     /// <summary>
     /// Whether user was notified about this price change
     /// </summary>
-    public bool NotificationSent { get; set; } = false;
+    public bool NotificationSent { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

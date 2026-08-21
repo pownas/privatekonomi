@@ -42,7 +42,7 @@ public class BankConnection
     /// <summary>
     /// Whether auto-sync is enabled
     /// </summary>
-    public bool AutoSyncEnabled { get; set; } = false;
+    public bool AutoSyncEnabled { get; set; }
     
     /// <summary>
     /// Connection status

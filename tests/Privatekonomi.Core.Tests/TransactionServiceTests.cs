@@ -9,10 +9,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class TransactionServiceTests
+public class TransactionServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
-    private readonly IDbContextFactory<PrivatekonomyContext> _contextFactory;
+    private readonly TestDbContextFactory _contextFactory;
     private readonly Mock<IAuditLogService> _mockAuditLogService;
     private readonly Mock<ICategoryRuleService> _mockCategoryRuleService;
     private readonly TransactionService _transactionService;
@@ -38,8 +38,14 @@ public class TransactionServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

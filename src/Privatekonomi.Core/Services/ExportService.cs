@@ -1,8 +1,9 @@
-﻿using System.Text;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 namespace Privatekonomi.Core.Services;
 
@@ -68,7 +69,7 @@ public class ExportService : IExportService
             var bankName = transaction.BankSource?.Name ?? "";
             var type = transaction.IsIncome ? "Inkomst" : "Utgift";
             
-            csv.AppendLine($"{transaction.Date:yyyy-MM-dd}," +
+            csv.AppendLine(CultureInfo.InvariantCulture, $"{transaction.Date:yyyy-MM-dd}," +
                           $"\"{EscapeCsv(transaction.Description)}\"," +
                           $"{transaction.Amount:F2}," +
                           $"{type}," +
@@ -166,9 +167,9 @@ public class ExportService : IExportService
         var csv = new StringBuilder();
         
         // Budget header info
-        csv.AppendLine($"Budget: {budget.Name}");
-        csv.AppendLine($"Period: {budget.StartDate:yyyy-MM-dd} - {budget.EndDate:yyyy-MM-dd}");
-        csv.AppendLine($"Typ: {budget.Period}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Budget: {budget.Name}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Period: {budget.StartDate:yyyy-MM-dd} - {budget.EndDate:yyyy-MM-dd}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"Typ: {budget.Period}");
         csv.AppendLine();
         
         // Category data header
@@ -177,7 +178,7 @@ public class ExportService : IExportService
         // Budget categories
         foreach (var bc in budget.BudgetCategories)
         {
-            csv.AppendLine($"\"{EscapeCsv(bc.Category.Name)}\",{bc.PlannedAmount:F2}");
+            csv.AppendLine(CultureInfo.InvariantCulture, $"\"{EscapeCsv(bc.Category.Name)}\",{bc.PlannedAmount:F2}");
         }
 
         // Use UTF-8 with BOM for proper Excel compatibility with Swedish characters
@@ -338,9 +339,9 @@ public class ExportService : IExportService
         var csv = new StringBuilder();
         
         // Header with year information
-        csv.AppendLine($"# Privatekonomi Export - År {year}");
-        csv.AppendLine($"# Exportdatum: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-        csv.AppendLine($"# Antal transaktioner: {transactions.Count}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Privatekonomi Export - År {year}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Exportdatum: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Antal transaktioner: {transactions.Count}");
         csv.AppendLine();
         
         // Column headers
@@ -353,7 +354,7 @@ public class ExportService : IExportService
             var bankName = transaction.BankSource?.Name ?? "";
             var type = transaction.IsIncome ? "Inkomst" : "Utgift";
             
-            csv.AppendLine($"{transaction.Date:yyyy-MM-dd}," +
+            csv.AppendLine(CultureInfo.InvariantCulture, $"{transaction.Date:yyyy-MM-dd}," +
                           $"\"{EscapeCsv(transaction.Description)}\"," +
                           $"{transaction.Amount:F2}," +
                           $"{type}," +
@@ -367,13 +368,13 @@ public class ExportService : IExportService
 
         // Summary section
         csv.AppendLine();
-        csv.AppendLine($"# Summering {year}");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Summering {year}");
         var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
         var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
         var netResult = totalIncome - totalExpenses;
-        csv.AppendLine($"# Totala inkomster: {totalIncome:F2} SEK");
-        csv.AppendLine($"# Totala utgifter: {totalExpenses:F2} SEK");
-        csv.AppendLine($"# Nettoresultat: {netResult:F2} SEK");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Totala inkomster: {totalIncome:F2} SEK");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Totala utgifter: {totalExpenses:F2} SEK");
+        csv.AppendLine(CultureInfo.InvariantCulture, $"# Nettoresultat: {netResult:F2} SEK");
 
         // Use UTF-8 with BOM for proper Excel compatibility with Swedish characters
         var preamble = Encoding.UTF8.GetPreamble();
@@ -415,7 +416,7 @@ public class ExportService : IExportService
             var householdName = transaction.Household?.Name ?? "";
             var type = transaction.IsIncome ? "Inkomst" : "Utgift";
             
-            csv.AppendLine($"{transaction.Date:yyyy-MM-dd}," +
+            csv.AppendLine(CultureInfo.InvariantCulture, $"{transaction.Date:yyyy-MM-dd}," +
                           $"\"{EscapeCsv(transaction.Description)}\"," +
                           $"{transaction.Amount:F2}," +
                           $"{type}," +

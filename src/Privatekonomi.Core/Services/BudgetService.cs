@@ -218,10 +218,10 @@ public class BudgetService : IBudgetService
         return transactionsByCategory;
     }
 
-    public async Task<Budget?> GetBudgetForCategoryAndMonthAsync(int categoryId, DateTime date)
+    public async Task<Budget?> GetBudgetForCategoryAndMonthAsync(int categoryId, DateTime budgetDate)
     {
         // Get the first day of the month
-        var startDate = new DateTime(date.Year, date.Month, 1);
+        var startDate = new DateTime(budgetDate.Year, budgetDate.Month, 1);
         var endDate = startDate.AddMonths(1).AddDays(-1);
 
         var query = _context.Budgets

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class BankSourceServiceTests
+public class BankSourceServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly BankSourceService _bankSourceService;
@@ -26,8 +26,14 @@ public class BankSourceServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

@@ -475,7 +475,7 @@ else
                        FilesChanged="OnActivityImagesSelected" 
                        Accept="image/*" 
                        MaximumFileCount="10">
-            <ActivatorContent>
+            <CustomContent>
                 <MudPaper Outlined="true" Class="pa-4 d-flex flex-column align-center justify-center" 
                          Style="min-height: 120px; cursor: pointer; border: 2px dashed var(--mud-palette-primary);">
                     <MudIcon Icon="@Icons.Material.Filled.AddPhotoAlternate" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
@@ -485,7 +485,7 @@ else
                         JPEG, PNG, WebP, GIF (Max 5 MB per bild)
                     </MudChip>
                 </MudPaper>
-            </ActivatorContent>
+            </CustomContent>
         </MudFileUpload>
         
         @if (selectedActivityImages.Any())

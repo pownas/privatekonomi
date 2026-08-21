@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Privatekonomi.Core.Models;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Data;
 
@@ -3383,7 +3384,7 @@ public static class TestDataSeeder
                 EntityId = random.Next(1, 100),
                 UserId = userId,
                 IpAddress = $"192.168.1.{random.Next(1, 255)}",
-                Details = $"{action} {entityType.ToLower()} with ID {random.Next(1, 100)}",
+                Details = $"{action} {entityType.ToLower(CultureInfo.CurrentCulture)} with ID {random.Next(1, 100)}",
                 CreatedAt = auditDate
             };
 

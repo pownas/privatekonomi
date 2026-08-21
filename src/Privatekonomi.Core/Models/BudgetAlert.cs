@@ -108,7 +108,7 @@ public class BudgetAlertSettings
     /// <summary>
     /// Enable budget freeze when exceeded
     /// </summary>
-    public bool EnableBudgetFreeze { get; set; } = false;
+    public bool EnableBudgetFreeze { get; set; }
     
     /// <summary>
     /// Created timestamp

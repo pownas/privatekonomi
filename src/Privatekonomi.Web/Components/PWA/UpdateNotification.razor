@@ -32,20 +32,12 @@
         if (firstRender && !_hasRendered)
         {
             _hasRendered = true;
-            objRef = DotNetObjectReference.Create(this);
             
             try
             {
                 // Register callback with JavaScript
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
-                    window.blazorPwaCallbacks.onUpdateAvailable = () => {
-                        if (window.blazorPwaCallbacks.updateNotificationRef) {
-                            window.blazorPwaCallbacks.updateNotificationRef.invokeMethodAsync('OnUpdateAvailable');
-                        }
-                    };
-                    window.blazorPwaCallbacks.updateNotificationRef = arguments[0];
-                ", objRef);
+                objRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("pwaManager.registerUpdateNotification", objRef);
             }
             catch (Exception ex)
             {
@@ -74,12 +66,7 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    if (window.blazorPwaCallbacks) {
-                        delete window.blazorPwaCallbacks.onUpdateAvailable;
-                        delete window.blazorPwaCallbacks.updateNotificationRef;
-                    }
-                ");
+                await JSRuntime.InvokeVoidAsync("pwaManager.unregisterUpdateNotification");
             }
             catch
             {

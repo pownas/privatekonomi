@@ -33,8 +33,8 @@ public class GoalShare
     public bool ShowCurrentAmount { get; set; } = true;
     public bool ShowTargetAmount { get; set; } = true;
     public bool ShowTargetDate { get; set; } = true;
-    public bool ShowTransactions { get; set; } = false;
-    public bool ShowOwnerName { get; set; } = false;
+    public bool ShowTransactions { get; set; }
+    public bool ShowOwnerName { get; set; }
     
     /// <summary>
     /// Optional expiration date for the share link
@@ -47,5 +47,5 @@ public class GoalShare
     /// <summary>
     /// Number of times the link has been viewed
     /// </summary>
-    public int ViewCount { get; set; } = 0;
+    public int ViewCount { get; set; }
 }

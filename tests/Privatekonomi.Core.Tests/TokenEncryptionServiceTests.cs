@@ -8,7 +8,7 @@ namespace Privatekonomi.Core.Tests;
 [TestClass]
 public class TokenEncryptionServiceTests
 {
-    private readonly ITokenEncryptionService _encryptionService;
+    private readonly TokenEncryptionService _encryptionService;
 
     public TokenEncryptionServiceTests()
     {

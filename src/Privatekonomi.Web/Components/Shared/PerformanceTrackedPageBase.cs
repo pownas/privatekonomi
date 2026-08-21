@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Web.Components.Base;
+using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable CA1716 // 'Shared' is a valid Blazor convention for component namespace
 namespace Privatekonomi.Web.Components.Shared;
+#pragma warning restore CA1716
 
 /// <summary>
 /// Base component for pages that should report navigation completion metrics

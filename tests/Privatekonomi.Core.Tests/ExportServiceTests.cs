@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class ExportServiceTests
+public class ExportServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
@@ -33,8 +33,14 @@ public class ExportServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task SeedTestData()
@@ -208,9 +214,9 @@ public class ExportServiceTests
 
         // Verify it's valid JSON and contains expected year and structure
         var json = Encoding.UTF8.GetString(data);
-        StringAssert.Contains(json, "\"year\": 2024");
-        StringAssert.Contains(json.ToLower(), "\"data\"");
-        StringAssert.Contains(json.ToLower(), "\"transactions\"");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"year\": 2024");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"data\"");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"transactions\"");
         
         // Parse to verify it's valid JSON - skip BOM if present
         var jsonBytes = data;
@@ -275,18 +281,18 @@ public class ExportServiceTests
         var json = Encoding.UTF8.GetString(data);
         
         // Check for all data types (camelCase because of JsonNamingPolicy.CamelCase)
-        StringAssert.Contains(json.ToLower(), "transactions");
-        StringAssert.Contains(json.ToLower(), "budgets");
-        StringAssert.Contains(json.ToLower(), "goals");
-        StringAssert.Contains(json.ToLower(), "investments");
-        StringAssert.Contains(json.ToLower(), "loans");
+        StringAssert.Contains(json.ToLowerInvariant(), "transactions");
+        StringAssert.Contains(json.ToLowerInvariant(), "budgets");
+        StringAssert.Contains(json.ToLowerInvariant(), "goals");
+        StringAssert.Contains(json.ToLowerInvariant(), "investments");
+        StringAssert.Contains(json.ToLowerInvariant(), "loans");
         // SalaryHistory is serialized as "salaryHistory" in camelCase
-        StringAssert.Contains(json, "\"salaryHistory\"");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"salaryhistory\"");
         
         // Check for metadata (also in camelCase)
-        StringAssert.Contains(json, "\"year\": 2024");
-        StringAssert.Contains(json, "\"exportDate\""); // Property name in camelCase
-        StringAssert.Contains(json, "\"version\"");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"year\": 2024");
+        StringAssert.Contains(json.ToLowerInvariant(), "\"exportdate\""); // Property name in camelCase
+        StringAssert.Contains(json.ToLowerInvariant(), "\"version\"");
     }
 
     [TestMethod]
@@ -403,8 +409,8 @@ public class ExportServiceTests
         var json = Encoding.UTF8.GetString(data);
         
         // Should still have structure but empty arrays
-        StringAssert.Contains(json, "2025");
-        StringAssert.Contains(json.ToLower(), "transactions");
+        StringAssert.Contains(json.ToLowerInvariant(), "2025");
+        StringAssert.Contains(json.ToLowerInvariant(), "transactions");
     }
 
     [TestMethod]

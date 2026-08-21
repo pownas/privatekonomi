@@ -76,7 +76,7 @@ public class CategoryService : ICategoryService
         }
     }
 
-    public async Task<IEnumerable<Transaction>> GetTransactionsByCategoryAsync(int categoryId, DateTime? from = null, DateTime? to = null)
+    public async Task<IEnumerable<Transaction>> GetTransactionsByCategoryAsync(int categoryId, DateTime? from = null, DateTime? toDate = null)
     {
         var query = _context.Transactions
             .Include(t => t.BankSource)
@@ -96,9 +96,9 @@ public class CategoryService : ICategoryService
             query = query.Where(t => t.Date >= from.Value);
         }
 
-        if (to.HasValue)
+        if (toDate.HasValue)
         {
-            query = query.Where(t => t.Date <= to.Value);
+            query = query.Where(t => t.Date <= toDate.Value);
         }
 
         return await query.OrderByDescending(t => t.Date).ToListAsync();

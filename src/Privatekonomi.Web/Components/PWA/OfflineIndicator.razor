@@ -37,33 +37,15 @@
         if (firstRender && !_hasRendered)
         {
             _hasRendered = true;
-            objRef = DotNetObjectReference.Create(this);
             
             try
             {
                 // Register callbacks with JavaScript
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    window.blazorPwaCallbacks = window.blazorPwaCallbacks || {};
-                    window.blazorPwaCallbacks.onOnline = () => {
-                        if (window.blazorPwaCallbacks.offlineIndicatorRef) {
-                            window.blazorPwaCallbacks.offlineIndicatorRef.invokeMethodAsync('OnOnlineStatusChanged', true);
-                        }
-                    };
-                    window.blazorPwaCallbacks.onOffline = () => {
-                        if (window.blazorPwaCallbacks.offlineIndicatorRef) {
-                            window.blazorPwaCallbacks.offlineIndicatorRef.invokeMethodAsync('OnOnlineStatusChanged', false);
-                        }
-                    };
-                    window.blazorPwaCallbacks.onPendingCountChanged = (count) => {
-                        if (window.blazorPwaCallbacks.offlineIndicatorRef) {
-                            window.blazorPwaCallbacks.offlineIndicatorRef.invokeMethodAsync('OnPendingCountChanged', count);
-                        }
-                    };
-                    window.blazorPwaCallbacks.offlineIndicatorRef = arguments[0];
-                ", objRef);
+                objRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("pwaManager.registerOfflineIndicator", objRef);
                 
                 // Get initial online status
-                IsOnline = await JSRuntime.InvokeAsync<bool>("eval", "navigator.onLine");
+                IsOnline = await JSRuntime.InvokeAsync<bool>("pwaManager.getOnlineStatus");
                 
                 // Check pending transactions - if function doesn't exist, default to 0
                 try
@@ -104,14 +86,7 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    if (window.blazorPwaCallbacks) {
-                        delete window.blazorPwaCallbacks.onOnline;
-                        delete window.blazorPwaCallbacks.onOffline;
-                        delete window.blazorPwaCallbacks.onPendingCountChanged;
-                        delete window.blazorPwaCallbacks.offlineIndicatorRef;
-                    }
-                ");
+                await JSRuntime.InvokeVoidAsync("pwaManager.unregisterOfflineIndicator");
             }
             catch
             {

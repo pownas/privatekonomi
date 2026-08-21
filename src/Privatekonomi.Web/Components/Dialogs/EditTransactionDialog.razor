@@ -1,4 +1,4 @@
-@using Privatekonomi.Core.Models
+﻿@using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @inject ITransactionService TransactionService
 @inject ICategoryService CategoryService
@@ -466,7 +466,7 @@
         // Validate form
         if (_form != null)
         {
-            await _form.Validate();
+            await _form.ValidateAsync();
             if (!_form.IsValid)
             {
                 Snackbar.Add("Vänligen fyll i alla obligatoriska fält korrekt", Severity.Warning);

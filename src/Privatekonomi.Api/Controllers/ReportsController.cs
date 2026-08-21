@@ -33,15 +33,15 @@ public class ReportsController : ControllerBase
     /// </summary>
     [HttpGet("networth")]
     public async Task<ActionResult<NetWorthReport>> GetNetWorth(
-        [FromQuery] DateTime? start_date,
-        [FromQuery] DateTime? end_date)
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
     {
         try
         {
-            var startDate = start_date ?? DateTime.Now.AddYears(-1);
-            var endDate = end_date ?? DateTime.Now;
+            var startDateValue = startDate ?? DateTime.Now.AddYears(-1);
+            var endDateValue = endDate ?? DateTime.Now;
 
-            var transactions = await _transactionService.GetTransactionsByDateRangeAsync(startDate, endDate);
+            var transactions = await _transactionService.GetTransactionsByDateRangeAsync(startDateValue, endDateValue);
             
             // Calculate net worth over time
             var groupedByMonth = transactions
@@ -66,8 +66,8 @@ public class ReportsController : ControllerBase
 
             return Ok(new NetWorthReport
             {
-                StartDate = startDate,
-                EndDate = endDate,
+                StartDate = startDateValue,
+                EndDate = endDateValue,
                 DataPoints = groupedByMonth,
                 CurrentNetWorth = cumulative
             });

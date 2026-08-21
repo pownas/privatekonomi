@@ -238,7 +238,7 @@ public class InvestmentService : IInvestmentService
         // Data rows
         foreach (var inv in investments)
         {
-            sb.AppendLine($"{EscapeCsv(inv.Name)};{EscapeCsv(inv.ShortName ?? "")};{EscapeCsv(inv.Type)};" +
+            sb.AppendLine(CultureInfo.InvariantCulture, $"{EscapeCsv(inv.Name)};{EscapeCsv(inv.ShortName ?? "")};{EscapeCsv(inv.Type)};" +
                          $"{EscapeCsv(inv.BankSource?.Name ?? "")};{EscapeCsv(inv.AccountNumber ?? "")};{EscapeCsv(inv.ISIN ?? "")};" +
                          $"{inv.Quantity.ToString("N4", culture)};{inv.PurchasePrice.ToString("N2", culture)};" +
                          $"{inv.CurrentPrice.ToString("N2", culture)};{inv.TotalValue.ToString("N2", culture)};" +

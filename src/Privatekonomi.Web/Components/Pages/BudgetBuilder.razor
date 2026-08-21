@@ -12,7 +12,7 @@
 <PageTitle>Budgetbyggare - Privatekonomi</PageTitle>
 
 <MudText Typo="Typo.h4" Class="mb-4">
-    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Primary" Class="mr-2" />
+    <MudIcon Color="Color.Primary" Class="mr-2" />
     Budgetbyggare
 </MudText>
 
@@ -20,8 +20,8 @@
     Skapa en budget med hjälp av smarta fördelningsmodeller som 50/30/20-regeln. Justera och finjustera efter dina behov.
 </MudText>
 
-<MudStepper @bind-ActiveIndex="_activeStep" Linear="false" Color="Color.Primary" Class="mb-4">
-    <MudStep Title="Välj modell" Icon="@Icons.Material.Filled.Category">
+<MudStepper @bind-ActiveIndex="_activeStep" NonLinear="true" Class="mb-4">
+    <MudStep Title="Välj modell">
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.h6" Class="mb-3">Steg 1: Välj fördelningsmodell</MudText>
             
@@ -68,7 +68,7 @@
                                 <CardHeaderActions>
                                     @if (_selectedModel == model.Model)
                                     {
-                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" />
+                                        <MudIcon Color="Color.Primary" />
                                     }
                                 </CardHeaderActions>
                             </MudCardHeader>
@@ -92,7 +92,7 @@
         </MudPaper>
     </MudStep>
     
-    <MudStep Title="Justera förslag" Icon="@Icons.Material.Filled.Edit">
+    <MudStep Title="Justera förslag">
         @if (_currentSuggestion != null)
         {
             <MudPaper Class="pa-4">
@@ -131,7 +131,7 @@
                 
                 @* Transfer Section *@
                 <MudExpansionPanels Class="mb-4">
-                    <MudExpansionPanel Text="Överför mellan kategorier" Icon="@Icons.Material.Filled.SwapHoriz">
+                    <MudExpansionPanel Text="Överför mellan kategorier">
                         <MudGrid>
                             <MudItem xs="12" md="4">
                                 <MudSelect @bind-Value="_transferFromCategory" Label="Från kategori" Variant="Variant.Outlined">
@@ -220,10 +220,11 @@
                         <MudTd>
                             @if (context.IsManuallyAdjusted)
                             {
-                                <MudIconButton Icon="@Icons.Material.Filled.Undo"
-                                             Size="Size.Small"
-                                             OnClick="@(() => ResetItem(context))"
-                                             Title="Återställ till ursprungligt förslag" />
+                                <MudTooltip Text="Återställ till ursprungligt förslag">
+                                    <MudIconButton
+                                                 Size="Size.Small"
+                                                 OnClick="@(() => ResetItem(context))" />
+                                </MudTooltip>
                             }
                         </MudTd>
                     </RowTemplate>
@@ -275,7 +276,7 @@
         }
     </MudStep>
     
-    <MudStep Title="Granska effekter" Icon="@Icons.Material.Filled.Assessment">
+    <MudStep Title="Granska effekter">
         @if (_currentSuggestion != null && _effects != null)
         {
             <MudPaper Class="pa-4">
@@ -397,7 +398,7 @@
 {
     <MudPaper Class="pa-4 mt-4">
         <MudText Typo="Typo.h6" Class="mb-3">
-            <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+            <MudIcon Class="mr-2" />
             Tidigare förslag (ej godkända)
         </MudText>
         
@@ -415,16 +416,18 @@
                 <MudTd>@context.TotalIncome.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))</MudTd>
                 <MudTd>@context.CreatedAt.ToLocalTime().ToString("g")</MudTd>
                 <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
-                                 Size="Size.Small"
-                                 Color="Color.Primary"
-                                 OnClick="@(() => LoadSuggestion(context))"
-                                 Title="Fortsätt redigera" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                 Size="Size.Small"
-                                 Color="Color.Error"
-                                 OnClick="@(() => DeleteSuggestion(context))"
-                                 Title="Ta bort" />
+                    <MudTooltip Text="Fortsätt redigera">
+                        <MudIconButton
+                                     Size="Size.Small"
+                                     Color="Color.Primary"
+                                     OnClick="@(() => LoadSuggestion(context))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Ta bort">
+                        <MudIconButton
+                                     Size="Size.Small"
+                                     Color="Color.Error"
+                                     OnClick="@(() => DeleteSuggestion(context))" />
+                    </MudTooltip>
                 </MudTd>
             </RowTemplate>
         </MudTable>

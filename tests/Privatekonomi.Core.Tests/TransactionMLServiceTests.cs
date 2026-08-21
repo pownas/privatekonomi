@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class TransactionMLServiceTests
+public class TransactionMLServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly Mock<ILogger<TransactionMLService>> _mockLogger;
@@ -34,14 +34,20 @@ public class TransactionMLServiceTests
     [TestCleanup]
     public void Cleanup()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
-        
         // Clean up test model directory
         if (Directory.Exists(_testModelPath))
         {
             Directory.Delete(_testModelPath, true);
         }
+
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

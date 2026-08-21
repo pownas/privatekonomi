@@ -44,6 +44,6 @@ public class TokenEncryptionService : ITokenEncryptionService
 
     public bool IsEncrypted(string value)
     {
-        return !string.IsNullOrEmpty(value) && value.StartsWith(EncryptionPrefix);
+        return !string.IsNullOrEmpty(value) && value.StartsWith(EncryptionPrefix, StringComparison.Ordinal);
     }
 }

@@ -13,27 +13,27 @@ public class UserPrivacySettings
     /// <summary>
     /// Master opt-in for all social features
     /// </summary>
-    public bool EnableSocialFeatures { get; set; } = false;
+    public bool EnableSocialFeatures { get; set; }
     
     /// <summary>
     /// Allow creating shareable links to goals
     /// </summary>
-    public bool AllowGoalSharing { get; set; } = false;
+    public bool AllowGoalSharing { get; set; }
     
     /// <summary>
     /// Allow joining savings groups
     /// </summary>
-    public bool AllowSavingsGroups { get; set; } = false;
+    public bool AllowSavingsGroups { get; set; }
     
     /// <summary>
     /// Allow appearing in leaderboards
     /// </summary>
-    public bool AllowLeaderboards { get; set; } = false;
+    public bool AllowLeaderboards { get; set; }
     
     /// <summary>
     /// Allow community comparison (always anonymized)
     /// </summary>
-    public bool AllowCommunityComparison { get; set; } = false;
+    public bool AllowCommunityComparison { get; set; }
     
     /// <summary>
     /// Default anonymization preference
@@ -43,7 +43,7 @@ public class UserPrivacySettings
     /// <summary>
     /// Whether to show real name in groups
     /// </summary>
-    public bool ShowRealNameInGroups { get; set; } = false;
+    public bool ShowRealNameInGroups { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

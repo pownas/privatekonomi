@@ -105,7 +105,7 @@ public class Subscription
     /// <summary>
     /// Whether this subscription was auto-detected from transaction patterns
     /// </summary>
-    public bool AutoDetected { get; set; } = false;
+    public bool AutoDetected { get; set; }
     
     /// <summary>
     /// The transaction ID that led to auto-detection (if applicable)

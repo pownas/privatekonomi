@@ -26,12 +26,12 @@ public class ReminderSettings
     /// <summary>
     /// Enable email notifications for escalated reminders
     /// </summary>
-    public bool EscalateToEmail { get; set; } = false;
+    public bool EscalateToEmail { get; set; }
     
     /// <summary>
     /// Enable SMS notifications for escalated reminders
     /// </summary>
-    public bool EscalateToSMS { get; set; } = false;
+    public bool EscalateToSMS { get; set; }
     
     /// <summary>
     /// Enable push notifications for escalated reminders

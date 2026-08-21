@@ -2,6 +2,7 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @using Microsoft.AspNetCore.Identity
+@using System.Globalization
 @inject IMetricsService MetricsService
 @inject UserManager<ApplicationUser> UserManager
 @inject ISnackbar Snackbar
@@ -350,7 +351,7 @@
                         <MudText Typo="Typo.h6" Class="mb-2">MAU Trend</MudText>
                         <MudChart T="double" ChartType="ChartType.Line" 
                                   ChartSeries="@_mauChartSeries" 
-                                  XAxisLabels="@_chartLabels" 
+                                  ChartLabels="@_chartLabels" 
                                   Width="100%" 
                                   Height="300px">
                         </MudChart>
@@ -362,7 +363,7 @@
                         <MudText Typo="Typo.h6" Class="mb-2">Transaktioner per användare</MudText>
                         <MudChart T="double" ChartType="ChartType.Line" 
                                   ChartSeries="@_transactionsChartSeries" 
-                                  XAxisLabels="@_chartLabels" 
+                                  ChartLabels="@_chartLabels" 
                                   Width="100%" 
                                   Height="300px">
                         </MudChart>
@@ -519,6 +520,6 @@
 
     private string GetChangeText(decimal value)
     {
-        return value >= 0 ? $"+{value:F1}" : value.ToString("F1");
+        return value >= 0 ? $"+{value.ToString("F1", CultureInfo.CurrentCulture)}" : value.ToString("F1", CultureInfo.CurrentCulture);
     }
 }

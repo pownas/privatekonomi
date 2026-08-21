@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 [TestClass]
 public class KonsumentverketComparisonServiceTests
 {
-    private readonly IKonsumentverketComparisonService _service;
+    private readonly KonsumentverketComparisonService _service;
 
     public KonsumentverketComparisonServiceTests()
     {

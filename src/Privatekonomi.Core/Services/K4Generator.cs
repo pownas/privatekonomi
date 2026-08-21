@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
-using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text;
 
 namespace Privatekonomi.Core.Services;
 
@@ -94,28 +95,28 @@ public class K4Generator : IK4Generator
         
         sb.AppendLine("=".PadRight(80, '='));
         sb.AppendLine($"K4 - BLANKETT FÖR KAPITALINKOMSTER");
-        sb.AppendLine($"Beskattningsår: {taxYear}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Beskattningsår: {taxYear}");
         sb.AppendLine("=".PadRight(80, '='));
         sb.AppendLine();
         
         sb.AppendLine("SAMMANFATTNING");
         sb.AppendLine("-".PadRight(80, '-'));
-        sb.AppendLine($"Totala kapitalvinster:    {report.TotalGain:N2} SEK");
-        sb.AppendLine($"Totala kapitalförluster:  {report.TotalLoss:N2} SEK");
-        sb.AppendLine($"Nettovinst/-förlust:      {report.NetGain:N2} SEK");
-        sb.AppendLine($"Skattepliktig vinst (30%): {report.TaxableGain:N2} SEK");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Totala kapitalvinster:    {report.TotalGain:N2} SEK");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Totala kapitalförluster:  {report.TotalLoss:N2} SEK");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Nettovinst/-förlust:      {report.NetGain:N2} SEK");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Skattepliktig vinst (30%): {report.TaxableGain:N2} SEK");
         sb.AppendLine();
         
         if (report.CategorySummaries.Any())
         {
             sb.AppendLine("SAMMANFATTNING PER VÄRDEPAPPERSTYP");
             sb.AppendLine("-".PadRight(80, '-'));
-            sb.AppendLine($"{"Typ",-15} {"Antal",-10} {"Vinst",-15} {"Förlust",-15} {"Netto",-15}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"{"Typ",-15} {"Antal",-10} {"Vinst",-15} {"Förlust",-15} {"Netto",-15}");
             sb.AppendLine("-".PadRight(80, '-'));
             
             foreach (var summary in report.CategorySummaries)
             {
-                sb.AppendLine($"{summary.SecurityType,-15} {summary.TransactionCount,-10} " +
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{summary.SecurityType,-15} {summary.TransactionCount,-10} " +
                     $"{summary.TotalGain,-15:N2} {summary.TotalLoss,-15:N2} {summary.NetGain,-15:N2}");
             }
             sb.AppendLine();
@@ -123,7 +124,7 @@ public class K4Generator : IK4Generator
         
         sb.AppendLine("DETALJERADE TRANSAKTIONER");
         sb.AppendLine("-".PadRight(80, '-'));
-        sb.AppendLine($"{"Namn",-25} {"ISIN",-12} {"Sälj.datum",-12} {"Antal",-10} {"Vinst/Förlust",15}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"{"Namn",-25} {"ISIN",-12} {"Sälj.datum",-12} {"Antal",-10} {"Vinst/Förlust",15}");
         sb.AppendLine("-".PadRight(80, '-'));
         
         foreach (var gain in report.Gains)
@@ -133,8 +134,8 @@ public class K4Generator : IK4Generator
                 : gain.SecurityName;
             var isin = gain.ISIN ?? "N/A";
             
-            sb.AppendLine($"{name,-25} {isin,-12} {gain.SaleDate:yyyy-MM-dd,-12} " +
-                $"{gain.Quantity,-10:N2} {gain.Gain,15:N2}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"{name,-25} {isin,-12} " +
+                $"{gain.SaleDate:yyyy-MM-dd,-12} {gain.Quantity,-10:N2} {gain.Gain,15:N2}");
         }
         
         sb.AppendLine();

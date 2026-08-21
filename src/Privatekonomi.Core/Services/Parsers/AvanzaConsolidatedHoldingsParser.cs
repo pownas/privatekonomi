@@ -14,7 +14,7 @@ public class AvanzaConsolidatedHoldingsParser : IInvestmentCsvParser
         var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2) return false;
 
-        var header = lines[0].ToLower();
+        var header = lines[0].ToLowerInvariant();
         // Should NOT contain kontonummer (that's the per-account format)
         return !header.Contains("kontonummer") && 
                header.Contains("namn") && 
@@ -158,7 +158,7 @@ public class AvanzaConsolidatedHoldingsParser : IInvestmentCsvParser
 
     private string MapAvanzaTypeToInvestmentType(string avanzaType)
     {
-        return avanzaType.ToUpper() switch
+        return avanzaType.ToUpperInvariant() switch
         {
             "STOCK" => "Aktie",
             "FUND" => "Fond",

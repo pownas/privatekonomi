@@ -33,7 +33,7 @@ public class SavingsGroupMember
     /// </summary>
     public bool ShareProgress { get; set; } = true;
     public bool ShareGoalCount { get; set; } = true;
-    public bool ShareTotalSavings { get; set; } = false;
+    public bool ShareTotalSavings { get; set; }
     
     public DateTime JoinedAt { get; set; }
     public GroupMemberStatus Status { get; set; } = GroupMemberStatus.Pending;

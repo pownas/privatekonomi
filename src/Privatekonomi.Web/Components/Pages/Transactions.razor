@@ -243,7 +243,8 @@
                      Dense="@_dense"
                      FixedHeader="true"
                      Height="600px"
-                     SortMode="SortMode.Multiple">
+                     SortMode="SortMode.Multiple"
+                     RowsPerPage="50">
             <ToolBarContent>
                 <MudText Typo="Typo.subtitle1" Class="mr-4">@_filteredTransactions.Count() transaktioner</MudText>
                 <MudSpacer />
@@ -359,6 +360,9 @@
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
+            <PagerContent>
+                <MudDataGridPager T="Transaction" />
+            </PagerContent>
         </MudDataGrid>
     }
 </MudPaper>
@@ -403,18 +407,10 @@
 
     private async Task AttachGestureListeners()
     {
-        // Attach swipe listeners to transaction rows
-        foreach (var transaction in _transactions)
-        {
-            var elementId = $"transaction-row-{transaction.TransactionId}";
-            await JSRuntime.InvokeVoidAsync("eval", 
-                $@"(function() {{
-                    var element = document.getElementById('{elementId}');
-                    if (element) {{
-                        window.mobileGestureHandler.attachSwipeListeners(element, {transaction.TransactionId});
-                    }}
-                }})()");
-        }
+        // Use event delegation: attach a single listener to the grid container
+        // instead of individual listeners per transaction row (which would generate
+        // one JS call per transaction and flood the SignalR channel).
+        await JSRuntime.InvokeVoidAsync("mobileGestureHandler.attachGesturesToGrid");
     }
 
     [JSInvokable]

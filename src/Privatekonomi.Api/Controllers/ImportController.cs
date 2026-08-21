@@ -1,7 +1,8 @@
-using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
+using System.Collections.Concurrent;
+using System.Globalization;
 
 namespace Privatekonomi.Api.Controllers;
 
@@ -39,7 +40,7 @@ public class ImportController : ControllerBase
                 return BadRequest(new { error = "Filen är för stor. Max storlek är 10 MB." });
             }
 
-            var extension = Path.GetExtension(request.File.FileName).ToLower();
+            var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
             if (extension != ".csv" && extension != ".txt" && extension != ".ofx" && extension != ".qfx")
             {
                 return BadRequest(new { error = "Filtypen stöds inte. Endast .csv, .ofx och .qfx-filer accepteras." });
@@ -76,7 +77,7 @@ public class ImportController : ControllerBase
 
             var preview = result.Transactions.Take(5).Select(t => new
             {
-                date = t.Date.ToString("yyyy-MM-dd"),
+                date = t.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 amount = t.Amount,
                 description = t.Description,
                 isIncome = t.IsIncome

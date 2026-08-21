@@ -180,6 +180,6 @@ public class BankSyncBackgroundService : BackgroundService
 /// </summary>
 public class BankSyncSettings
 {
-    public bool Enabled { get; set; } = false;
+    public bool Enabled { get; set; }
     public int IntervalMinutes { get; set; } = 60; // Default: sync every hour
 }

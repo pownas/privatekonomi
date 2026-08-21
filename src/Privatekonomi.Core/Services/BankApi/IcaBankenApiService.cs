@@ -1,8 +1,9 @@
+﻿using Privatekonomi.Core.Data;
+using Privatekonomi.Core.Models;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Privatekonomi.Core.Data;
-using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services.BankApi;
 
@@ -56,14 +57,14 @@ public class IcaBankenApiService : BankApiServiceBase
         };
 
         var content = new FormUrlEncodedContent(requestData);
-        var response = await _httpClient.PostAsync($"{AuthUrl}/oauth2/token", content);
+        var response = await HttpClient.PostAsync($"{AuthUrl}/oauth2/token", content);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
         var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
 
         if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
-            throw new Exception("Failed to obtain access token");
+            throw new InvalidOperationException("Failed to obtain access token");
 
         return new BankConnection
         {
@@ -79,7 +80,7 @@ public class IcaBankenApiService : BankApiServiceBase
     public override async Task<BankConnection> RefreshTokenAsync(BankConnection connection)
     {
         if (string.IsNullOrEmpty(connection.RefreshToken))
-            throw new Exception("No refresh token available");
+            throw new InvalidOperationException("No refresh token available");
 
         var requestData = new Dictionary<string, string>
         {
@@ -90,14 +91,14 @@ public class IcaBankenApiService : BankApiServiceBase
         };
 
         var content = new FormUrlEncodedContent(requestData);
-        var response = await _httpClient.PostAsync($"{AuthUrl}/oauth2/token", content);
+        var response = await HttpClient.PostAsync($"{AuthUrl}/oauth2/token", content);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
         var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
 
         if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
-            throw new Exception("Failed to refresh access token");
+            throw new InvalidOperationException("Failed to refresh access token");
 
         connection.AccessToken = tokenResponse.AccessToken;
         connection.RefreshToken = tokenResponse.RefreshToken ?? connection.RefreshToken;
@@ -116,7 +117,7 @@ public class IcaBankenApiService : BankApiServiceBase
         request.Headers.Add("X-Request-ID", Guid.NewGuid().ToString());
         request.Headers.Add("PSU-IP-Address", "127.0.0.1"); // Required by PSD2
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -145,8 +146,8 @@ public class IcaBankenApiService : BankApiServiceBase
     {
         await EnsureValidTokenAsync(connection);
 
-        var dateFrom = fromDate.ToString("yyyy-MM-dd");
-        var dateTo = toDate.ToString("yyyy-MM-dd");
+        var dateFrom = fromDate.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture);
+        var dateTo = toDate.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture);
         
         var url = $"{BaseUrl}/accounts/v1/accounts/{accountId}/transactions?dateFrom={dateFrom}&dateTo={dateTo}&bookingStatus=booked";
         
@@ -155,7 +156,7 @@ public class IcaBankenApiService : BankApiServiceBase
         request.Headers.Add("X-Request-ID", Guid.NewGuid().ToString());
         request.Headers.Add("PSU-IP-Address", "127.0.0.1");
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -167,15 +168,15 @@ public class IcaBankenApiService : BankApiServiceBase
         return transactionsResponse.Transactions.Booked.Select(t => new BankApiTransaction
         {
             TransactionId = t.TransactionId ?? Guid.NewGuid().ToString(),
-            Date = DateTime.Parse(t.BookingDate ?? DateTime.Now.ToString("yyyy-MM-dd")),
+            Date = DateTime.Parse(t.BookingDate ?? DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture), CultureInfo.CurrentCulture),
             BookingDate = DateTime.TryParse(t.BookingDate, out var bookingDate) ? bookingDate : null,
-            Amount = decimal.Parse(t.TransactionAmount?.Amount ?? "0"),
+            Amount = decimal.Parse(t.TransactionAmount?.Amount ?? "0", CultureInfo.CurrentCulture),
             Currency = t.TransactionAmount?.Currency ?? "SEK",
             Description = t.RemittanceInformationUnstructured ?? "Transaction",
             Creditor = t.CreditorName,
             Debtor = t.DebtorName,
             Reference = t.EndToEndId,
-            IsIncome = decimal.Parse(t.TransactionAmount?.Amount ?? "0") > 0,
+            IsIncome = decimal.Parse(t.TransactionAmount?.Amount ?? "0", CultureInfo.CurrentCulture) > 0,
             AccountId = accountId
         }).ToList();
     }
@@ -185,14 +186,14 @@ public class IcaBankenApiService : BankApiServiceBase
         if (connection.TokenExpiresAt.HasValue && connection.TokenExpiresAt.Value <= DateTime.UtcNow.AddMinutes(5))
         {
             await RefreshTokenAsync(connection);
-            _context.BankConnections.Update(connection);
-            await _context.SaveChangesAsync();
+            Context.BankConnections.Update(connection);
+            await Context.SaveChangesAsync();
         }
     }
 
     private string MapAccountType(string? cashAccountType)
     {
-        return cashAccountType?.ToLower() switch
+        return cashAccountType?.ToLower(CultureInfo.CurrentCulture) switch
         {
             "cacc" => "checking",
             "svgs" => "savings",
@@ -202,7 +203,7 @@ public class IcaBankenApiService : BankApiServiceBase
     }
 
     // DTOs for JSON serialization
-    private class TokenResponse
+    private sealed class TokenResponse
     {
         public string AccessToken { get; set; } = string.Empty;
         public string? RefreshToken { get; set; }
@@ -210,12 +211,12 @@ public class IcaBankenApiService : BankApiServiceBase
         public string TokenType { get; set; } = string.Empty;
     }
 
-    private class AccountsResponse
+    private sealed class AccountsResponse
     {
         public List<AccountDto> Accounts { get; set; } = new();
     }
 
-    private class AccountDto
+    private sealed class AccountDto
     {
         public string? ResourceId { get; set; }
         public string? Iban { get; set; }
@@ -226,24 +227,24 @@ public class IcaBankenApiService : BankApiServiceBase
         public List<BalanceDto>? Balances { get; set; }
     }
 
-    private class BalanceDto
+    private sealed class BalanceDto
     {
         public decimal? Amount { get; set; }
         public string? Currency { get; set; }
         public string? BalanceType { get; set; }
     }
 
-    private class TransactionsResponse
+    private sealed class TransactionsResponse
     {
         public TransactionsContainer? Transactions { get; set; }
     }
 
-    private class TransactionsContainer
+    private sealed class TransactionsContainer
     {
         public List<TransactionDto> Booked { get; set; } = new();
     }
 
-    private class TransactionDto
+    private sealed class TransactionDto
     {
         public string? TransactionId { get; set; }
         public string? BookingDate { get; set; }
@@ -255,7 +256,7 @@ public class IcaBankenApiService : BankApiServiceBase
         public string? EndToEndId { get; set; }
     }
 
-    private class AmountDto
+    private sealed class AmountDto
     {
         public string Amount { get; set; } = "0";
         public string Currency { get; set; } = "SEK";

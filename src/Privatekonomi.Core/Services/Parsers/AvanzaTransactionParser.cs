@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace Privatekonomi.Core.Services.Parsers;
@@ -197,7 +197,7 @@ public class AvanzaTransactionParser
         string[] formats = { "yyyy-MM-dd", "dd.MM.yyyy", "dd-MM-yyyy", "yyyy/MM/dd" };
         foreach (var fmt in formats)
         {
-            if (DateTime.TryParseExact(s, fmt, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+            if (DateTime.TryParseExact(s, fmt, CultureInfo.CurrentCulture, DateTimeStyles.None, out date))
                 return true;
         }
         date = DateTime.MinValue;

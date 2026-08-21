@@ -20,20 +20,20 @@ public class BudgetsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Budget>>> GetBudgets(
-        [FromQuery] DateTime? period_start,
-        [FromQuery] DateTime? period_end)
+        [FromQuery] DateTime? periodStart,
+        [FromQuery] DateTime? periodEnd)
     {
         var budgets = await _budgetService.GetAllBudgetsAsync();
         
         // Filter by period if provided
-        if (period_start.HasValue)
+        if (periodStart.HasValue)
         {
-            budgets = budgets.Where(b => b.EndDate >= period_start.Value);
+            budgets = budgets.Where(b => b.EndDate >= periodStart.Value);
         }
         
-        if (period_end.HasValue)
+        if (periodEnd.HasValue)
         {
-            budgets = budgets.Where(b => b.StartDate <= period_end.Value);
+            budgets = budgets.Where(b => b.StartDate <= periodEnd.Value);
         }
         
         return Ok(budgets);

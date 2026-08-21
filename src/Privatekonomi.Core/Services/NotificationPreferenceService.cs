@@ -172,7 +172,7 @@ public class NotificationPreferenceService : INotificationPreferenceService
             {
                 UserId = userId,
                 NotificationType = type,
-                EnabledChannels = NotificationChannelFlags.InApp | NotificationChannelFlags.Email,
+                EnabledChannels = NotificationChannels.InApp | NotificationChannels.Email,
                 MinimumPriority = NotificationPriority.High,
                 IsEnabled = true,
                 DigestMode = false
@@ -199,7 +199,7 @@ public class NotificationPreferenceService : INotificationPreferenceService
             {
                 UserId = userId,
                 NotificationType = type,
-                EnabledChannels = NotificationChannelFlags.InApp,
+                EnabledChannels = NotificationChannels.InApp,
                 MinimumPriority = NotificationPriority.Normal,
                 IsEnabled = true,
                 DigestMode = false
@@ -221,7 +221,7 @@ public class NotificationPreferenceService : INotificationPreferenceService
             {
                 UserId = userId,
                 NotificationType = type,
-                EnabledChannels = NotificationChannelFlags.InApp,
+                EnabledChannels = NotificationChannels.InApp,
                 MinimumPriority = NotificationPriority.Low,
                 IsEnabled = true,
                 DigestMode = true,

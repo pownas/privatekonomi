@@ -29,58 +29,58 @@ public class TransactionsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<TransactionListResponse>> GetTransactions(
-        [FromQuery] int? account_id,
-        [FromQuery] DateTime? start_date,
-        [FromQuery] DateTime? end_date,
-        [FromQuery] int? category_id,
-        [FromQuery] int? household_id,
+        [FromQuery] int? accountId,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int? categoryId,
+        [FromQuery] int? householdId,
         [FromQuery] int page = 1,
-        [FromQuery] int per_page = 50)
+        [FromQuery] int perPage = 50)
     {
         var transactions = await _transactionService.GetAllTransactionsAsync();
         
         // Apply filters
-        if (account_id.HasValue)
+        if (accountId.HasValue)
         {
-            transactions = transactions.Where(t => t.BankSourceId == account_id.Value);
+            transactions = transactions.Where(t => t.BankSourceId == accountId.Value);
         }
         
-        if (start_date.HasValue)
+        if (startDate.HasValue)
         {
-            transactions = transactions.Where(t => t.Date >= start_date.Value);
+            transactions = transactions.Where(t => t.Date >= startDate.Value);
         }
         
-        if (end_date.HasValue)
+        if (endDate.HasValue)
         {
-            transactions = transactions.Where(t => t.Date <= end_date.Value);
+            transactions = transactions.Where(t => t.Date <= endDate.Value);
         }
         
-        if (category_id.HasValue)
+        if (categoryId.HasValue)
         {
             transactions = transactions.Where(t => 
-                t.TransactionCategories.Any(tc => tc.CategoryId == category_id.Value));
+                t.TransactionCategories.Any(tc => tc.CategoryId == categoryId.Value));
         }
         
-        if (household_id.HasValue)
+        if (householdId.HasValue)
         {
-            transactions = transactions.Where(t => t.HouseholdId == household_id.Value);
+            transactions = transactions.Where(t => t.HouseholdId == householdId.Value);
         }
         
         // Apply pagination
         var totalCount = transactions.Count();
-        var totalPages = (int)Math.Ceiling(totalCount / (double)per_page);
+        var totalPages = (int)Math.Ceiling(totalCount / (double)perPage);
         
         var paginatedTransactions = transactions
             .OrderByDescending(t => t.Date)
-            .Skip((page - 1) * per_page)
-            .Take(per_page)
+            .Skip((page - 1) * perPage)
+            .Take(perPage)
             .ToList();
         
         return Ok(new TransactionListResponse
         {
             Transactions = paginatedTransactions,
             Page = page,
-            PerPage = per_page,
+            PerPage = perPage,
             TotalCount = totalCount,
             TotalPages = totalPages
         });

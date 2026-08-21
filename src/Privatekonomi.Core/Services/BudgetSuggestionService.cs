@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Services;
 
@@ -464,7 +465,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal amount = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -534,7 +535,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal percentage = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -616,7 +617,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal percentage = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -695,7 +696,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal amount = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -760,7 +761,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal amount = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -817,7 +818,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal percentage = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 
@@ -884,7 +885,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
 
         foreach (var category in categories)
         {
-            var categoryName = category.Name.ToLower();
+            var categoryName = category.Name.ToLower(CultureInfo.CurrentCulture);
             decimal percentage = 0;
             var allocationCategory = BudgetAllocationCategory.Wants;
 

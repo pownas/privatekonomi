@@ -169,7 +169,7 @@ else
             <div role="img" aria-label="Graf som visar nettoförmögenhetsutveckling över tid">
                 <MudChart ChartType="ChartType.Line" 
                           ChartSeries="@_chartSeries" 
-                          XAxisLabels="@_xAxisLabels"
+                          ChartLabels="@_xAxisLabels"
                           Width="100%" 
                           Height="400px"
                           ChartOptions="@_chartOptions"
@@ -197,7 +197,7 @@ else
                         <div role="img" aria-label="Graf som visar tillgångar uppdelat på bankkonton, investeringar och fysiska tillgångar">
                             <MudChart ChartType="ChartType.Line" 
                                       ChartSeries="@_assetChartSeries" 
-                                      XAxisLabels="@_xAxisLabels"
+                                      ChartLabels="@_xAxisLabels"
                                       Width="100%" 
                                       Height="300px"
                                       ChartOptions="@_chartOptions"
@@ -230,7 +230,7 @@ else
                         <div role="img" aria-label="Graf som visar skulder och krediter över tid">
                             <MudChart ChartType="ChartType.Line" 
                                       ChartSeries="@_liabilityChartSeries" 
-                                      XAxisLabels="@_xAxisLabels"
+                                      ChartLabels="@_xAxisLabels"
                                       Width="100%" 
                                       Height="300px"
                                       ChartOptions="@_chartOptions"

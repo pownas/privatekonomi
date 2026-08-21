@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Privatekonomi.Core.Data;
@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class ReminderServiceTests
+public class ReminderServiceTests : IDisposable
 {
     private readonly Mock<INotificationService> _mockNotificationService;
     private readonly Mock<ILogger<ReminderService>> _mockLogger;
@@ -27,6 +27,19 @@ public class ReminderServiceTests
         _mockNotificationService = new Mock<INotificationService>();
         _mockLogger = new Mock<ILogger<ReminderService>>();
         _service = new ReminderService(_context, _mockNotificationService.Object, _mockLogger.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]

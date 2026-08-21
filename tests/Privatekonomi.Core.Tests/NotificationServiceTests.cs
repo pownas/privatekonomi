@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,14 +6,15 @@ using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 
 namespace Privatekonomi.Core.Tests;
 
 [TestClass]
-public class NotificationServiceTests
+public class NotificationServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
-    private readonly INotificationPreferenceService _preferenceService;
+    private readonly NotificationPreferenceService _preferenceService;
     private readonly NotificationService _notificationService;
     private readonly string _testUserId = "test-user-id";
 
@@ -34,6 +35,19 @@ public class NotificationServiceTests
             _preferenceService,
             loggerMock.Object,
             serviceProvider);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _context?.Database.EnsureDeleted();
+        _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [TestMethod]
@@ -193,8 +207,8 @@ public class NotificationServiceTests
     {
         // Arrange
         var now = DateTime.Now;
-        var startTime = now.AddMinutes(-30).ToString("HH:mm");
-        var endTime = now.AddMinutes(30).ToString("HH:mm");
+        var startTime = now.AddMinutes(-30).ToString("HH:mm", CultureInfo.InvariantCulture);
+        var endTime = now.AddMinutes(30).ToString("HH:mm", CultureInfo.InvariantCulture);
 
         var dndSchedule = new DoNotDisturbSchedule
         {
@@ -223,7 +237,7 @@ public class NotificationServiceTests
             UserId = _testUserId,
             NotificationType = SystemNotificationType.BudgetExceeded,
             IsEnabled = false,
-            EnabledChannels = NotificationChannelFlags.InApp
+            EnabledChannels = NotificationChannels.InApp
         };
 
         await _preferenceService.SavePreferenceAsync(preference);
@@ -250,7 +264,7 @@ public class NotificationServiceTests
             UserId = _testUserId,
             NotificationType = SystemNotificationType.BudgetExceeded,
             IsEnabled = false,
-            EnabledChannels = NotificationChannelFlags.InApp
+            EnabledChannels = NotificationChannels.InApp
         };
 
         await _preferenceService.SavePreferenceAsync(preference);

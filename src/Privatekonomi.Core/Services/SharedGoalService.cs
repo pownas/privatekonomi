@@ -248,17 +248,17 @@ public class SharedGoalService : ISharedGoalService
         return participant;
     }
 
-    public async Task RemoveParticipantAsync(int sharedGoalId, string participantUserId)
+    public async Task RemoveParticipantAsync(int sharedGoalId, string userId)
     {
-        var userId = GetCurrentUserId();
+        var currentUserId = GetCurrentUserId();
         
         // Only owner can remove participants
-        if (!await IsOwnerAsync(sharedGoalId, userId))
+        if (!await IsOwnerAsync(sharedGoalId, currentUserId))
             throw new UnauthorizedAccessException("Only the owner can remove participants");
 
         var participant = await _context.SharedGoalParticipants
             .Include(p => p.SharedGoal)
-            .FirstOrDefaultAsync(p => p.SharedGoalId == sharedGoalId && p.UserId == participantUserId);
+            .FirstOrDefaultAsync(p => p.SharedGoalId == sharedGoalId && p.UserId == userId);
 
         if (participant == null)
             throw new ArgumentException("Participant not found");
@@ -272,16 +272,16 @@ public class SharedGoalService : ISharedGoalService
         // Notify removed participant
         await CreateNotificationAsync(
             sharedGoalId,
-            participantUserId,
+            userId,
             NotificationType.ParticipantRemoved,
             $"Du har tagits bort från sparmålet '{participant.SharedGoal?.Name}'");
 
         // Notify other participants
         var otherParticipants = await _context.SharedGoalParticipants
-            .Where(p => p.SharedGoalId == sharedGoalId && p.UserId != participantUserId)
+            .Where(p => p.SharedGoalId == sharedGoalId && p.UserId != userId)
             .ToListAsync();
 
-        var userName = (await _context.Users.FindAsync(participantUserId))?.Email ?? "Someone";
+        var userName = (await _context.Users.FindAsync(userId))?.Email ?? "Someone";
         foreach (var p in otherParticipants)
         {
             await CreateNotificationAsync(

@@ -53,7 +53,7 @@ public class Bill
     /// <summary>
     /// Whether bill is recurring
     /// </summary>
-    public bool IsRecurring { get; set; } = false;
+    public bool IsRecurring { get; set; }
     
     /// <summary>
     /// Recurring frequency if applicable
