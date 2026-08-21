@@ -27,7 +27,8 @@ public class IcaBankenParserTests
         var parser = new IcaBankenParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(IcaCsvContent));
 
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         Assert.AreEqual(5, transactions.Count);
 
@@ -49,7 +50,8 @@ public class IcaBankenParserTests
         var parser = new IcaBankenParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(IcaCsvContent));
 
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         Assert.AreEqual(5, transactions.Count);
         // No account number metadata in this file format
@@ -73,7 +75,8 @@ public class IcaBankenParserTests
         var parser = new IcaBankenParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithAccountMetadata));
 
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         Assert.AreEqual(2, transactions.Count);
         foreach (var t in transactions)

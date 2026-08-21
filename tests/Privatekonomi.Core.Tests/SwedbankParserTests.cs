@@ -84,7 +84,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatCommaSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -120,7 +121,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatTabSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -140,7 +142,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(EnglishFormatSemicolonSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -173,7 +176,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleCurrencies));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count); // Only SEK transactions
@@ -193,7 +197,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithDecimalComma));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -211,7 +216,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMissingDescription));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count); // Only the row with valid description
@@ -228,7 +234,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithReferenceOnly));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -246,7 +253,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithLongDescription));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -295,7 +303,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithEscapedQuotes));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -331,7 +340,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -364,7 +374,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -400,7 +411,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count);
@@ -418,7 +430,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatCommaSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(3, transactions.Count);
@@ -437,7 +450,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatTabSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(3, transactions.Count);
@@ -456,7 +470,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(EnglishFormatSemicolonSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count);
@@ -478,7 +493,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleAccounts));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count);

@@ -33,9 +33,10 @@ public class OfxParser : ICsvParser
                content.Contains("<?OFX");
     }
 
-    public async Task<List<Transaction>> ParseAsync(Stream stream)
+    public async Task<ParseResult> ParseAsync(Stream stream)
     {
         var transactions = new List<Transaction>();
+        var warnings = new List<ParseWarning>();
         
         using var reader = new StreamReader(stream, Encoding.UTF8);
         var content = await reader.ReadToEndAsync();
@@ -56,55 +57,86 @@ public class OfxParser : ICsvParser
             var accountNumber = acctId;
             
             // Find all STMTTRN elements (bank transactions)
-            var stmtTransactions = doc.Descendants("STMTTRN");
-            
-            foreach (var stmtTrn in stmtTransactions)
+            var stmtTransactions = doc.Descendants("STMTTRN").ToList();
+            for (int idx = 0; idx < stmtTransactions.Count; idx++)
             {
                 try
                 {
-                    var transaction = ParseTransaction(stmtTrn);
+                    var transaction = ParseTransaction(stmtTransactions[idx]);
                     if (transaction != null)
                     {
                         transaction.ClearingNumber = string.IsNullOrWhiteSpace(clearingNumber) ? null : clearingNumber;
                         transaction.AccountNumber = string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber;
                         transactions.Add(transaction);
                     }
+                    else
+                    {
+                        warnings.Add(new ParseWarning
+                        {
+                            RowNumber = idx + 1,
+                            WarningType = "MissingRequiredField",
+                            Message = $"STMTTRN #{idx + 1} hoppades över – saknar DTPOSTED eller TRNAMT."
+                        });
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid transactions
-                    continue;
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = idx + 1,
+                        WarningType = "ParseError",
+                        Message = $"STMTTRN #{idx + 1} hoppades över – oväntat fel: {ex.Message}"
+                    });
                 }
             }
             
             // Also check for credit card transactions (CCSTMTTRN)
-            var ccTransactions = doc.Descendants("CCSTMTTRN");
-            foreach (var ccTrn in ccTransactions)
+            var ccTransactions = doc.Descendants("CCSTMTTRN").ToList();
+            for (int idx = 0; idx < ccTransactions.Count; idx++)
             {
                 try
                 {
-                    var transaction = ParseTransaction(ccTrn);
+                    var transaction = ParseTransaction(ccTransactions[idx]);
                     if (transaction != null)
                     {
                         transaction.ClearingNumber = string.IsNullOrWhiteSpace(clearingNumber) ? null : clearingNumber;
                         transaction.AccountNumber = string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber;
                         transactions.Add(transaction);
                     }
+                    else
+                    {
+                        warnings.Add(new ParseWarning
+                        {
+                            RowNumber = idx + 1,
+                            WarningType = "MissingRequiredField",
+                            Message = $"CCSTMTTRN #{idx + 1} hoppades över – saknar DTPOSTED eller TRNAMT."
+                        });
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid transactions
-                    continue;
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = idx + 1,
+                        WarningType = "ParseError",
+                        Message = $"CCSTMTTRN #{idx + 1} hoppades över – oväntat fel: {ex.Message}"
+                    });
                 }
             }
         }
-        catch (Exception)
+        catch (Exception xmlEx)
         {
+            warnings.Add(new ParseWarning
+            {
+                RowNumber = 0,
+                WarningType = "XmlParseFallback",
+                Message = $"XML-tolkning misslyckades ({xmlEx.Message}), försöker med alternativ metod."
+            });
             // If XML parsing fails, try alternative parsing
             transactions = ParseOfxWithoutXml(content);
         }
         
-        return transactions;
+        return new ParseResult { Transactions = transactions, Warnings = warnings };
     }
 
     private Transaction? ParseTransaction(XElement stmtTrn)

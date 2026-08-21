@@ -42,14 +42,15 @@ public class CsvImportService : ICsvImportService
             }
 
             // Parse transactions
-            var transactions = await parser.ParseAsync(csvStream);
-            result.TotalRows = transactions.Count;
+            var parseResult = await parser.ParseAsync(csvStream);
+            result.TotalRows = parseResult.Transactions.Count;
+            result.Warnings.AddRange(parseResult.Warnings);
 
             // Validate transactions
             var validTransactions = new List<Transaction>();
             var rowNumber = 1;
 
-            foreach (var transaction in transactions)
+            foreach (var transaction in parseResult.Transactions)
             {
                 var validationErrors = ValidateTransaction(transaction, rowNumber);
                 

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using Privatekonomi.Core.Models;
 
@@ -18,15 +18,20 @@ public class IcaBankenParser : ICsvParser
         return header.Contains("datum") && header.Contains("belopp") && (header.Contains("beskrivning") || header.Contains("text"));
     }
 
-    public async Task<List<Transaction>> ParseAsync(Stream csvStream)
+    public async Task<ParseResult> ParseAsync(Stream csvStream)
     {
         var transactions = new List<Transaction>();
+        var warnings = new List<ParseWarning>();
         
         using var reader = new StreamReader(csvStream, Encoding.UTF8);
         var content = await reader.ReadToEndAsync();
         
         var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2) return transactions;
+        if (lines.Length < 2)
+        {
+            warnings.Add(new ParseWarning { RowNumber = 0, WarningType = "EmptyFile", Message = "Filen innehåller inga rader att läsa in." });
+            return new ParseResult { Warnings = warnings };
+        }
 
         // Look for account number in metadata lines before the header
         // ICA-banken sometimes includes "Kontonummer: XXXXXXXX" or similar in header lines
@@ -56,17 +61,35 @@ public class IcaBankenParser : ICsvParser
 
         if (dateIndex == -1 || amountIndex == -1 || descriptionIndex == -1)
         {
-            throw new InvalidOperationException("Kunde inte hitta nödvändiga kolumner i CSV-filen");
+            var missing = new List<string>();
+            if (dateIndex == -1) missing.Add("'Datum'");
+            if (amountIndex == -1) missing.Add("'Belopp'");
+            if (descriptionIndex == -1) missing.Add("'Beskrivning'/'Text'");
+            throw new InvalidOperationException(
+                $"Kunde inte hitta nödvändiga kolumner i ICA-banken CSV-filen. " +
+                $"Saknar: {string.Join(", ", missing)}. " +
+                $"Hittade kolumner: {string.Join(", ", header.Select(h => h.Trim()).Where(h => !string.IsNullOrWhiteSpace(h)))}.");
         }
 
         // Parse data rows
         for (int i = headerLineIndex + 1; i < lines.Length; i++)
         {
+            var rawLine = lines[i];
+            var rowNumber = i + 1;
             try
             {
-                var columns = lines[i].Split(separator);
+                var columns = rawLine.Split(separator);
                 if (columns.Length <= Math.Max(dateIndex, Math.Max(amountIndex, descriptionIndex)))
+                {
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = rowNumber,
+                        WarningType = "TooFewColumns",
+                        Message = $"Rad {rowNumber} hoppades över – för få kolumner (hittade {columns.Length}, behöver minst {Math.Max(dateIndex, Math.Max(amountIndex, descriptionIndex)) + 1}).",
+                        RawData = Truncate(rawLine)
+                    });
                     continue;
+                }
 
                 var dateStr = columns[dateIndex].Trim();
                 var rawAmount = columns[amountIndex].Trim();
@@ -80,16 +103,43 @@ public class IcaBankenParser : ICsvParser
                 var description = columns[descriptionIndex].Trim();
 
                 if (string.IsNullOrWhiteSpace(description))
+                {
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = rowNumber,
+                        WarningType = "MissingDescription",
+                        Message = $"Rad {rowNumber} hoppades över – beskrivningsfältet är tomt.",
+                        RawData = Truncate(rawLine)
+                    });
                     continue;
+                }
 
                 // Parse date - support multiple formats
                 DateTime date;
                 if (!TryParseDate(dateStr, out date))
+                {
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = rowNumber,
+                        WarningType = "InvalidDate",
+                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: ÅÅÅÅ-MM-DD).",
+                        RawData = Truncate(rawLine)
+                    });
                     continue;
+                }
 
                 // Parse amount
                 if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+                {
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = rowNumber,
+                        WarningType = "InvalidAmount",
+                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka belopp '{rawAmount}'.",
+                        RawData = Truncate(rawLine)
+                    });
                     continue;
+                }
 
                 var transaction = new Transaction
                 {
@@ -103,14 +153,19 @@ public class IcaBankenParser : ICsvParser
 
                 transactions.Add(transaction);
             }
-            catch
+            catch (Exception ex)
             {
-                // Skip invalid rows
-                continue;
+                warnings.Add(new ParseWarning
+                {
+                    RowNumber = rowNumber,
+                    WarningType = "ParseError",
+                    Message = $"Rad {rowNumber} hoppades över – oväntat fel: {ex.Message}",
+                    RawData = Truncate(rawLine)
+                });
             }
         }
 
-        return transactions;
+        return new ParseResult { Transactions = transactions, Warnings = warnings };
     }
 
     /// <summary>
@@ -201,4 +256,7 @@ public class IcaBankenParser : ICsvParser
         date = DateTime.MinValue;
         return false;
     }
+
+    private static string Truncate(string s, int max = 200) =>
+        s.Length <= max ? s : s.Substring(0, max) + "…";
 }

@@ -217,6 +217,10 @@ else if (_currentStep == ImportStep.Preview)
                 {
                     <MudText Class="red-text">• @_summary.Errors rader kunde inte läsas</MudText>
                 }
+                @if (_previewResult?.Warnings != null && _previewResult.Warnings.Any())
+                {
+                    <MudText Class="mud-warning-text">• @_previewResult.Warnings.Count rader hoppades över vid inläsning (se detaljer nedan)</MudText>
+                }
                 <MudDivider Class="my-2" />
                 <MudText>Totalt belopp: @_summary.TotalAmount.ToString("N2") kr</MudText>
                 <MudText Class="green-text">Inkomster: +@_summary.IncomeAmount.ToString("N2") kr</MudText>
@@ -237,7 +241,44 @@ else if (_currentStep == ImportStep.Preview)
                 </MudText>
             </MudAlert>
         }
-        
+
+        @if (_previewResult?.Warnings != null && _previewResult.Warnings.Any())
+        {
+            <MudExpansionPanels Class="mb-4">
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Small" />
+                            <MudText>@_previewResult.Warnings.Count rader hoppades över – klicka för detaljer</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudSimpleTable Hover="true" Dense="true">
+                            <thead>
+                                <tr>
+                                    <th>Rad</th>
+                                    <th>Typ</th>
+                                    <th>Meddelande</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var warning in _previewResult.Warnings)
+                                {
+                                    <tr>
+                                        <td>@(warning.RowNumber > 0 ? warning.RowNumber.ToString() : "-")</td>
+                                        <td>@warning.WarningType</td>
+                                        <td>@warning.Message</td>
+                                        <td style="font-family: monospace; font-size: 0.75em; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@warning.RawData</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        }
+
         <MudDivider Class="my-4" />
         
         <div class="d-flex justify-space-between">
