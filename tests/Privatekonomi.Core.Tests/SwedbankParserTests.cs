@@ -503,4 +503,97 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         Assert.AreEqual("9876543210", transactions[1].AccountNumber);
         Assert.AreEqual("84525", transactions[1].ClearingNumber);
     }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsInvalidDateWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,not-a-date,2025-11-12,2025-11-12,REF1,Beskrivning,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "No transactions should be imported for invalid date");
+        Assert.AreEqual(1, result.Warnings.Count, "Expected one warning");
+        Assert.AreEqual("InvalidDate", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsInvalidAmountWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,2025-11-12,2025-11-12,2025-11-12,REF1,Köp ICA,NOT_A_NUMBER,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "No transactions should be imported for invalid amount");
+        Assert.AreEqual(1, result.Warnings.Count, "Expected one warning");
+        Assert.AreEqual("InvalidAmount", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsMissingDescriptionWarning()
+    {
+        var parser = new SwedbankParser();
+        // Both Beskrivning and Referens are empty
+        var csv = "Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokf\u00f6ringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bok\u00f6rt saldo\n" +
+                  "1,84525,1234567891,l\u00f6nekonto,SEK,2025-11-12,2025-11-12,2025-11-12,,,,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count);
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.AreEqual("MissingDescription", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsUnsupportedCurrencyWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,USD,2025-11-12,2025-11-12,2025-11-12,REF1,Köp,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "USD transaction should be skipped");
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.AreEqual("UnsupportedCurrency", result.Warnings[0].WarningType);
+        StringAssert.Contains(result.Warnings[0].Message, "USD");
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_WarningIncludesRawData()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,BAD_DATE,2025-11-12,2025-11-12,REF1,Beskrivning,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.IsFalse(string.IsNullOrEmpty(result.Warnings[0].RawData), "Warning should include raw row data");
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ValidRowsImportedDespiteWarnings()
+    {
+        var parser = new SwedbankParser();
+        // First row valid, second row has bad date
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,2025-11-12,2025-11-12,2025-11-12,REF1,ICA Butiken,-100.00,900.00
+2,84525,1234567891,lönekonto,SEK,BAD_DATE,2025-11-12,2025-11-12,REF2,Lön,25000.00,25900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(1, result.Transactions.Count, "Valid row should be imported");
+        Assert.AreEqual(1, result.Warnings.Count, "Invalid row should produce warning");
+        Assert.AreEqual("InvalidDate", result.Warnings[0].WarningType);
+    }
 }

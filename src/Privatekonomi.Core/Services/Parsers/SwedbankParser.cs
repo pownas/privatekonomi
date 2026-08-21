@@ -129,7 +129,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "TooFewColumns",
                         Message = $"Rad {rowNumber} hoppades över – för få kolumner (hittade {columns.Length}, behöver minst {Math.Max(dateIndex, amountIndex) + 1}).",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -145,7 +145,7 @@ public class SwedbankParser : ICsvParser
                             RowNumber = rowNumber,
                             WarningType = "UnsupportedCurrency",
                             Message = $"Rad {rowNumber} hoppades över – valutan '{currency}' stöds inte (endast SEK).",
-                            RawData = Truncate(rawLine)
+                            RawData = ParserHelpers.Truncate(rawLine)
                         });
                         continue;
                     }
@@ -172,7 +172,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "MissingDescription",
                         Message = $"Rad {rowNumber} hoppades över – varken 'Beskrivning' eller 'Referens' har ett värde.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -185,7 +185,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidDate",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: ÅÅÅÅ-MM-DD).",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -198,7 +198,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidAmount",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka belopp '{columns[amountIndex].Trim()}'.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -233,7 +233,7 @@ public class SwedbankParser : ICsvParser
                     RowNumber = rowNumber,
                     WarningType = "ParseError",
                     Message = $"Rad {rowNumber} hoppades över – oväntat fel: {ex.Message}",
-                    RawData = Truncate(rawLine)
+                    RawData = ParserHelpers.Truncate(rawLine)
                 });
             }
         }
@@ -290,7 +290,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "TooFewColumns",
                         Message = $"Rad {rowNumber} hoppades över – för få kolumner.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -312,7 +312,7 @@ public class SwedbankParser : ICsvParser
                             RowNumber = rowNumber,
                             WarningType = "UnsupportedCurrency",
                             Message = $"Rad {rowNumber} hoppades över – valutan '{currency}' stöds inte (endast SEK).",
-                            RawData = Truncate(rawLine)
+                            RawData = ParserHelpers.Truncate(rawLine)
                         });
                         continue;
                     }
@@ -334,7 +334,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidDate",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: DD.MM.ÅÅÅÅ).",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -347,7 +347,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidAmount",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka belopp '{columns[amountIndex].Trim()}'.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -364,7 +364,7 @@ public class SwedbankParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "MissingDescription",
                         Message = $"Rad {rowNumber} hoppades över – varken 'Beneficiary/Payer' eller 'Details' har ett värde.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -392,7 +392,7 @@ public class SwedbankParser : ICsvParser
                     RowNumber = rowNumber,
                     WarningType = "ParseError",
                     Message = $"Rad {rowNumber} hoppades över – oväntat fel: {ex.Message}",
-                    RawData = Truncate(rawLine)
+                    RawData = ParserHelpers.Truncate(rawLine)
                 });
             }
         }
@@ -577,7 +577,4 @@ public class SwedbankParser : ICsvParser
             .Replace("f 0r", "for");
 #pragma warning restore CA1307 // Specify StringComparison for clarity
     }
-
-    private static string Truncate(string s, int max = 200) =>
-        s.Length <= max ? s : s.Substring(0, max) + "…";
 }

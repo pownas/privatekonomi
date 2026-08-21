@@ -86,7 +86,7 @@ public class IcaBankenParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "TooFewColumns",
                         Message = $"Rad {rowNumber} hoppades över – för få kolumner (hittade {columns.Length}, behöver minst {Math.Max(dateIndex, Math.Max(amountIndex, descriptionIndex)) + 1}).",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -109,7 +109,7 @@ public class IcaBankenParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "MissingDescription",
                         Message = $"Rad {rowNumber} hoppades över – beskrivningsfältet är tomt.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -123,7 +123,7 @@ public class IcaBankenParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidDate",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: ÅÅÅÅ-MM-DD).",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -136,7 +136,7 @@ public class IcaBankenParser : ICsvParser
                         RowNumber = rowNumber,
                         WarningType = "InvalidAmount",
                         Message = $"Rad {rowNumber} hoppades över – kunde inte tolka belopp '{rawAmount}'.",
-                        RawData = Truncate(rawLine)
+                        RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
                 }
@@ -160,7 +160,7 @@ public class IcaBankenParser : ICsvParser
                     RowNumber = rowNumber,
                     WarningType = "ParseError",
                     Message = $"Rad {rowNumber} hoppades över – oväntat fel: {ex.Message}",
-                    RawData = Truncate(rawLine)
+                    RawData = ParserHelpers.Truncate(rawLine)
                 });
             }
         }
@@ -256,7 +256,4 @@ public class IcaBankenParser : ICsvParser
         date = DateTime.MinValue;
         return false;
     }
-
-    private static string Truncate(string s, int max = 200) =>
-        s.Length <= max ? s : s.Substring(0, max) + "…";
 }
