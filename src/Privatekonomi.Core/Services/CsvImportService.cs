@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services.Parsers;
+using System.Text;
 using System.Text.Json;
 
 namespace Privatekonomi.Core.Services;
@@ -9,11 +11,13 @@ namespace Privatekonomi.Core.Services;
 public class CsvImportService : ICsvImportService
 {
     private readonly PrivatekonomyContext _context;
+    private readonly ILogger<CsvImportService> _logger;
     private readonly List<ICsvParser> _parsers;
 
-    public CsvImportService(PrivatekonomyContext context)
+    public CsvImportService(PrivatekonomyContext context, ILogger<CsvImportService> logger)
     {
         _context = context;
+        _logger = logger;
         _parsers = new List<ICsvParser>
         {
             new SwedbankParser(),
@@ -22,21 +26,60 @@ public class CsvImportService : ICsvImportService
         };
     }
 
-    public async Task<CsvImportResult> PreviewCsvAsync(Stream csvStream, string bankName)
+    /// <summary>
+    /// Tries to detect which bank/parser can handle the given file content.
+    /// Returns the bank name (e.g. "Swedbank") or null if no parser matches.
+    /// </summary>
+    public string? DetectBank(byte[] fileBytes)
+    {
+        // Try UTF-8 first, fall back to Windows-1252 for Swedish characters
+        string content;
+        try
+        {
+            content = Encoding.UTF8.GetString(fileBytes);
+        }
+        catch
+        {
+            content = string.Empty;
+        }
+
+        if (content.Contains('\uFFFD'))
+        {
+            try { content = Encoding.GetEncoding("Windows-1252").GetString(fileBytes); }
+            catch { /* keep utf-8 attempt */ }
+        }
+
+        foreach (var parser in _parsers)
+        {
+            if (parser.CanParse(content))
+            {
+                _logger.LogInformation("Auto-detected bank '{BankName}' from file content", parser.BankName);
+                return parser.BankName;
+            }
+        }
+
+        _logger.LogWarning("Could not auto-detect bank from file content ({Bytes} bytes)", fileBytes.Length);
+        return null;
+    }
+
+    public async Task<CsvImportResult> PreviewCsvAsync(Stream csvStream, string bankName, string? userId = null)
     {
         var result = new CsvImportResult { Success = false };
 
         try
         {
+            _logger.LogInformation("Starting CSV preview for bank '{BankName}', userId='{UserId}'", bankName, userId ?? "(none)");
+
             // Find the appropriate parser
             var parser = GetParser(bankName);
             if (parser == null)
             {
+                _logger.LogWarning("No parser found for bank '{BankName}'", bankName);
                 result.Errors.Add(new CsvImportError
                 {
                     RowNumber = 0,
                     ErrorType = "InvalidBank",
-                    ErrorMessage = $"Bank '{bankName}' stöds inte."
+                    ErrorMessage = $"Bank '{bankName}' stöds inte. Tillgängliga banker: {string.Join(", ", _parsers.Select(p => p.BankName))}."
                 });
                 return result;
             }
@@ -46,14 +89,17 @@ public class CsvImportService : ICsvImportService
             result.TotalRows = parseResult.Transactions.Count;
             result.Warnings.AddRange(parseResult.Warnings);
 
+            _logger.LogInformation("Parser '{BankName}' returned {Count} transactions and {Warnings} warnings",
+                bankName, parseResult.Transactions.Count, parseResult.Warnings.Count);
+
             // Validate transactions
             var validTransactions = new List<Transaction>();
             var rowNumber = 1;
 
             foreach (var transaction in parseResult.Transactions)
             {
-                var validationErrors = ValidateTransaction(transaction, rowNumber);
-                
+                var (validationErrors, validationWarnings) = ValidateTransaction(transaction, rowNumber);
+
                 if (validationErrors.Any())
                 {
                     result.Errors.AddRange(validationErrors);
@@ -64,12 +110,16 @@ public class CsvImportService : ICsvImportService
                     validTransactions.Add(transaction);
                 }
 
+                result.Warnings.AddRange(validationWarnings);
                 rowNumber++;
             }
 
-            // Check for duplicates
-            var duplicates = await FindDuplicatesAsync(validTransactions);
+            // Check for duplicates — scoped to the importing user when userId is available
+            var duplicates = await FindDuplicatesAsync(validTransactions, userId);
             result.DuplicateCount = duplicates.Count;
+
+            _logger.LogInformation("Duplicate check found {Duplicates} duplicates for user '{UserId}'",
+                duplicates.Count, userId ?? "(none)");
 
             // Remove duplicates from valid transactions for preview
             validTransactions = validTransactions
@@ -83,6 +133,7 @@ public class CsvImportService : ICsvImportService
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error during CSV preview for bank '{BankName}'", bankName);
             result.Errors.Add(new CsvImportError
             {
                 RowNumber = 0,
@@ -180,7 +231,7 @@ public class CsvImportService : ICsvImportService
         
         try
         {
-            var result = await PreviewCsvAsync(stream, bankName);
+            var result = await PreviewCsvAsync(stream, bankName, userId);
             
             importJob.TotalRows = result.TotalRows;
             importJob.DuplicateCount = result.DuplicateCount;
@@ -301,9 +352,10 @@ public class CsvImportService : ICsvImportService
         return parser;
     }
 
-    private List<CsvImportError> ValidateTransaction(Transaction transaction, int rowNumber)
+    private (List<CsvImportError> Errors, List<ParseWarning> Warnings) ValidateTransaction(Transaction transaction, int rowNumber)
     {
         var errors = new List<CsvImportError>();
+        var warnings = new List<ParseWarning>();
 
         // Validate date
         if (transaction.Date > DateTime.Now.AddDays(7))
@@ -312,19 +364,31 @@ public class CsvImportService : ICsvImportService
             {
                 RowNumber = rowNumber,
                 ErrorType = "InvalidDate",
-                ErrorMessage = "Datumet får inte vara senare än 7 dagar framåt i tiden"
+                ErrorMessage = $"Datumet {transaction.Date:yyyy-MM-dd} får inte vara senare än 7 dagar framåt i tiden."
             });
         }
 
         if (transaction.Date < DateTime.Now.AddYears(-10))
         {
-            // Warning only, not blocking
+            warnings.Add(new ParseWarning
+            {
+                RowNumber = rowNumber,
+                WarningType = "OldDate",
+                Message = $"Rad {rowNumber}: Datumet {transaction.Date:yyyy-MM-dd} är mer än 10 år gammalt – kontrollera att det stämmer.",
+                RawData = transaction.Description
+            });
         }
 
         // Validate amount
         if (transaction.Amount == 0)
         {
-            // Warning only, not blocking
+            warnings.Add(new ParseWarning
+            {
+                RowNumber = rowNumber,
+                WarningType = "ZeroAmount",
+                Message = $"Rad {rowNumber}: Beloppet är noll – raden importeras men kan vara felaktig.",
+                RawData = transaction.Description
+            });
         }
 
         if (transaction.Amount > 10_000_000)
@@ -333,7 +397,7 @@ public class CsvImportService : ICsvImportService
             {
                 RowNumber = rowNumber,
                 ErrorType = "InvalidAmount",
-                ErrorMessage = "Beloppet får inte överstiga 10 miljoner"
+                ErrorMessage = $"Beloppet {transaction.Amount:N2} kr på rad {rowNumber} överstiger gränsen på 10 miljoner kr."
             });
         }
 
@@ -344,17 +408,43 @@ public class CsvImportService : ICsvImportService
             {
                 RowNumber = rowNumber,
                 ErrorType = "MissingDescription",
-                ErrorMessage = "Beskrivning saknas"
+                ErrorMessage = $"Beskrivning saknas på rad {rowNumber}."
             });
         }
 
-        return errors;
+        return (errors, warnings);
     }
 
-    private async Task<List<Transaction>> FindDuplicatesAsync(List<Transaction> transactions)
+    private async Task<List<Transaction>> FindDuplicatesAsync(List<Transaction> transactions, string? userId)
     {
         var duplicates = new List<Transaction>();
-        var existingTransactions = await _context.Transactions.ToListAsync();
+
+        // Build a query window: only look at existing transactions within the date range of the import batch
+        // to avoid scanning the entire transactions table.
+        if (transactions.Count == 0)
+            return duplicates;
+
+        var minDate = transactions.Min(t => t.Date.Date);
+        var maxDate = transactions.Max(t => t.Date.Date);
+
+        var query = _context.Transactions
+            .Where(t => t.Date.Date >= minDate && t.Date.Date <= maxDate);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            // Always scope to the importing user when available to prevent false-positive
+            // duplicate matches against another user's transactions.
+            query = query.Where(t => t.UserId == userId);
+        }
+        else
+        {
+            // No userId available (e.g. anonymous/legacy call path) — log a warning so
+            // developers know duplicate detection is not user-scoped in this case.
+            _logger.LogWarning(
+                "FindDuplicatesAsync called without userId; duplicate detection is not scoped to a specific user.");
+        }
+
+        var existingTransactions = await query.ToListAsync();
 
         foreach (var transaction in transactions)
         {
@@ -432,9 +522,16 @@ public class CsvImportService : ICsvImportService
                 return byAccount;
 
             // No matching account found - create a new BankSource for this account
+            var displayName = !string.IsNullOrWhiteSpace(clearingNumber)
+                ? $"{bankName} {clearingNumber}-{accountNumber}"
+                : $"{bankName} {accountNumber}";
+
+            _logger.LogInformation(
+                "Auto-creating BankSource '{DisplayName}' for user '{UserId}'", displayName, userId ?? "(none)");
+
             var newBankSource = new BankSource
             {
-                Name = bankName,
+                Name = displayName,
                 Institution = bankName,
                 ClearingNumber = clearingNumber,
                 AccountNumber = accountNumber,

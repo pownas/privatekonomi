@@ -53,6 +53,9 @@ else if (_currentStep == ImportStep.BankSelection)
         @if (_importType == ImportType.Transactions)
         {
             <MudRadioGroup @bind-Value="_selectedBank">
+                <MudRadio Value="@("Automatisk (auto-detektera)")" Color="Color.Primary">
+                    <MudText>Automatisk (identifiera format från filen)</MudText>
+                </MudRadio>
                 <MudRadio Value="@("ICA-banken")" Color="Color.Primary">
                     <MudText>ICA-banken (CSV)</MudText>
                 </MudRadio>
@@ -526,9 +529,26 @@ else if (_currentStep == ImportStep.Complete)
             await originalStream.CopyToAsync(ms);
             _fileBytes = ms.ToArray();
 
+            // Auto-detect bank if the user selected a generic entry or left it empty
+            var bankName = _selectedBank;
+            if (string.IsNullOrWhiteSpace(bankName) || bankName == "Automatisk (auto-detektera)")
+            {
+                bankName = CsvImportService.DetectBank(_fileBytes) ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(bankName))
+                {
+                    Snackbar.Add(
+                        "Kunde inte identifiera bankformatet automatiskt. Välj bank manuellt.",
+                        Severity.Warning);
+                    return;
+                }
+                _selectedBank = bankName;
+                Snackbar.Add($"Bankformat identifierat: {bankName}", Severity.Info);
+            }
+
             // Use CsvImportService directly instead of HTTP API call
+            var userId = CurrentUserService.UserId;
             using var stream = new MemoryStream(_fileBytes);
-            _previewResult = await CsvImportService.PreviewCsvAsync(stream, _selectedBank);
+            _previewResult = await CsvImportService.PreviewCsvAsync(stream, bankName, userId);
             
             if (_previewResult.Success)
             {
@@ -699,9 +719,10 @@ else if (_currentStep == ImportStep.Complete)
     
     private string GetAcceptedFileTypes()
     {
-        if (_importType == ImportType.Transactions && _selectedBank == "OFX (Allmän)")
+        if (_importType == ImportType.Transactions && 
+            (_selectedBank == "OFX (Allmän)" || _selectedBank == "Automatisk (auto-detektera)"))
         {
-            return ".ofx,.qfx";
+            return ".ofx,.qfx,.csv";
         }
         return ".csv";
     }
@@ -712,7 +733,7 @@ else if (_currentStep == ImportStep.Complete)
         {
             return "OFX/QFX-fil";
         }
-        return "CSV-fil";
+        return "CSV- eller OFX/QFX-fil";
     }
     
     private string GetAllowedFormatsText()
@@ -720,6 +741,10 @@ else if (_currentStep == ImportStep.Complete)
         if (_importType == ImportType.Transactions && _selectedBank == "OFX (Allmän)")
         {
             return ".ofx, .qfx";
+        }
+        if (_importType == ImportType.Transactions && _selectedBank == "Automatisk (auto-detektera)")
+        {
+            return ".csv, .ofx, .qfx";
         }
         return ".csv";
     }
