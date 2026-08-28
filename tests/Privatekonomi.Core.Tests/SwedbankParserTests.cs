@@ -84,7 +84,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatCommaSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -120,7 +121,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatTabSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -140,7 +142,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(EnglishFormatSemicolonSeparated));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -173,7 +176,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleCurrencies));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count); // Only SEK transactions
@@ -193,7 +197,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithDecimalComma));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -211,7 +216,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMissingDescription));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count); // Only the row with valid description
@@ -228,7 +234,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithReferenceOnly));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -246,7 +253,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithLongDescription));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -295,7 +303,8 @@ public class SwedbankParserTests
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithEscapedQuotes));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -331,7 +340,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -364,7 +374,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count);
@@ -400,7 +411,8 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMetadata));
 
         // Act
-        var transactions = await parser.ParseAsync(stream);
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(2, transactions.Count);
@@ -408,5 +420,180 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
         Assert.IsFalse(transactions[0].IsIncome);
         Assert.AreEqual(25000.00m, transactions[1].Amount);
         Assert.IsTrue(transactions[1].IsIncome);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ExtractsClearingAndAccountNumberFromSwedishFormat()
+    {
+        // Arrange
+        var parser = new SwedbankParser();
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatCommaSeparated));
+
+        // Act
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
+
+        // Assert
+        Assert.AreEqual(3, transactions.Count);
+        foreach (var transaction in transactions)
+        {
+            Assert.AreEqual("84525", transaction.ClearingNumber);
+            Assert.AreEqual("1234567891", transaction.AccountNumber);
+        }
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ExtractsClearingAndAccountNumberFromTabSeparatedFormat()
+    {
+        // Arrange
+        var parser = new SwedbankParser();
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(SwedishFormatTabSeparated));
+
+        // Act
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
+
+        // Assert
+        Assert.AreEqual(3, transactions.Count);
+        foreach (var transaction in transactions)
+        {
+            Assert.AreEqual("84525", transaction.ClearingNumber);
+            Assert.AreEqual("1234567891", transaction.AccountNumber);
+        }
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ExtractsAccountNumberFromEnglishFormat()
+    {
+        // Arrange
+        var parser = new SwedbankParser();
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(EnglishFormatSemicolonSeparated));
+
+        // Act
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
+
+        // Assert
+        Assert.AreEqual(2, transactions.Count);
+        foreach (var transaction in transactions)
+        {
+            Assert.AreEqual("1111222333", transaction.AccountNumber);
+            Assert.IsNull(transaction.ClearingNumber); // Old format has no separate clearing number column
+        }
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_HandlesMultipleAccountsInSameFile()
+    {
+        // Arrange - CSV with transactions for two different accounts
+        var parser = new SwedbankParser();
+        var csvWithMultipleAccounts = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,""lönekonto"",SEK,2025-11-12,2025-11-12,2025-11-12,""Lön"",""Lön"",25000.00,25000.00
+2,84525,9876543210,""sparkonto"",SEK,2025-11-12,2025-11-12,2025-11-12,""Överföring"",""Överföring"",-5000.00,20000.00";
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvWithMultipleAccounts));
+
+        // Act
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
+
+        // Assert
+        Assert.AreEqual(2, transactions.Count);
+        Assert.AreEqual("1234567891", transactions[0].AccountNumber);
+        Assert.AreEqual("84525", transactions[0].ClearingNumber);
+        Assert.AreEqual("9876543210", transactions[1].AccountNumber);
+        Assert.AreEqual("84525", transactions[1].ClearingNumber);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsInvalidDateWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,not-a-date,2025-11-12,2025-11-12,REF1,Beskrivning,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "No transactions should be imported for invalid date");
+        Assert.AreEqual(1, result.Warnings.Count, "Expected one warning");
+        Assert.AreEqual("InvalidDate", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsInvalidAmountWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,2025-11-12,2025-11-12,2025-11-12,REF1,Köp ICA,NOT_A_NUMBER,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "No transactions should be imported for invalid amount");
+        Assert.AreEqual(1, result.Warnings.Count, "Expected one warning");
+        Assert.AreEqual("InvalidAmount", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsMissingDescriptionWarning()
+    {
+        var parser = new SwedbankParser();
+        // Both Beskrivning and Referens are empty
+        var csv = "Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokf\u00f6ringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bok\u00f6rt saldo\n" +
+                  "1,84525,1234567891,l\u00f6nekonto,SEK,2025-11-12,2025-11-12,2025-11-12,,,,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count);
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.AreEqual("MissingDescription", result.Warnings[0].WarningType);
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_EmitsUnsupportedCurrencyWarning()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,USD,2025-11-12,2025-11-12,2025-11-12,REF1,Köp,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(0, result.Transactions.Count, "USD transaction should be skipped");
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.AreEqual("UnsupportedCurrency", result.Warnings[0].WarningType);
+        StringAssert.Contains(result.Warnings[0].Message, "USD");
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_WarningIncludesRawData()
+    {
+        var parser = new SwedbankParser();
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,BAD_DATE,2025-11-12,2025-11-12,REF1,Beskrivning,-100.00,900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(1, result.Warnings.Count);
+        Assert.IsFalse(string.IsNullOrEmpty(result.Warnings[0].RawData), "Warning should include raw row data");
+    }
+
+    [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ValidRowsImportedDespiteWarnings()
+    {
+        var parser = new SwedbankParser();
+        // First row valid, second row has bad date
+        var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,lönekonto,SEK,2025-11-12,2025-11-12,2025-11-12,REF1,ICA Butiken,-100.00,900.00
+2,84525,1234567891,lönekonto,SEK,BAD_DATE,2025-11-12,2025-11-12,REF2,Lön,25000.00,25900.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await parser.ParseAsync(stream);
+
+        Assert.AreEqual(1, result.Transactions.Count, "Valid row should be imported");
+        Assert.AreEqual(1, result.Warnings.Count, "Invalid row should produce warning");
+        Assert.AreEqual("InvalidDate", result.Warnings[0].WarningType);
     }
 }

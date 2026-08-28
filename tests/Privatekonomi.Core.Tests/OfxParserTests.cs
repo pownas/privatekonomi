@@ -172,7 +172,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -200,7 +201,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(XmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.IsNotNull(transactions);
@@ -224,7 +226,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         foreach (var t in transactions) { Assert.IsTrue(t.Imported); }
@@ -237,7 +240,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         foreach (var t in transactions) { Assert.AreEqual("OFX Import", t.ImportSource); }
@@ -250,7 +254,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         foreach (var t in transactions) { Assert.AreEqual("SEK", t.Currency); }
@@ -263,7 +268,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         var icaTransaction = transactions.First(t => t.Description.Contains("ICA"));
@@ -277,7 +283,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         var coopTransaction = transactions.FirstOrDefault(t => t.Description.Contains("COOP"));
@@ -292,7 +299,8 @@ NEWFILEUID:NONE
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(""));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(0, transactions.Count());
@@ -318,7 +326,8 @@ VERSION:102
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(ofxWithNoTransactions));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(0, transactions.Count());
@@ -331,7 +340,8 @@ VERSION:102
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         var expenses = transactions.Where(t => !t.IsIncome).ToList();
@@ -368,7 +378,8 @@ VERSION:102
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(ofxWithTimezone));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count());
@@ -402,7 +413,8 @@ VERSION:102
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(ofxWithComma));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count());
@@ -441,7 +453,8 @@ VERSION:102
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(ofxWithInvalid));
 
         // Act
-        var transactions = await _parser.ParseAsync(stream);
+        var parseResult = await _parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
 
         // Assert
         Assert.AreEqual(1, transactions.Count());

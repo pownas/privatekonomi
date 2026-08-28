@@ -1,10 +1,8 @@
-﻿using Privatekonomi.Core.Models;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-
-#pragma warning disable CA1305 // Specify IFormatProvider
+using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services.Parsers;
 
@@ -27,19 +25,20 @@ public class OfxParser : ICsvParser
 
     public string BankName => "OFX (Allmän)";
 
-    public bool CanParse(string csvContent)
+    public bool CanParse(string content)
     {
         // OFX files typically start with OFXHEADER or <?OFX or <OFX>
-        return csvContent.Contains("OFXHEADER:") || 
-               csvContent.Contains("<OFX>") || 
-               csvContent.Contains("<?OFX");
+        return content.Contains("OFXHEADER:") || 
+               content.Contains("<OFX>") || 
+               content.Contains("<?OFX");
     }
 
-    public async Task<List<Transaction>> ParseAsync(Stream csvStream)
+    public async Task<ParseResult> ParseAsync(Stream stream)
     {
         var transactions = new List<Transaction>();
+        var warnings = new List<ParseWarning>();
         
-        using var reader = new StreamReader(csvStream, Encoding.UTF8);
+        using var reader = new StreamReader(stream, Encoding.UTF8);
         var content = await reader.ReadToEndAsync();
         
         // Convert SGML-style OFX to XML-style OFX
@@ -49,52 +48,95 @@ public class OfxParser : ICsvParser
         {
             var doc = XDocument.Parse(xmlContent);
             
-            // Find all STMTTRN elements (bank transactions)
-            var stmtTransactions = doc.Descendants("STMTTRN");
+            // Extract account info from BANKACCTFROM or CCACCTFROM elements
+            var bankId = doc.Descendants("BANKID").FirstOrDefault()?.Value?.Trim();
+            var branchId = doc.Descendants("BRANCHID").FirstOrDefault()?.Value?.Trim();
+            var acctId = doc.Descendants("ACCTID").FirstOrDefault()?.Value?.Trim();
+            // Clearing number is BANKID or BRANCHID in Swedish OFX
+            var clearingNumber = !string.IsNullOrWhiteSpace(branchId) ? branchId : bankId;
+            var accountNumber = acctId;
             
-            foreach (var stmtTrn in stmtTransactions)
+            // Find all STMTTRN elements (bank transactions)
+            var stmtTransactions = doc.Descendants("STMTTRN").ToList();
+            for (int idx = 0; idx < stmtTransactions.Count; idx++)
             {
                 try
                 {
-                    var transaction = ParseTransaction(stmtTrn);
+                    var transaction = ParseTransaction(stmtTransactions[idx]);
                     if (transaction != null)
                     {
+                        transaction.ClearingNumber = string.IsNullOrWhiteSpace(clearingNumber) ? null : clearingNumber;
+                        transaction.AccountNumber = string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber;
                         transactions.Add(transaction);
                     }
+                    else
+                    {
+                        warnings.Add(new ParseWarning
+                        {
+                            RowNumber = idx + 1,
+                            WarningType = "MissingRequiredField",
+                            Message = $"STMTTRN #{idx + 1} hoppades över – saknar DTPOSTED eller TRNAMT."
+                        });
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid transactions
-                    continue;
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = idx + 1,
+                        WarningType = "ParseError",
+                        Message = $"STMTTRN #{idx + 1} hoppades över – oväntat fel: {ex.Message}"
+                    });
                 }
             }
             
             // Also check for credit card transactions (CCSTMTTRN)
-            var ccTransactions = doc.Descendants("CCSTMTTRN");
-            foreach (var ccTrn in ccTransactions)
+            var ccTransactions = doc.Descendants("CCSTMTTRN").ToList();
+            for (int idx = 0; idx < ccTransactions.Count; idx++)
             {
                 try
                 {
-                    var transaction = ParseTransaction(ccTrn);
+                    var transaction = ParseTransaction(ccTransactions[idx]);
                     if (transaction != null)
                     {
+                        transaction.ClearingNumber = string.IsNullOrWhiteSpace(clearingNumber) ? null : clearingNumber;
+                        transaction.AccountNumber = string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber;
                         transactions.Add(transaction);
                     }
+                    else
+                    {
+                        warnings.Add(new ParseWarning
+                        {
+                            RowNumber = idx + 1,
+                            WarningType = "MissingRequiredField",
+                            Message = $"CCSTMTTRN #{idx + 1} hoppades över – saknar DTPOSTED eller TRNAMT."
+                        });
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid transactions
-                    continue;
+                    warnings.Add(new ParseWarning
+                    {
+                        RowNumber = idx + 1,
+                        WarningType = "ParseError",
+                        Message = $"CCSTMTTRN #{idx + 1} hoppades över – oväntat fel: {ex.Message}"
+                    });
                 }
             }
         }
-        catch (Exception)
+        catch (Exception xmlEx)
         {
+            warnings.Add(new ParseWarning
+            {
+                RowNumber = 0,
+                WarningType = "XmlParseFallback",
+                Message = $"XML-tolkning misslyckades ({xmlEx.Message}), försöker med alternativ metod."
+            });
             // If XML parsing fails, try alternative parsing
             transactions = ParseOfxWithoutXml(content);
         }
         
-        return transactions;
+        return new ParseResult { Transactions = transactions, Warnings = warnings };
     }
 
     private Transaction? ParseTransaction(XElement stmtTrn)
@@ -129,7 +171,7 @@ public class OfxParser : ICsvParser
         var description = BuildDescription(name, memo);
         
         // Determine if income based on amount sign and transaction type
-        var trnType = trnTypeElement?.Value?.Trim().ToUpper(CultureInfo.CurrentCulture) ?? string.Empty;
+        var trnType = trnTypeElement?.Value?.Trim().ToUpper() ?? string.Empty;
         var isIncome = DetermineIsIncome(amount, trnType);
         
         return CreateTransaction(date, Math.Abs(amount), isIncome, description);
@@ -165,7 +207,7 @@ public class OfxParser : ICsvParser
             if (string.IsNullOrEmpty(trimmed)) continue;
             
             // Check if it's a closing tag
-            if (trimmed.StartsWith("</", StringComparison.Ordinal))
+            if (trimmed.StartsWith("</"))
             {
                 result.AppendLine(trimmed);
                 if (tagStack.Count > 0)
@@ -314,7 +356,7 @@ public class OfxParser : ICsvParser
         }
         
         var description = BuildDescription(name ?? string.Empty, memo ?? string.Empty);
-        var isIncome = DetermineIsIncome(parsedAmount, trnType?.ToUpper(CultureInfo.InvariantCulture) ?? string.Empty);
+        var isIncome = DetermineIsIncome(parsedAmount, trnType?.ToUpper() ?? string.Empty);
         
         return CreateTransaction(parsedDate, Math.Abs(parsedAmount), isIncome, description);
     }
@@ -363,14 +405,14 @@ public class OfxParser : ICsvParser
         
         foreach (var format in formats)
         {
-            if (DateTime.TryParseExact(dateStr, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out date))
+            if (DateTime.TryParseExact(dateStr, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
             {
                 return true;
             }
         }
         
         // Try generic parsing
-        return DateTime.TryParse(dateStr, CultureInfo.CurrentCulture, DateTimeStyles.None, out date);
+        return DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
     }
 
     private string BuildDescription(string name, string memo)

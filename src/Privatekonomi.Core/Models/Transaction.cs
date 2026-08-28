@@ -21,6 +21,18 @@ public class Transaction : ITemporalEntity
     public int? RecurringId { get; set; } // Link to recurring transaction template
     public bool Imported { get; set; } // Whether transaction was imported from CSV/API
     public string? ImportSource { get; set; } // Source of import (e.g., "ICA-banken CSV", "Swedbank API")
+    
+    /// <summary>
+    /// Account number as read from the import source (e.g., CSV file).
+    /// Used to auto-link transactions to the correct BankSource during import.
+    /// </summary>
+    public string? AccountNumber { get; set; }
+    
+    /// <summary>
+    /// Clearing number (clearingnummer) as read from the import source.
+    /// Used together with AccountNumber to identify the correct bank account.
+    /// </summary>
+    public string? ClearingNumber { get; set; }
     public bool Cleared { get; set; } // Whether transaction has been reconciled/cleared
     public bool IsLocked { get; set; } // Whether transaction is locked and cannot be edited
     public DateTime CreatedAt { get; set; }

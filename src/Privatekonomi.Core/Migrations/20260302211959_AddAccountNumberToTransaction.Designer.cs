@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Privatekonomi.Core.Data;
 
@@ -10,9 +11,11 @@ using Privatekonomi.Core.Data;
 namespace Privatekonomi.Core.Migrations
 {
     [DbContext(typeof(PrivatekonomyContext))]
-    partial class PrivatekonomyContextModelSnapshot : ModelSnapshot
+    [Migration("20260302211959_AddAccountNumberToTransaction")]
+    partial class AddAccountNumberToTransaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
