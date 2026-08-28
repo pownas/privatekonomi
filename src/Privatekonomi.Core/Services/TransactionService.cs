@@ -79,7 +79,6 @@ public class TransactionService : ITransactionService
         using var context = _contextFactory.CreateDbContext();
         // Set audit fields
         transaction.CreatedAt = DateTime.UtcNow;
-        transaction.Date = transaction.Date.Date;
         
         // Set user ID for new transactions
         if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
@@ -165,7 +164,6 @@ public class TransactionService : ITransactionService
     public async Task<Transaction> UpdateTransactionAsync(Transaction transaction)
     {
         using var context = _contextFactory.CreateDbContext();
-        transaction.Date = transaction.Date.Date;
         transaction.UpdatedAt = DateTime.UtcNow;
         context.Entry(transaction).State = EntityState.Modified;
         await context.SaveChangesAsync();
