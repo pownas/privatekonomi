@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Privatekonomi.Api.Models;
@@ -283,6 +284,42 @@ public class TransactionsControllerTests
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task UpdateTransaction_DateTimePayload_NormalizesAndSerializesDateOnly()
+    {
+        // Arrange
+        await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
+        var client = factory.CreateClient();
+        var transaction = await CreateTestTransactionAsync(factory.Services);
+
+        const string requestBody = """
+            {
+              "amount": 200,
+              "date": "2026-08-29T15:45:00Z",
+              "description": "Updated Description",
+              "updatedAt": null
+            }
+            """;
+
+        using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PutAsync($"/api/transactions/{transaction.TransactionId}", content);
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        StringAssert.Contains(responseBody, "\"date\":\"2026-08-29\"");
+        Assert.IsFalse(responseBody.Contains("T15:45:00Z", StringComparison.Ordinal));
+
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
+        var updatedTransaction = await context.Transactions.FindAsync(transaction.TransactionId);
+        Assert.IsNotNull(updatedTransaction);
+        Assert.AreEqual(new DateTime(2026, 8, 29), updatedTransaction.Date);
+        Assert.AreEqual(TimeSpan.Zero, updatedTransaction.Date.TimeOfDay);
     }
 
     [TestMethod]

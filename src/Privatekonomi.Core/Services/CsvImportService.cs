@@ -358,7 +358,7 @@ public class CsvImportService : ICsvImportService
         var warnings = new List<ParseWarning>();
 
         // Validate date
-        if (transaction.Date > DateTime.Now.AddDays(7))
+        if (transaction.Date > DateTime.Now.AddDays(7).Date)
         {
             errors.Add(new CsvImportError
             {
@@ -368,7 +368,7 @@ public class CsvImportService : ICsvImportService
             });
         }
 
-        if (transaction.Date < DateTime.Now.AddYears(-10))
+        if (transaction.Date < DateTime.Now.AddYears(-10).Date)
         {
             warnings.Add(new ParseWarning
             {
@@ -424,11 +424,11 @@ public class CsvImportService : ICsvImportService
         if (transactions.Count == 0)
             return duplicates;
 
-        var minDate = transactions.Min(t => t.Date.Date);
-        var maxDate = transactions.Max(t => t.Date.Date);
+        var minDate = transactions.Min(t => t.Date);
+        var maxDate = transactions.Max(t => t.Date);
 
         var query = _context.Transactions
-            .Where(t => t.Date.Date >= minDate && t.Date.Date <= maxDate);
+            .Where(t => t.Date >= minDate && t.Date <= maxDate);
 
         if (!string.IsNullOrWhiteSpace(userId))
         {
@@ -460,7 +460,7 @@ public class CsvImportService : ICsvImportService
 
     private bool IsDuplicate(Transaction t1, Transaction t2)
     {
-        return t1.Date.Date == t2.Date.Date &&
+        return t1.Date == t2.Date &&
                t1.Amount == t2.Amount &&
                t1.IsIncome == t2.IsIncome &&
                string.Equals(t1.Description, t2.Description, StringComparison.OrdinalIgnoreCase);

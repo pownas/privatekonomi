@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Privatekonomi.Core.Models;
+using System.Text.Json.Serialization;
+using Privatekonomi.Core.Serialization;
 
 namespace Privatekonomi.Api.Models;
 
@@ -13,6 +15,7 @@ public class UpdateTransactionRequest
     public decimal Amount { get; set; }
 
     [Required(ErrorMessage = "Date is required")]
+    [JsonConverter(typeof(DateOnlyDateTimeJsonConverter))]
     public DateTime Date { get; set; }
 
     [Required(ErrorMessage = "Description is required")]

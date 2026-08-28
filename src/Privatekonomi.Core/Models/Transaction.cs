@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Privatekonomi.Core.Serialization;
+
 namespace Privatekonomi.Core.Models;
 
 public class Transaction : ITemporalEntity
@@ -5,7 +8,13 @@ public class Transaction : ITemporalEntity
     public int TransactionId { get; set; }
     public decimal Amount { get; set; }
     public string Description { get; set; } = string.Empty;
-    public DateTime Date { get; set; }
+    private DateTime _date;
+    [JsonConverter(typeof(DateOnlyDateTimeJsonConverter))]
+    public DateTime Date
+    {
+        get => _date;
+        set => _date = value.Date;
+    }
     public bool IsIncome { get; set; }
     public int? BankSourceId { get; set; }
     
