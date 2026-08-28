@@ -17,7 +17,6 @@
         </MudNavLink>
     }
 
-    <div class="nav-section-header">EKONOMI</div>
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">
         <MudNavLink Href="/economy/transactions" Icon="@Icons.Material.Filled.List" OnClick="@(() => TrackNavigation("/economy/transactions", "Transaktioner"))">Transaktioner</MudNavLink>
         <MudNavLink Href="/economy/transactions/calendar" Icon="@Icons.Material.Filled.CalendarMonth" OnClick="@(() => TrackNavigation("/economy/transactions/calendar", "Kalendervy"))">Kalendervy</MudNavLink>
@@ -38,7 +37,6 @@
         <MudNavLink Href="/economy/health-score" Icon="@Icons.Material.Filled.MonitorHeart" OnClick="@(() => TrackNavigation("/economy/health-score", "Ekonomisk Hälsa"))">Ekonomisk Hälsa</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">SPARANDE</div>
     <MudNavGroup Title="Sparande" Icon="@Icons.Material.Filled.Savings" Class="@GetGroupClass(SavingsKey)" Expanded="@IsGroupExpanded(SavingsKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(SavingsKey, expanded))">
         <MudNavLink Href="/savings/goals" Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => TrackNavigation("/savings/goals", "Sparmål"))">Sparmål</MudNavLink>
         <MudNavLink Href="/savings/scenario-analysis" Icon="@Icons.Material.Filled.TrendingUp" OnClick="@(() => TrackNavigation("/savings/scenario-analysis", "Scenarioanalys"))">Scenarioanalys</MudNavLink>
@@ -49,12 +47,10 @@
         <MudNavLink Href="/savings/life-timeline" Icon="@Icons.Material.Filled.Timeline" OnClick="@(() => TrackNavigation("/savings/life-timeline", "Livslinjeplanering"))">Livslinjeplanering</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">SOCIALT</div>
     <MudNavGroup Title="Socialt" Icon="@Icons.Material.Filled.Share" Class="@GetGroupClass(SocialKey)" Expanded="@IsGroupExpanded(SocialKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(SocialKey, expanded))">
         <MudNavLink Href="/social/privacy-settings" Icon="@Icons.Material.Filled.Security" OnClick="@(() => TrackNavigation("/social/privacy-settings", "Integritetsinställningar"))">Integritetsinställningar</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">INVESTERINGAR & TILLGÅNGAR</div>
     <MudNavGroup Title="Investeringar & Tillgångar" Icon="@Icons.Material.Filled.TrendingUp" Class="@GetGroupClass(InvestmentsKey)" Expanded="@IsGroupExpanded(InvestmentsKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(InvestmentsKey, expanded))">
         <MudNavLink Href="/investments/overview" Icon="@Icons.Material.Filled.ShowChart" OnClick="@(() => TrackNavigation("/investments/overview", "Aktier & Fonder"))">Aktier & Fonder</MudNavLink>
         <MudNavLink Href="/investments/pensions" Icon="@Icons.Material.Filled.Elderly" OnClick="@(() => TrackNavigation("/investments/pensions", "Pension"))">Pension</MudNavLink>
@@ -63,7 +59,6 @@
         <MudNavLink Href="/investments/loans" Icon="@Icons.Material.Filled.CreditCard" OnClick="@(() => TrackNavigation("/investments/loans", "Lån & Krediter"))">Lån & Krediter</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">KATEGORIER</div>
     <MudNavGroup Title="Kategorier" Icon="@Icons.Material.Filled.Category" Class="@GetGroupClass(CategoriesKey)" Expanded="@IsGroupExpanded(CategoriesKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(CategoriesKey, expanded))">
         <MudNavLink Href="/categories/manage" Icon="@Icons.Material.Filled.Label" OnClick="@(() => TrackNavigation("/categories/manage", "Hantera Kategorier"))">Hantera Kategorier</MudNavLink>
         <MudNavLink Href="/categories/tags" Icon="@Icons.Material.Filled.LocalOffer" OnClick="@(() => TrackNavigation("/categories/tags", "Taggar"))">Taggar</MudNavLink>
@@ -72,20 +67,17 @@
         <MudNavLink Href="/categories/rules" Icon="@Icons.Material.Filled.AutoAwesome" OnClick="@(() => TrackNavigation("/categories/rules", "Kategoriseringsregler"))">Kategoriseringsregler</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">FAMILJ & HUSHÅLL</div>
     <MudNavGroup Title="Familj & Hushåll" Icon="@Icons.Material.Filled.Home" Class="@GetGroupClass(FamilyKey)" Expanded="@IsGroupExpanded(FamilyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(FamilyKey, expanded))">
         <MudNavLink Href="/family/households" Icon="@Icons.Material.Filled.Group" OnClick="@(() => TrackNavigation("/family/households", "Hushåll"))">Hushåll</MudNavLink>
         <MudNavLink Href="/family/salary-history" Icon="@Icons.Material.Filled.WorkHistory" OnClick="@(() => TrackNavigation("/family/salary-history", "Löneutveckling"))">Löneutveckling</MudNavLink>
     </MudNavGroup>
     
-    <div class="nav-section-header">SKATTEDEKLARATION</div>
     <MudNavGroup Title="Skattedeklaration" Icon="@Icons.Material.Filled.Description" Class="@GetGroupClass(TaxKey)" Expanded="@IsGroupExpanded(TaxKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(TaxKey, expanded))">
         <MudNavLink Href="/tax/deductions" Icon="@Icons.Material.Filled.HomeRepairService" OnClick="@(() => TrackNavigation("/tax/deductions", "ROT/RUT-avdrag"))">ROT/RUT-avdrag</MudNavLink>
         <MudNavLink Href="/tax/k4-report" Icon="@Icons.Material.Filled.Assessment" OnClick="@(() => TrackNavigation("/tax/k4-report", "K4 Kapitalvinster"))">K4 Kapitalvinster</MudNavLink>
         <MudNavLink Href="/tax/sie-export" Icon="@Icons.Material.Filled.Download" OnClick="@(() => TrackNavigation("/tax/sie-export", "SIE-export"))">SIE-export</MudNavLink>
     </MudNavGroup>
 
-    <div class="nav-section-header">INSTÄLLNINGAR</div>
     <MudNavGroup Title="Inställningar" Icon="@Icons.Material.Filled.Settings" Class="@GetGroupClass(SettingsKey)" Expanded="@IsGroupExpanded(SettingsKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(SettingsKey, expanded))">
         <MudNavLink Href="/settings/accounts" Icon="@Icons.Material.Filled.AccountBalance" OnClick="@(() => TrackNavigation("/settings/accounts", "Konton"))">Konton</MudNavLink>
         <MudNavLink Href="/reminders" Icon="@Icons.Material.Filled.NotificationImportant" OnClick="@(() => TrackNavigation("/reminders", "Påminnelser"))">Påminnelser</MudNavLink>

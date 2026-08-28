@@ -96,24 +96,19 @@
     overflow-x: hidden;
 }
 
-/* Section headers for grouped navigation */
+/* Section header for overview section */
 .nav-menu ::deep .nav-section-header {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: #9CA3AF;
     padding: 16px 16px 8px;
-    margin-top: 16px;
+    margin-top: 8px;
     font-weight: 600;
 }
 
 .mud-theme-dark .nav-menu ::deep .nav-section-header {
     color: #6B7280;
-}
-
-/* First section header should not have top margin */
-.nav-menu ::deep .nav-section-header:first-child {
-    margin-top: 8px;
 }
 
 /* Active link styling - enhanced with gradient and border */
