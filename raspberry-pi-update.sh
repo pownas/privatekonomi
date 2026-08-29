@@ -428,6 +428,7 @@ restart_services() {
     # Start split services if installed
     if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] || [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
         local start_failed=false
+        local started_services=()
 
         for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
             if [ -f "/etc/systemd/system/$service.service" ]; then
@@ -435,14 +436,16 @@ restart_services() {
                 if ! sudo systemctl start "$service"; then
                     log_error "Kunde inte starta tjänsten: $service"
                     start_failed=true
+                else
+                    started_services+=("$service")
                 fi
             fi
         done
 
         sleep 3
 
-        for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
-            if [ -f "/etc/systemd/system/$service.service" ] && ! systemctl is-active --quiet "$service"; then
+        for service in "${started_services[@]}"; do
+            if ! systemctl is-active --quiet "$service"; then
                 log_error "Tjänsten kunde inte startas: $service"
                 log_info "Kontrollera status med: sudo systemctl status $service"
                 log_info "Visa loggar med: journalctl -u $service -n 50"
@@ -507,16 +510,20 @@ verify_update() {
     sleep 2
 
     if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] || [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
-        if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] && systemctl is-active --quiet "$WEB_SERVICE_NAME" 2>/dev/null; then
-            log_success "Systemd-tjänst körs: $WEB_SERVICE_NAME"
-        else
-            log_warning "Systemd-tjänst körs inte: $WEB_SERVICE_NAME"
+        if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ]; then
+            if systemctl is-active --quiet "$WEB_SERVICE_NAME" 2>/dev/null; then
+                log_success "Systemd-tjänst körs: $WEB_SERVICE_NAME"
+            else
+                log_warning "Systemd-tjänst körs inte: $WEB_SERVICE_NAME"
+            fi
         fi
 
-        if [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ] && systemctl is-active --quiet "$API_SERVICE_NAME" 2>/dev/null; then
-            log_success "Systemd-tjänst körs: $API_SERVICE_NAME"
-        else
-            log_warning "Systemd-tjänst körs inte: $API_SERVICE_NAME"
+        if [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
+            if systemctl is-active --quiet "$API_SERVICE_NAME" 2>/dev/null; then
+                log_success "Systemd-tjänst körs: $API_SERVICE_NAME"
+            else
+                log_warning "Systemd-tjänst körs inte: $API_SERVICE_NAME"
+            fi
         fi
 
         if ss -lnt | grep -q ":5274 "; then
