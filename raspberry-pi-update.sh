@@ -94,11 +94,12 @@ check_installation() {
 stop_services() {
     log_section "Stoppar tjänster"
 
-    local stopped_any_service=false
+    local found_any_service=false
 
     # Stop split services (current installer behavior)
     for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
         if [ -f "/etc/systemd/system/$service.service" ] || systemctl list-unit-files "$service.service" --no-legend 2>/dev/null | grep -q "$service.service"; then
+            found_any_service=true
             if systemctl is-active --quiet "$service" 2>/dev/null; then
                 log_info "Stoppar systemd-tjänst: $service"
                 sudo systemctl stop "$service"
@@ -106,12 +107,12 @@ stop_services() {
             else
                 log_info "Systemd-tjänst finns men är inte aktiv: $service"
             fi
-            stopped_any_service=true
         fi
     done
 
     # Stop legacy single service if present
     if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ] || systemctl list-unit-files "$SERVICE_NAME.service" --no-legend 2>/dev/null | grep -q "$SERVICE_NAME.service"; then
+        found_any_service=true
         if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
             log_info "Stoppar systemd-tjänst: $SERVICE_NAME"
             sudo systemctl stop "$SERVICE_NAME"
@@ -119,10 +120,9 @@ stop_services() {
         else
             log_info "Systemd-tjänst finns men är inte aktiv: $SERVICE_NAME"
         fi
-        stopped_any_service=true
     fi
 
-    if [ "$stopped_any_service" = false ]; then
+    if [ "$found_any_service" = false ]; then
         log_info "Ingen systemd-tjänst hittad"
     fi
     
@@ -432,7 +432,10 @@ restart_services() {
         for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
             if [ -f "/etc/systemd/system/$service.service" ]; then
                 log_info "Startar systemd-tjänst: $service"
-                sudo systemctl start "$service"
+                if ! sudo systemctl start "$service"; then
+                    log_error "Kunde inte starta tjänsten: $service"
+                    start_failed=true
+                fi
             fi
         done
 
@@ -458,7 +461,10 @@ restart_services() {
     # Fallback to legacy single service
     if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
         log_info "Startar systemd-tjänst: $SERVICE_NAME"
-        sudo systemctl start "$SERVICE_NAME"
+        if ! sudo systemctl start "$SERVICE_NAME"; then
+            log_error "Kunde inte starta tjänsten: $SERVICE_NAME"
+            return 1
+        fi
         sleep 3
 
         if systemctl is-active --quiet "$SERVICE_NAME"; then
