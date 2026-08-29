@@ -68,6 +68,27 @@ log_section() {
     echo -e "${PURPLE}===================================================${NC}"
 }
 
+# Resolve a build target (solution file) for dotnet restore/build
+resolve_build_target() {
+    local preferred_solution="$INSTALL_DIR/$SOLUTION_FILE"
+
+    if [ -f "$preferred_solution" ]; then
+        BUILD_TARGET="$preferred_solution"
+        return 0
+    fi
+
+    local discovered_solution
+    discovered_solution=$(find "$INSTALL_DIR" -maxdepth 1 -type f \( -name "*.slnx" -o -name "*.sln" \) | head -n 1)
+
+    if [ -n "$discovered_solution" ]; then
+        BUILD_TARGET="$discovered_solution"
+        return 0
+    fi
+
+    BUILD_TARGET=""
+    return 1
+}
+
 # Check if running on Raspberry Pi
 check_raspberry_pi() {
     log_section "Kontrollerar Raspberry Pi-miljö"
@@ -196,6 +217,7 @@ install_dotnet_10() {
 
 # Setup project
 setup_project() {
+    local script_args=("$@")
     log_section "Konfigurerar privatekonomi-projekt"
     
     if [ -d "$INSTALL_DIR" ]; then
@@ -205,8 +227,17 @@ setup_project() {
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             log_info "Uppdaterar befintlig installation..."
             cd "$INSTALL_DIR"
+            local old_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "okänd")
             git fetch origin
             git reset --hard origin/main
+            local new_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "okänd")
+
+            if [ "$old_commit" != "$new_commit" ]; then
+                log_info "Repository uppdaterat: $old_commit -> $new_commit"
+                log_warning "Installationsscriptet kan ha uppdaterats under körning"
+                log_info "Startar om installern automatiskt med senaste versionen..."
+                exec bash "$INSTALL_DIR/raspberry-pi-install.sh" "${script_args[@]}"
+            fi
         else
             log_info "Använder befintlig installation"
             cd "$INSTALL_DIR"
@@ -220,11 +251,24 @@ setup_project() {
     # Make scripts executable
     chmod +x app-start.sh raspberry-pi-start.sh 2>/dev/null || true
     
-    log_info "Återställer NuGet-paket..."
-    dotnet restore "$SOLUTION_FILE"
-    
-    log_info "Bygger lösningen..."
-    dotnet build "$SOLUTION_FILE" --configuration Release
+    if resolve_build_target; then
+        log_info "Återställer NuGet-paket ($BUILD_TARGET)..."
+        dotnet restore "$BUILD_TARGET"
+
+        log_info "Bygger lösningen ($BUILD_TARGET)..."
+        dotnet build "$BUILD_TARGET" --configuration Release
+    else
+        log_warning "Ingen lösningsfil hittades. Faller tillbaka till projektfiler..."
+
+        log_info "Återställer NuGet-paket (fallback)..."
+        dotnet restore src/Privatekonomi.Core/Privatekonomi.Core.csproj
+        dotnet restore src/Privatekonomi.Api/Privatekonomi.Api.csproj
+        dotnet restore src/Privatekonomi.Web/Privatekonomi.Web.csproj
+
+        log_info "Bygger projekt (fallback)..."
+        dotnet build src/Privatekonomi.Api/Privatekonomi.Api.csproj --configuration Release
+        dotnet build src/Privatekonomi.Web/Privatekonomi.Web.csproj --configuration Release
+    fi
     
     log_success "Projekt konfigurerat framgångsrikt"
 }
@@ -1487,7 +1531,14 @@ verify_installation() {
     
     # Test build
     cd "$INSTALL_DIR"
-    if dotnet build "$SOLUTION_FILE" --configuration Release --verbosity quiet; then
+    if resolve_build_target; then
+        if dotnet build "$BUILD_TARGET" --configuration Release --verbosity quiet; then
+            log_success "Projektbygge: Framgångsrik"
+        else
+            log_error "Projektbygge: Misslyckades"
+            return 1
+        fi
+    elif dotnet build src/Privatekonomi.Web/Privatekonomi.Web.csproj --configuration Release --verbosity quiet; then
         log_success "Projektbygge: Framgångsrik"
     else
         log_error "Projektbygge: Misslyckades"
@@ -1683,7 +1734,7 @@ main() {
     check_system_requirements
     create_nuget_config
     install_dotnet_10
-    setup_project
+    setup_project "$@"
     publish_application
     configure_storage
     install_ef_tools
