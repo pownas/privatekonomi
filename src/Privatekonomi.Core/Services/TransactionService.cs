@@ -238,7 +238,7 @@ public class TransactionService : ITransactionService
 
         // Update transaction fields
         transaction.Amount = amount;
-        transaction.Date = transactionDate;
+        transaction.Date = transactionDate.Date;
         transaction.Description = description;
         transaction.Payee = payee;
         transaction.Notes = notes;
@@ -288,12 +288,14 @@ public class TransactionService : ITransactionService
     public async Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime toDate)
     {
         using var context = _contextFactory.CreateDbContext();
+        var fromDate = from.Date;
+        var to = toDate.Date;
         var query = context.Transactions
             .Include(t => t.BankSource)
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Include(t => t.Household)
-            .Where(t => t.Date >= from && t.Date <= toDate)
+            .Where(t => t.Date >= fromDate && t.Date <= to)
             .AsQueryable();
 
         // Filter by current user if authenticated
@@ -416,12 +418,14 @@ public class TransactionService : ITransactionService
     public async Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAndDateRangeAsync(int householdId, DateTime from, DateTime toDate)
     {
         using var context = _contextFactory.CreateDbContext();
+        var fromDate = from.Date;
+        var to = toDate.Date;
         var query = context.Transactions
             .Include(t => t.BankSource)
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Include(t => t.Household)
-            .Where(t => t.HouseholdId == householdId && t.Date >= from && t.Date <= toDate)
+            .Where(t => t.HouseholdId == householdId && t.Date >= fromDate && t.Date <= to)
             .AsQueryable();
 
         // Filter by current user if authenticated
