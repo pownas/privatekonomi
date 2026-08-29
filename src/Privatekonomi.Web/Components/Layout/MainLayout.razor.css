@@ -41,6 +41,10 @@ main {
         align-items: center;
     }
 
+    .mainlayout-show-mobile {
+        display: none !important;
+    }
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -52,6 +56,10 @@ main {
 
         .mainlayout-hide-mobile {
             display: none !important;
+        }
+
+        .mainlayout-show-mobile {
+            display: inline-flex !important;
         }
 }
 

@@ -3,6 +3,9 @@
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthenticationStateProvider
 @inject Privatekonomi.Core.Services.INavigationPerformanceService NavigationPerformanceService
 @inject ILogger<NavMenu> Logger
+@inject Privatekonomi.Web.Services.ThemeService ThemeService
+@inject Privatekonomi.Web.Services.ViewDensityService ViewDensityService
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 <MudNavMenu Class="nav-menu">
@@ -93,11 +96,31 @@
             <MudNavLink Href="/navigation-performance" Icon="@Icons.Material.Filled.Speed" OnClick="@(() => TrackNavigation("/navigation-performance", "Navigation Performance"))">Navigation Performance</MudNavLink>
         </MudNavGroup>
     }
+
+    <div class="navmenu-mobile-divider">
+        <MudDivider Class="my-2" />
+    </div>
+    <div class="navmenu-mobile-actions">
+        <MudTooltip Text="@(_isDarkMode ? "Ljust läge" : "Mörkt läge")">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                           Color="Color.Inherit"
+                           OnClick="@ToggleThemeMobile"
+                           aria-label="@(_isDarkMode ? "Ljust läge" : "Mörkt läge")" />
+        </MudTooltip>
+        <MudTooltip Text="@(_isCompactView ? "Luftig vy" : "Kompakt vy")">
+            <MudIconButton Icon="@(_isCompactView ? Icons.Material.Filled.ViewComfy : Icons.Material.Filled.ViewCompact)"
+                           Color="Color.Inherit"
+                           OnClick="@ToggleViewDensityMobile"
+                           aria-label="@(_isCompactView ? "Luftig vy" : "Kompakt vy")" />
+        </MudTooltip>
+    </div>
 </MudNavMenu>
 
 @code {
     private bool _isSystemAdmin = false;
     private bool _isDevelopment = false;
+    private bool _isDarkMode = false;
+    private bool _isCompactView = false;
     
     private const string EconomyKey = "economy";
     private const string SavingsKey = "savings";
@@ -263,6 +286,12 @@
         // Check if user is system admin and if we're in development mode
         await CheckIfSystemAdminAsync();
         CheckIfDevelopmentMode();
+        
+        // Initialize theme and view density state
+        _isDarkMode = ThemeService.IsDarkMode;
+        _isCompactView = ViewDensityService.IsCompact;
+        ThemeService.OnThemeChanged += OnThemeChanged;
+        ViewDensityService.OnViewDensityChanged += OnViewDensityChanged;
         
         Logger.LogInformation("[NavMenu] OnInitializedAsync completed - Current Path: {Path}, Active Group: {Group}, IsDev: {IsDev}, IsAdmin: {IsAdmin}", 
             currentPath, activeGroupKey, _isDevelopment, _isSystemAdmin);
@@ -508,9 +537,53 @@
         NavigationPerformanceService.StartNavigation(path, $"NavMenu:{name}");
     }
 
+    private async Task ToggleThemeMobile()
+    {
+        _isDarkMode = !_isDarkMode;
+        ThemeService.IsDarkMode = _isDarkMode;
+        
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("themeManager.setTheme", _isDarkMode);
+        }
+        catch
+        {
+            // Ignore JS interop errors
+        }
+    }
+
+    private async Task ToggleViewDensityMobile()
+    {
+        _isCompactView = !_isCompactView;
+        ViewDensityService.ViewDensity = _isCompactView ? ViewDensity.Compact : ViewDensity.Spacious;
+        
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("viewDensityManager.setViewDensity", _isCompactView);
+        }
+        catch
+        {
+            // Ignore JS interop errors
+        }
+    }
+
+    private void OnThemeChanged()
+    {
+        _isDarkMode = ThemeService.IsDarkMode;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnViewDensityChanged()
+    {
+        _isCompactView = ViewDensityService.IsCompact;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
         AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        ThemeService.OnThemeChanged -= OnThemeChanged;
+        ViewDensityService.OnViewDensityChanged -= OnViewDensityChanged;
     }
 }
