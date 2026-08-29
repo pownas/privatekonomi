@@ -32,7 +32,7 @@ public class CsvImportService : ICsvImportService
     /// </summary>
     public string? DetectBank(byte[] fileBytes)
     {
-        // Try UTF-8 first, fall back to Windows-1252 for Swedish characters
+        // Try UTF-8 first, fall back to Latin-1 for Swedish characters in legacy exports
         string content;
         try
         {
@@ -45,7 +45,7 @@ public class CsvImportService : ICsvImportService
 
         if (content.Contains('\uFFFD'))
         {
-            try { content = Encoding.GetEncoding("Windows-1252").GetString(fileBytes); }
+            try { content = Encoding.Latin1.GetString(fileBytes); }
             catch { /* keep utf-8 attempt */ }
         }
 
