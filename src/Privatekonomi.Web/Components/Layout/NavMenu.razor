@@ -6,6 +6,7 @@
 @implements IDisposable
 
 <MudNavMenu Class="nav-menu">
+    <div class="nav-section-header">ÖVERSIKT</div>
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" OnClick="@(() => TrackNavigation("/", "Dashboard"))">Dashboard</MudNavLink>
     <MudNavLink Href="/dashboard/custom" Icon="@Icons.Material.Filled.ViewModule" OnClick="@(() => TrackNavigation("/dashboard/custom", "Anpassad Dashboard"))">Anpassad Dashboard</MudNavLink>
   

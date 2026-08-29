@@ -826,6 +826,103 @@ html {
 }
 
 /* ============================================
+   Navigation Menu Improvements (DESIGN_ISSUE_02)
+   ============================================ */
+
+/* Section headers for grouped navigation */
+.nav-section-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #9CA3AF;
+    padding: 16px 16px 8px;
+    margin-top: 16px;
+    font-weight: 600;
+}
+
+.mud-theme-dark .nav-section-header {
+    color: #6B7280;
+}
+
+/* First section header should not have top margin */
+.nav-section-header:first-child {
+    margin-top: 8px;
+}
+
+/* Enhanced active link styles with gradient and left border */
+.mud-nav-link.active {
+    background: linear-gradient(90deg, 
+        rgba(99, 102, 241, 0.15) 0%, 
+        transparent 100%) !important;
+    border-left: 3px solid #6366F1 !important;
+    font-weight: 600 !important;
+    padding-left: 13px !important; /* Compensate for border */
+}
+
+.mud-theme-dark .mud-nav-link.active {
+    background: linear-gradient(90deg, 
+        rgba(129, 140, 248, 0.2) 0%, 
+        transparent 100%) !important;
+    border-left: 3px solid #818CF8 !important;
+}
+
+/* Enhanced hover effects for nav links */
+.mud-nav-link {
+    transition: transform var(--transition-fast), 
+                background-color var(--transition-fast),
+                padding-left var(--transition-fast);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+}
+
+.mud-nav-link:hover:not(.active) {
+    transform: translateX(4px);
+    background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+.mud-theme-dark .mud-nav-link:hover:not(.active) {
+    background-color: rgba(129, 140, 248, 0.12) !important;
+}
+
+/* Icon spacing improvements */
+.mud-nav-link .mud-icon-root {
+    margin-right: 16px;
+    font-size: 24px;
+}
+
+/* Nav group enhancements */
+.mud-nav-group .mud-nav-link {
+    padding-left: 20px;
+}
+
+.mud-nav-group .mud-nav-link .mud-icon-root {
+    font-size: 20px;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .mud-nav-link {
+        transition: none;
+    }
+    
+    .mud-nav-link:hover:not(.active) {
+        transform: none;
+    }
+}
+
+/* Touch target sizing for mobile */
+@media (max-width: 768px) {
+    .mud-nav-link {
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+    
+    .nav-section-header {
+        padding: 12px 16px 8px;
+    }
+}
+
+/* ============================================
    Dashboard Summary Card Styles (DESIGN_ANALYSIS_2025.md)
    ============================================ */
 
