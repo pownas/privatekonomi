@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================================================
 # Privatekonomi Raspberry Pi Update Script
@@ -32,7 +32,9 @@ PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Configuration
-INSTALL_DIR="$HOME/Privatekonomi"
+DEFAULT_INSTALL_DIR="$HOME/privatekonomi"
+LEGACY_INSTALL_DIR="$HOME/Privatekonomi"
+INSTALL_DIR="$DEFAULT_INSTALL_DIR"
 DATA_DIR="$HOME/privatekonomi-data"
 BACKUP_DIR="$HOME/privatekonomi-backups"
 SERVICE_NAME="privatekonomi"
@@ -64,6 +66,11 @@ log_section() {
 # Check if Privatekonomi is installed
 check_installation() {
     log_section "Kontrollerar befintlig installation"
+
+    if [ ! -d "$INSTALL_DIR" ] && [ -d "$LEGACY_INSTALL_DIR" ]; then
+        log_warning "Hittade legacy-installation i $LEGACY_INSTALL_DIR, använder den katalogen"
+        INSTALL_DIR="$LEGACY_INSTALL_DIR"
+    fi
     
     if [ ! -d "$INSTALL_DIR" ]; then
         log_error "Privatekonomi är inte installerat i $INSTALL_DIR"
