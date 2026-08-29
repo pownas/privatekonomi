@@ -516,9 +516,9 @@ main() {
     log_info "Startar uppdatering av befintlig installation..."
     
     check_installation
+    update_repository
     stop_services
     create_backup
-    update_repository
     build_application
     publish_application
     update_systemd_service

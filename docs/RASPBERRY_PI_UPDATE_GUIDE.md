@@ -12,9 +12,9 @@ cd ~/privatekonomi
 ```
 
 Uppdateringsskriptet hanterar automatiskt:
+- ✅ Hämtar senaste ändringar från GitHub
 - ✅ Stoppar körande tjänster
 - ✅ Skapar backup av databas och konfiguration
-- ✅ Hämtar senaste ändringar från GitHub
 - ✅ Återställer NuGet-paket
 - ✅ Bygger uppdaterad applikation
 - ✅ Publicerar nya ARM64-binärer (valfritt)
@@ -40,21 +40,21 @@ Uppdateringsskriptet hanterar automatiskt:
 ### 1. Kontroll av installation
 Skriptet verifierar att Privatekonomi är installerat i rätt katalog.
 
-### 2. Stoppa tjänster
-- Stoppar systemd-tjänst (om installerad)
-- Avslutar eventuella körande Privatekonomi-processer
-
-### 3. Backup
-Automatisk backup skapas innan uppdatering:
-- **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
-- **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
-- **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
-
-### 4. Uppdatera repository
+### 2. Uppdatera repository
 - Hämtar senaste ändringar från GitHub
 - Visar vad som har ändrats
 - Frågar om bekräftelse innan uppdatering
 - Sparar eventuella lokala ändringar automatiskt
+
+### 3. Stoppa tjänster
+- Stoppar systemd-tjänst (om installerad)
+- Avslutar eventuella körande Privatekonomi-processer
+
+### 4. Backup
+Automatisk backup skapas efter att uppdateringen hämtats:
+- **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
+- **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
+- **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
 
 ### 5. Bygga applikation
 - Återställer NuGet-paket
