@@ -7,14 +7,14 @@ Denna guide beskriver hur du uppdaterar din befintliga Privatekonomi-installatio
 **Enklaste sättet:** Använd det automatiserade uppdateringsskriptet:
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 ./raspberry-pi-update.sh
 ```
 
 Uppdateringsskriptet hanterar automatiskt:
+- ✅ Hämtar senaste ändringar från GitHub
 - ✅ Stoppar körande tjänster
 - ✅ Skapar backup av databas och konfiguration
-- ✅ Hämtar senaste ändringar från GitHub
 - ✅ Återställer NuGet-paket
 - ✅ Bygger uppdaterad applikation
 - ✅ Publicerar nya ARM64-binärer (valfritt)
@@ -40,21 +40,21 @@ Uppdateringsskriptet hanterar automatiskt:
 ### 1. Kontroll av installation
 Skriptet verifierar att Privatekonomi är installerat i rätt katalog.
 
-### 2. Stoppa tjänster
-- Stoppar systemd-tjänst (om installerad)
-- Avslutar eventuella körande Privatekonomi-processer
-
-### 3. Backup
-Automatisk backup skapas innan uppdatering:
-- **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
-- **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
-- **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
-
-### 4. Uppdatera repository
+### 2. Uppdatera repository
 - Hämtar senaste ändringar från GitHub
 - Visar vad som har ändrats
 - Frågar om bekräftelse innan uppdatering
 - Sparar eventuella lokala ändringar automatiskt
+
+### 3. Stoppa tjänster
+- Stoppar systemd-tjänst (om installerad)
+- Avslutar eventuella körande Privatekonomi-processer
+
+### 4. Backup
+Automatisk backup skapas efter att koden hämtats och tjänsterna stoppats:
+- **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
+- **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
+- **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
 
 ### 5. Bygga applikation
 - Återställer NuGet-paket
@@ -115,7 +115,7 @@ tar -czf ~/privatekonomi-backups/backup_$(date +%Y%m%d_%H%M%S).tar.gz -C ~/priva
 ### 3. Uppdatera kod
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 
 # Spara eventuella lokala ändringar
 git stash
@@ -130,7 +130,7 @@ git stash pop  # Endast om du gjorde git stash
 ### 4. Bygga applikation
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 
 # Återställ paket
 dotnet restore
@@ -145,7 +145,7 @@ dotnet build --configuration Release
 ### 5. Publicera om (valfritt, för bättre prestanda)
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 
 # Backup gammal publicerad version
 mv publish publish.backup.$(date +%Y%m%d_%H%M%S)
@@ -188,7 +188,7 @@ sudo systemctl status privatekonomi
 
 **Manuellt:**
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 ./raspberry-pi-start.sh
 ```
 
@@ -197,7 +197,7 @@ cd ~/Privatekonomi
 För att se vilken version du kör:
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 git log -1 --oneline
 git rev-parse --short HEAD
 ```
@@ -205,7 +205,7 @@ git rev-parse --short HEAD
 För att se vad som är nytt:
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 git log --oneline --decorate -10
 ```
 
@@ -228,7 +228,7 @@ Om nya konfigurationsalternativ har lagts till:
 ### 1. Kontrollera exempel-filer
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 ls -la *.example.json
 ```
 
@@ -252,7 +252,7 @@ Redigera dina `appsettings.Production.json`-filer med nya inställningar.
 
 **Problem: Git-konflikt**
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 git status  # Se vilka filer som har konflikt
 git stash   # Spara dina ändringar
 git pull origin main  # Försök igen
@@ -261,7 +261,7 @@ git pull origin main  # Försök igen
 **Problem: Build-fel**
 ```bash
 # Rensa allt och börja om
-cd ~/Privatekonomi
+cd ~/privatekonomi
 dotnet clean
 rm -rf bin/ obj/
 dotnet restore
@@ -277,7 +277,7 @@ journalctl -u privatekonomi -n 50
 sudo systemctl cat privatekonomi
 
 # Försök starta manuellt för att se fel
-cd ~/Privatekonomi/src/Privatekonomi.AppHost
+cd ~/privatekonomi/src/Privatekonomi.AppHost
 ASPNETCORE_ENVIRONMENT=Production dotnet run
 ```
 
@@ -286,7 +286,7 @@ ASPNETCORE_ENVIRONMENT=Production dotnet run
 Om uppdateringen inkluderar databasändringar:
 
 ```bash
-cd ~/Privatekonomi/src/Privatekonomi.Core
+cd ~/privatekonomi/src/Privatekonomi.Core
 
 # Kontrollera pending migrations
 dotnet ef migrations list
@@ -341,7 +341,7 @@ sudo systemctl start privatekonomi
 ```bash
 # Återställ konfigurationsfiler
 cp -r ~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/home/*/Privatekonomi/src/*/appsettings.Production.json \
-      ~/Privatekonomi/src/
+      ~/privatekonomi/src/
 ```
 
 ## 🔄 Automatiska uppdateringar
@@ -355,7 +355,7 @@ cp -r ~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/home/*/Privatekonomi
 crontab -e
 
 # Lägg till (uppdatera varje söndag kl 03:00)
-0 3 * * 0 cd ~/Privatekonomi && ./raspberry-pi-update.sh --no-publish >> ~/privatekonomi-update.log 2>&1
+0 3 * * 0 cd ~/privatekonomi && ./raspberry-pi-update.sh --no-publish >> ~/privatekonomi-update.log 2>&1
 ```
 
 **Rekommendation:** Använd `--no-publish` för automatiska uppdateringar för att minimera driftstopp.
@@ -367,7 +367,7 @@ crontab -e
 sudo apt install mailutils
 
 # Modifiera cron-jobb
-0 3 * * 0 cd ~/Privatekonomi && ./raspberry-pi-update.sh --no-publish 2>&1 | mail -s "Privatekonomi Update" din@email.com
+0 3 * * 0 cd ~/privatekonomi && ./raspberry-pi-update.sh --no-publish 2>&1 | mail -s "Privatekonomi Update" din@email.com
 ```
 
 ## 📊 Efter uppdatering
@@ -405,7 +405,7 @@ Om du stöter på problem efter uppdatering:
 1. **Samla information**
    ```bash
    # Version
-   cd ~/Privatekonomi && git rev-parse --short HEAD
+   cd ~/privatekonomi && git rev-parse --short HEAD
    
    # Loggar
    journalctl -u privatekonomi -n 100 > ~/privatekonomi-logs.txt
@@ -454,7 +454,7 @@ Använd denna checklista för varje uppdatering:
 Med det automatiska uppdateringsskriptet är det enkelt att hålla din Privatekonomi-installation uppdaterad:
 
 ```bash
-cd ~/Privatekonomi
+cd ~/privatekonomi
 ./raspberry-pi-update.sh
 ```
 
