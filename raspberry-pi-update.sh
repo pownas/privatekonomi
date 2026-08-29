@@ -38,6 +38,8 @@ INSTALL_DIR="$DEFAULT_INSTALL_DIR"
 DATA_DIR="$HOME/privatekonomi-data"
 BACKUP_DIR="$HOME/privatekonomi-backups"
 SERVICE_NAME="privatekonomi"
+WEB_SERVICE_NAME="privatekonomi-web"
+API_SERVICE_NAME="privatekonomi-api"
 
 # Logging functions
 log_info() {
@@ -91,14 +93,37 @@ check_installation() {
 # Stop running services
 stop_services() {
     log_section "Stoppar tjänster"
-    
-    # Check if systemd service exists
-    if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
-        log_info "Stoppar systemd-tjänst: $SERVICE_NAME"
-        sudo systemctl stop "$SERVICE_NAME"
-        log_success "Tjänst stoppad"
-    else
-        log_info "Ingen systemd-tjänst aktiv"
+
+    local stopped_any_service=false
+
+    # Stop split services (current installer behavior)
+    for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
+        if [ -f "/etc/systemd/system/$service.service" ] || systemctl list-unit-files "$service.service" --no-legend 2>/dev/null | grep -q "$service.service"; then
+            if systemctl is-active --quiet "$service" 2>/dev/null; then
+                log_info "Stoppar systemd-tjänst: $service"
+                sudo systemctl stop "$service"
+                log_success "Tjänst stoppad: $service"
+            else
+                log_info "Systemd-tjänst finns men är inte aktiv: $service"
+            fi
+            stopped_any_service=true
+        fi
+    done
+
+    # Stop legacy single service if present
+    if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ] || systemctl list-unit-files "$SERVICE_NAME.service" --no-legend 2>/dev/null | grep -q "$SERVICE_NAME.service"; then
+        if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+            log_info "Stoppar systemd-tjänst: $SERVICE_NAME"
+            sudo systemctl stop "$SERVICE_NAME"
+            log_success "Tjänst stoppad: $SERVICE_NAME"
+        else
+            log_info "Systemd-tjänst finns men är inte aktiv: $SERVICE_NAME"
+        fi
+        stopped_any_service=true
+    fi
+
+    if [ "$stopped_any_service" = false ]; then
+        log_info "Ingen systemd-tjänst hittad"
     fi
     
     # Kill any running dotnet processes
@@ -328,7 +353,13 @@ publish_application() {
 # Update systemd service if needed
 update_systemd_service() {
     log_section "Uppdaterar systemd-tjänst (om den finns)"
-    
+
+    if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] || [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
+        log_info "Split-tjänster ($WEB_SERVICE_NAME/$API_SERVICE_NAME) används redan"
+        log_info "Ingen uppdatering av systemd-konfiguration behövs"
+        return 0
+    fi
+
     if [ ! -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
         log_info "Ingen systemd-tjänst installerad"
         return 0
@@ -391,31 +422,60 @@ EOF
 # Restart services
 restart_services() {
     log_section "Startar om tjänster"
-    
-    # Check if systemd service exists
-    if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
-        log_info "Startar systemd-tjänst: $SERVICE_NAME"
-        sudo systemctl daemon-reload
-        sudo systemctl start "$SERVICE_NAME"
-        
-        # Wait a moment for service to start
+
+    sudo systemctl daemon-reload
+
+    # Start split services if installed
+    if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] || [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
+        local start_failed=false
+
+        for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
+            if [ -f "/etc/systemd/system/$service.service" ]; then
+                log_info "Startar systemd-tjänst: $service"
+                sudo systemctl start "$service"
+            fi
+        done
+
         sleep 3
-        
-        # Check service status
-        if systemctl is-active --quiet "$SERVICE_NAME"; then
-            log_success "Tjänst startad framgångsrikt"
-        else
-            log_error "Tjänsten kunde inte startas"
-            log_info "Kontrollera status med: sudo systemctl status $SERVICE_NAME"
-            log_info "Visa loggar med: journalctl -u $SERVICE_NAME -n 50"
+
+        for service in "$WEB_SERVICE_NAME" "$API_SERVICE_NAME"; do
+            if [ -f "/etc/systemd/system/$service.service" ] && ! systemctl is-active --quiet "$service"; then
+                log_error "Tjänsten kunde inte startas: $service"
+                log_info "Kontrollera status med: sudo systemctl status $service"
+                log_info "Visa loggar med: journalctl -u $service -n 50"
+                start_failed=true
+            fi
+        done
+
+        if [ "$start_failed" = true ]; then
             return 1
         fi
-    else
-        log_info "Ingen systemd-tjänst installerad"
-        log_info "Du kan starta applikationen manuellt med:"
-        echo "  cd $INSTALL_DIR"
-        echo "  ./raspberry-pi-start.sh"
+
+        log_success "Systemd-tjänster startade framgångsrikt"
+        return 0
     fi
+
+    # Fallback to legacy single service
+    if [ -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
+        log_info "Startar systemd-tjänst: $SERVICE_NAME"
+        sudo systemctl start "$SERVICE_NAME"
+        sleep 3
+
+        if systemctl is-active --quiet "$SERVICE_NAME"; then
+            log_success "Tjänst startad framgångsrikt"
+            return 0
+        fi
+
+        log_error "Tjänsten kunde inte startas"
+        log_info "Kontrollera status med: sudo systemctl status $SERVICE_NAME"
+        log_info "Visa loggar med: journalctl -u $SERVICE_NAME -n 50"
+        return 1
+    fi
+
+    log_info "Ingen systemd-tjänst installerad"
+    log_info "Du kan starta applikationen manuellt med:"
+    echo "  cd $INSTALL_DIR"
+    echo "  ./raspberry-pi-start.sh"
 }
 
 # Verify update
@@ -437,18 +497,42 @@ verify_update() {
     local current_commit=$(git rev-parse --short HEAD)
     log_success "Nuvarande version: $current_commit"
     
-    # Check if service is running (if installed)
-    if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
-        log_success "Systemd-tjänst körs"
-        
-        # Check if ports are listening
-        sleep 2
+    # Check if services are running (if installed)
+    sleep 2
+
+    if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] || [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ]; then
+        if [ -f "/etc/systemd/system/$WEB_SERVICE_NAME.service" ] && systemctl is-active --quiet "$WEB_SERVICE_NAME" 2>/dev/null; then
+            log_success "Systemd-tjänst körs: $WEB_SERVICE_NAME"
+        else
+            log_warning "Systemd-tjänst körs inte: $WEB_SERVICE_NAME"
+        fi
+
+        if [ -f "/etc/systemd/system/$API_SERVICE_NAME.service" ] && systemctl is-active --quiet "$API_SERVICE_NAME" 2>/dev/null; then
+            log_success "Systemd-tjänst körs: $API_SERVICE_NAME"
+        else
+            log_warning "Systemd-tjänst körs inte: $API_SERVICE_NAME"
+        fi
+
+        if ss -lnt | grep -q ":5274 "; then
+            log_success "Web App lyssnar på port 5274"
+        else
+            log_warning "Web App lyssnar inte på port 5274"
+        fi
+
+        if ss -lnt | grep -q ":5277 "; then
+            log_success "API lyssnar på port 5277"
+        else
+            log_warning "API lyssnar inte på port 5277"
+        fi
+    elif systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+        log_success "Systemd-tjänst körs: $SERVICE_NAME"
+
         if ss -lnt | grep -q ":17127 "; then
             log_success "Aspire Dashboard lyssnar på port 17127"
         else
             log_warning "Aspire Dashboard lyssnar inte på port 17127"
         fi
-        
+
         if ss -lnt | grep -q ":5274 "; then
             log_success "Web App lyssnar på port 5274"
         else
@@ -485,7 +569,15 @@ show_post_update_info() {
     echo -e "    http://$pi_ip:5274 (Web App)"
     echo -e ""
     
-    if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+    if systemctl is-active --quiet "$WEB_SERVICE_NAME" 2>/dev/null || systemctl is-active --quiet "$API_SERVICE_NAME" 2>/dev/null; then
+        echo -e "${GREEN}✅ Tjänsterna körs redan${NC}"
+        echo -e ""
+        echo -e "${BLUE}Användbara kommandon:${NC}"
+        echo -e "  ${YELLOW}Visa status:${NC}    sudo systemctl status $WEB_SERVICE_NAME $API_SERVICE_NAME"
+        echo -e "  ${YELLOW}Starta om:${NC}      sudo systemctl restart $WEB_SERVICE_NAME $API_SERVICE_NAME"
+        echo -e "  ${YELLOW}Stoppa:${NC}         sudo systemctl stop $WEB_SERVICE_NAME $API_SERVICE_NAME"
+        echo -e "  ${YELLOW}Visa loggar:${NC}    journalctl -u $WEB_SERVICE_NAME -u $API_SERVICE_NAME -f"
+    elif systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
         echo -e "${GREEN}✅ Tjänsten körs redan${NC}"
         echo -e ""
         echo -e "${BLUE}Användbara kommandon:${NC}"
