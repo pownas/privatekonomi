@@ -42,6 +42,7 @@ SERVICE_NAME="privatekonomi"
 DEFAULT_PORT="17127"
 WEB_PORT="5274"
 API_PORT="5277"
+SOLUTION_FILE="Privatekonomi.slnx"
 
 # Logging functions
 log_info() {
@@ -220,10 +221,10 @@ setup_project() {
     chmod +x app-start.sh raspberry-pi-start.sh 2>/dev/null || true
     
     log_info "Återställer NuGet-paket..."
-    dotnet restore
+    dotnet restore "$SOLUTION_FILE"
     
     log_info "Bygger lösningen..."
-    dotnet build --configuration Release
+    dotnet build "$SOLUTION_FILE" --configuration Release
     
     log_success "Projekt konfigurerat framgångsrikt"
 }
@@ -1486,7 +1487,7 @@ verify_installation() {
     
     # Test build
     cd "$INSTALL_DIR"
-    if dotnet build --configuration Release --verbosity quiet; then
+    if dotnet build "$SOLUTION_FILE" --configuration Release --verbosity quiet; then
         log_success "Projektbygge: Framgångsrik"
     else
         log_error "Projektbygge: Misslyckades"
