@@ -96,6 +96,16 @@
     overflow-x: hidden;
 }
 
+.navmenu-mobile-actions {
+    display: none;
+    align-items: center;
+    padding: var(--spacing-xs) calc(var(--spacing-sm) * 1.5);
+}
+
+.navmenu-mobile-divider {
+    display: none;
+}
+
 
 .nav-menu ::deep .mud-nav-link.active {
     background-color: var(--mud-palette-primary, #6750a4) !important;
@@ -140,6 +150,16 @@ nav.mud-nav-group.nav-group-active > button > div,
     border-left: 3px solid var(--mud-palette-primary, #6750a4);
     margin-left: calc(var(--spacing-xs) * 0.5);
     padding-left: calc(var(--spacing-xs) * 0.5);
+}
+
+@media (max-width: 640.98px) {
+    .navmenu-mobile-actions {
+        display: flex;
+    }
+
+    .navmenu-mobile-divider {
+        display: block;
+    }
 }
 
 @media (min-width: 641px) {
