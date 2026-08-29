@@ -51,7 +51,7 @@ Skriptet verifierar att Privatekonomi är installerat i rätt katalog.
 - Avslutar eventuella körande Privatekonomi-processer
 
 ### 4. Backup
-Automatisk backup skapas efter att uppdateringen hämtats:
+Automatisk backup skapas efter att koden hämtats och tjänsterna stoppats:
 - **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
 - **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
 - **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
