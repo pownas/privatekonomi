@@ -41,13 +41,13 @@ public class SwedbankParser : ICsvParser
         {
             content = await reader.ReadToEndAsync();
         }
-        // If we see replacement characters, try Windows-1252
+        // If we see replacement characters, try Latin-1 (covers Swedish ÅÄÖ in legacy exports)
         if (content.Contains('\uFFFD') || content.Contains('?'))
         {
             try
             {
                 csvStream.Position = 0;
-                using var reader1252 = new StreamReader(csvStream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                using var reader1252 = new StreamReader(csvStream, Encoding.Latin1, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
                 content = await reader1252.ReadToEndAsync();
             }
             catch { /* fallback failed, keep original content */ }
@@ -66,7 +66,7 @@ public class SwedbankParser : ICsvParser
         var headerIndex = FindHeaderRow(lines);
         if (headerIndex == -1)
         {
-            throw new InvalidOperationException("Kunde inte hitta rubriker i Swedbank CSV-filen. Kan den vara sparad i felaktig encoding? Behöver vara UTF-8 eller Windows-1252.");
+            throw new InvalidOperationException("Kunde inte hitta rubriker i Swedbank CSV-filen. Kan den vara sparad i felaktig encoding? Behöver vara UTF-8 eller Latin-1 (ISO-8859-1).");
         }
 
         var header = NormalizeHeader(lines[headerIndex]);
