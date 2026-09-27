@@ -63,6 +63,10 @@ public class PiUpdateTests
         Assert.AreEqual("failed", fixture.Service().GetStatus().State);
         Assert.AreEqual("build failed", service.GetStatus().Log);
         Assert.IsTrue(service.TryRequest());
+        File.WriteAllText(fixture.Path("transaction"), fixture.Path("backup"));
+        File.WriteAllText(fixture.Path("status"), "failed\n");
+        Assert.AreEqual("blocked", service.GetStatus().State);
+        Assert.IsFalse(service.TryRequest());
     }
 
     [TestMethod]
@@ -78,6 +82,18 @@ public class PiUpdateTests
         Assert.AreEqual(8192, status.Log.Length);
     }
 
+    [TestMethod]
+    public void Status_UsesPublishedCommitInsteadOfStaleUpdateState()
+    {
+        using var fixture = new UpdateFixture();
+        var published = fixture.Path("published-commit");
+        File.WriteAllText(fixture.Path("installed"), new string('a', 40));
+        File.WriteAllText(published, new string('b', 40));
+        Assert.AreEqual(new string('b', 40), fixture.Service(commitFile: published).GetStatus().InstalledCommit);
+        File.Delete(published);
+        Assert.IsNull(fixture.Service(commitFile: published).GetStatus().InstalledCommit);
+    }
+
     private sealed class UpdateFixture : IDisposable
     {
         private readonly string _directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "pi-update-" + Guid.NewGuid());
@@ -90,14 +106,15 @@ public class PiUpdateTests
 
         public string Path(string name) => System.IO.Path.Combine(_directory, name);
 
-        public PiUpdateService Service(bool enabled = true, bool pi = true, bool marker = true)
+        public PiUpdateService Service(bool enabled = true, bool pi = true, bool marker = true, string? commitFile = null)
         {
             if (!marker)
                 File.Delete(Path("enabled"));
             var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["PiUpdate:Enabled"] = enabled.ToString(),
-                ["PiUpdate:StateDirectory"] = _directory
+                ["PiUpdate:StateDirectory"] = _directory,
+                ["PiUpdate:InstalledCommitFile"] = commitFile
             }).Build();
             return new PiUpdateService(config, () => pi);
         }

@@ -353,6 +353,16 @@ publish_application() {
     if [ -f "src/Privatekonomi.Api/appsettings.Production.json" ]; then
         cp "src/Privatekonomi.Api/appsettings.Production.json" "$publish_dir/Api/"
     fi
+
+    # Only record a source revision when the published tracked sources match HEAD.
+    if git -C "$INSTALL_DIR" diff --quiet HEAD -- &&
+       git -C "$INSTALL_DIR" diff --cached --quiet &&
+       [ -z "$(git -C "$INSTALL_DIR" ls-files --others --exclude-standard -- 'src/**/*.cs' 'src/**/*.csproj')" ]; then
+        local published_commit
+        published_commit=$(git -C "$INSTALL_DIR" rev-parse HEAD)
+        printf '%s\n' "$published_commit" > "$publish_dir/Web/.privatekonomi-commit"
+        printf '%s\n' "$published_commit" > "$publish_dir/Api/.privatekonomi-commit"
+    fi
     
     log_success "Applikation publicerad till: $publish_dir"
     log_info "Publicerade binärer är optimerade för ARM64 och inkluderar alla beroenden"

@@ -23,13 +23,14 @@
             "running" => "Uppdatering pågår",
             "succeeded" => "Uppdateringen lyckades",
             "failed" => "Uppdateringen misslyckades – se logg och återställningsguide",
+            "blocked" => "Återställningen misslyckades – manuell åtgärd krävs innan ny uppdatering",
             _ => "Ingen uppdatering pågår"
         })</MudText>
         @if (_status?.InstalledCommit is not null && _latest == _status.InstalledCommit)
         {
             <MudText>Redan uppdaterad till senaste versionen.</MudText>
         }
-        @if (_status?.State is not ("queued" or "running"))
+        @if (_status?.State is not ("queued" or "running" or "blocked"))
         {
             <form method="post" action="/settings/pi-update/start">
                 <AntiforgeryToken />

@@ -23,8 +23,9 @@ genom att köra aktiveringsskriptet igen efter ändringar i uppdateringsskriptet
 Om du har en annan tjänstlayout, fortsätt använda den manuella uppdateringen.
 
 Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna
-**Uppdatera Raspberry Pi** i menyn. Sidan visar installerad commit (okänd fram till
-första webbuppdateringen), senaste commit på GitHubs `main` när nätet fungerar,
+**Uppdatera Raspberry Pi** i menyn. Sidan visar commit från den faktiskt publicerade
+Web-katalogen (installerad version före aktivering eller efter manuell publicering
+visas när den har en `.privatekonomi-commit`-fil), senaste commit på GitHubs `main` när nätet fungerar,
 status och de sista 8 KiB från uppdateringsloggen. Starta uppdateringen med knappen.
 Begäran kräver inloggning, systemadministratörsbehörighet och CSRF-token. En andra
 begäran under pågående uppdatering avvisas. Ladda om sidan för aktuell status; när
@@ -34,10 +35,16 @@ Workern hämtar **enbart** `main` via HTTPS från
 `https://github.com/pownas/Privatekonomi.git`, publicerar i en separat temporär
 katalog och stoppar därefter tjänsterna. Den kopierar `~/privatekonomi-data`
 efter stopp, sparar gamla publicerade binärer i
-`~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS/` och bevarar befintliga
-`appsettings.Production.json`. Vid fel återställs gamla binärer och tjänsterna
-startas igen. Endast status `succeeded` efter kontroll av båda tjänsterna uppdaterar
-installerad commit. Projektets byggfiler på `main` körs av .NET SDK under
+`~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/` och bevarar befintliga
+`appsettings.Production.json`. Innan filerna byts skriver den en återställningsjournal.
+Vid fel återställs båda katalogerna från en komplett backup; efter strömavbrott
+återupptar systemd-path-tjänsten återställningen innan en ny uppdatering kan köras.
+Den kontrollerar både systemd-status **och** lokala Web- och API-svar på
+`/internal/health` (bara tillgängliga från loopback) inom en minut innan den
+rapporterar `succeeded`. Endast den publicerade Web-katalogens versionsfil används
+som installerad commit; det undviker felaktig version efter manuell uppdatering
+eller återställning. Äldre installationer utan versionsfil visar »Okänd« tills de
+publiceras igen. Projektets byggfiler på `main` körs av .NET SDK under
 installationskontot: ge inte det kontot andra privilegier och granska kod som slås
 ihop till `main`.
 
@@ -53,16 +60,18 @@ de tidigare publicerade filerna:
 sudo systemctl stop privatekonomi-web privatekonomi-api
 mv ~/privatekonomi/publish/Web ~/privatekonomi/publish/Web.failed
 mv ~/privatekonomi/publish/Api ~/privatekonomi/publish/Api.failed
-cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS/Web ~/privatekonomi/publish/Web
-cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS/Api ~/privatekonomi/publish/Api
+cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/Web ~/privatekonomi/publish/Web
+cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/Api ~/privatekonomi/publish/Api
 sudo systemctl start privatekonomi-api privatekonomi-web
 ```
 
 Om en databas-migrering inte är bakåtkompatibel, återställ även `data` från **samma**
 backup innan tjänsterna startas (detta skriver över ändringar gjorda efter backupen).
 Kontrollera diskutrymme och NuGet/GitHub-anslutning före ett nytt försök. Efter
-strömavbrott: kontrollera först `systemctl status privatekonomi-update.service`
-innan du tar bort en kvarvarande `~/privatekonomi-update/request`; starta aldrig
+strömavbrott: kontrollera först `systemctl status privatekonomi-update.service` och
+`~/privatekonomi-update/log`. Om återställningen fortfarande misslyckas är begäran
+spärrad; åtgärda felet och återställ manuellt från samma backup. Ta först därefter
+bort `~/privatekonomi-update/transaction`, `backup-ready` och `request`. Starta aldrig
 en andra uppdatering medan tjänsten körs. Inaktivera funktionen med
 `sudo systemctl disable --now privatekonomi-update.path` och ta bort
 `/etc/systemd/system/privatekonomi-web.service.d/pi-update.conf` (kör därefter

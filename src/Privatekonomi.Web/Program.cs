@@ -309,6 +309,10 @@ app.UseAntiforgery();
 
 // Map Aspire default endpoints (health checks, etc.)
 app.MapDefaultEndpoints();
+app.MapGet("/internal/health", (HttpContext context) =>
+    context.Connection.RemoteIpAddress is { } address && System.Net.IPAddress.IsLoopback(address)
+        ? Results.Ok()
+        : Results.NotFound());
 
 app.UseAuthentication();
 app.UseAuthorization();

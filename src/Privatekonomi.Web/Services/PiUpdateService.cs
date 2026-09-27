@@ -7,6 +7,7 @@ public sealed record PiUpdateStatus(string State, string? InstalledCommit, strin
 public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? isRaspberryPi = null)
 {
     private readonly string? _directory = configuration["PiUpdate:StateDirectory"];
+    private readonly string? _installedCommitFile = configuration["PiUpdate:InstalledCommitFile"];
     private readonly Func<bool> _isRaspberryPi = isRaspberryPi ?? (() =>
         System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 &&
         Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true" &&
@@ -28,11 +29,13 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
         if (state is not ("running" or "succeeded" or "failed"))
             state = "idle";
         if (File.Exists(Path.Combine(_directory!, "request")))
-            state = state == "running" ? "running" : "queued";
+            state = File.Exists(Path.Combine(_directory!, "transaction"))
+                ? state == "failed" ? "blocked" : "running"
+                : state == "running" ? "running" : "queued";
         else if (state == "running")
             state = "failed";
 
-        var commit = ReadLimited("installed", 64).Trim();
+        var commit = _installedCommitFile is null ? ReadLimited("installed", 64).Trim() : ReadLimitedPath(_installedCommitFile, 64).Trim();
         return new(state, Regex.IsMatch(commit, @"\A[0-9a-f]{40}\z") ? commit : null, ReadLimited("log", 8192));
     }
 
@@ -42,7 +45,7 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
             return false;
 
         var status = GetStatus();
-        if (status.State is "running" or "queued")
+        if (status.State is "running" or "queued" or "blocked")
             return false;
 
         try
@@ -56,11 +59,13 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
         }
     }
 
-    private string ReadLimited(string name, int maxLength)
+    private string ReadLimited(string name, int maxLength) =>
+        ReadLimitedPath(Path.Combine(_directory!, name), maxLength);
+
+    private static string ReadLimitedPath(string path, int maxLength)
     {
         try
         {
-            var path = Path.Combine(_directory!, name);
             using var file = File.OpenRead(path);
             if (file.Length > maxLength)
                 file.Seek(-maxLength, SeekOrigin.End);

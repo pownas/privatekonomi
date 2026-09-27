@@ -50,6 +50,7 @@ cat > /etc/systemd/system/privatekonomi-web.service.d/pi-update.conf <<EOF
 [Service]
 Environment=PiUpdate__Enabled=true
 Environment=PiUpdate__StateDirectory=$home_dir/privatekonomi-update
+Environment=PiUpdate__InstalledCommitFile=$home_dir/privatekonomi/publish/Web/.privatekonomi-commit
 EOF
 
 cat > /etc/systemd/system/privatekonomi-update.service <<EOF

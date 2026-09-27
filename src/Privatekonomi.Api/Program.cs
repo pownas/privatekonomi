@@ -143,6 +143,10 @@ app.UseAuthorization();
 
 // Map Aspire default endpoints (health checks, etc.)
 app.MapDefaultEndpoints();
+app.MapGet("/internal/health", (HttpContext context) =>
+    context.Connection.RemoteIpAddress is { } address && System.Net.IPAddress.IsLoopback(address)
+        ? Results.Ok()
+        : Results.NotFound());
 
 app.MapControllers();
 
@@ -150,4 +154,3 @@ app.Run();
 
 // Make the implicit Program class public for testing
 public partial class Program { }
-
