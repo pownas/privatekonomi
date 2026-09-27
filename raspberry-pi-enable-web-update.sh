@@ -36,11 +36,14 @@ install -o root -g root -m 755 "$script_dir/raspberry-pi-web-update.sh" /usr/loc
 install -d -o "$user" -g "$group" -m 700 "$home_dir/privatekonomi-update"
 install -o "$user" -g "$group" -m 600 /dev/null "$home_dir/privatekonomi-update/enabled"
 
-cat > "/etc/sudoers.d/privatekonomi-web-update" <<EOF
+sudoers_temp=$(mktemp /etc/sudoers.d/.privatekonomi-web-update.XXXXXXXX)
+trap 'rm -f -- "$sudoers_temp"' EXIT
+cat > "$sudoers_temp" <<EOF
 $user ALL=(root) NOPASSWD: /usr/bin/systemctl stop privatekonomi-web.service, /usr/bin/systemctl stop privatekonomi-api.service, /usr/bin/systemctl start privatekonomi-web.service, /usr/bin/systemctl start privatekonomi-api.service
 EOF
-chmod 440 /etc/sudoers.d/privatekonomi-web-update
-visudo -cf /etc/sudoers.d/privatekonomi-web-update
+chmod 440 "$sudoers_temp"
+visudo -cf "$sudoers_temp"
+mv -f -- "$sudoers_temp" /etc/sudoers.d/privatekonomi-web-update
 
 mkdir -p /etc/systemd/system/privatekonomi-web.service.d
 cat > /etc/systemd/system/privatekonomi-web.service.d/pi-update.conf <<EOF
