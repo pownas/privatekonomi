@@ -8,6 +8,7 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
 {
     private readonly string? _directory = configuration["PiUpdate:StateDirectory"];
     private readonly Func<bool> _isRaspberryPi = isRaspberryPi ?? (() =>
+        System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 &&
         Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true" &&
         File.Exists("/proc/device-tree/model") &&
         File.ReadAllText("/proc/device-tree/model").Contains("Raspberry Pi", StringComparison.Ordinal));

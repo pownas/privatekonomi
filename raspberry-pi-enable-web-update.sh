@@ -16,6 +16,11 @@ if ! grep -aq 'Raspberry Pi' /proc/device-tree/model; then
     echo "Endast Raspberry Pi stöds." >&2
     exit 1
 fi
+if [ "$(uname -m)" != aarch64 ]; then
+    echo "Webbuppdatering kräver 64-bitars Raspberry Pi OS." >&2
+    exit 1
+fi
+group=$(id -gn "$user")
 for service in web api; do
     unit="/etc/systemd/system/privatekonomi-$service.service"
     if [ ! -f "$unit" ] || ! grep -Fq "WorkingDirectory=$home_dir/privatekonomi/publish/${service^}" "$unit" ||
@@ -28,8 +33,8 @@ done
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 install -o root -g root -m 755 "$script_dir/raspberry-pi-web-update.sh" /usr/local/bin/privatekonomi-web-update
-install -d -o "$user" -g "$user" -m 700 "$home_dir/privatekonomi-update"
-install -o "$user" -g "$user" -m 600 /dev/null "$home_dir/privatekonomi-update/enabled"
+install -d -o "$user" -g "$group" -m 700 "$home_dir/privatekonomi-update"
+install -o "$user" -g "$group" -m 600 /dev/null "$home_dir/privatekonomi-update/enabled"
 
 cat > "/etc/sudoers.d/privatekonomi-web-update" <<EOF
 $user ALL=(root) NOPASSWD: /usr/bin/systemctl stop privatekonomi-web.service, /usr/bin/systemctl stop privatekonomi-api.service, /usr/bin/systemctl start privatekonomi-web.service, /usr/bin/systemctl start privatekonomi-api.service
