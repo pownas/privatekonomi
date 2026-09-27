@@ -22,6 +22,8 @@ recover() {
     local backup
     backup=$(cat "$state/transaction")
     echo "Återställer avbruten uppdatering från $backup"
+    sudo -n /usr/bin/systemctl stop privatekonomi-web.service || return 1
+    sudo -n /usr/bin/systemctl stop privatekonomi-api.service || return 1
     if [ -f "$state/backup-ready" ]; then
         test -d "$backup/Web" && test -d "$backup/Api" || return 1
         for project in Web Api; do
@@ -30,8 +32,9 @@ recover() {
         done
     fi
     start_services || return 1
-    /usr/bin/systemctl is-active --quiet privatekonomi-api.service || return 1
-    /usr/bin/systemctl is-active --quiet privatekonomi-web.service || return 1
+    # Previous releases need not expose /internal/health; check their actual HTTP listeners.
+    response_check api http://127.0.0.1:5277/ || return 1
+    response_check web http://127.0.0.1:5274/ || return 1
     rm -f -- "$state/transaction" "$state/backup-ready" || return 1
 }
 
@@ -46,6 +49,20 @@ health_check() {
         sleep 2
     done
     echo "$name svarar inte på $url" >&2
+    return 1
+}
+
+response_check() {
+    local name="$1" url="$2" attempt code
+    for ((attempt = 1; attempt <= 30; attempt++)); do
+        code=$(curl --silent --show-error --max-time 2 --output /dev/null --write-out '%{http_code}' "$url") || code=000
+        if [[ "$code" =~ ^[234][0-9][0-9]$ ]] &&
+           /usr/bin/systemctl is-active --quiet "privatekonomi-$name.service"; then
+            return 0
+        fi
+        sleep 2
+    done
+    echo "Tidigare $name-version svarar inte på $url" >&2
     return 1
 }
 

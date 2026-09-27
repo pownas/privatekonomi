@@ -40,10 +40,26 @@ EOF
     cat > "$root/bin/systemctl" <<'EOF'
 #!/usr/bin/env bash
 printf '%s\n' "$*" >> "$MOCK_ROOT/commands"
-if [[ "$*" == *"start privatekonomi-web.service"* ]] && [ "${FAIL_START:-0}" = 1 ] &&
-   [ "$(cat "$MOCK_ROOT/home/privatekonomi/publish/Web/Privatekonomi.Web" 2>/dev/null)" = new ]; then
-    exit 1
-fi
+case "$*" in
+    *"stop privatekonomi-web.service"*) rm -f "$MOCK_ROOT/web-running" ;;
+    *"stop privatekonomi-api.service"*) rm -f "$MOCK_ROOT/api-running" ;;
+    *"start privatekonomi-web.service"*)
+        if [ ! -f "$MOCK_ROOT/web-running" ]; then
+            version=$(cat "$MOCK_ROOT/home/privatekonomi/publish/Web/Privatekonomi.Web")
+            if [ "${FAIL_START:-0}" = 1 ] && [ "$version" = new ]; then exit 1; fi
+            printf '%s\n' "$version" > "$MOCK_ROOT/web-running"
+        fi ;;
+    *"start privatekonomi-api.service"*)
+        if [ ! -f "$MOCK_ROOT/api-running" ]; then
+            cat "$MOCK_ROOT/home/privatekonomi/publish/Api/Privatekonomi.Api" > "$MOCK_ROOT/api-running"
+        fi ;;
+    *"is-active "*)
+        if [[ "$*" == *"privatekonomi-web.service"* ]]; then
+            test -f "$MOCK_ROOT/web-running"
+        else
+            test -f "$MOCK_ROOT/api-running"
+        fi ;;
+esac
 EOF
     cat > "$root/bin/sudo" <<'EOF'
 #!/usr/bin/env bash
@@ -52,11 +68,13 @@ exec "$@"
 EOF
     cat > "$root/bin/curl" <<'EOF'
 #!/usr/bin/env bash
-if [ "${FAIL_HEALTH:-0}" = 1 ] &&
-   [ "$(cat "$MOCK_ROOT/home/privatekonomi/publish/Web/Privatekonomi.Web" 2>/dev/null)" = new ]; then
+if [ "${FAIL_HEALTH:-0}" = 1 ] && [[ "$*" == *"/internal/health"* ]] &&
+  [ "$(cat "$MOCK_ROOT/web-running" 2>/dev/null)" = new ]; then
     printf '503'
     exit 0
 fi
+if [[ "$*" == *":5274/"* ]] && [ ! -f "$MOCK_ROOT/web-running" ]; then printf '000'; exit 0; fi
+if [[ "$*" == *":5277/"* ]] && [ ! -f "$MOCK_ROOT/api-running" ]; then printf '000'; exit 0; fi
 printf '200'
 EOF
     cat > "$root/bin/sleep" <<'EOF'
@@ -97,6 +115,12 @@ assert_old() {
     test "$(cat "$root/home/privatekonomi-data/data.db")" = customer-data
 }
 
+assert_running_old() {
+    assert_old
+    test "$(cat "$root/web-running")" = old
+    test "$(cat "$root/api-running")" = old
+}
+
 setup_case success
 run_worker
 test "$(cat "$root/home/privatekonomi-update/status")" = succeeded
@@ -123,13 +147,14 @@ test ! -s "$root/commands"
 
 setup_case restart_failure
 if FAIL_START=1 run_worker; then exit 1; fi
-assert_old
+assert_running_old
 test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 
 setup_case health_failure
 if FAIL_HEALTH=1 run_worker; then exit 1; fi
-assert_old
+assert_running_old
+test "$(grep -c 'stop privatekonomi-web.service' "$root/commands")" -eq 2
 test "$(cat "$root/home/privatekonomi-update/status")" = failed
 
 setup_case blocked_recovery
@@ -140,7 +165,7 @@ test "$(cat "$root/home/privatekonomi-update/status")" = failed
 if FAIL_RESTORE=1 run_worker; then exit 1; fi
 test -e "$root/home/privatekonomi-update/transaction"
 run_worker && exit 1
-assert_old
+assert_running_old
 test ! -e "$root/home/privatekonomi-update/request"
 
 setup_case power_failure
@@ -149,7 +174,7 @@ test -e "$root/home/privatekonomi-update/transaction"
 test ! -e "$root/home/privatekonomi/publish/Api/Privatekonomi.Api" ||
     test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = new
 if run_worker; then exit 1; fi
-assert_old
+assert_running_old
 test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 test ! -e "$root/home/privatekonomi-update/request"
