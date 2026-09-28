@@ -37,17 +37,36 @@ public class OfxParser : ICsvParser
     {
         var transactions = new List<Transaction>();
         var warnings = new List<ParseWarning>();
-        
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        var content = await reader.ReadToEndAsync();
-        
+
+        string content;
+        // Try reading as UTF-8 first with BOM detection
+        using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
+        {
+            content = await reader.ReadToEndAsync();
+        }
+
+        // If we see replacement characters, try Windows-1252
+        if (content.Contains('\uFFFD') || (content.Contains('?') && content.Contains('ä') == false && content.Contains('ö') == false && content.Contains('å') == false))
+        {
+            try
+            {
+                stream.Position = 0;
+                using var reader1252 = new StreamReader(stream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                content = await reader1252.ReadToEndAsync();
+            }
+            catch
+            {
+                // If fallback fails, use what we have
+            }
+        }
+
         // Convert SGML-style OFX to XML-style OFX
         var xmlContent = ConvertOfxToXml(content);
-        
+
         try
         {
             var doc = XDocument.Parse(xmlContent);
-            
+
             // Extract account info from BANKACCTFROM or CCACCTFROM elements
             var bankId = doc.Descendants("BANKID").FirstOrDefault()?.Value?.Trim();
             var branchId = doc.Descendants("BRANCHID").FirstOrDefault()?.Value?.Trim();
@@ -55,7 +74,7 @@ public class OfxParser : ICsvParser
             // Clearing number is BANKID or BRANCHID in Swedish OFX
             var clearingNumber = !string.IsNullOrWhiteSpace(branchId) ? branchId : bankId;
             var accountNumber = acctId;
-            
+
             // Find all STMTTRN elements (bank transactions)
             var stmtTransactions = doc.Descendants("STMTTRN").ToList();
             for (int idx = 0; idx < stmtTransactions.Count; idx++)

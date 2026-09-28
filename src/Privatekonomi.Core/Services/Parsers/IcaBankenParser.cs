@@ -30,7 +30,8 @@ public class IcaBankenParser : ICsvParser
             content = await reader.ReadToEndAsync();
         }
 
-        if (content.Contains('\uFFFD'))
+        // If we see replacement characters, try Windows-1252
+        if (content.Contains('\uFFFD') || (content.Contains('?') && content.Contains('ä') == false && content.Contains('ö') == false && content.Contains('å') == false))
         {
             try
             {
@@ -38,9 +39,12 @@ public class IcaBankenParser : ICsvParser
                 using var reader1252 = new StreamReader(csvStream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
                 content = await reader1252.ReadToEndAsync();
             }
-            catch { /* keep original content */ }
+            catch
+            {
+                // If fallback fails, use what we have
+            }
         }
-        
+
         var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2)
         {
