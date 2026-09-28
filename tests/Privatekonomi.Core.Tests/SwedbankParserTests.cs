@@ -135,6 +135,26 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
+    public async Task SwedbankParser_ParseAsync_ParsesLatin1EncodedSwedishCharactersCorrectly()
+    {
+        // Arrange
+        var parser = new SwedbankParser();
+        var latin1Csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+1,84525,1234567891,""e-sparkonto"",SEK,2025-11-11,2025-11-11,2025-11-12,""CSN LÅN NOV"",""CSN LÅN NOV"",3280.00,13316.74
+2,84525,1234567891,""e-sparkonto"",SEK,2025-11-10,2025-11-10,2025-11-11,""50kr/lörda"",""50kr/lörda"",-50.00,13266.74";
+        var stream = new MemoryStream(Encoding.Latin1.GetBytes(latin1Csv));
+
+        // Act
+        var parseResult = await parser.ParseAsync(stream);
+        var transactions = parseResult.Transactions;
+
+        // Assert
+        Assert.AreEqual(2, transactions.Count);
+        Assert.AreEqual("CSN LÅN NOV", transactions[0].Description);
+        Assert.AreEqual("50kr/lörda", transactions[1].Description);
+    }
+
+    [TestMethod]
     public async Task SwedbankParser_ParseAsync_ParsesEnglishFormatCorrectly()
     {
         // Arrange

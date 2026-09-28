@@ -16,6 +16,7 @@ public class TransactionServiceTests : IDisposable
     private readonly Mock<IAuditLogService> _mockAuditLogService;
     private readonly Mock<ICategoryRuleService> _mockCategoryRuleService;
     private readonly TransactionService _transactionService;
+    private bool _disposed;
 
     public TransactionServiceTests()
     {
@@ -43,8 +44,14 @@ public class TransactionServiceTests : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _context?.Database.EnsureDeleted();
         _context?.Dispose();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 
@@ -98,6 +105,26 @@ public class TransactionServiceTests : IDisposable
             It.IsAny<Transaction>(),
             "testuser",
             "127.0.0.1"), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task CreateTransactionAsync_NormalizesTimeComponentToMidnight()
+    {
+        // Arrange
+        var transactionDate = new DateTime(2026, 8, 28, 14, 30, 45, DateTimeKind.Utc);
+        var transaction = new Transaction
+        {
+            Amount = 100m,
+            Date = transactionDate,
+            Description = "Time should be stripped"
+        };
+
+        // Act
+        var createdTransaction = await _transactionService.CreateTransactionAsync(transaction);
+
+        // Assert
+        Assert.AreEqual(transactionDate.Date, createdTransaction.Date);
+        Assert.AreEqual(TimeSpan.Zero, createdTransaction.Date.TimeOfDay);
     }
 
     [TestMethod]
@@ -420,5 +447,42 @@ public class TransactionServiceTests : IDisposable
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(150m, result.Amount);
+    }
+
+    [TestMethod]
+    public async Task UpdateTransactionWithAuditAsync_NormalizesTimeComponentToMidnight()
+    {
+        // Arrange
+        var transaction = new Transaction
+        {
+            Amount = 100m,
+            Date = new DateTime(2026, 8, 27, 8, 15, 0, DateTimeKind.Utc),
+            Description = "Test",
+            IsLocked = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Transactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        var updatedDate = new DateTime(2026, 8, 28, 22, 45, 0, DateTimeKind.Utc);
+
+        // Act
+        var result = await _transactionService.UpdateTransactionWithAuditAsync(
+            transaction.TransactionId,
+            150m,
+            updatedDate,
+            "Updated Description",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+        // Assert
+        Assert.AreEqual(updatedDate.Date, result.Date);
+        Assert.AreEqual(TimeSpan.Zero, result.Date.TimeOfDay);
     }
 }

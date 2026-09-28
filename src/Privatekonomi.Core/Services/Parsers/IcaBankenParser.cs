@@ -22,9 +22,9 @@ public class IcaBankenParser : ICsvParser
     {
         var transactions = new List<Transaction>();
         var warnings = new List<ParseWarning>();
-
+        
+        // Try UTF-8 first; fall back to Windows-1252 for files with Swedish characters
         string content;
-        // Try reading as UTF-8 first with BOM detection
         using (var reader = new StreamReader(csvStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
         {
             content = await reader.ReadToEndAsync();

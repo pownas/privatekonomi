@@ -47,12 +47,12 @@ public class TransactionsController : ControllerBase
         
         if (startDate.HasValue)
         {
-            transactions = transactions.Where(t => t.Date >= startDate.Value);
+            transactions = transactions.Where(t => t.Date >= startDate.Value.Date);
         }
         
         if (endDate.HasValue)
         {
-            transactions = transactions.Where(t => t.Date <= endDate.Value);
+            transactions = transactions.Where(t => t.Date <= endDate.Value.Date);
         }
         
         if (categoryId.HasValue)
@@ -102,7 +102,7 @@ public class TransactionsController : ControllerBase
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to)
     {
-        var transactions = await _transactionService.GetTransactionsByDateRangeAsync(from, to);
+        var transactions = await _transactionService.GetTransactionsByDateRangeAsync(from.Date, to.Date);
         return Ok(transactions);
     }
 
@@ -194,7 +194,7 @@ public class TransactionsController : ControllerBase
         [FromQuery] DateTime from, 
         [FromQuery] DateTime to)
     {
-        var transactions = await _transactionService.GetTransactionsByHouseholdAndDateRangeAsync(householdId, from, to);
+        var transactions = await _transactionService.GetTransactionsByHouseholdAndDateRangeAsync(householdId, from.Date, to.Date);
         return Ok(transactions);
     }
 

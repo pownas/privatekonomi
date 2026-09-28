@@ -10,10 +10,6 @@
         {
             <MudTh>Datum</MudTh>
         }
-        @if (ShowTime)
-        {
-            <MudTh>Tid</MudTh>
-        }
         <MudTh>Beskrivning</MudTh>
         @if (ShowCategory)
         {
@@ -42,12 +38,6 @@
         {
             <MudTd DataLabel="Datum" Style="cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
                 @context.Date.ToString("yyyy-MM-dd")
-            </MudTd>
-        }
-        @if (ShowTime)
-        {
-            <MudTd DataLabel="Tid" Style="cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
-                @context.Date.ToString("HH:mm")
             </MudTd>
         }
         <MudTd DataLabel="Beskrivning" Style="cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
@@ -173,9 +163,6 @@
 
     [Parameter]
     public bool ShowDate { get; set; } = true;
-
-    [Parameter]
-    public bool ShowTime { get; set; } = false;
 
     [Parameter]
     public bool ShowCategory { get; set; } = true;

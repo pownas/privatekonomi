@@ -41,11 +41,17 @@
         <AuthorizeView>
             <Authorized>
                 <NotificationBell />
-                <MudText Typo="Typo.body2" Class="mr-2">@context.User.Identity?.Name</MudText>
-                <MudButton Href="/Account/Logout" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Logout">Logga ut</MudButton>
+                <MudText Typo="Typo.body2" Class="mr-2 mainlayout-hide-mobile">@context.User.Identity?.Name</MudText>
+                <MudTooltip Text="Logga ut" Class="mainlayout-hide-mobile">
+                    <MudButton Href="/Account/Logout" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Logout">Logga ut</MudButton>
+                </MudTooltip>
+                <MudIconButton Href="/Account/Logout" Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Class="mainlayout-show-mobile" aria-label="Logga ut" />
             </Authorized>
             <NotAuthorized>
-                <MudButton Href="/Account/Login" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Login">Logga in</MudButton>
+                <MudTooltip Text="Logga in" Class="mainlayout-hide-mobile">
+                    <MudButton Href="/Account/Login" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Login">Logga in</MudButton>
+                </MudTooltip>
+                <MudIconButton Href="/Account/Login" Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" Class="mainlayout-show-mobile" aria-label="Logga in" />
             </NotAuthorized>
         </AuthorizeView>
         <MudTooltip Text="Tangentbordsgenvägar (Ctrl + /)" Class="mainlayout-hide-mobile">
@@ -60,10 +66,12 @@
                            OnClick="@ToggleViewDensity" 
                            aria-label="@(_isCompactView ? "Luftig vy" : "Kompakt vy")" />
         </MudTooltip>
-        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
-                       Color="Color.Inherit" 
-                       OnClick="@ToggleTheme" 
-                       aria-label="@(_isDarkMode ? "Ljust läge" : "Mörkt läge")" />
+        <MudTooltip Text="@(_isDarkMode ? "Ljust läge" : "Mörkt läge")" Class="mainlayout-hide-mobile">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                           Color="Color.Inherit" 
+                           OnClick="@ToggleTheme" 
+                           aria-label="@(_isDarkMode ? "Ljust läge" : "Mörkt läge")" />
+        </MudTooltip>
     </MudAppBar>
     
     <MudDrawer @bind-Open="@_drawerOpen" 

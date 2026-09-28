@@ -117,7 +117,6 @@ else
                 <TransactionListComponent Transactions="@selectedTransactions" 
                                         Dense="true" 
                                         ShowDate="false"
-                                        ShowTime="true"
                                         OnTransactionUpdated="@LoadTransactions" />
                 
                 <div class="d-flex justify-space-between mt-3">
@@ -264,6 +263,6 @@ else
 
     private IEnumerable<Transaction> GetTransactionsForDay(DateTime day)
     {
-        return _transactions.Where(t => t.Date.Date == day.Date).OrderBy(t => t.Date);
+        return _transactions.Where(t => t.Date == day.Date).OrderBy(t => t.Date);
     }
 }
