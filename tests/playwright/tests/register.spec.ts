@@ -41,4 +41,28 @@ test.describe('Register Page', () => {
     const loginLink = page.locator('a[href="/Account/Login"]');
     await expect(loginLink).toBeVisible();
   });
+
+  test('should post all registration fields and show one header login control', async ({ page }) => {
+    let submittedForm: URLSearchParams | undefined;
+
+    await page.route('**/Account/PerformRegister', async route => {
+      submittedForm = new URLSearchParams(route.request().postData() ?? '');
+      await route.fulfill({ status: 302, headers: { location: '/Account/Register' } });
+    });
+
+    await page.goto('/Account/Register');
+    await page.locator('input[autocomplete="given-name"]').fill('Ada');
+    await page.locator('input[autocomplete="family-name"]').fill('Lovelace');
+    await page.locator('input[autocomplete="username"]').fill('ada@example.com');
+    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!');
+    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!');
+    await page.getByRole('button', { name: 'Registrera' }).click();
+
+    expect(submittedForm?.get('FirstName')).toBe('Ada');
+    expect(submittedForm?.get('LastName')).toBe('Lovelace');
+    expect(submittedForm?.get('Email')).toBe('ada@example.com');
+    expect(submittedForm?.get('Password')).toBe('Passw0rd!');
+    expect(submittedForm?.get('ConfirmPassword')).toBe('Passw0rd!');
+    await expect(page.locator('.mud-appbar a[href="/Account/Login"]')).toHaveCount(1);
+  });
 });
