@@ -19,7 +19,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public void GenerateAmortizationSchedule_WithValidLoan_ReturnsSchedule()
+    public void GenerateAmortizationScheduleWithValidLoanReturnsSchedule()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -45,7 +45,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public void GenerateAmortizationSchedule_WithExtraPayment_ReducesMonths()
+    public void GenerateAmortizationScheduleWithExtraPaymentReducesMonths()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -70,7 +70,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateSnowballStrategy_OrdersBySmallestBalance()
+    public async Task CalculateSnowballStrategyOrdersBySmallestBalance()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -99,7 +99,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateAvalancheStrategy_OrdersByHighestInterest()
+    public async Task CalculateAvalancheStrategyOrdersByHighestInterest()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -128,7 +128,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public void AnalyzeExtraPayment_ShowsInterestSavings()
+    public void AnalyzeExtraPaymentShowsInterestSavings()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -154,7 +154,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task CompareStrategies_ReturnsSnowballAndAvalanche()
+    public async Task CompareStrategiesReturnsSnowballAndAvalanche()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -180,7 +180,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public void ExportAmortizationScheduleToCsv_ReturnsValidCsv()
+    public void ExportAmortizationScheduleToCsvReturnsValidCsv()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -209,7 +209,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task ExportStrategyToCsv_ReturnsValidCsv()
+    public async Task ExportStrategyToCsvReturnsValidCsv()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -239,7 +239,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateDetailedStrategy_Snowball_ReturnsMonthlySchedule()
+    public async Task GenerateDetailedStrategySnowballReturnsMonthlySchedule()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -274,7 +274,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateDetailedStrategy_Avalanche_ReturnsMonthlySchedule()
+    public async Task GenerateDetailedStrategyAvalancheReturnsMonthlySchedule()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -302,7 +302,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateDetailedStrategy_TracksInterestCorrectly()
+    public async Task GenerateDetailedStrategyTracksInterestCorrectly()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -331,7 +331,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateDebtFreeDate_WithNoLoans_ReturnsNull()
+    public async Task CalculateDebtFreeDateWithNoLoansReturnsNull()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -345,7 +345,7 @@ public class DebtStrategyServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateDebtFreeDate_WithLoans_ReturnsLatestPayoffDate()
+    public async Task CalculateDebtFreeDateWithLoansReturnsLatestPayoffDate()
     {
         // Arrange
         var context = CreateInMemoryContext();

@@ -18,7 +18,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkDeleteTransactionsAsync_ShouldDeleteMultipleTransactions()
+    public async Task BulkDeleteTransactionsAsyncShouldDeleteMultipleTransactions()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -53,7 +53,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkDeleteTransactionsAsync_ShouldNotDeleteLockedTransactions()
+    public async Task BulkDeleteTransactionsAsyncShouldNotDeleteLockedTransactions()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -88,7 +88,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkCategorizeTransactionsAsync_ShouldCategorizeMultipleTransactions()
+    public async Task BulkCategorizeTransactionsAsyncShouldCategorizeMultipleTransactions()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -130,7 +130,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkCategorizeTransactionsAsync_ShouldFailWithInvalidCategory()
+    public async Task BulkCategorizeTransactionsAsyncShouldFailWithInvalidCategory()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -162,7 +162,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkLinkToHouseholdAsync_ShouldLinkMultipleTransactions()
+    public async Task BulkLinkToHouseholdAsyncShouldLinkMultipleTransactions()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -201,7 +201,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkLinkToHouseholdAsync_ShouldUnlinkWhenHouseholdIdIsNull()
+    public async Task BulkLinkToHouseholdAsyncShouldUnlinkWhenHouseholdIdIsNull()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -238,7 +238,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task CreateOperationSnapshotAsync_ShouldCreateSnapshot()
+    public async Task CreateOperationSnapshotAsyncShouldCreateSnapshot()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -291,7 +291,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task UndoBulkOperationAsync_ShouldRestoreCategorization()
+    public async Task UndoBulkOperationAsyncShouldRestoreCategorization()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -355,7 +355,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task UndoBulkOperationAsync_ShouldNotUndoDelete()
+    public async Task UndoBulkOperationAsyncShouldNotUndoDelete()
     {
         // Arrange
         var options = CreateInMemoryOptions();
@@ -384,7 +384,7 @@ public class BulkOperationTests
     }
 
     [TestMethod]
-    public async Task BulkDeleteTransactionsAsync_ShouldHandleLargeNumberOfTransactions()
+    public async Task BulkDeleteTransactionsAsyncShouldHandleLargeNumberOfTransactions()
     {
         // Arrange
         var options = CreateInMemoryOptions();

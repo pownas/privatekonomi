@@ -15,7 +15,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_EmptyHousehold_ReturnsZeroCosts()
+    public void CalculateReferenceCostsEmptyHouseholdReturnsZeroCosts()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>();
@@ -31,7 +31,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_SingleAdult_ReturnsCorrectCosts()
+    public void CalculateReferenceCostsSingleAdultReturnsCorrectCosts()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -57,7 +57,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_SingleAdultWithLunchOut_ReturnsCorrectCosts()
+    public void CalculateReferenceCostsSingleAdultWithLunchOutReturnsCorrectCosts()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -83,7 +83,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_FamilyWithTwoAdultsAndTwoChildren_ReturnsCorrectCosts()
+    public void CalculateReferenceCostsFamilyWithTwoAdultsAndTwoChildrenReturnsCorrectCosts()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -122,7 +122,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_LargeHousehold_CapsAt7Members()
+    public void CalculateReferenceCostsLargeHouseholdCapsAt7Members()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>();
@@ -140,7 +140,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CalculateReferenceCosts_InfantAndToddler_ReturnsCorrectCosts()
+    public void CalculateReferenceCostsInfantAndToddlerReturnsCorrectCosts()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -170,7 +170,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CompareWithReference_CalculatesCorrectDifferences()
+    public void CompareWithReferenceCalculatesCorrectDifferences()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -209,7 +209,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void CompareWithReference_CalculatesNegativeDifference()
+    public void CompareWithReferenceCalculatesNegativeDifference()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -245,7 +245,7 @@ public class KonsumentverketComparisonServiceTests
     [DataRow(40, IndividualAgeGroup.TwentySixToFortyNineYears)]
     [DataRow(60, IndividualAgeGroup.FiftyToSixtyFourYears)]
     [DataRow(70, IndividualAgeGroup.SixtyFivePlusYears)]
-    public void GetIndividualAgeGroup_CorrectMapping(int age, IndividualAgeGroup expectedGroup)
+    public void GetIndividualAgeGroupCorrectMapping(int age, IndividualAgeGroup expectedGroup)
     {
         // Arrange
         var member = new KonsumentverketHouseholdMember { Age = age };
@@ -268,7 +268,7 @@ public class KonsumentverketComparisonServiceTests
     [DataRow(45, AgeGroup.ThirtyOneToSixtyYears)]
     [DataRow(70, AgeGroup.SixtyOneToSeventyFourYears)]
     [DataRow(80, AgeGroup.SeventyFivePlusYears)]
-    public void GetFoodAgeGroup_CorrectMapping(int age, AgeGroup expectedGroup)
+    public void GetFoodAgeGroupCorrectMapping(int age, AgeGroup expectedGroup)
     {
         // Arrange
         var member = new KonsumentverketHouseholdMember { Age = age };
@@ -281,7 +281,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void GetAgeGroupLabel_ReturnsSwedishLabels()
+    public void GetAgeGroupLabelReturnsSwedishLabels()
     {
         // Act & Assert
         Assert.AreEqual("6-11 mån", _service.GetAgeGroupLabel(AgeGroup.SixToElevenMonths));
@@ -291,7 +291,7 @@ public class KonsumentverketComparisonServiceTests
     }
 
     [TestMethod]
-    public void GetIndividualAgeGroupLabel_ReturnsSwedishLabels()
+    public void GetIndividualAgeGroupLabelReturnsSwedishLabels()
     {
         // Act & Assert
         Assert.AreEqual("0 år", _service.GetIndividualAgeGroupLabel(IndividualAgeGroup.ZeroYears));

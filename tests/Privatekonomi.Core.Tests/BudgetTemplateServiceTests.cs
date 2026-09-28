@@ -31,7 +31,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishFamily_AllocatesCorrectPercentages()
+    public void ApplyTemplateSwedishFamilyAllocatesCorrectPercentages()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -49,7 +49,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishFamily_TreatsSavingsAsMonthlyCost()
+    public void ApplyTemplateSwedishFamilyTreatsSavingsAsMonthlyCost()
     {
         // Arrange - Verify that savings is treated as a significant monthly cost
         decimal totalIncome = 30000m;
@@ -68,7 +68,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishFamily_SeparatesFoodCategories()
+    public void ApplyTemplateSwedishFamilySeparatesFoodCategories()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -91,7 +91,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishSingle_AllocatesHigherSavingsRate()
+    public void ApplyTemplateSwedishSingleAllocatesHigherSavingsRate()
     {
         // Arrange
         decimal totalIncome = 25000m;
@@ -111,7 +111,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishSingle_LowerHousingCosts()
+    public void ApplyTemplateSwedishSingleLowerHousingCosts()
     {
         // Arrange
         decimal totalIncome = 25000m;
@@ -127,7 +127,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_Custom_ReturnsAllZeros()
+    public void ApplyTemplateCustomReturnsAllZeros()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -140,7 +140,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_FiftyThirtyTwenty_AllocatesCorrectly()
+    public void ApplyTemplateFiftyThirtyTwentyAllocatesCorrectly()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -159,7 +159,7 @@ public class BudgetTemplateServiceTests
     [DataRow(30000)]
     [DataRow(40000)]
     [DataRow(50000)]
-    public void ApplyTemplate_SwedishFamily_WorksWithVariousIncomes(int income)
+    public void ApplyTemplateSwedishFamilyWorksWithVariousIncomes(int income)
     {
         // Act
         decimal totalIncome = income;
@@ -175,7 +175,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void GetTemplateDescription_SwedishFamily_ReturnsCorrectDescription()
+    public void GetTemplateDescriptionSwedishFamilyReturnsCorrectDescription()
     {
         // Act
         var description = BudgetTemplateService.GetTemplateDescription(BudgetTemplateType.SwedishFamily);
@@ -187,7 +187,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void GetTemplateDescription_SwedishSingle_ReturnsCorrectDescription()
+    public void GetTemplateDescriptionSwedishSingleReturnsCorrectDescription()
     {
         // Act
         var description = BudgetTemplateService.GetTemplateDescription(BudgetTemplateType.SwedishSingle);
@@ -198,7 +198,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishFamily_IncludesChildrenCategory()
+    public void ApplyTemplateSwedishFamilyIncludesChildrenCategory()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -214,7 +214,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishFamily_IncludesBuffer()
+    public void ApplyTemplateSwedishFamilyIncludesBuffer()
     {
         // Arrange
         decimal totalIncome = 30000m;
@@ -230,7 +230,7 @@ public class BudgetTemplateServiceTests
     }
 
     [TestMethod]
-    public void ApplyTemplate_SwedishSingle_HigherBuffer()
+    public void ApplyTemplateSwedishSingleHigherBuffer()
     {
         // Arrange
         decimal totalIncome = 25000m;

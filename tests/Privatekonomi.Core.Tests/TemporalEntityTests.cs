@@ -19,7 +19,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task CreateTemporalEntity_ShouldSetValidFromAndValidTo()
+    public async Task CreateTemporalEntityShouldSetValidFromAndValidTo()
     {
         // Arrange
         var context = GetInMemoryContext();
@@ -44,7 +44,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task UpdateTemporalEntity_ShouldCloseOldVersionAndCreateNew()
+    public async Task UpdateTemporalEntityShouldCloseOldVersionAndCreateNew()
     {
         // Arrange
         var context = GetInMemoryContext();
@@ -83,7 +83,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task DeleteTemporalEntity_ShouldSetValidTo()
+    public async Task DeleteTemporalEntityShouldSetValidTo()
     {
         // Arrange
         var context = GetInMemoryContext();
@@ -108,7 +108,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task AsOf_ShouldReturnCorrectVersion()
+    public async Task AsOfShouldReturnCorrectVersion()
     {
         // Arrange
         var context = GetInMemoryContext();
@@ -183,7 +183,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task CurrentOnly_ShouldReturnOnlyActiveRecords()
+    public async Task CurrentOnlyShouldReturnOnlyActiveRecords()
     {
         // Arrange
         var context = GetInMemoryContext();
@@ -229,7 +229,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public void IsActive_ShouldReturnCorrectValue()
+    public void IsActiveShouldReturnCorrectValue()
     {
         // Arrange
         var activeEntity = new Transaction
@@ -250,7 +250,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public void IsActiveAt_ShouldReturnCorrectValue()
+    public void IsActiveAtShouldReturnCorrectValue()
     {
         // Arrange
         var baseDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -267,7 +267,7 @@ public class TemporalEntityTests
     }
 
     [TestMethod]
-    public async Task GetAllVersions_ShouldReturnAllVersionsOrdered()
+    public async Task GetAllVersionsShouldReturnAllVersionsOrdered()
     {
         // Arrange
         var context = GetInMemoryContext();

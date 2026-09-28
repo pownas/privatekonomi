@@ -26,7 +26,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task HasCompletedOnboardingAsync_WhenUserNotFound_ReturnsFalse()
+    public async Task HasCompletedOnboardingAsyncWhenUserNotFoundReturnsFalse()
     {
         // Arrange
         var userId = "test-user-id";
@@ -41,7 +41,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task HasCompletedOnboardingAsync_WhenOnboardingNotCompleted_ReturnsFalse()
+    public async Task HasCompletedOnboardingAsyncWhenOnboardingNotCompletedReturnsFalse()
     {
         // Arrange
         var userId = "test-user-id";
@@ -62,7 +62,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task HasCompletedOnboardingAsync_WhenOnboardingCompleted_ReturnsTrue()
+    public async Task HasCompletedOnboardingAsyncWhenOnboardingCompletedReturnsTrue()
     {
         // Arrange
         var userId = "test-user-id";
@@ -84,7 +84,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task CompleteOnboardingAsync_WhenUserExists_SetsOnboardingCompleted()
+    public async Task CompleteOnboardingAsyncWhenUserExistsSetsOnboardingCompleted()
     {
         // Arrange
         var userId = "test-user-id";
@@ -110,7 +110,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task CompleteOnboardingAsync_WhenUserNotFound_DoesNothing()
+    public async Task CompleteOnboardingAsyncWhenUserNotFoundDoesNothing()
     {
         // Arrange
         var userId = "test-user-id";
@@ -125,7 +125,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentStepAsync_WhenOnboardingNotCompleted_ReturnsZero()
+    public async Task GetCurrentStepAsyncWhenOnboardingNotCompletedReturnsZero()
     {
         // Arrange
         var userId = "test-user-id";
@@ -146,7 +146,7 @@ public class OnboardingServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentStepAsync_WhenOnboardingCompleted_ReturnsMinusOne()
+    public async Task GetCurrentStepAsyncWhenOnboardingCompletedReturnsMinusOne()
     {
         // Arrange
         var userId = "test-user-id";

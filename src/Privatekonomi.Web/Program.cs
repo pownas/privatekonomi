@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Privatekonomi.Core.Data;
@@ -83,7 +85,17 @@ builder.Services.AddPrivatekonomyStorage(builder.Configuration);
 // Add Identity services
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
-builder.Services.AddAuthorizationBuilder();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("PiUpdateAdmin", policy => policy.RequireAuthenticatedUser()
+        .AddRequirements(new PiUpdateAdminRequirement()));
+builder.Services.AddScoped<IAuthorizationHandler, PiUpdateAdminHandler>();
+builder.Services.AddSingleton<PiUpdateService>();
+builder.Services.AddHttpClient("pi-update", client =>
+{
+    client.BaseAddress = new Uri("https://api.github.com/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Privatekonomi-PiUpdate");
+    client.Timeout = TimeSpan.FromSeconds(8);
+});
 
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
@@ -297,6 +309,10 @@ app.UseAntiforgery();
 
 // Map Aspire default endpoints (health checks, etc.)
 app.MapDefaultEndpoints();
+app.MapGet("/internal/health", (HttpContext context) =>
+    context.Connection.RemoteIpAddress is { } address && System.Net.IPAddress.IsLoopback(address)
+        ? Results.Ok()
+        : Results.NotFound());
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -304,6 +320,20 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapPost("/settings/pi-update/start", async (HttpContext context, IAntiforgery antiforgery, PiUpdateService updates) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    if (!updates.IsAvailable)
+        return Results.NotFound();
+
+    if (!updates.TryRequest())
+        return Results.Conflict();
+
+    return Results.Redirect("/settings/pi-update");
+}).RequireAuthorization("PiUpdateAdmin");
 
 // Add Identity API endpoints (token-based auth for mobile/API clients)
 app.MapGroup("/Account").MapIdentityApi<ApplicationUser>();

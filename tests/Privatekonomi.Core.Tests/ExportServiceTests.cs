@@ -169,7 +169,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAvailableYearsAsync_ReturnsYearsWithTransactions()
+    public async Task GetAvailableYearsAsyncReturnsYearsWithTransactions()
     {
         // Arrange
         await SeedTestData();
@@ -187,7 +187,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAvailableYearsAsync_NoTransactions_ReturnsEmptyList()
+    public async Task GetAvailableYearsAsyncNoTransactionsReturnsEmptyList()
     {
         // Arrange - no data seeded
 
@@ -200,7 +200,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToJsonAsync_ValidYear_ExportsCorrectData()
+    public async Task ExportYearDataToJsonAsyncValidYearExportsCorrectData()
     {
         // Arrange
         await SeedTestData();
@@ -237,7 +237,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToCsvAsync_ValidYear_ExportsCorrectData()
+    public async Task ExportYearDataToCsvAsyncValidYearExportsCorrectData()
     {
         // Arrange
         await SeedTestData();
@@ -269,7 +269,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToJsonAsync_IncludesAllRelevantData()
+    public async Task ExportYearDataToJsonAsyncIncludesAllRelevantData()
     {
         // Arrange
         await SeedTestData();
@@ -296,7 +296,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToCsvAsync_CalculatesSummaryCorrectly()
+    public async Task ExportYearDataToCsvAsyncCalculatesSummaryCorrectly()
     {
         // Arrange
         await SeedTestData();
@@ -317,7 +317,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToJsonAsync_FiltersByUserId()
+    public async Task ExportYearDataToJsonAsyncFiltersByUserId()
     {
         // Arrange
         await SeedTestData();
@@ -363,7 +363,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToCsvAsync_FiltersByUserId()
+    public async Task ExportYearDataToCsvAsyncFiltersByUserId()
     {
         // Arrange
         await SeedTestData();
@@ -396,7 +396,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToJsonAsync_YearWithNoData_ReturnsEmptyDataStructure()
+    public async Task ExportYearDataToJsonAsyncYearWithNoDataReturnsEmptyDataStructure()
     {
         // Arrange
         await SeedTestData();
@@ -414,7 +414,7 @@ public class ExportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ExportYearDataToCsvAsync_YearWithNoData_ReturnsHeaderOnly()
+    public async Task ExportYearDataToCsvAsyncYearWithNoDataReturnsHeaderOnly()
     {
         // Arrange
         await SeedTestData();

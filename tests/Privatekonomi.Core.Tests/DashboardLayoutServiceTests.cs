@@ -43,7 +43,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserLayoutsAsync_ReturnsUserLayouts()
+    public async Task GetUserLayoutsAsyncReturnsUserLayouts()
     {
         // Arrange
         var layout1 = new DashboardLayout
@@ -83,7 +83,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDefaultLayoutAsync_ReturnsDefaultLayout()
+    public async Task GetDefaultLayoutAsyncReturnsDefaultLayout()
     {
         // Arrange
         var defaultLayout = new DashboardLayout
@@ -116,7 +116,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDefaultLayoutAsync_CreatesDefaultWhenNoneExists()
+    public async Task GetDefaultLayoutAsyncCreatesDefaultWhenNoneExists()
     {
         // Act
         var result = await _service.GetDefaultLayoutAsync(TestUserId);
@@ -129,7 +129,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateLayoutAsync_CreatesNewLayout()
+    public async Task CreateLayoutAsyncCreatesNewLayout()
     {
         // Arrange
         var newLayout = new DashboardLayout
@@ -162,7 +162,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateLayoutAsync_SetsCurrentUserIdWhenAuthenticated()
+    public async Task CreateLayoutAsyncSetsCurrentUserIdWhenAuthenticated()
     {
         // Arrange
         var newLayout = new DashboardLayout
@@ -180,7 +180,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateLayoutAsync_UnsetsOtherDefaultsWhenCreatingDefault()
+    public async Task CreateLayoutAsyncUnsetsOtherDefaultsWhenCreatingDefault()
     {
         // Arrange
         var existingDefault = new DashboardLayout
@@ -211,7 +211,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateLayoutAsync_UpdatesExistingLayout()
+    public async Task UpdateLayoutAsyncUpdatesExistingLayout()
     {
         // Arrange
         var layout = new DashboardLayout
@@ -238,7 +238,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteLayoutAsync_DeletesLayout()
+    public async Task DeleteLayoutAsyncDeletesLayout()
     {
         // Arrange
         var layout = new DashboardLayout
@@ -262,7 +262,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteLayoutAsync_SetsAnotherAsDefaultWhenDeletingDefault()
+    public async Task DeleteLayoutAsyncSetsAnotherAsDefaultWhenDeletingDefault()
     {
         // Arrange
         var defaultLayout = new DashboardLayout
@@ -294,7 +294,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SetDefaultLayoutAsync_SetsLayoutAsDefault()
+    public async Task SetDefaultLayoutAsyncSetsLayoutAsDefault()
     {
         // Arrange
         var layout1 = new DashboardLayout
@@ -329,7 +329,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateDefaultLayoutForUserAsync_CreatesLayoutWithWidgets()
+    public async Task CreateDefaultLayoutForUserAsyncCreatesLayoutWithWidgets()
     {
         // Act
         var result = await _service.CreateDefaultLayoutForUserAsync(TestUserId);
@@ -344,7 +344,7 @@ public class DashboardLayoutServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetLayoutByIdAsync_ReturnsCorrectLayout()
+    public async Task GetLayoutByIdAsyncReturnsCorrectLayout()
     {
         // Arrange
         var layout = new DashboardLayout

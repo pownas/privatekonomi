@@ -52,7 +52,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void InMemoryStorage_ShouldBeConfigurable()
+    public void InMemoryStorageShouldBeConfigurable()
     {
         // Arrange & Act
         using var serviceProvider = CreateServiceProvider(new Dictionary<string, string?>
@@ -69,7 +69,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void SqliteStorage_ShouldBeConfigurable()
+    public void SqliteStorageShouldBeConfigurable()
     {
         // Arrange
         var dbPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.db");
@@ -97,7 +97,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void StorageSettings_ShouldBindFromConfiguration()
+    public void StorageSettingsShouldBindFromConfiguration()
     {
         // Arrange
         var configuration = new ConfigurationBuilder()
@@ -124,7 +124,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task SqliteStorage_ShouldPersistData()
+    public async Task SqliteStorageShouldPersistData()
     {
         // Arrange
         var dbPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.db");
@@ -190,7 +190,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void SqlServerStorage_ShouldBeConfigurable()
+    public void SqlServerStorageShouldBeConfigurable()
     {
         // Arrange
         var connectionString = "Server=(localdb)\\mssqllocaldb;Database=PrivatekonomyTest;Trusted_Connection=True;MultipleActiveResultSets=true";
@@ -211,7 +211,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void SqlServerStorage_WithoutConnectionString_ShouldThrowException()
+    public void SqlServerStorageWithoutConnectionStringShouldThrowException()
     {
         // Arrange & Act & Assert
         InvalidOperationException? exception = null;
@@ -236,7 +236,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public void JsonFileStorage_ShouldBeConfigurable()
+    public void JsonFileStorageShouldBeConfigurable()
     {
         // Arrange & Act
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -265,7 +265,7 @@ public class StorageConfigurationTests
 
     [TestMethod]
     [Ignore("Known issue: InMemory database entity tracking conflict when loading from JSON. This test works in isolation but fails when database instances are shared.")]
-    public async Task JsonFileStorage_ShouldPersistAndLoadData()
+    public async Task JsonFileStorageShouldPersistAndLoadData()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -322,7 +322,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task JsonFileStorage_Transactions_ShouldBeSavedToMonthlyFiles()
+    public async Task JsonFileStorageTransactionsShouldBeSavedToMonthlyFiles()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -376,7 +376,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task JsonFileStorage_Transactions_MonthlyFilesContainCorrectData()
+    public async Task JsonFileStorageTransactionsMonthlyFilesContainCorrectData()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -440,7 +440,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task JsonFileStorage_Transactions_ExistsReturnsTrueForMonthlyFiles()
+    public async Task JsonFileStorageTransactionsExistsReturnsTrueForMonthlyFiles()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -479,7 +479,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task JsonFileStorage_EmptyTransactions_ShouldCreateNoMonthlyFiles()
+    public async Task JsonFileStorageEmptyTransactionsShouldCreateNoMonthlyFiles()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");
@@ -510,7 +510,7 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
-    public async Task JsonFileStorage_LegacyTransactionsFile_ShouldBeRemovedOnSave()
+    public async Task JsonFileStorageLegacyTransactionsFileShouldBeRemovedOnSave()
     {
         // Arrange
         var dataPath = Path.Combine(Path.GetTempPath(), $"jsontest_{Guid.NewGuid()}");

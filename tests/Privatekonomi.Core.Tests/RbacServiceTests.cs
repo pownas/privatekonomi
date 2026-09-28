@@ -104,7 +104,7 @@ public class RbacServiceTests : IDisposable
     // ==================== Role Management Tests ====================
 
     [TestMethod]
-    public async Task GetUserRoleInHouseholdAsync_ReturnsAdminRole()
+    public async Task GetUserRoleInHouseholdAsyncReturnsAdminRole()
     {
         // Act
         var role = await _rbacService.GetUserRoleInHouseholdAsync(_testUserId, _testHouseholdId);
@@ -116,7 +116,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserRoleInHouseholdAsync_ReturnsNullForNonMember()
+    public async Task GetUserRoleInHouseholdAsyncReturnsNullForNonMember()
     {
         // Act
         var role = await _rbacService.GetUserRoleInHouseholdAsync("non-existent-user", _testHouseholdId);
@@ -126,7 +126,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task HasRoleAsync_ReturnsTrueForCorrectRole()
+    public async Task HasRoleAsyncReturnsTrueForCorrectRole()
     {
         // Act
         var hasRole = await _rbacService.HasRoleAsync(_testUserId, _testHouseholdId, HouseholdRoleType.Admin);
@@ -136,7 +136,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task HasRoleAsync_ReturnsFalseForIncorrectRole()
+    public async Task HasRoleAsyncReturnsFalseForIncorrectRole()
     {
         // Act
         var hasRole = await _rbacService.HasRoleAsync(_testUserId, _testHouseholdId, HouseholdRoleType.ViewOnly);
@@ -146,7 +146,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task HasMinimumRoleAsync_ReturnsTrueForSameOrHigherRole()
+    public async Task HasMinimumRoleAsyncReturnsTrueForSameOrHigherRole()
     {
         // Admin should pass minimum role check for FullAccess, Editor, etc.
         // Act
@@ -157,7 +157,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AssignRoleAsync_CreatesNewRoleSuccessfully()
+    public async Task AssignRoleAsyncCreatesNewRoleSuccessfully()
     {
         // Arrange
         var targetMemberId = 2; // User 2
@@ -182,7 +182,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AssignRoleAsync_ThrowsExceptionWhenNonAdminTriesToAssign()
+    public async Task AssignRoleAsyncThrowsExceptionWhenNonAdminTriesToAssign()
     {
         // Arrange - First assign Editor role to user 2
         await _rbacService.AssignRoleAsync(_testUserId, 2, HouseholdRoleType.Editor);
@@ -202,7 +202,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AssignRoleAsync_RevokesExistingRoleWhenAssigningNew()
+    public async Task AssignRoleAsyncRevokesExistingRoleWhenAssigningNew()
     {
         // Arrange
         var targetMemberId = 2;
@@ -226,7 +226,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TransferAdminRoleAsync_TransfersAdminRoleSuccessfully()
+    public async Task TransferAdminRoleAsyncTransfersAdminRoleSuccessfully()
     {
         // Act
         var newAdminRole = await _rbacService.TransferAdminRoleAsync(_testUserId, _testUser2Id, _testHouseholdId);
@@ -247,7 +247,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task RemoveRoleAsync_CannotRemoveLastAdminRole()
+    public async Task RemoveRoleAsyncCannotRemoveLastAdminRole()
     {
         // Act & Assert
         bool exceptionThrown = false;
@@ -266,7 +266,7 @@ public class RbacServiceTests : IDisposable
     // ==================== Permission Check Tests ====================
 
     [TestMethod]
-    public async Task HasPermissionAsync_AdminHasAllPermissions()
+    public async Task HasPermissionAsyncAdminHasAllPermissions()
     {
         // Act
         var hasTransactionPermission = await _rbacService.HasPermissionAsync(_testUserId, _testHouseholdId, "transaction.view.all");
@@ -278,7 +278,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CanPerformActionAsync_RespectsAmountLimits()
+    public async Task CanPerformActionAsyncRespectsAmountLimits()
     {
         // Arrange - Assign Editor role to user 2
         await _rbacService.AssignRoleAsync(_testUserId, 2, HouseholdRoleType.Editor);
@@ -293,7 +293,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CheckPermissionAsync_ReturnsCorrectAmountLimitForEditor()
+    public async Task CheckPermissionAsyncReturnsCorrectAmountLimitForEditor()
     {
         // Arrange - Assign Editor role to user 2
         await _rbacService.AssignRoleAsync(_testUserId, 2, HouseholdRoleType.Editor);
@@ -310,7 +310,7 @@ public class RbacServiceTests : IDisposable
     // ==================== Delegation Tests ====================
 
     [TestMethod]
-    public async Task DelegateRoleAsync_AdminCanDelegateFullAccess()
+    public async Task DelegateRoleAsyncAdminCanDelegateFullAccess()
     {
         // Act
         var delegatedRole = await _rbacService.DelegateRoleAsync(
@@ -329,7 +329,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DelegateRoleAsync_ThrowsExceptionWhenExceedingMaxPeriod()
+    public async Task DelegateRoleAsyncThrowsExceptionWhenExceedingMaxPeriod()
     {
         // Act & Assert
         bool exceptionThrown = false;
@@ -351,7 +351,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DelegateRoleAsync_DelegatedRoleCannotDelegateFurther()
+    public async Task DelegateRoleAsyncDelegatedRoleCannotDelegateFurther()
     {
         // Arrange - Create a delegation
         await _rbacService.DelegateRoleAsync(
@@ -394,7 +394,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task RevokeDelegationAsync_RevokesSuccessfully()
+    public async Task RevokeDelegationAsyncRevokesSuccessfully()
     {
         // Arrange - Create a delegation
         var delegation = await _rbacService.DelegateRoleAsync(
@@ -417,7 +417,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActiveDelegationsAsync_ReturnsOnlyActiveDelegations()
+    public async Task GetActiveDelegationsAsyncReturnsOnlyActiveDelegations()
     {
         // Arrange - Create two delegations, revoke one
         var delegation1 = await _rbacService.DelegateRoleAsync(
@@ -459,7 +459,7 @@ public class RbacServiceTests : IDisposable
     // ==================== Validation Tests ====================
 
     [TestMethod]
-    public async Task ValidateRoleAssignmentAsync_FailsWhenNonAdminTriesToAssign()
+    public async Task ValidateRoleAssignmentAsyncFailsWhenNonAdminTriesToAssign()
     {
         // Arrange - Assign Editor role to user 2
         await _rbacService.AssignRoleAsync(_testUserId, 2, HouseholdRoleType.Editor);
@@ -473,7 +473,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ValidateRoleAssignmentAsync_WarnsWhenReplacingAdmin()
+    public async Task ValidateRoleAssignmentAsyncWarnsWhenReplacingAdmin()
     {
         // Act
         var validation = await _rbacService.ValidateRoleAssignmentAsync(_testUserId, _testHouseholdId, 2, HouseholdRoleType.Admin);
@@ -485,7 +485,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ValidateRoleAssignmentAsync_RequiresDateOfBirthForChildRole()
+    public async Task ValidateRoleAssignmentAsyncRequiresDateOfBirthForChildRole()
     {
         // Act
         var validation = await _rbacService.ValidateRoleAssignmentAsync(_testUserId, _testHouseholdId, 2, HouseholdRoleType.Child);
@@ -496,7 +496,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ValidateHouseholdRolesAsync_PassesWithOneAdmin()
+    public async Task ValidateHouseholdRolesAsyncPassesWithOneAdmin()
     {
         // Act
         var isValid = await _rbacService.ValidateHouseholdRolesAsync(_testHouseholdId);
@@ -506,7 +506,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ValidateHouseholdRolesAsync_FailsWithNoAdmin()
+    public async Task ValidateHouseholdRolesAsyncFailsWithNoAdmin()
     {
         // Arrange - Remove admin role
         var adminRole = await _context.HouseholdRoles.FindAsync(1);
@@ -526,7 +526,7 @@ public class RbacServiceTests : IDisposable
     // ==================== Utility Tests ====================
 
     [TestMethod]
-    public void CanDelegate_AdminCanDelegateAllExceptAdmin()
+    public void CanDelegateAdminCanDelegateAllExceptAdmin()
     {
         // Assert
         Assert.IsFalse(_rbacService.CanDelegate(HouseholdRoleType.Admin, HouseholdRoleType.Admin));
@@ -536,7 +536,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CanDelegate_FullAccessCanDelegateLimitedRoles()
+    public void CanDelegateFullAccessCanDelegateLimitedRoles()
     {
         // Assert
         Assert.IsTrue(_rbacService.CanDelegate(HouseholdRoleType.FullAccess, HouseholdRoleType.Editor));
@@ -546,7 +546,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CanDelegate_OtherRolesCannotDelegate()
+    public void CanDelegateOtherRolesCannotDelegate()
     {
         // Assert
         Assert.IsFalse(_rbacService.CanDelegate(HouseholdRoleType.Editor, HouseholdRoleType.ViewOnly));
@@ -555,7 +555,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void GetMaxDelegationPeriod_ReturnsCorrectPeriods()
+    public void GetMaxDelegationPeriodReturnsCorrectPeriods()
     {
         // Assert
         Assert.AreEqual(90, _rbacService.GetMaxDelegationPeriod(HouseholdRoleType.Admin, HouseholdRoleType.FullAccess));
@@ -564,7 +564,7 @@ public class RbacServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void RequiresApprovalForDelegation_ReturnsCorrectValue()
+    public void RequiresApprovalForDelegationReturnsCorrectValue()
     {
         // Assert
         Assert.IsFalse(_rbacService.RequiresApprovalForDelegation(HouseholdRoleType.Admin, HouseholdRoleType.FullAccess));

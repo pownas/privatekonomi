@@ -72,7 +72,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateSuggestionAsync_FiftyThirtyTwenty_CreatesCorrectSuggestion()
+    public async Task GenerateSuggestionAsyncFiftyThirtyTwentyCreatesCorrectSuggestion()
     {
         // Arrange
         var totalIncome = 30000m;
@@ -90,7 +90,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateSuggestionAsync_FiftyThirtyTwenty_AllocatesSavingsCorrectly()
+    public async Task GenerateSuggestionAsyncFiftyThirtyTwentyAllocatesSavingsCorrectly()
     {
         // Arrange
         var totalIncome = 30000m;
@@ -109,7 +109,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateSuggestionAsync_SwedishFamily_Allocates15PercentToSavings()
+    public async Task GenerateSuggestionAsyncSwedishFamilyAllocates15PercentToSavings()
     {
         // Arrange
         var totalIncome = 30000m;
@@ -127,7 +127,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateSuggestionAsync_SwedishSingle_Allocates20PercentToSavings()
+    public async Task GenerateSuggestionAsyncSwedishSingleAllocates20PercentToSavings()
     {
         // Arrange
         var totalIncome = 25000m;
@@ -145,7 +145,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateSuggestionAsync_SetsCorrectAllocationCategories()
+    public async Task GenerateSuggestionAsyncSetsCorrectAllocationCategories()
     {
         // Arrange
         var totalIncome = 30000m;
@@ -173,7 +173,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AdjustSuggestionItemAsync_UpdatesAmount()
+    public async Task AdjustSuggestionItemAsyncUpdatesAmount()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -193,7 +193,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AdjustSuggestionItemAsync_RecordsAdjustment()
+    public async Task AdjustSuggestionItemAsyncRecordsAdjustment()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -214,7 +214,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TransferBetweenItemsAsync_TransfersCorrectly()
+    public async Task TransferBetweenItemsAsyncTransfersCorrectly()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -241,7 +241,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TransferBetweenItemsAsync_RecordsAdjustment()
+    public async Task TransferBetweenItemsAsyncRecordsAdjustment()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -262,7 +262,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AcceptSuggestionAsync_CreatesBudget()
+    public async Task AcceptSuggestionAsyncCreatesBudget()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -285,7 +285,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AcceptSuggestionAsync_MarksSuggestionAsAccepted()
+    public async Task AcceptSuggestionAsyncMarksSuggestionAsAccepted()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -305,7 +305,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AcceptSuggestionAsync_ThrowsIfAlreadyAccepted()
+    public async Task AcceptSuggestionAsyncThrowsIfAlreadyAccepted()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -332,7 +332,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateEffectsAsync_CalculatesCorrectTotals()
+    public async Task CalculateEffectsAsyncCalculatesCorrectTotals()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -347,7 +347,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateEffectsAsync_TracksAdjustmentCount()
+    public async Task CalculateEffectsAsyncTracksAdjustmentCount()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -367,7 +367,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPendingSuggestionsAsync_ReturnsOnlyPending()
+    public async Task GetPendingSuggestionsAsyncReturnsOnlyPending()
     {
         // Arrange
         await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -387,7 +387,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteSuggestionAsync_RemovesSuggestion()
+    public async Task DeleteSuggestionAsyncRemovesSuggestion()
     {
         // Arrange
         var suggestion = await _service.GenerateSuggestionAsync(30000m, BudgetDistributionModel.FiftyThirtyTwenty);
@@ -401,7 +401,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void GetAvailableModels_ReturnsAllModels()
+    public void GetAvailableModelsReturnsAllModels()
     {
         // Act
         var models = _service.GetAvailableModels().ToList();
@@ -419,7 +419,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     [DataRow(BudgetDistributionModel.SwedishSingle)]
     [DataRow(BudgetDistributionModel.EightyTwenty)]
     [DataRow(BudgetDistributionModel.SeventyTwentyTen)]
-    public void GetDistributionModelDescription_ReturnsNonEmptyDescription(BudgetDistributionModel model)
+    public void GetDistributionModelDescriptionReturnsNonEmptyDescription(BudgetDistributionModel model)
     {
         // Act
         var description = _service.GetDistributionModelDescription(model);
@@ -433,7 +433,7 @@ public class BudgetSuggestionServiceTests : IDisposable
     [DataRow(30000)]
     [DataRow(40000)]
     [DataRow(50000)]
-    public async Task GenerateSuggestionAsync_WorksWithVariousIncomes(decimal income)
+    public async Task GenerateSuggestionAsyncWorksWithVariousIncomes(decimal income)
     {
         // Act
         var suggestion = await _service.GenerateSuggestionAsync(income, BudgetDistributionModel.FiftyThirtyTwenty);

@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 public class BankRegistryTests
 {
     [TestMethod]
-    public void SupportedBanks_ShouldContainAllRequiredBanks()
+    public void SupportedBanksShouldContainAllRequiredBanks()
     {
         // Arrange
         var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Nordea", "SEB", "Swedbank", "Avanza" };
@@ -24,7 +24,7 @@ public class BankRegistryTests
     }
     
     [TestMethod]
-    public void AllBanks_ShouldHaveColorDefined()
+    public void AllBanksShouldHaveColorDefined()
     {
         // Assert
         foreach (var bank in BankRegistry.SupportedBanks)
@@ -44,7 +44,7 @@ public class BankRegistryTests
     [DataRow("SEB", "#60CD18")]
     [DataRow("Swedbank", "#FF7900")]
     [DataRow("Avanza", "#00C281")]
-    public void GetBankByName_ShouldReturnCorrectBank(string bankName, string expectedColor)
+    public void GetBankByNameShouldReturnCorrectBank(string bankName, string expectedColor)
     {
         // Act
         var bank = BankRegistry.GetBankByName(bankName);
@@ -56,7 +56,7 @@ public class BankRegistryTests
     }
     
     [TestMethod]
-    public void GetBankByName_ShouldBeCaseInsensitive()
+    public void GetBankByNameShouldBeCaseInsensitive()
     {
         // Act
         var bank1 = BankRegistry.GetBankByName("handelsbanken");
@@ -72,7 +72,7 @@ public class BankRegistryTests
     }
     
     [TestMethod]
-    public void GetBankByName_WithNonExistentBank_ShouldReturnNull()
+    public void GetBankByNameWithNonExistentBankShouldReturnNull()
     {
         // Act
         var bank = BankRegistry.GetBankByName("NonExistentBank");
@@ -87,7 +87,7 @@ public class BankRegistryTests
     [DataRow(null, null)]
     [DataRow("", null)]
     [DataRow("UnknownBank", null)]
-    public void GetBankColor_ShouldReturnCorrectColor(string? bankName, string? expectedColor)
+    public void GetBankColorShouldReturnCorrectColor(string? bankName, string? expectedColor)
     {
         // Act
         var color = BankRegistry.GetBankColor(bankName);

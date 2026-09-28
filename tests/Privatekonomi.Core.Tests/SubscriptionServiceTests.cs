@@ -40,7 +40,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUnusedSubscriptionsAsync_ReturnsSubscriptionsNotUsedRecently()
+    public async Task GetUnusedSubscriptionsAsyncReturnsSubscriptionsNotUsedRecently()
     {
         // Arrange
         var oldDate = DateTime.UtcNow.AddDays(-60);
@@ -94,7 +94,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSubscriptionsWithUpcomingCancellationDeadlineAsync_ReturnsOnlyUpcomingDeadlines()
+    public async Task GetSubscriptionsWithUpcomingCancellationDeadlineAsyncReturnsOnlyUpcomingDeadlines()
     {
         // Arrange
         var subscription1 = new Subscription
@@ -143,7 +143,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateLastUsedDateAsync_UpdatesDateSuccessfully()
+    public async Task UpdateLastUsedDateAsyncUpdatesDateSuccessfully()
     {
         // Arrange
         var subscription = new Subscription
@@ -174,7 +174,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DetectSubscriptionsFromTransactionsAsync_DetectsRecurringPatterns()
+    public async Task DetectSubscriptionsFromTransactionsAsyncDetectsRecurringPatterns()
     {
         // Arrange
         var baseDate = DateTime.UtcNow.AddMonths(-6);
@@ -241,7 +241,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DetectSubscriptionsFromTransactionsAsync_IgnoresInconsistentAmounts()
+    public async Task DetectSubscriptionsFromTransactionsAsyncIgnoresInconsistentAmounts()
     {
         // Arrange
         var baseDate = DateTime.UtcNow.AddMonths(-6);
@@ -293,7 +293,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DetectSubscriptionsFromTransactionsAsync_DoesNotDuplicateExistingSubscriptions()
+    public async Task DetectSubscriptionsFromTransactionsAsyncDoesNotDuplicateExistingSubscriptions()
     {
         // Arrange
         var existingSubscription = new Subscription
@@ -355,7 +355,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSubscriptionFromTransactionAsync_CreatesSubscriptionSuccessfully()
+    public async Task CreateSubscriptionFromTransactionAsyncCreatesSubscriptionSuccessfully()
     {
         // Arrange
         var transaction = new Transaction
@@ -389,7 +389,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSubscriptionFromTransactionAsync_ReturnsNullForNonexistentTransaction()
+    public async Task CreateSubscriptionFromTransactionAsyncReturnsNullForNonexistentTransaction()
     {
         // Act
         var result = await _subscriptionService.CreateSubscriptionFromTransactionAsync(99999, TestUserId);
@@ -399,7 +399,7 @@ public class SubscriptionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMonthlySubscriptionCostAsync_CalculatesCorrectly()
+    public async Task GetMonthlySubscriptionCostAsyncCalculatesCorrectly()
     {
         // Arrange
         var subscriptions = new List<Subscription>

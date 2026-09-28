@@ -21,7 +21,7 @@ public class MortgageAnalysisServiceTests
     #region Amortization Requirement Tests
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_LtvOver70_Requires2PercentAnnual()
+    public void CalculateAmortizationRequirementLtvOver70Requires2PercentAnnual()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -50,7 +50,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_LtvBetween50And70_Requires1PercentAnnual()
+    public void CalculateAmortizationRequirementLtvBetween50And70Requires1PercentAnnual()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -79,7 +79,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_LtvUnder50_NoRequirement()
+    public void CalculateAmortizationRequirementLtvUnder50NoRequirement()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -108,7 +108,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_WithExtraPayment_IncludesInCalculation()
+    public void CalculateAmortizationRequirementWithExtraPaymentIncludesInCalculation()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -135,7 +135,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_NonMortgageLoan_NoRequirement()
+    public void CalculateAmortizationRequirementNonMortgageLoanNoRequirement()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -161,7 +161,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateAmortizationRequirement_CalculatesYearsToPayoff()
+    public void CalculateAmortizationRequirementCalculatesYearsToPayoff()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -190,7 +190,7 @@ public class MortgageAnalysisServiceTests
     #region Interest Rate Risk Analysis Tests
 
     [TestMethod]
-    public void AnalyzeInterestRateRisk_CreatesScenarios()
+    public void AnalyzeInterestRateRiskCreatesScenarios()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -229,7 +229,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void AnalyzeInterestRateRisk_VariableRate_HighRisk()
+    public void AnalyzeInterestRateRiskVariableRateHighRisk()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -259,7 +259,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void AnalyzeInterestRateRisk_LongFixedPeriod_LowRisk()
+    public void AnalyzeInterestRateRiskLongFixedPeriodLowRisk()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -290,7 +290,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void AnalyzeInterestRateRisk_ShortFixedPeriodHighLtv_HighRisk()
+    public void AnalyzeInterestRateRiskShortFixedPeriodHighLtvHighRisk()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -319,7 +319,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void AnalyzeInterestRateRisk_MediumPeriodMediumLtv_MediumRisk()
+    public void AnalyzeInterestRateRiskMediumPeriodMediumLtvMediumRisk()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -351,7 +351,7 @@ public class MortgageAnalysisServiceTests
     #region Monthly Cost Calculation Tests
 
     [TestMethod]
-    public void CalculateMonthlyCost_ReturnsCorrectBreakdown()
+    public void CalculateMonthlyCostReturnsCorrectBreakdown()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -383,7 +383,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateMonthlyCost_WithCustomRate_UsesCustomRate()
+    public void CalculateMonthlyCostWithCustomRateUsesCustomRate()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -409,7 +409,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public void CalculateMonthlyCost_IncludesExtraPayment()
+    public void CalculateMonthlyCostIncludesExtraPayment()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -437,7 +437,7 @@ public class MortgageAnalysisServiceTests
     #region Upcoming Rate Resets Tests
 
     [TestMethod]
-    public async Task GetUpcomingRateResetsAsync_ReturnsOnlyUpcomingResets()
+    public async Task GetUpcomingRateResetsAsyncReturnsOnlyUpcomingResets()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -503,7 +503,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GetUpcomingRateResetsAsync_WithCustomMonths_RespectsParameter()
+    public async Task GetUpcomingRateResetsAsyncWithCustomMonthsRespectsParameter()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -546,7 +546,7 @@ public class MortgageAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GetUpcomingRateResetsAsync_OrdersByRateResetDate()
+    public async Task GetUpcomingRateResetsAsyncOrdersByRateResetDate()
     {
         // Arrange
         var context = CreateInMemoryContext();

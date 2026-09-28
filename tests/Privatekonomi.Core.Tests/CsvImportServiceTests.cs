@@ -53,7 +53,7 @@ public class CsvImportServiceTests : IDisposable
     // -------------------------------------------------------------------------
 
     [TestMethod]
-    public void DetectBank_SwedbankCsv_ReturnsSwedbankName()
+    public void DetectBankSwedbankCsvReturnsSwedbankName()
     {
         var bytes = Encoding.UTF8.GetBytes(ValidSwedbankCsv);
         var result = _service.DetectBank(bytes);
@@ -61,7 +61,7 @@ public class CsvImportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void DetectBank_IcaBankenCsv_ReturnsIcaBankenName()
+    public void DetectBankIcaBankenCsvReturnsIcaBankenName()
     {
         var bytes = Encoding.UTF8.GetBytes(ValidIcaBankenCsv);
         var result = _service.DetectBank(bytes);
@@ -69,7 +69,7 @@ public class CsvImportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void DetectBank_UnknownContent_ReturnsNull()
+    public void DetectBankUnknownContentReturnsNull()
     {
         var bytes = Encoding.UTF8.GetBytes("Col1,Col2,Col3\n1,2,3\n");
         var result = _service.DetectBank(bytes);
@@ -81,7 +81,7 @@ public class CsvImportServiceTests : IDisposable
     // -------------------------------------------------------------------------
 
     [TestMethod]
-    public async Task PreviewCsvAsync_NoExistingTransactions_NoDuplicates()
+    public async Task PreviewCsvAsyncNoExistingTransactionsNoDuplicates()
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ValidSwedbankCsv));
         var result = await _service.PreviewCsvAsync(stream, "Swedbank", TestUserId);
@@ -92,7 +92,7 @@ public class CsvImportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PreviewCsvAsync_ExistingTransactionSameUser_DetectedAsDuplicate()
+    public async Task PreviewCsvAsyncExistingTransactionSameUserDetectedAsDuplicate()
     {
         // Seed an identical transaction for the same user
         _context.Transactions.Add(new Transaction
@@ -115,7 +115,7 @@ public class CsvImportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PreviewCsvAsync_ExistingTransactionDifferentUser_NotDuplicate()
+    public async Task PreviewCsvAsyncExistingTransactionDifferentUserNotDuplicate()
     {
         // Seed an identical transaction but for a DIFFERENT user
         _context.Transactions.Add(new Transaction
@@ -143,7 +143,7 @@ public class CsvImportServiceTests : IDisposable
     // -------------------------------------------------------------------------
 
     [TestMethod]
-    public async Task PreviewCsvAsync_VeryOldDate_EmitsOldDateWarning()
+    public async Task PreviewCsvAsyncVeryOldDateEmitsOldDateWarning()
     {
         var oldDate = DateTime.Now.AddYears(-11).ToString("yyyy-MM-dd");
         var csv = $"""
@@ -161,7 +161,7 @@ public class CsvImportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PreviewCsvAsync_ZeroAmount_EmitsZeroAmountWarning()
+    public async Task PreviewCsvAsyncZeroAmountEmitsZeroAmountWarning()
     {
         var csv = $"""
             Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
@@ -182,7 +182,7 @@ public class CsvImportServiceTests : IDisposable
     // -------------------------------------------------------------------------
 
     [TestMethod]
-    public async Task ImportWithJobAsync_NewAccount_BankSourceNameIncludesAccountNumber()
+    public async Task ImportWithJobAsyncNewAccountBankSourceNameIncludesAccountNumber()
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ValidSwedbankCsv));
         var (result, _) = await _service.ImportWithJobAsync(

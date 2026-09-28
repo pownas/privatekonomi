@@ -21,6 +21,7 @@
 
   <ItemGroup Label="Projects">
     <ProjectReference Include="..\..\src\Privatekonomi.Core\Privatekonomi.Core.csproj" />
+    <ProjectReference Include="..\..\src\Privatekonomi.Web\Privatekonomi.Web.csproj" />
   </ItemGroup>
 
 </Project>

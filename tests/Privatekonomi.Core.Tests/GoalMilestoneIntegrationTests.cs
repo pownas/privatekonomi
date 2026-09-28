@@ -49,7 +49,7 @@ public class GoalMilestoneIntegrationTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CompleteWorkflow_CreateGoalAndTrackProgress_MilestonesAreCreatedAndReached()
+    public async Task CompleteWorkflowCreateGoalAndTrackProgressMilestonesAreCreatedAndReached()
     {
         // Arrange - Create a new goal
         var goal = new Goal
@@ -130,7 +130,7 @@ public class GoalMilestoneIntegrationTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CompleteWorkflow_WithCustomMilestone_BothAutomaticAndCustomWork()
+    public async Task CompleteWorkflowWithCustomMilestoneBothAutomaticAndCustomWork()
     {
         // Arrange
         var goal = new Goal
@@ -173,7 +173,7 @@ public class GoalMilestoneIntegrationTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CompleteWorkflow_GoalCompletion_AllMilestonesReached()
+    public async Task CompleteWorkflowGoalCompletionAllMilestonesReached()
     {
         // Arrange
         var goal = new Goal

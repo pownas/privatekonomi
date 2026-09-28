@@ -45,7 +45,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateGoalPrioritiesAsync_ShouldUpdateMultipleGoalPriorities()
+    public async Task UpdateGoalPrioritiesAsyncShouldUpdateMultipleGoalPriorities()
     {
         // Arrange
         var goal1 = new Goal
@@ -86,7 +86,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateCompletionDate_WithValidMonthlySavings_ReturnsCorrectDate()
+    public void CalculateCompletionDateWithValidMonthlySavingsReturnsCorrectDate()
     {
         // Arrange
         var goal = new Goal
@@ -111,7 +111,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateCompletionDate_WithZeroMonthlySavings_ReturnsNull()
+    public void CalculateCompletionDateWithZeroMonthlySavingsReturnsNull()
     {
         // Arrange
         var goal = new Goal
@@ -131,7 +131,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateCompletionDate_WithGoalAlreadyCompleted_ReturnsCurrentDate()
+    public void CalculateCompletionDateWithGoalAlreadyCompletedReturnsCurrentDate()
     {
         // Arrange
         var goal = new Goal
@@ -152,7 +152,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateMonthsToCompletion_WithValidMonthlySavings_ReturnsCorrectMonths()
+    public void CalculateMonthsToCompletionWithValidMonthlySavingsReturnsCorrectMonths()
     {
         // Arrange
         var goal = new Goal
@@ -173,7 +173,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateMonthsToCompletion_WithPartialMonth_RoundsUp()
+    public void CalculateMonthsToCompletionWithPartialMonthRoundsUp()
     {
         // Arrange
         var goal = new Goal
@@ -194,7 +194,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void SimulateSavingsChange_WithIncreasedSavings_ShowsEarlierCompletion()
+    public void SimulateSavingsChangeWithIncreasedSavingsShowsEarlierCompletion()
     {
         // Arrange
         var goal = new Goal
@@ -224,7 +224,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void SimulateSavingsChange_WithDecreasedSavings_ShowsLaterCompletion()
+    public void SimulateSavingsChangeWithDecreasedSavingsShowsLaterCompletion()
     {
         // Arrange
         var goal = new Goal
@@ -249,7 +249,7 @@ public class GoalServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void SimulateSavingsChange_WithZeroCurrentSavings_CalculatesCorrectly()
+    public void SimulateSavingsChangeWithZeroCurrentSavingsCalculatesCorrectly()
     {
         // Arrange
         var goal = new Goal

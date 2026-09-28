@@ -130,27 +130,27 @@ NEWFILEUID:NONE
 </OFX>";
 
     [TestMethod]
-    public void BankName_ReturnsOfxAllman()
+    public void BankNameReturnsOfxAllman()
     {
         Assert.AreEqual("OFX (Allmän)", _parser.BankName);
     }
 
     [TestMethod]
-    public void CanParse_ReturnsTrueForOfxHeader()
+    public void CanParseReturnsTrueForOfxHeader()
     {
         var result = _parser.CanParse(SgmlOfxContent);
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public void CanParse_ReturnsTrueForXmlOfx()
+    public void CanParseReturnsTrueForXmlOfx()
     {
         var result = _parser.CanParse(XmlOfxContent);
         Assert.IsTrue(result);
     }
 
     [TestMethod]
-    public void CanParse_ReturnsTrueForOfxTag()
+    public void CanParseReturnsTrueForOfxTag()
     {
         var content = "<OFX><SIGNONMSGSRSV1></SIGNONMSGSRSV1></OFX>";
         var result = _parser.CanParse(content);
@@ -158,7 +158,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public void CanParse_ReturnsFalseForCsv()
+    public void CanParseReturnsFalseForCsv()
     {
         var csvContent = "Datum;Belopp;Beskrivning\n2025-01-15;-125,50;ICA";
         var result = _parser.CanParse(csvContent);
@@ -166,7 +166,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_ParsesSgmlOfxCorrectly()
+    public async Task ParseAsyncParsesSgmlOfxCorrectly()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -195,7 +195,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_ParsesXmlOfxCorrectly()
+    public async Task ParseAsyncParsesXmlOfxCorrectly()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(XmlOfxContent));
@@ -220,7 +220,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_SetsImportedFlagTrue()
+    public async Task ParseAsyncSetsImportedFlagTrue()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -234,7 +234,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_SetsImportSourceToOfx()
+    public async Task ParseAsyncSetsImportSourceToOfx()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -248,7 +248,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_SetsCurrencyToSek()
+    public async Task ParseAsyncSetsCurrencyToSek()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -262,7 +262,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_CombinesNameAndMemo()
+    public async Task ParseAsyncCombinesNameAndMemo()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -277,7 +277,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_HandlesMissingMemo()
+    public async Task ParseAsyncHandlesMissingMemo()
     {
         // Arrange - The COOP transaction has no MEMO
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -293,7 +293,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_HandlesEmptyFile()
+    public async Task ParseAsyncHandlesEmptyFile()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(""));
@@ -307,7 +307,7 @@ NEWFILEUID:NONE
     }
 
     [TestMethod]
-    public async Task ParseAsync_HandlesFileWithNoTransactions()
+    public async Task ParseAsyncHandlesFileWithNoTransactions()
     {
         // Arrange
         var ofxWithNoTransactions = @"OFXHEADER:100
@@ -334,7 +334,7 @@ VERSION:102
     }
 
     [TestMethod]
-    public async Task ParseAsync_CorrectlyIdentifiesIncomeVsExpense()
+    public async Task ParseAsyncCorrectlyIdentifiesIncomeVsExpense()
     {
         // Arrange
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(SgmlOfxContent));
@@ -352,7 +352,7 @@ VERSION:102
     }
 
     [TestMethod]
-    public async Task ParseAsync_HandlesDateWithTimezone()
+    public async Task ParseAsyncHandlesDateWithTimezone()
     {
         // Arrange
         var ofxWithTimezone = @"OFXHEADER:100
@@ -387,7 +387,7 @@ VERSION:102
     }
 
     [TestMethod]
-    public async Task ParseAsync_HandlesDecimalAmountsWithComma()
+    public async Task ParseAsyncHandlesDecimalAmountsWithComma()
     {
         // Arrange - Swedish style with comma decimal separator
         var ofxWithComma = @"OFXHEADER:100
@@ -422,7 +422,7 @@ VERSION:102
     }
 
     [TestMethod]
-    public async Task ParseAsync_SkipsInvalidTransactions()
+    public async Task ParseAsyncSkipsInvalidTransactions()
     {
         // Arrange - Transaction without required fields
         var ofxWithInvalid = @"OFXHEADER:100

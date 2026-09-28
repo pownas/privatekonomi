@@ -37,7 +37,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserPreferencesAsync_ReturnsEmptyListForNewUser()
+    public async Task GetUserPreferencesAsyncReturnsEmptyListForNewUser()
     {
         // Act
         var preferences = await _preferenceService.GetUserPreferencesAsync(_testUserId);
@@ -47,7 +47,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SavePreferenceAsync_CreatesNewPreference()
+    public async Task SavePreferenceAsyncCreatesNewPreference()
     {
         // Arrange
         var preference = new NotificationPreference
@@ -70,7 +70,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SavePreferenceAsync_UpdatesExistingPreference()
+    public async Task SavePreferenceAsyncUpdatesExistingPreference()
     {
         // Arrange
         var preference = new NotificationPreference
@@ -96,7 +96,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPreferenceAsync_ReturnsSpecificPreference()
+    public async Task GetPreferenceAsyncReturnsSpecificPreference()
     {
         // Arrange
         var preference = new NotificationPreference
@@ -120,7 +120,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPreferenceAsync_ReturnsNullForNonExistent()
+    public async Task GetPreferenceAsyncReturnsNullForNonExistent()
     {
         // Act
         var preference = await _preferenceService.GetPreferenceAsync(_testUserId, SystemNotificationType.BudgetExceeded);
@@ -130,7 +130,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveDndScheduleAsync_CreatesNewSchedule()
+    public async Task SaveDndScheduleAsyncCreatesNewSchedule()
     {
         // Arrange
         var schedule = new DoNotDisturbSchedule
@@ -154,7 +154,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDndSchedulesAsync_ReturnsUserSchedules()
+    public async Task GetDndSchedulesAsyncReturnsUserSchedules()
     {
         // Arrange
         var schedule1 = new DoNotDisturbSchedule
@@ -187,7 +187,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteDndScheduleAsync_DeletesSchedule()
+    public async Task DeleteDndScheduleAsyncDeletesSchedule()
     {
         // Arrange
         var schedule = new DoNotDisturbSchedule
@@ -210,7 +210,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveIntegrationAsync_CreatesNewIntegration()
+    public async Task SaveIntegrationAsyncCreatesNewIntegration()
     {
         // Arrange
         var integration = new NotificationIntegration
@@ -231,7 +231,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetIntegrationsAsync_ReturnsUserIntegrations()
+    public async Task GetIntegrationsAsyncReturnsUserIntegrations()
     {
         // Arrange
         var slackIntegration = new NotificationIntegration
@@ -263,7 +263,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteIntegrationAsync_DeletesIntegration()
+    public async Task DeleteIntegrationAsyncDeletesIntegration()
     {
         // Arrange
         var integration = new NotificationIntegration
@@ -285,7 +285,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task InitializeDefaultPreferencesAsync_CreatesDefaultPreferences()
+    public async Task InitializeDefaultPreferencesAsyncCreatesDefaultPreferences()
     {
         // Act
         await _preferenceService.InitializeDefaultPreferencesAsync(_testUserId);
@@ -304,7 +304,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task InitializeDefaultPreferencesAsync_DoesNotDuplicatePreferences()
+    public async Task InitializeDefaultPreferencesAsyncDoesNotDuplicatePreferences()
     {
         // Act - Initialize twice
         await _preferenceService.InitializeDefaultPreferencesAsync(_testUserId);
@@ -322,7 +322,7 @@ public class NotificationPreferenceServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SavePreferenceAsync_WithDigestMode_SavesDigestSettings()
+    public async Task SavePreferenceAsyncWithDigestModeSavesDigestSettings()
     {
         // Arrange
         var preference = new NotificationPreference

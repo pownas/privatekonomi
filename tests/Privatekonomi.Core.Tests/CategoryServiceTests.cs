@@ -36,7 +36,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCategoryAsync_GeneratesRandomColorWhenNotProvided()
+    public async Task CreateCategoryAsyncGeneratesRandomColorWhenNotProvided()
     {
         // Arrange
         var category = new Category
@@ -56,7 +56,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCategoryAsync_PreservesProvidedColor()
+    public async Task CreateCategoryAsyncPreservesProvidedColor()
     {
         // Arrange
         var expectedColor = "#FF6B6B";
@@ -75,7 +75,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCategoryAsync_SetsCreatedAt()
+    public async Task CreateCategoryAsyncSetsCreatedAt()
     {
         // Arrange
         var category = new Category
@@ -93,7 +93,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCategoryAsync_CreatesSubcategory()
+    public async Task CreateCategoryAsyncCreatesSubcategory()
     {
         // Arrange
         var parentCategory = new Category
@@ -119,7 +119,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateCategoryAsync_UpdatesNameAndColor()
+    public async Task UpdateCategoryAsyncUpdatesNameAndColor()
     {
         // Arrange
         var category = new Category
@@ -142,7 +142,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ResetSystemCategoryAsync_RestoresOriginalValues()
+    public async Task ResetSystemCategoryAsyncRestoresOriginalValues()
     {
         // Arrange
         var category = new Category
@@ -168,7 +168,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ResetSystemCategoryAsync_ReturnsNullForNonSystemCategory()
+    public async Task ResetSystemCategoryAsyncReturnsNullForNonSystemCategory()
     {
         // Arrange
         var category = new Category
@@ -187,7 +187,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ResetSystemCategoryAsync_ReturnsNullForNonExistentCategory()
+    public async Task ResetSystemCategoryAsyncReturnsNullForNonExistentCategory()
     {
         // Act
         var result = await _categoryService.ResetSystemCategoryAsync(999);
@@ -197,7 +197,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAllCategoriesAsync_ReturnsMainCategoriesWithSubcategories()
+    public async Task GetAllCategoriesAsyncReturnsMainCategoriesWithSubcategories()
     {
         // Arrange
         var parentCategory = new Category
@@ -229,7 +229,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteCategoryAsync_RemovesCategory()
+    public async Task DeleteCategoryAsyncRemovesCategory()
     {
         // Arrange
         var category = new Category
@@ -248,7 +248,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCategoryAsync_PreservesAccountNumber()
+    public async Task CreateCategoryAsyncPreservesAccountNumber()
     {
         // Arrange
         var category = new Category
@@ -267,7 +267,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateCategoryAsync_UpdatesAccountNumber()
+    public async Task UpdateCategoryAsyncUpdatesAccountNumber()
     {
         // Arrange
         var category = new Category
@@ -288,7 +288,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ResetSystemCategoryAsync_RestoresOriginalAccountNumber()
+    public async Task ResetSystemCategoryAsyncRestoresOriginalAccountNumber()
     {
         // Arrange
         var category = new Category
@@ -317,7 +317,7 @@ public class CategoryServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SeededCategories_HaveCorrectAccountNumbers()
+    public async Task SeededCategoriesHaveCorrectAccountNumbers()
     {
         // This test verifies that the database seeding includes account numbers
         // We need to create a new context with the actual seed data

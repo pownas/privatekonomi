@@ -26,7 +26,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateScenarioAsync_SimpleScenario_CalculatesCorrectly()
+    public async Task CalculateScenarioAsyncSimpleScenarioCalculatesCorrectly()
     {
         // Arrange
         var scenario = new CashFlowScenario
@@ -50,7 +50,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateScenarioAsync_WithZeroInterest_ReturnsOnlyContributions()
+    public async Task CalculateScenarioAsyncWithZeroInterestReturnsOnlyContributions()
     {
         // Arrange
         var scenario = new CashFlowScenario
@@ -72,7 +72,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateScenarioAsync_WithExtraContribution_AddsExtraCorrectly()
+    public async Task CalculateScenarioAsyncWithExtraContributionAddsExtraCorrectly()
     {
         // Arrange
         var scenario = new CashFlowScenario
@@ -99,7 +99,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateScenarioAsync_WithInflation_CalculatesRealValue()
+    public async Task CalculateScenarioAsyncWithInflationCalculatesRealValue()
     {
         // Arrange
         var scenario = new CashFlowScenario
@@ -121,7 +121,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateScenarioAsync_WithAnnualSavingsIncrease_IncreasesContributions()
+    public async Task CalculateScenarioAsyncWithAnnualSavingsIncreaseIncreasesContributions()
     {
         // Arrange
         var scenario = new CashFlowScenario
@@ -149,7 +149,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task GetUserBasedDefaultsAsync_WithNoUser_ReturnsGuestDefaults()
+    public async Task GetUserBasedDefaultsAsyncWithNoUserReturnsGuestDefaults()
     {
         // Arrange
         _currentUserServiceMock.Setup(x => x.UserId)
@@ -167,7 +167,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task GetUserBasedDefaultsAsync_WithUser_CalculatesFromTransactions()
+    public async Task GetUserBasedDefaultsAsyncWithUserCalculatesFromTransactions()
     {
         // Arrange
         _currentUserServiceMock.Setup(x => x.UserId)
@@ -215,7 +215,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public void GetGuestDefaults_ReturnsExpectedDefaults()
+    public void GetGuestDefaultsReturnsExpectedDefaults()
     {
         // Act
         var result = _service.GetGuestDefaults();
@@ -230,7 +230,7 @@ public class CashFlowScenarioServiceTests
     }
 
     [TestMethod]
-    public async Task CompareMultipleScenariosAsync_ReturnsMultipleProjections()
+    public async Task CompareMultipleScenariosAsyncReturnsMultipleProjections()
     {
         // Arrange
         var scenarios = new List<CashFlowScenario>

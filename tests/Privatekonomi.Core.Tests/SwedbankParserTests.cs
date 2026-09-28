@@ -24,7 +24,7 @@ public class SwedbankParserTests
 ""20"";""14.11.2025"";""K"";""Lön"";""FÖRETAG AB"";""25000.00"";""SEK"";""33500.00"";""1111222333""";
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsTrueForSwedishCommaSeparated()
+    public void SwedbankParserCanParseReturnsTrueForSwedishCommaSeparated()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -37,7 +37,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsTrueForSwedishTabSeparated()
+    public void SwedbankParserCanParseReturnsTrueForSwedishTabSeparated()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -50,7 +50,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsTrueForEnglishFormat()
+    public void SwedbankParserCanParseReturnsTrueForEnglishFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -63,7 +63,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsFalseForInvalidFormat()
+    public void SwedbankParserCanParseReturnsFalseForInvalidFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -77,7 +77,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesSwedishCommaSeparatedCorrectly()
+    public async Task SwedbankParserParseAsyncParsesSwedishCommaSeparatedCorrectly()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -114,7 +114,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesSwedishTabSeparatedCorrectly()
+    public async Task SwedbankParserParseAsyncParsesSwedishTabSeparatedCorrectly()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -135,7 +135,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesLatin1EncodedSwedishCharactersCorrectly()
+    public async Task SwedbankParserParseAsyncParsesLatin1EncodedSwedishCharactersCorrectly()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -155,7 +155,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesEnglishFormatCorrectly()
+    public async Task SwedbankParserParseAsyncParsesEnglishFormatCorrectly()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -185,7 +185,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_SkipsNonSEKTransactions()
+    public async Task SwedbankParserParseAsyncSkipsNonSEKTransactions()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -208,7 +208,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_HandlesDecimalCommasCorrectly()
+    public async Task SwedbankParserParseAsyncHandlesDecimalCommasCorrectly()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -226,7 +226,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_SkipsRowsWithMissingDescription()
+    public async Task SwedbankParserParseAsyncSkipsRowsWithMissingDescription()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -245,7 +245,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_FallbackToReferenceIfDescriptionEmpty()
+    public async Task SwedbankParserParseAsyncFallbackToReferenceIfDescriptionEmpty()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -263,7 +263,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_TruncatesLongDescriptions()
+    public async Task SwedbankParserParseAsyncTruncatesLongDescriptions()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -282,7 +282,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public void SwedbankParser_BankName_ReturnsSwedbank()
+    public void SwedbankParserBankNameReturnsSwedbank()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -292,7 +292,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ThrowsExceptionForInvalidFormat()
+    public async Task SwedbankParserParseAsyncThrowsExceptionForInvalidFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -314,7 +314,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_HandlesEscapedQuotesInDescription()
+    public async Task SwedbankParserParseAsyncHandlesEscapedQuotesInDescription()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -332,7 +332,7 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsTrueWithMetadataLine()
+    public void SwedbankParserCanParseReturnsTrueWithMetadataLine()
     {
         // Arrange - Example from issue with metadata on row 1, header on row 2
         var parser = new SwedbankParser();
@@ -349,7 +349,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesCorrectlyWithMetadataLine()
+    public async Task SwedbankParserParseAsyncParsesCorrectlyWithMetadataLine()
     {
         // Arrange - Example from issue with metadata on row 1, header on row 2
         var parser = new SwedbankParser();
@@ -383,7 +383,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_HandlesMultipleMetadataLines()
+    public async Task SwedbankParserParseAsyncHandlesMultipleMetadataLines()
     {
         // Arrange - Test with multiple metadata lines before header
         var parser = new SwedbankParser();
@@ -404,7 +404,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public void SwedbankParser_CanParse_ReturnsTrueWithMetadataLineEnglishFormat()
+    public void SwedbankParserCanParseReturnsTrueWithMetadataLineEnglishFormat()
     {
         // Arrange - Old English format with metadata line
         var parser = new SwedbankParser();
@@ -420,7 +420,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ParsesEnglishFormatWithMetadataLine()
+    public async Task SwedbankParserParseAsyncParsesEnglishFormatWithMetadataLine()
     {
         // Arrange - Old English format with metadata line
         var parser = new SwedbankParser();
@@ -443,7 +443,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ExtractsClearingAndAccountNumberFromSwedishFormat()
+    public async Task SwedbankParserParseAsyncExtractsClearingAndAccountNumberFromSwedishFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -463,7 +463,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ExtractsClearingAndAccountNumberFromTabSeparatedFormat()
+    public async Task SwedbankParserParseAsyncExtractsClearingAndAccountNumberFromTabSeparatedFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -483,7 +483,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ExtractsAccountNumberFromEnglishFormat()
+    public async Task SwedbankParserParseAsyncExtractsAccountNumberFromEnglishFormat()
     {
         // Arrange
         var parser = new SwedbankParser();
@@ -503,7 +503,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_HandlesMultipleAccountsInSameFile()
+    public async Task SwedbankParserParseAsyncHandlesMultipleAccountsInSameFile()
     {
         // Arrange - CSV with transactions for two different accounts
         var parser = new SwedbankParser();
@@ -525,7 +525,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_EmitsInvalidDateWarning()
+    public async Task SwedbankParserParseAsyncEmitsInvalidDateWarning()
     {
         var parser = new SwedbankParser();
         var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
@@ -540,7 +540,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_EmitsInvalidAmountWarning()
+    public async Task SwedbankParserParseAsyncEmitsInvalidAmountWarning()
     {
         var parser = new SwedbankParser();
         var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
@@ -555,7 +555,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_EmitsMissingDescriptionWarning()
+    public async Task SwedbankParserParseAsyncEmitsMissingDescriptionWarning()
     {
         var parser = new SwedbankParser();
         // Both Beskrivning and Referens are empty
@@ -571,7 +571,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_EmitsUnsupportedCurrencyWarning()
+    public async Task SwedbankParserParseAsyncEmitsUnsupportedCurrencyWarning()
     {
         var parser = new SwedbankParser();
         var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
@@ -587,7 +587,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_WarningIncludesRawData()
+    public async Task SwedbankParserParseAsyncWarningIncludesRawData()
     {
         var parser = new SwedbankParser();
         var csv = @"Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
@@ -601,7 +601,7 @@ Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsd
     }
 
     [TestMethod]
-    public async Task SwedbankParser_ParseAsync_ValidRowsImportedDespiteWarnings()
+    public async Task SwedbankParserParseAsyncValidRowsImportedDespiteWarnings()
     {
         var parser = new SwedbankParser();
         // First row valid, second row has bad date

@@ -1,0 +1,72 @@
+@page "/settings/pi-update"
+@attribute [Authorize(Policy = "PiUpdateAdmin")]
+@using System.Net.Http.Json
+@using Privatekonomi.Web.Services
+@inject PiUpdateService Updates
+@inject IHttpClientFactory HttpClients
+
+<PageTitle>Uppdatera Raspberry Pi</PageTitle>
+
+@if (Updates.IsAvailable)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+        <MudText Typo="Typo.h4">Uppdatera Raspberry Pi</MudText>
+        <MudAlert Severity="Severity.Warning" Class="my-4">
+            Appen startas om vid uppdatering. Anslutningen kan brytas tillfälligt och du kan behöva logga in igen.
+            Ladda om sidan efter några minuter för att se resultatet.
+        </MudAlert>
+        <MudText>Installerad commit: @(_status?.InstalledCommit ?? "Okänd")</MudText>
+        <MudText>Senaste commit på main: @(_latest ?? "Kan inte kontrolleras just nu")</MudText>
+        <MudText>Status: @(_status?.State switch
+        {
+            "queued" => "Väntar på start",
+            "running" => "Uppdatering pågår",
+            "succeeded" => "Uppdateringen lyckades",
+            "failed" => "Uppdateringen misslyckades – se logg och återställningsguide",
+            "blocked" => "Återställningen misslyckades – manuell åtgärd krävs innan ny uppdatering",
+            _ => "Ingen uppdatering pågår"
+        })</MudText>
+        @if (_status?.InstalledCommit is not null && _latest == _status.InstalledCommit)
+        {
+            <MudText>Redan uppdaterad till senaste versionen.</MudText>
+        }
+        @if (_status?.State is not ("queued" or "running" or "blocked"))
+        {
+            <form method="post" action="/settings/pi-update/start">
+                <AntiforgeryToken />
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+                    Starta uppdatering
+                </MudButton>
+            </form>
+        }
+        <MudButton Href="/settings/pi-update" Variant="Variant.Text">Uppdatera status</MudButton>
+        <MudText Typo="Typo.h6" Class="mt-4">Uppdateringslogg</MudText>
+        <pre style="white-space: pre-wrap; overflow-wrap: anywhere">@(_status?.Log ?? "")</pre>
+    </MudContainer>
+}
+
+@code {
+    private PiUpdateStatus? _status;
+    private string? _latest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Updates.IsAvailable)
+            return;
+
+        _status = Updates.GetStatus();
+        try
+        {
+            using var client = HttpClients.CreateClient("pi-update");
+            var result = await client.GetFromJsonAsync<GitHubCommit>("repos/pownas/Privatekonomi/commits/main");
+            if (result?.Sha?.Length == 40 && result.Sha.All(Uri.IsHexDigit))
+                _latest = result.Sha;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            // The installed version and update status remain available without GitHub.
+        }
+    }
+
+    private sealed record GitHubCommit(string? Sha);
+}

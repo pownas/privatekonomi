@@ -29,21 +29,21 @@ public class AvanzaCsvParserTests
         "2025-12-30;50kr per dag (start2025-01-01);Insättning;50KR/TISDA;;;50;SEK;;;;;";
 
     [TestMethod]
-    public void AvanzaTransactionParser_CanParse_ReturnsTrueForTransactionFormat()
+    public void AvanzaTransactionParserCanParseReturnsTrueForTransactionFormat()
     {
         var parser = new AvanzaTransactionParser();
         Assert.IsTrue(parser.CanParse(TransactionCsvContent));
     }
 
     [TestMethod]
-    public void AvanzaTransactionParser_CanParse_ReturnsTrueForTransactionFormat_WithTransaktionsvaluta()
+    public void AvanzaTransactionParserCanParseReturnsTrueForTransactionFormatWithTransaktionsvaluta()
     {
         var parser = new AvanzaTransactionParser();
         Assert.IsTrue(parser.CanParse(TransactionCsvContentWithTransactionCurrency));
     }
 
     [TestMethod]
-    public void AvanzaTransactionParser_CanParse_ReturnsFalseForHoldingsFormat()
+    public void AvanzaTransactionParserCanParseReturnsFalseForHoldingsFormat()
     {
         var parser = new AvanzaTransactionParser();
         // Holdings format does not contain "Typ av transaktion"
@@ -53,14 +53,14 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public void AvanzaTransactionParser_BankName_ReturnsAvanza()
+    public void AvanzaTransactionParserBankNameReturnsAvanza()
     {
         var parser = new AvanzaTransactionParser();
         Assert.AreEqual("Avanza", parser.BankName);
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_ParsesCorrectRowCount()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncParsesCorrectRowCount()
     {
         var parser = new AvanzaTransactionParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(TransactionCsvContent));
@@ -71,7 +71,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_ParsesTransaktionsvalutaFormat()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncParsesTransaktionsvalutaFormat()
     {
         var parser = new AvanzaTransactionParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(TransactionCsvContentWithTransactionCurrency));
@@ -85,7 +85,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_ParsesBuyRowCorrectly()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncParsesBuyRowCorrectly()
     {
         var parser = new AvanzaTransactionParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(TransactionCsvContent));
@@ -105,7 +105,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_ParsesDepositRowCorrectly()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncParsesDepositRowCorrectly()
     {
         var parser = new AvanzaTransactionParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(TransactionCsvContent));
@@ -120,7 +120,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_ParsesDividendRowCorrectly()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncParsesDividendRowCorrectly()
     {
         var parser = new AvanzaTransactionParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(TransactionCsvContent));
@@ -134,7 +134,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_SkipsRowsWithMissingAmount()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncSkipsRowsWithMissingAmount()
     {
         var parser = new AvanzaTransactionParser();
         var csv = "Datum;Konto;Typ av transaktion;Värdepapper/beskrivning;Antal;Kurs;Belopp;Courtage;Valuta;ISIN;Resultat\n" +
@@ -148,7 +148,7 @@ public class AvanzaCsvParserTests
     }
 
     [TestMethod]
-    public async Task AvanzaTransactionParser_ParseTransactionsAsync_HandlesSemicolonSeparator()
+    public async Task AvanzaTransactionParserParseTransactionsAsyncHandlesSemicolonSeparator()
     {
         var parser = new AvanzaTransactionParser();
         var csv = "Datum;Konto;Typ av transaktion;Värdepapper/beskrivning;Antal;Kurs;Belopp;Courtage;Valuta;ISIN;Resultat\n" +
@@ -180,7 +180,7 @@ Avanza Emerging Markets|Avanza Emerging Markets|25,015468|3789,59|124,74|124,74|
 Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|||";
 
     [TestMethod]
-    public void AvanzaHoldingsPerAccountParser_CanParse_ReturnsTrueForPerAccountFormat()
+    public void AvanzaHoldingsPerAccountParserCanParseReturnsTrueForPerAccountFormat()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -193,7 +193,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public void AvanzaHoldingsPerAccountParser_CanParse_ReturnsFalseForConsolidatedFormat()
+    public void AvanzaHoldingsPerAccountParserCanParseReturnsFalseForConsolidatedFormat()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -206,7 +206,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public void AvanzaConsolidatedHoldingsParser_CanParse_ReturnsTrueForConsolidatedFormat()
+    public void AvanzaConsolidatedHoldingsParserCanParseReturnsTrueForConsolidatedFormat()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -219,7 +219,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public void AvanzaConsolidatedHoldingsParser_CanParse_ReturnsFalseForPerAccountFormat()
+    public void AvanzaConsolidatedHoldingsParserCanParseReturnsFalseForPerAccountFormat()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -232,7 +232,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public async Task AvanzaHoldingsPerAccountParser_ParseAsync_ParsesCorrectly()
+    public async Task AvanzaHoldingsPerAccountParserParseAsyncParsesCorrectly()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -274,7 +274,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public async Task AvanzaConsolidatedHoldingsParser_ParseAsync_ParsesCorrectly()
+    public async Task AvanzaConsolidatedHoldingsParserParseAsyncParsesCorrectly()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -312,7 +312,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public async Task AvanzaHoldingsPerAccountParser_ParseAsync_HandlesDecimalCommasCorrectly()
+    public async Task AvanzaHoldingsPerAccountParserParseAsyncHandlesDecimalCommasCorrectly()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -332,7 +332,7 @@ Avanza Europa|Avanza Europa|36,634425|5592,24|145,77|145,77|SEK|SE|SE0013718699|
     }
 
     [TestMethod]
-    public async Task AvanzaConsolidatedHoldingsParser_ParseAsync_SkipsInvalidRows()
+    public async Task AvanzaConsolidatedHoldingsParserParseAsyncSkipsInvalidRows()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -353,7 +353,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public void AvanzaHoldingsPerAccountParser_BankName_ReturnsAvanza()
+    public void AvanzaHoldingsPerAccountParserBankNameReturnsAvanza()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -363,7 +363,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public void AvanzaHoldingsPerAccountParser_FormatType_ReturnsPerKonto()
+    public void AvanzaHoldingsPerAccountParserFormatTypeReturnsPerKonto()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -373,7 +373,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public void AvanzaConsolidatedHoldingsParser_FormatType_ReturnsSammanställt()
+    public void AvanzaConsolidatedHoldingsParserFormatTypeReturnsSammanställt()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -383,7 +383,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public async Task AvanzaHoldingsPerAccountParser_ParseAsync_HandlesTabSeparator()
+    public async Task AvanzaHoldingsPerAccountParserParseAsyncHandlesTabSeparator()
     {
         // Arrange
         var parser = new AvanzaHoldingsPerAccountParser();
@@ -400,7 +400,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public async Task AvanzaConsolidatedHoldingsParser_ParseAsync_HandlesSemicolonSeparator()
+    public async Task AvanzaConsolidatedHoldingsParserParseAsyncHandlesSemicolonSeparator()
     {
         // Arrange
         var parser = new AvanzaConsolidatedHoldingsParser();
@@ -417,7 +417,7 @@ Valid Fund|VALID|5|500,00|100,00|100,00|SEK|SE|SE0000000004|XSTO|FUND";
     }
 
     [TestMethod]
-    public async Task InvestmentService_ImportFromCsvAsync_HandlesNonSeekableStream_ForTransactionHistory()
+    public async Task InvestmentServiceImportFromCsvAsyncHandlesNonSeekableStreamForTransactionHistory()
     {
         await using var context = CreateInMemoryContext();
         var service = new InvestmentService(context);

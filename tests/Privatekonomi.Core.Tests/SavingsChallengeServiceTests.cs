@@ -37,7 +37,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateChallengeAsync_ValidChallenge_SuccessfullyCreatesChallenge()
+    public async Task CreateChallengeAsyncValidChallengeSuccessfullyCreatesChallenge()
     {
         // Arrange
         var challenge = new SavingsChallenge
@@ -62,7 +62,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAllChallengesAsync_ReturnsChallenges()
+    public async Task GetAllChallengesAsyncReturnsChallenges()
     {
         // Arrange
         var challenge1 = new SavingsChallenge
@@ -96,7 +96,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActiveChallengesAsync_ReturnsOnlyActiveChallenges()
+    public async Task GetActiveChallengesAsyncReturnsOnlyActiveChallenges()
     {
         // Arrange
         var activeChallenge = new SavingsChallenge
@@ -133,7 +133,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task RecordProgressAsync_ValidProgress_SuccessfullyRecordsProgress()
+    public async Task RecordProgressAsyncValidProgressSuccessfullyRecordsProgress()
     {
         // Arrange
         var challenge = new SavingsChallenge
@@ -168,7 +168,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task RecordProgressAsync_MultipleProgressEntries_UpdatesStreak()
+    public async Task RecordProgressAsyncMultipleProgressEntriesUpdatesStreak()
     {
         // Arrange
         var challenge = new SavingsChallenge
@@ -196,7 +196,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateChallengeStatusAsync_ValidStatus_SuccessfullyUpdatesStatus()
+    public async Task UpdateChallengeStatusAsyncValidStatusSuccessfullyUpdatesStatus()
     {
         // Arrange
         var challenge = new SavingsChallenge
@@ -222,7 +222,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTotalActiveChallengesAsync_ReturnsCorrectCount()
+    public async Task GetTotalActiveChallengesAsyncReturnsCorrectCount()
     {
         // Arrange
         await _service.CreateChallengeAsync(new SavingsChallenge
@@ -266,7 +266,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTotalAmountSavedAsync_ReturnsCorrectTotal()
+    public async Task GetTotalAmountSavedAsyncReturnsCorrectTotal()
     {
         // Arrange
         var challenge1 = await _service.CreateChallengeAsync(new SavingsChallenge
@@ -300,7 +300,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteChallengeAsync_ValidId_SuccessfullyDeletesChallenge()
+    public async Task DeleteChallengeAsyncValidIdSuccessfullyDeletesChallenge()
     {
         // Arrange
         var challenge = new SavingsChallenge
@@ -324,7 +324,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAllTemplatesAsync_ReturnsActiveTemplates()
+    public async Task GetAllTemplatesAsyncReturnsActiveTemplates()
     {
         // Arrange - Templates are seeded by the context initialization
         
@@ -338,7 +338,7 @@ public class SavingsChallengeServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateChallengeFromTemplateAsync_ValidTemplate_SuccessfullyCreatesChallenge()
+    public async Task CreateChallengeFromTemplateAsyncValidTemplateSuccessfullyCreatesChallenge()
     {
         // Arrange
         var template = new ChallengeTemplate
