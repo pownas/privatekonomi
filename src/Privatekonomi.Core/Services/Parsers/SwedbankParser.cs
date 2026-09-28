@@ -111,7 +111,7 @@ public class SwedbankParser : ICsvParser
                 $"Kunde inte hitta nödvändiga kolumner i Swedbank CSV-filen. " +
                 $"Saknar: {string.Join(", ", missing)}. " +
                 $"Hittade kolumner: {string.Join(", ", header.Select(h => h.Trim()).Where(h => !string.IsNullOrWhiteSpace(h)))}. " +
-                "Kan filen vara sparad i felaktig encoding? Behöver vara UTF-8.");
+                "Kan filen vara sparad i felaktig encoding? Behöver vara UTF-8 eller Windows-1252.");
         }
 
         // Parse data rows (start from headerIndex + 1)
@@ -128,7 +128,7 @@ public class SwedbankParser : ICsvParser
                     {
                         RowNumber = rowNumber,
                         WarningType = "TooFewColumns",
-                        Message = $"Rad {rowNumber} hoppades över – för få kolumner (hittade {columns.Length}, behöver minst {Math.Max(dateIndex, amountIndex) + 1}).",
+                        Message = $"Rad {rowNumber} hoppades över för få kolumner (hittade {columns.Length}, behöver minst {Math.Max(dateIndex, amountIndex) + 1}).",
                         RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
@@ -184,7 +184,7 @@ public class SwedbankParser : ICsvParser
                     {
                         RowNumber = rowNumber,
                         WarningType = "InvalidDate",
-                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: ÅÅÅÅ-MM-DD).",
+                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: YYYY-MM-DD).",
                         RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;
@@ -296,7 +296,7 @@ public class SwedbankParser : ICsvParser
                 }
 
                 var rowType = columns[rowTypeIndex].Trim();
-                
+
                 // Skip non-transaction rows (10=opening balance, 82=turnover, 86=closing balance)
                 if (rowType != "20")
                     continue;
@@ -333,7 +333,7 @@ public class SwedbankParser : ICsvParser
                     {
                         RowNumber = rowNumber,
                         WarningType = "InvalidDate",
-                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: DD.MM.ÅÅÅÅ).",
+                        Message = $"Rad {rowNumber} hoppades över – kunde inte tolka datum '{dateStr}' (förväntat format: DD.MM.YYYY).",
                         RawData = ParserHelpers.Truncate(rawLine)
                     });
                     continue;

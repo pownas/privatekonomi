@@ -10,6 +10,7 @@
 @using Privatekonomi.Web.Services
 @using System.Globalization
 @using Privatekonomi.Core.Models
+@using MudBlazor
 
 <PageTitle>Importera - Privatekonomi</PageTitle>
 
@@ -119,13 +120,13 @@ else if (_currentStep == ImportStep.FileSelection)
             </MudAlert>
         }
         
-        <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected" Accept="@GetAcceptedFileTypes()">
+        <MudFileUpload T="IBrowserFile" @ref="_fileUpload" FilesChanged="OnFileSelected" Accept="@GetAcceptedFileTypes()">
             <CustomContent>
-                <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;">
+                <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;" @onclick="@(() => _fileUpload.OpenFilePickerAsync())">
                     <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h6">Dra och släpp @GetFileTypeDescription() här</MudText>
                     <MudText Typo="Typo.body2" Class="mt-2">eller</MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" HtmlTag="span">
                         Välj fil från dator
                     </MudButton>
                 </MudPaper>
@@ -390,6 +391,7 @@ else if (_currentStep == ImportStep.Complete)
     // Transaction import fields
     private string _selectedBank = string.Empty;
     private IBrowserFile? _selectedFile;
+    private MudFileUpload<IBrowserFile>? _fileUpload;
     private byte[]? _fileBytes; // Buffered file content to avoid re-reading the browser file
     private bool _uploading = false;
     private bool _confirming = false;

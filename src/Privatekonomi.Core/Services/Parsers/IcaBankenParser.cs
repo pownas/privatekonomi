@@ -22,10 +22,29 @@ public class IcaBankenParser : ICsvParser
     {
         var transactions = new List<Transaction>();
         var warnings = new List<ParseWarning>();
-        
-        using var reader = new StreamReader(csvStream, Encoding.UTF8);
-        var content = await reader.ReadToEndAsync();
-        
+
+        string content;
+        // Try reading as UTF-8 first with BOM detection
+        using (var reader = new StreamReader(csvStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
+        {
+            content = await reader.ReadToEndAsync();
+        }
+
+        // If we see replacement characters, try Windows-1252
+        if (content.Contains('\uFFFD') || (content.Contains('?') && content.Contains('ä') == false && content.Contains('ö') == false && content.Contains('å') == false))
+        {
+            try
+            {
+                csvStream.Position = 0;
+                using var reader1252 = new StreamReader(csvStream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                content = await reader1252.ReadToEndAsync();
+            }
+            catch
+            {
+                // If fallback fails, use what we have
+            }
+        }
+
         var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2)
         {
