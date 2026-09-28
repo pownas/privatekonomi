@@ -48,7 +48,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetOrCreateSettingsAsync_CreatesNewSettings_WhenNoneExist()
+    public async Task GetOrCreateSettingsAsyncCreatesNewSettingsWhenNoneExist()
     {
         // Act
         var settings = await _service.GetOrCreateSettingsAsync();
@@ -62,7 +62,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetOrCreateSettingsAsync_ReturnsExistingSettings_WhenAlreadyExists()
+    public async Task GetOrCreateSettingsAsyncReturnsExistingSettingsWhenAlreadyExists()
     {
         // Arrange
         var existingSettings = new RoundUpSettings
@@ -92,7 +92,7 @@ public class RoundUpServiceTests : IDisposable
     [DataRow(100, 10, 0)]      // 100 -> 100 (0 kr saved, already rounded)
     [DataRow(99.50, 10, 0.50)] // 99.50 -> 100 (0.50 kr saved)
     [DataRow(1, 10, 9)]        // 1 -> 10 (9 kr saved)
-    public void CalculateRoundUp_ReturnsCorrectAmount(double amount, int roundUpTo, double expected)
+    public void CalculateRoundUpReturnsCorrectAmount(double amount, int roundUpTo, double expected)
     {
         // Act
         var result = _service.CalculateRoundUp((decimal)amount, (decimal)roundUpTo);
@@ -102,7 +102,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ProcessRoundUpForTransactionAsync_CreatesRoundUpTransaction_WhenEnabled()
+    public async Task ProcessRoundUpForTransactionAsyncCreatesRoundUpTransactionWhenEnabled()
     {
         // Arrange
         var goal = new Goal
@@ -160,7 +160,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ProcessRoundUpForTransactionAsync_ReturnsNull_WhenDisabled()
+    public async Task ProcessRoundUpForTransactionAsyncReturnsNullWhenDisabled()
     {
         // Arrange
         var settings = new RoundUpSettings
@@ -192,7 +192,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ProcessRoundUpForTransactionAsync_SkipsIncomeTransactions_WhenOnlyExpensesEnabled()
+    public async Task ProcessRoundUpForTransactionAsyncSkipsIncomeTransactionsWhenOnlyExpensesEnabled()
     {
         // Arrange
         var goal = new Goal
@@ -239,7 +239,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ProcessRoundUpForTransactionAsync_IncludesEmployerMatching_WhenEnabled()
+    public async Task ProcessRoundUpForTransactionAsyncIncludesEmployerMatchingWhenEnabled()
     {
         // Arrange
         var goal = new Goal
@@ -295,7 +295,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ProcessSalaryAutoSaveAsync_CreatesSalaryAutoSave_WhenEnabled()
+    public async Task ProcessSalaryAutoSaveAsyncCreatesSalaryAutoSaveWhenEnabled()
     {
         // Arrange
         var goal = new Goal
@@ -350,7 +350,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetStatisticsAsync_ReturnsCorrectStatistics()
+    public async Task GetStatisticsAsyncReturnsCorrectStatistics()
     {
         // Arrange
         var fromDate = new DateTime(2024, 1, 1);
@@ -410,7 +410,7 @@ public class RoundUpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMonthlyTotalAsync_ReturnsCurrentMonthTotal()
+    public async Task GetMonthlyTotalAsyncReturnsCurrentMonthTotal()
     {
         // Arrange
         var currentMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);

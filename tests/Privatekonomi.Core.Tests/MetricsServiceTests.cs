@@ -28,7 +28,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_ReturnsMetrics()
+    public async Task GetCurrentMetricsAsyncReturnsMetrics()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -56,7 +56,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_CalculatesMAUCorrectly()
+    public async Task GetCurrentMetricsAsyncCalculatesMAUCorrectly()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -83,7 +83,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_CalculatesDAUCorrectly()
+    public async Task GetCurrentMetricsAsyncCalculatesDAUCorrectly()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -108,7 +108,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_CalculatesTransactionsPerUserCorrectly()
+    public async Task GetCurrentMetricsAsyncCalculatesTransactionsPerUserCorrectly()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -144,7 +144,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_CalculatesNewUsersThisMonthCorrectly()
+    public async Task GetCurrentMetricsAsyncCalculatesNewUsersThisMonthCorrectly()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -170,7 +170,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetMetricsForPeriodAsync_ReturnsMetricsForSpecificPeriod()
+    public async Task GetMetricsForPeriodAsyncReturnsMetricsForSpecificPeriod()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -202,7 +202,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetHistoricalMetricsAsync_ReturnsCorrectNumberOfSnapshots()
+    public async Task GetHistoricalMetricsAsyncReturnsCorrectNumberOfSnapshots()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -229,7 +229,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetHistoricalMetricsAsync_QuarterlyPeriod_ReturnsQuarterlySnapshots()
+    public async Task GetHistoricalMetricsAsyncQuarterlyPeriodReturnsQuarterlySnapshots()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -256,7 +256,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_WithNoData_ReturnsZeroMetrics()
+    public async Task GetCurrentMetricsAsyncWithNoDataReturnsZeroMetrics()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -274,7 +274,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_GDPRCompliance_AlwaysReturns100Percent()
+    public async Task GetCurrentMetricsAsyncGDPRComplianceAlwaysReturns100Percent()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -288,7 +288,7 @@ public class MetricsServiceTests
     }
 
     [TestMethod]
-    public async Task GetCurrentMetricsAsync_PerformanceMetrics_ReturnsExpectedValues()
+    public async Task GetCurrentMetricsAsyncPerformanceMetricsReturnsExpectedValues()
     {
         // Arrange
         using var context = CreateInMemoryContext();

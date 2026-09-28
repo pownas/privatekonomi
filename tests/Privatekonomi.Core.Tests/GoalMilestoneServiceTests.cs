@@ -44,7 +44,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateAutomaticMilestonesAsync_CreatesCorrectMilestones()
+    public async Task CreateAutomaticMilestonesAsyncCreatesCorrectMilestones()
     {
         // Arrange
         var goal = new Goal
@@ -81,7 +81,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateAutomaticMilestonesAsync_DoesNotDuplicateMilestones()
+    public async Task CreateAutomaticMilestonesAsyncDoesNotDuplicateMilestones()
     {
         // Arrange
         var goal = new Goal
@@ -109,7 +109,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCustomMilestoneAsync_SuccessfullyCreatesCustomMilestone()
+    public async Task CreateCustomMilestoneAsyncSuccessfullyCreatesCustomMilestone()
     {
         // Arrange
         var goal = new Goal
@@ -144,7 +144,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateCustomMilestoneAsync_MarksAsReachedIfAlreadyMet()
+    public async Task CreateCustomMilestoneAsyncMarksAsReachedIfAlreadyMet()
     {
         // Arrange
         var goal = new Goal
@@ -176,7 +176,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CheckAndUpdateMilestonesAsync_MarksReachedMilestones()
+    public async Task CheckAndUpdateMilestonesAsyncMarksReachedMilestones()
     {
         // Arrange
         var goal = new Goal
@@ -212,7 +212,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CheckAndUpdateMilestonesAsync_SendsNotifications()
+    public async Task CheckAndUpdateMilestonesAsyncSendsNotifications()
     {
         // Arrange
         var goal = new Goal
@@ -246,7 +246,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMilestonesByGoalIdAsync_ReturnsOrderedMilestones()
+    public async Task GetMilestonesByGoalIdAsyncReturnsOrderedMilestones()
     {
         // Arrange
         var goal = new Goal
@@ -276,7 +276,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetReachedMilestonesAsync_ReturnsOnlyReachedMilestones()
+    public async Task GetReachedMilestonesAsyncReturnsOnlyReachedMilestones()
     {
         // Arrange
         var goal = new Goal
@@ -304,7 +304,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteMilestoneAsync_SuccessfullyDeletesMilestone()
+    public async Task DeleteMilestoneAsyncSuccessfullyDeletesMilestone()
     {
         // Arrange
         var goal = new Goal
@@ -341,7 +341,7 @@ public class GoalMilestoneServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMilestoneByIdAsync_ReturnsCorrectMilestone()
+    public async Task GetMilestoneByIdAsyncReturnsCorrectMilestone()
     {
         // Arrange
         var goal = new Goal

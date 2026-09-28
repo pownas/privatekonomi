@@ -38,7 +38,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     #region Milestone Tests
 
     [TestMethod]
-    public async Task CreateMilestoneAsync_ValidMilestone_SuccessfullyCreatesMilestone()
+    public async Task CreateMilestoneAsyncValidMilestoneSuccessfullyCreatesMilestone()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone
@@ -63,7 +63,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetAllMilestonesAsync_ReturnsMilestones()
+    public async Task GetAllMilestonesAsyncReturnsMilestones()
     {
         // Arrange
         var milestone1 = new LifeTimelineMilestone
@@ -95,7 +95,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateMilestoneAsync_ValidMilestone_UpdatesSuccessfully()
+    public async Task UpdateMilestoneAsyncValidMilestoneUpdatesSuccessfully()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone
@@ -121,7 +121,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteMilestoneAsync_ExistingMilestone_DeletesSuccessfully()
+    public async Task DeleteMilestoneAsyncExistingMilestoneDeletesSuccessfully()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone
@@ -148,7 +148,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     #region Scenario Tests
 
     [TestMethod]
-    public async Task CreateScenarioAsync_ValidScenario_SuccessfullyCreatesScenario()
+    public async Task CreateScenarioAsyncValidScenarioSuccessfullyCreatesScenario()
     {
         // Arrange
         var scenario = new LifeTimelineScenario
@@ -173,7 +173,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SetActiveScenarioAsync_ValidScenario_SetsActiveCorrectly()
+    public async Task SetActiveScenarioAsyncValidScenarioSetsActiveCorrectly()
     {
         // Arrange
         var scenario1 = new LifeTimelineScenario
@@ -216,7 +216,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     #region Calculation Tests
 
     [TestMethod]
-    public async Task CalculateRequiredMonthlySavingsAsync_ValidMilestone_ReturnsCorrectAmount()
+    public async Task CalculateRequiredMonthlySavingsAsyncValidMilestoneReturnsCorrectAmount()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone
@@ -240,7 +240,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateRequiredMonthlySavingsAsync_CompletedMilestone_ReturnsZero()
+    public async Task CalculateRequiredMonthlySavingsAsyncCompletedMilestoneReturnsZero()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone
@@ -263,7 +263,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateProjectedRetirementWealthAsync_ValidScenario_ReturnsPositiveValue()
+    public async Task CalculateProjectedRetirementWealthAsyncValidScenarioReturnsPositiveValue()
     {
         // Arrange
         var scenario = new LifeTimelineScenario
@@ -286,7 +286,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTotalMilestoneCostsAsync_MultipleMilestones_ReturnsSumOfCosts()
+    public async Task GetTotalMilestoneCostsAsyncMultipleMilestonesReturnsSumOfCosts()
     {
         // Arrange
         var milestone1 = new LifeTimelineMilestone
@@ -329,7 +329,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateExpectedMonthlyPensionAsync_ValidScenario_ReturnsMonthlyPension()
+    public async Task CalculateExpectedMonthlyPensionAsyncValidScenarioReturnsMonthlyPension()
     {
         // Arrange
         var scenario = new LifeTimelineScenario
@@ -353,7 +353,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateLifeInsuranceNeedAsync_WithMilestones_ReturnsPositiveAmount()
+    public async Task CalculateLifeInsuranceNeedAsyncWithMilestonesReturnsPositiveAmount()
     {
         // Arrange
         var milestone1 = new LifeTimelineMilestone
@@ -395,7 +395,7 @@ public class LifeTimelinePlannerServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateRecommendedLifeInsuranceAsync_ReturnsRoundedAmount()
+    public async Task CalculateRecommendedLifeInsuranceAsyncReturnsRoundedAmount()
     {
         // Arrange
         var milestone = new LifeTimelineMilestone

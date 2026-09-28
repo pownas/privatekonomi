@@ -23,7 +23,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_ReturnsCorrectHeatmapData()
+    public async Task GenerateHeatmapAsyncReturnsCorrectHeatmapData()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -113,7 +113,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_CalculatesIntensityLevelsCorrectly()
+    public async Task GenerateHeatmapAsyncCalculatesIntensityLevelsCorrectly()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -164,7 +164,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_DetectsImpulsePurchases()
+    public async Task GenerateHeatmapAsyncDetectsImpulsePurchases()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -231,7 +231,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_IdentifiesMostAndLeastExpensiveDays()
+    public async Task GenerateHeatmapAsyncIdentifiesMostAndLeastExpensiveDays()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -299,7 +299,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_FiltersOnCategory()
+    public async Task GenerateHeatmapAsyncFiltersOnCategory()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -352,7 +352,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GetPatternInsightsAsync_ReturnsInsights()
+    public async Task GetPatternInsightsAsyncReturnsInsights()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -392,7 +392,7 @@ public class HeatmapAnalysisServiceTests
     }
 
     [TestMethod]
-    public async Task GenerateHeatmapAsync_HandlesEmptyData()
+    public async Task GenerateHeatmapAsyncHandlesEmptyData()
     {
         // Arrange
         using var context = CreateInMemoryContext();

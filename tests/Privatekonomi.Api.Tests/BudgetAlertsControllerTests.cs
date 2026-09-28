@@ -52,7 +52,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetActiveAlerts_ReturnsOkResult()
+    public async Task GetActiveAlertsReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -67,7 +67,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetAlertsForBudget_ReturnsOkResult()
+    public async Task GetAlertsForBudgetReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -83,7 +83,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetAlertsForCategory_ReturnsOkResult()
+    public async Task GetAlertsForCategoryReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -99,7 +99,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task CheckAllBudgets_ReturnsOkResult()
+    public async Task CheckAllBudgetsReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -114,7 +114,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task CheckBudget_ReturnsOkResult()
+    public async Task CheckBudgetReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -130,7 +130,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetCategoryUsage_ReturnsOkResult()
+    public async Task GetCategoryUsageReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -146,7 +146,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetSettings_ReturnsOkResult()
+    public async Task GetSettingsReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -161,7 +161,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task GetActiveFreezes_ReturnsOkResult()
+    public async Task GetActiveFreezesReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();
@@ -176,7 +176,7 @@ public class BudgetAlertsControllerTests
     }
 
     [TestMethod]
-    public async Task IsBudgetFrozen_ReturnsOkResult()
+    public async Task IsBudgetFrozenReturnsOkResult()
     {
         // Arrange
         var databaseName = Guid.NewGuid().ToString();

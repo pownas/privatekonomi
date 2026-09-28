@@ -41,7 +41,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateBillAsync_ValidBill_ReturnsBillWithId()
+    public async Task CreateBillAsyncValidBillReturnsBillWithId()
     {
         // Arrange
         var bill = new Bill
@@ -66,7 +66,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBillsAsync_ReturnsOnlyUserBills()
+    public async Task GetBillsAsyncReturnsOnlyUserBills()
     {
         // Arrange
         var bill1 = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -85,7 +85,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBillByIdAsync_ExistingBill_ReturnsBill()
+    public async Task GetBillByIdAsyncExistingBillReturnsBill()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Internet", Amount = 300m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(14), Status = "Pending" };
@@ -101,7 +101,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBillByIdAsync_WrongUser_ReturnsNull()
+    public async Task GetBillByIdAsyncWrongUserReturnsNull()
     {
         // Arrange
         var bill = new Bill { UserId = "other-user", Name = "Telefon", Amount = 200m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(7), Status = "Pending" };
@@ -116,7 +116,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPendingBillsAsync_ReturnsOnlyPendingBills()
+    public async Task GetPendingBillsAsyncReturnsOnlyPendingBills()
     {
         // Arrange
         var pending = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -134,7 +134,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetOverdueBillsAsync_ReturnsOnlyOverduePendingBills()
+    public async Task GetOverdueBillsAsyncReturnsOnlyOverduePendingBills()
     {
         // Arrange
         var overdue = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow.AddDays(-60), DueDate = DateTime.UtcNow.AddDays(-5), Status = "Pending" };
@@ -152,7 +152,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBillsDueSoonAsync_ReturnsOnlyBillsWithinRange()
+    public async Task GetBillsDueSoonAsyncReturnsOnlyBillsWithinRange()
     {
         // Arrange
         var soon = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(3), Status = "Pending" };
@@ -170,7 +170,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateBillAsync_ValidUpdate_UpdatesFields()
+    public async Task UpdateBillAsyncValidUpdateUpdatesFields()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -189,7 +189,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteBillAsync_ExistingBill_RemovesBill()
+    public async Task DeleteBillAsyncExistingBillRemovesBill()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -206,7 +206,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkBillAsPaidAsync_ExistingBill_MarksAsPaid()
+    public async Task MarkBillAsPaidAsyncExistingBillMarksAsPaid()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -226,7 +226,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkBillAsPaidAsync_NonExistentBill_ThrowsInvalidOperationException()
+    public async Task MarkBillAsPaidAsyncNonExistentBillThrowsInvalidOperationException()
     {
         // Act & Assert
         bool exceptionThrown = false;
@@ -242,7 +242,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AddReminderAsync_ValidBillId_AddsReminder()
+    public async Task AddReminderAsyncValidBillIdAddsReminder()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -263,7 +263,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkReminderAsSentAsync_ExistingReminder_MarksSent()
+    public async Task MarkReminderAsSentAsyncExistingReminderMarksSent()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -285,7 +285,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPendingRemindersAsync_ReturnsOnlyUnsentDueReminders()
+    public async Task GetPendingRemindersAsyncReturnsOnlyUnsentDueReminders()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(5), Status = "Pending" };
@@ -309,7 +309,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBillsByHouseholdAsync_ReturnsOnlyHouseholdBills()
+    public async Task GetBillsByHouseholdAsyncReturnsOnlyHouseholdBills()
     {
         // Arrange
         var householdId = 1;
@@ -328,7 +328,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateScheduleAsync_ValidSchedule_ReturnsScheduleWithId()
+    public async Task CreateScheduleAsyncValidScheduleReturnsScheduleWithId()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Status = "Pending", IsRecurring = true };
@@ -355,7 +355,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetScheduleByBillIdAsync_ExistingSchedule_ReturnsSchedule()
+    public async Task GetScheduleByBillIdAsyncExistingScheduleReturnsSchedule()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Status = "Pending", IsRecurring = true };
@@ -383,7 +383,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetScheduleByBillIdAsync_NoSchedule_ReturnsNull()
+    public async Task GetScheduleByBillIdAsyncNoScheduleReturnsNull()
     {
         // Act
         var result = await _service.GetScheduleByBillIdAsync(9999);
@@ -393,7 +393,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDueSchedulesAsync_ReturnsOnlyDueActiveSchedules()
+    public async Task GetDueSchedulesAsyncReturnsOnlyDueActiveSchedules()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "Hyra", Amount = 8000m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Status = "Pending", IsRecurring = true };
@@ -437,7 +437,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateNextOccurrenceAsync_MonthlySchedule_CreatesNewBillAndAdvancesSchedule()
+    public async Task GenerateNextOccurrenceAsyncMonthlyScheduleCreatesNewBillAndAdvancesSchedule()
     {
         // Arrange
         var bill = new Bill
@@ -487,7 +487,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateScheduleAsync_ValidUpdate_UpdatesFields()
+    public async Task UpdateScheduleAsyncValidUpdateUpdatesFields()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "El", Amount = 500m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Status = "Pending", IsRecurring = true };
@@ -518,7 +518,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteScheduleAsync_ExistingSchedule_RemovesSchedule()
+    public async Task DeleteScheduleAsyncExistingScheduleRemovesSchedule()
     {
         // Arrange
         var bill = new Bill { UserId = UserId, Name = "El", Amount = 500m, Currency = "SEK", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Status = "Pending", IsRecurring = true };
@@ -546,7 +546,7 @@ public class BillServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateNextOccurrenceAsync_WithReminderDaysBefore_CreatesReminder()
+    public async Task GenerateNextOccurrenceAsyncWithReminderDaysBeforeCreatesReminder()
     {
         // Arrange
         var futureDueDate = DateTime.UtcNow.Date.AddDays(10);

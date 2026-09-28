@@ -38,7 +38,7 @@ public class SharedEconomyServiceTests : IDisposable
     #region Shared Budget Tests
 
     [TestMethod]
-    public async Task CreateSharedBudgetAsync_CreatesSharedBudgetSuccessfully()
+    public async Task CreateSharedBudgetAsyncCreatesSharedBudgetSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -83,7 +83,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSharedBudgetAsync_ThrowsWhenContributionsDoNotSumTo100()
+    public async Task CreateSharedBudgetAsyncThrowsWhenContributionsDoNotSumTo100()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -121,7 +121,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHouseholdBudgetsAsync_ReturnsAllHouseholdBudgets()
+    public async Task GetHouseholdBudgetsAsyncReturnsAllHouseholdBudgets()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -161,7 +161,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBudgetContributionsAsync_ReturnsCorrectContributions()
+    public async Task GetBudgetContributionsAsyncReturnsCorrectContributions()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -204,7 +204,7 @@ public class SharedEconomyServiceTests : IDisposable
     #region Debt Settlement Tests
 
     [TestMethod]
-    public async Task CreateDebtAsync_CreatesDebtSuccessfully()
+    public async Task CreateDebtAsyncCreatesDebtSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -235,7 +235,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateDebtAsync_ThrowsWhenDebtorAndCreditorAreSame()
+    public async Task CreateDebtAsyncThrowsWhenDebtorAndCreditorAreSame()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -263,7 +263,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateDebtAsync_ThrowsWhenAmountIsZeroOrNegative()
+    public async Task CreateDebtAsyncThrowsWhenAmountIsZeroOrNegative()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -292,7 +292,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SettleDebtAsync_SettlesDebtSuccessfully()
+    public async Task SettleDebtAsyncSettlesDebtSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -323,7 +323,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CancelDebtAsync_CancelsDebtSuccessfully()
+    public async Task CancelDebtAsyncCancelsDebtSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -352,7 +352,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHouseholdDebtsAsync_ReturnsAllDebts()
+    public async Task GetHouseholdDebtsAsyncReturnsAllDebts()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -376,7 +376,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHouseholdDebtsAsync_FiltersDebtsCorrectly()
+    public async Task GetHouseholdDebtsAsyncFiltersDebtsCorrectly()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -403,7 +403,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMemberDebtBalanceAsync_CalculatesBalancesCorrectly()
+    public async Task GetMemberDebtBalanceAsyncCalculatesBalancesCorrectly()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -433,7 +433,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateOptimalSettlementAsync_CreatesOptimalSettlements()
+    public async Task CalculateOptimalSettlementAsyncCreatesOptimalSettlements()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -464,7 +464,7 @@ public class SharedEconomyServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CalculateOptimalSettlementAsync_HandlesEmptyDebts()
+    public async Task CalculateOptimalSettlementAsyncHandlesEmptyDebts()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };

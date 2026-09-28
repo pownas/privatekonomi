@@ -22,7 +22,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Encrypt_ShouldReturnEncryptedString()
+    public void EncryptShouldReturnEncryptedString()
     {
         // Arrange
         var plaintext = "my-secret-token-12345";
@@ -37,7 +37,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Decrypt_ShouldReturnOriginalString()
+    public void DecryptShouldReturnOriginalString()
     {
         // Arrange
         var plaintext = "my-secret-token-12345";
@@ -51,7 +51,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Encrypt_ShouldNotDoubleEncrypt()
+    public void EncryptShouldNotDoubleEncrypt()
     {
         // Arrange
         var plaintext = "my-secret-token-12345";
@@ -65,7 +65,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Decrypt_UnencryptedString_ShouldReturnAsIs()
+    public void DecryptUnencryptedStringShouldReturnAsIs()
     {
         // Arrange
         var plaintext = "not-encrypted-token";
@@ -78,7 +78,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void IsEncrypted_ShouldDetectEncryptedStrings()
+    public void IsEncryptedShouldDetectEncryptedStrings()
     {
         // Arrange
         var plaintext = "my-secret-token-12345";
@@ -90,7 +90,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Encrypt_NullOrEmpty_ShouldReturnAsIs()
+    public void EncryptNullOrEmptyShouldReturnAsIs()
     {
         // Arrange & Act & Assert
         Assert.IsNull(_encryptionService.Encrypt(null!));
@@ -98,7 +98,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void Decrypt_NullOrEmpty_ShouldReturnAsIs()
+    public void DecryptNullOrEmptyShouldReturnAsIs()
     {
         // Arrange & Act & Assert
         Assert.IsNull(_encryptionService.Decrypt(null!));
@@ -106,7 +106,7 @@ public class TokenEncryptionServiceTests
     }
 
     [TestMethod]
-    public void RoundTrip_MultipleTokens_ShouldWork()
+    public void RoundTripMultipleTokensShouldWork()
     {
         // Arrange
         var tokens = new[]

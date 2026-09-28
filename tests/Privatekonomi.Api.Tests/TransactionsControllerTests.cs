@@ -7,7 +7,6 @@ using Privatekonomi.Api.Models;
 using Privatekonomi.Api.Tests.Infrastructure;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Api.Tests;
 
@@ -39,7 +38,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_ValidRequest_ReturnsOkAndUpdatesTransaction()
+    public async Task UpdateTransactionValidRequestReturnsOkAndUpdatesTransaction()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -75,7 +74,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_InvalidAmount_ReturnsBadRequest()
+    public async Task UpdateTransactionInvalidAmountReturnsBadRequest()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -100,7 +99,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_EmptyDescription_ReturnsBadRequest()
+    public async Task UpdateTransactionEmptyDescriptionReturnsBadRequest()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -125,7 +124,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_LockedTransaction_ReturnsForbidden()
+    public async Task UpdateTransactionLockedTransactionReturnsForbidden()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -163,7 +162,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_ConcurrentModification_ReturnsConflict()
+    public async Task UpdateTransactionConcurrentModificationReturnsConflict()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -188,7 +187,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_TransactionNotFound_ReturnsNotFound()
+    public async Task UpdateTransactionTransactionNotFoundReturnsNotFound()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -211,7 +210,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_WithCategories_UpdatesCategoriesCorrectly()
+    public async Task UpdateTransactionWithCategoriesUpdatesCategoriesCorrectly()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -262,7 +261,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_WithoutOptimisticLocking_AllowsUpdate()
+    public async Task UpdateTransactionWithoutOptimisticLockingAllowsUpdate()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -287,7 +286,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateTransaction_DateTimePayload_NormalizesAndSerializesDateOnly()
+    public async Task UpdateTransactionDateTimePayloadNormalizesAndSerializesDateOnly()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_" + Guid.NewGuid());
@@ -323,7 +322,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task QuickCategorize_ValidRequest_ReturnsOkAndCategorizes()
+    public async Task QuickCategorizeValidRequestReturnsOkAndCategorizes()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_QuickCategorize_" + Guid.NewGuid());
@@ -361,7 +360,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task QuickCategorize_WithCreateRule_CreatesRuleAndCategorizes()
+    public async Task QuickCategorizeWithCreateRuleCreatesRuleAndCategorizes()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_QuickCategorize_Rule_" + Guid.NewGuid());
@@ -402,7 +401,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task QuickCategorize_TransactionNotFound_ReturnsNotFound()
+    public async Task QuickCategorizeTransactionNotFoundReturnsNotFound()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_QuickCategorize_NotFound_" + Guid.NewGuid());
@@ -432,7 +431,7 @@ public class TransactionsControllerTests
     }
 
     [TestMethod]
-    public async Task QuickCategorize_CategoryNotFound_ReturnsNotFound()
+    public async Task QuickCategorizeCategoryNotFoundReturnsNotFound()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory("Test_QuickCategorize_CategoryNotFound_" + Guid.NewGuid());

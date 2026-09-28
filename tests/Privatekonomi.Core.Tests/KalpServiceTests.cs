@@ -39,7 +39,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_BasicIncome_ReturnsCorrectCalculation()
+    public void CalculateKalpBasicIncomeReturnsCorrectCalculation()
     {
         // Arrange
         var input = new KalpInput
@@ -68,7 +68,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_NoFixedExpensesOrLoans_ReturnsFullIncome()
+    public void CalculateKalpNoFixedExpensesOrLoansReturnsFullIncome()
     {
         // Arrange
         var input = new KalpInput
@@ -90,7 +90,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_ExpensesExceedIncome_ReturnsNegativeKalp()
+    public void CalculateKalpExpensesExceedIncomeReturnsNegativeKalp()
     {
         // Arrange
         var input = new KalpInput
@@ -118,7 +118,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_MultipleLoansOfSameType_AggregatesCorrectly()
+    public void CalculateKalpMultipleLoansOfSameTypeAggregatesCorrectly()
     {
         // Arrange
         var input = new KalpInput
@@ -148,7 +148,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_WithHouseholdMembers_CalculatesRecommendedMinimum()
+    public void CalculateKalpWithHouseholdMembersCalculatesRecommendedMinimum()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -187,7 +187,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_BelowRecommendedMinimum_ReturnsFalse()
+    public void CalculateKalpBelowRecommendedMinimumReturnsFalse()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -228,7 +228,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalp_FixedExpenseBreakdown_ContainsAllCategories()
+    public void CalculateKalpFixedExpenseBreakdownContainsAllCategories()
     {
         // Arrange
         var input = new KalpInput
@@ -256,7 +256,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateRecommendedMinimumKalp_EmptyHousehold_ReturnsZero()
+    public void CalculateRecommendedMinimumKalpEmptyHouseholdReturnsZero()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>();
@@ -269,7 +269,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateRecommendedMinimumKalp_SingleAdult_ReturnsCorrectAmount()
+    public void CalculateRecommendedMinimumKalpSingleAdultReturnsCorrectAmount()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -296,7 +296,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateRecommendedMinimumKalp_FamilyOfFour_ReturnsCorrectAmount()
+    public void CalculateRecommendedMinimumKalpFamilyOfFourReturnsCorrectAmount()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>
@@ -325,7 +325,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalpWithComparison_WithoutHouseholdMembers_NoKonsumentverketComparison()
+    public void CalculateKalpWithComparisonWithoutHouseholdMembersNoKonsumentverketComparison()
     {
         // Arrange
         var input = new KalpInput
@@ -346,7 +346,7 @@ public class KalpServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void CalculateKalpWithComparison_WithHouseholdMembers_IncludesKonsumentverketComparison()
+    public void CalculateKalpWithComparisonWithHouseholdMembersIncludesKonsumentverketComparison()
     {
         // Arrange
         var members = new List<KonsumentverketHouseholdMember>

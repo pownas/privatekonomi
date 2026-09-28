@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 public class BudgetCategoryTests
 {
     [TestMethod]
-    public void MonthlyAmount_WithMonthlyPeriod_ReturnsSameAsPlannedAmount()
+    public void MonthlyAmountWithMonthlyPeriodReturnsSameAsPlannedAmount()
     {
         // Arrange
         var budgetCategory = new BudgetCategory
@@ -24,7 +24,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithBiMonthlyPeriod_ReturnsHalfOfPlannedAmount()
+    public void MonthlyAmountWithBiMonthlyPeriodReturnsHalfOfPlannedAmount()
     {
         // Arrange
         var budgetCategory = new BudgetCategory
@@ -41,7 +41,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithQuarterlyPeriod_ReturnsThirdOfPlannedAmount()
+    public void MonthlyAmountWithQuarterlyPeriodReturnsThirdOfPlannedAmount()
     {
         // Arrange
         var budgetCategory = new BudgetCategory
@@ -58,7 +58,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithSemiAnnualPeriod_ReturnsSixthOfPlannedAmount()
+    public void MonthlyAmountWithSemiAnnualPeriodReturnsSixthOfPlannedAmount()
     {
         // Arrange
         var budgetCategory = new BudgetCategory
@@ -75,7 +75,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithAnnualPeriod_ReturnsTwelfthOfPlannedAmount()
+    public void MonthlyAmountWithAnnualPeriodReturnsTwelfthOfPlannedAmount()
     {
         // Arrange
         var budgetCategory = new BudgetCategory
@@ -92,7 +92,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithAnnualGymMembership_Returns150PerMonth()
+    public void MonthlyAmountWithAnnualGymMembershipReturns150PerMonth()
     {
         // Arrange - Example from issue: Gymkort 1 800 kr/år
         var budgetCategory = new BudgetCategory
@@ -109,7 +109,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void MonthlyAmount_WithZeroPeriod_ReturnsPlannedAmount()
+    public void MonthlyAmountWithZeroPeriodReturnsPlannedAmount()
     {
         // Arrange - Edge case: invalid period should default to planned amount
         var budgetCategory = new BudgetCategory
@@ -126,7 +126,7 @@ public class BudgetCategoryTests
     }
 
     [TestMethod]
-    public void RecurrencePeriodMonths_DefaultValue_IsOne()
+    public void RecurrencePeriodMonthsDefaultValueIsOne()
     {
         // Arrange & Act
         var budgetCategory = new BudgetCategory();

@@ -51,7 +51,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task IsModelTrainedAsync_NoModel_ReturnsFalse()
+    public async Task IsModelTrainedAsyncNoModelReturnsFalse()
     {
         // Act
         var result = await _mlService.IsModelTrainedAsync(_testUserId);
@@ -61,7 +61,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TrainModelAsync_InsufficientData_ReturnsNull()
+    public async Task TrainModelAsyncInsufficientDataReturnsNull()
     {
         // Arrange - Create less than 50 transactions
         await SeedTransactionsAsync(_testUserId, 30);
@@ -74,7 +74,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TrainModelAsync_SufficientData_ReturnsMetrics()
+    public async Task TrainModelAsyncSufficientDataReturnsMetrics()
     {
         // Arrange - Create sufficient transactions with multiple categories
         await SeedTransactionsAsync(_testUserId, 100);
@@ -89,7 +89,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task TrainModelAsync_SavesModelMetadata()
+    public async Task TrainModelAsyncSavesModelMetadata()
     {
         // Arrange
         await SeedTransactionsAsync(_testUserId, 100);
@@ -108,7 +108,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PredictCategoryAsync_NoModel_ReturnsNull()
+    public async Task PredictCategoryAsyncNoModelReturnsNull()
     {
         // Arrange
         var transaction = new Transaction
@@ -127,7 +127,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PredictCategoryAsync_WithTrainedModel_ReturnsPrediction()
+    public async Task PredictCategoryAsyncWithTrainedModelReturnsPrediction()
     {
         // Arrange
         await SeedTransactionsAsync(_testUserId, 100);
@@ -151,7 +151,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateModelWithFeedbackAsync_StoresFeedback()
+    public async Task UpdateModelWithFeedbackAsyncStoresFeedback()
     {
         // Arrange
         var transaction = new Transaction
@@ -187,7 +187,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task IsModelTrainedAsync_AfterTraining_ReturnsTrue()
+    public async Task IsModelTrainedAsyncAfterTrainingReturnsTrue()
     {
         // Arrange
         await SeedTransactionsAsync(_testUserId, 100);
@@ -201,7 +201,7 @@ public class TransactionMLServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PredictBatchAsync_ReturnsMultiplePredictions()
+    public async Task PredictBatchAsyncReturnsMultiplePredictions()
     {
         // Arrange
         await SeedTransactionsAsync(_testUserId, 100);

@@ -51,7 +51,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SendNotificationAsync_CreatesNotification()
+    public async Task SendNotificationAsyncCreatesNotification()
     {
         // Act
         var notification = await _notificationService.SendNotificationAsync(
@@ -71,7 +71,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserNotificationsAsync_ReturnsUserNotifications()
+    public async Task GetUserNotificationsAsyncReturnsUserNotifications()
     {
         // Arrange
         await _notificationService.SendNotificationAsync(
@@ -96,7 +96,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserNotificationsAsync_UnreadOnly_ReturnsOnlyUnread()
+    public async Task GetUserNotificationsAsyncUnreadOnlyReturnsOnlyUnread()
     {
         // Arrange
         var notification1 = await _notificationService.SendNotificationAsync(
@@ -122,7 +122,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkAsReadAsync_MarksNotificationAsRead()
+    public async Task MarkAsReadAsyncMarksNotificationAsRead()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -142,7 +142,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkAllAsReadAsync_MarksAllNotificationsAsRead()
+    public async Task MarkAllAsReadAsyncMarksAllNotificationsAsRead()
     {
         // Arrange
         await _notificationService.SendNotificationAsync(_testUserId, SystemNotificationType.BudgetExceeded, "Test 1", "Message 1");
@@ -158,7 +158,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUnreadCountAsync_ReturnsCorrectCount()
+    public async Task GetUnreadCountAsyncReturnsCorrectCount()
     {
         // Arrange
         var notification1 = await _notificationService.SendNotificationAsync(_testUserId, SystemNotificationType.BudgetExceeded, "Test 1", "Message 1");
@@ -175,7 +175,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteNotificationAsync_DeletesNotification()
+    public async Task DeleteNotificationAsyncDeletesNotification()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -193,7 +193,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task IsDoNotDisturbActiveAsync_WithNoDndSchedule_ReturnsFalse()
+    public async Task IsDoNotDisturbActiveAsyncWithNoDndScheduleReturnsFalse()
     {
         // Act
         var isDndActive = await _notificationService.IsDoNotDisturbActiveAsync(_testUserId);
@@ -203,7 +203,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task IsDoNotDisturbActiveAsync_WithActiveDndSchedule_ReturnsTrue()
+    public async Task IsDoNotDisturbActiveAsyncWithActiveDndScheduleReturnsTrue()
     {
         // Arrange
         var now = DateTime.Now;
@@ -229,7 +229,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SendNotificationAsync_WithDisabledNotificationType_DoesNotSendImmediately()
+    public async Task SendNotificationAsyncWithDisabledNotificationTypeDoesNotSendImmediately()
     {
         // Arrange
         var preference = new NotificationPreference
@@ -256,7 +256,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SendNotificationAsync_WithCriticalPriority_BypassesDisabledSetting()
+    public async Task SendNotificationAsyncWithCriticalPriorityBypassesDisabledSetting()
     {
         // Arrange
         var preference = new NotificationPreference
@@ -283,7 +283,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SendNotificationAsync_WithActionUrl_StoresActionUrl()
+    public async Task SendNotificationAsyncWithActionUrlStoresActionUrl()
     {
         // Act
         var notification = await _notificationService.SendNotificationAsync(
@@ -301,7 +301,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeNotificationAsync_WithOneHourDuration_SetsSnoozeUntilCorrectly()
+    public async Task SnoozeNotificationAsyncWithOneHourDurationSetsSnoozeUntilCorrectly()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -325,7 +325,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeNotificationAsync_WithOneDayDuration_SetsSnoozeUntilCorrectly()
+    public async Task SnoozeNotificationAsyncWithOneDayDurationSetsSnoozeUntilCorrectly()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -347,7 +347,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeNotificationAsync_WithOneWeekDuration_SetsSnoozeUntilCorrectly()
+    public async Task SnoozeNotificationAsyncWithOneWeekDurationSetsSnoozeUntilCorrectly()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -369,7 +369,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeNotificationAsync_MultipleSnoozes_IncrementsSnoozeCount()
+    public async Task SnoozeNotificationAsyncMultipleSnoozesIncrementsSnoozeCount()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -390,7 +390,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeNotificationAsync_WithInvalidNotificationId_ThrowsException()
+    public async Task SnoozeNotificationAsyncWithInvalidNotificationIdThrowsException()
     {
         // Act & Assert
         try
@@ -405,7 +405,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkReminderAsCompletedAsync_MarksNotificationAsReadAndCompleted()
+    public async Task MarkReminderAsCompletedAsyncMarksNotificationAsReadAndCompleted()
     {
         // Arrange
         var bill = new Bill
@@ -460,7 +460,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActiveNotificationsAsync_ExcludesSnoozedNotifications()
+    public async Task GetActiveNotificationsAsyncExcludesSnoozedNotifications()
     {
         // Arrange
         var notification1 = await _notificationService.SendNotificationAsync(
@@ -487,7 +487,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActiveNotificationsAsync_IncludesExpiredSnoozes()
+    public async Task GetActiveNotificationsAsyncIncludesExpiredSnoozes()
     {
         // Arrange
         var notification = await _notificationService.SendNotificationAsync(
@@ -508,7 +508,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ShouldEscalateReminderAsync_WithHighSnoozeCount_ReturnsTrue()
+    public async Task ShouldEscalateReminderAsyncWithHighSnoozeCountReturnsTrue()
     {
         // Arrange
         var bill = new Bill
@@ -550,7 +550,7 @@ public class NotificationServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ShouldEscalateReminderAsync_WithLowSnoozeCount_ReturnsFalse()
+    public async Task ShouldEscalateReminderAsyncWithLowSnoozeCountReturnsFalse()
     {
         // Arrange
         var bill = new Bill

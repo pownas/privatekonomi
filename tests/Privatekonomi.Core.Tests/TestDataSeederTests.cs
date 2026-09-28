@@ -77,7 +77,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SeedTestDataAsync_GeneratesTransactionsWithin2YearsDateRange()
+    public async Task SeedTestDataAsyncGeneratesTransactionsWithin2YearsDateRange()
     {
         // Arrange
         var today = DateTime.UtcNow;
@@ -112,7 +112,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SeedTestDataAsync_GeneratesCorrectNumberOfTransactions()
+    public async Task SeedTestDataAsyncGeneratesCorrectNumberOfTransactions()
     {
         // Act
         await TestDataSeeder.SeedTestDataAsync(_context, _mockUserManager.Object);
@@ -125,7 +125,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SeedTestDataAsync_TransactionDatesAreRelativeToCurrentDate()
+    public async Task SeedTestDataAsyncTransactionDatesAreRelativeToCurrentDate()
     {
         // Arrange
         var testStartTime = DateTime.UtcNow;
@@ -151,7 +151,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public void SeedProductionReferenceData_SeedsChallengeTemplates()
+    public void SeedProductionReferenceDataSeedsChallengeTemplates()
     {
         // Act
         TestDataSeeder.SeedProductionReferenceData(_context);
@@ -173,7 +173,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public void SeedProductionReferenceData_DoesNotDuplicateTemplates()
+    public void SeedProductionReferenceDataDoesNotDuplicateTemplates()
     {
         // Act - Seed twice
         TestDataSeeder.SeedProductionReferenceData(_context);
@@ -187,7 +187,7 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
-    public void SeedProductionReferenceData_TemplatesHaveRequiredProperties()
+    public void SeedProductionReferenceDataTemplatesHaveRequiredProperties()
     {
         // Act
         TestDataSeeder.SeedProductionReferenceData(_context);

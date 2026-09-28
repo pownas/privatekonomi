@@ -36,7 +36,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_NoData_ReturnsLowScore()
+    public async Task GetHealthScoreAsyncNoDataReturnsLowScore()
     {
         // Act
         var result = await _reportService.GetHealthScoreAsync();
@@ -51,7 +51,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_ExcellentSavingsRate_Returns20Points()
+    public async Task GetHealthScoreAsyncExcellentSavingsRateReturns20Points()
     {
         // Arrange - 25% savings rate (5000 income, 3750 expenses)
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
@@ -85,7 +85,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_NoDebt_Returns20Points()
+    public async Task GetHealthScoreAsyncNoDebtReturns20Points()
     {
         // Arrange - No loans
         // Act
@@ -98,7 +98,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_HighDebt_ReturnsLowScore()
+    public async Task GetHealthScoreAsyncHighDebtReturnsLowScore()
     {
         // Arrange - High debt (500% of annual income)
         await _context.Loans.AddAsync(new Loan
@@ -130,7 +130,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_SixMonthsEmergencyFund_Returns20Points()
+    public async Task GetHealthScoreAsyncSixMonthsEmergencyFundReturns20Points()
     {
         // Arrange - 6 months of expenses saved
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
@@ -165,7 +165,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_StableIncome_Returns10Points()
+    public async Task GetHealthScoreAsyncStableIncomeReturns10Points()
     {
         // Arrange - Stable monthly income (very low variation)
         var sixMonthsAgo = DateTime.Today.AddMonths(-6);
@@ -193,7 +193,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_DiversifiedInvestments_ReturnsHighScore()
+    public async Task GetHealthScoreAsyncDiversifiedInvestmentsReturnsHighScore()
     {
         // Arrange - 4 equal investments (good diversification)
         await _context.Investments.AddAsync(new Investment
@@ -247,7 +247,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_CalculatesCorrectHealthLevel()
+    public async Task GetHealthScoreAsyncCalculatesCorrectHealthLevel()
     {
         // Arrange - Create data for high score
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
@@ -289,7 +289,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_IdentifiesStrengths()
+    public async Task GetHealthScoreAsyncIdentifiesStrengths()
     {
         // Arrange - Create excellent savings rate
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
@@ -320,7 +320,7 @@ public class HealthScoreServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHealthScoreAsync_IdentifiesImprovementAreas()
+    public async Task GetHealthScoreAsyncIdentifiesImprovementAreas()
     {
         // Arrange - Create poor savings rate scenario
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);

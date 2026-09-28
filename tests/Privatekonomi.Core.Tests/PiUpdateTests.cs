@@ -12,7 +12,7 @@ namespace Privatekonomi.Core.Tests;
 public class PiUpdateTests
 {
     [TestMethod]
-    public async Task AdminRequirement_RequiresAuthenticatedSystemAdmin()
+    public async Task AdminRequirementRequiresAuthenticatedSystemAdmin()
     {
         var store = new Mock<IUserStore<ApplicationUser>>();
         var manager = new Mock<UserManager<ApplicationUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
@@ -35,7 +35,7 @@ public class PiUpdateTests
     }
 
     [TestMethod]
-    public void Request_IsUnavailableWithoutOptInOrPi()
+    public void RequestIsUnavailableWithoutOptInOrPi()
     {
         using var fixture = new UpdateFixture();
         Assert.IsFalse(fixture.Service(enabled: false).TryRequest());
@@ -44,7 +44,7 @@ public class PiUpdateTests
     }
 
     [TestMethod]
-    public async Task Request_IsExclusiveAndTracksStatusAfterRestart()
+    public async Task RequestIsExclusiveAndTracksStatusAfterRestart()
     {
         using var fixture = new UpdateFixture();
         var service = fixture.Service();
@@ -70,7 +70,7 @@ public class PiUpdateTests
     }
 
     [TestMethod]
-    public void Status_ReportsSuccessfulCommitAndLimitsLog()
+    public void StatusReportsSuccessfulCommitAndLimitsLog()
     {
         using var fixture = new UpdateFixture();
         File.WriteAllText(fixture.Path("status"), "succeeded\n");
@@ -83,7 +83,7 @@ public class PiUpdateTests
     }
 
     [TestMethod]
-    public void Status_UsesPublishedCommitInsteadOfStaleUpdateState()
+    public void StatusUsesPublishedCommitInsteadOfStaleUpdateState()
     {
         using var fixture = new UpdateFixture();
         var published = fixture.Path("published-commit");

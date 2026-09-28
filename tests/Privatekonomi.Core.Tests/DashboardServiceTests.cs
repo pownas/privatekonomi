@@ -65,7 +65,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDashboardDataAsync_ReturnsAggregatedData()
+    public async Task GetDashboardDataAsyncReturnsAggregatedData()
     {
         // Act
         var result = await _service.GetDashboardDataAsync();
@@ -80,7 +80,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBalanceSummaryAsync_ReturnsEmptyWhenNoAccounts()
+    public async Task GetBalanceSummaryAsyncReturnsEmptyWhenNoAccounts()
     {
         // Act
         var result = await _service.GetBalanceSummaryAsync();
@@ -93,7 +93,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBalanceSummaryAsync_CalculatesTotalBalanceFromAccounts()
+    public async Task GetBalanceSummaryAsyncCalculatesTotalBalanceFromAccounts()
     {
         // Arrange
         var account1 = new BankSource
@@ -128,7 +128,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBalanceSummaryAsync_IncludesTransactionsInBalance()
+    public async Task GetBalanceSummaryAsyncIncludesTransactionsInBalance()
     {
         // Arrange
         var account = new BankSource
@@ -179,7 +179,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBalanceSummaryAsync_ExcludesClosedAccounts()
+    public async Task GetBalanceSummaryAsyncExcludesClosedAccounts()
     {
         // Arrange
         var activeAccount = new BankSource
@@ -214,7 +214,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBalanceSummaryAsync_FiltersAccountsByIds()
+    public async Task GetBalanceSummaryAsyncFiltersAccountsByIds()
     {
         // Arrange
         var account1 = new BankSource
@@ -248,7 +248,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBudgetStatusAsync_ReturnsNoActiveBudgetsWhenEmpty()
+    public async Task GetBudgetStatusAsyncReturnsNoActiveBudgetsWhenEmpty()
     {
         // Arrange
         _mockBudgetService.Setup(x => x.GetActiveBudgetsAsync())
@@ -264,7 +264,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBudgetStatusAsync_CalculatesTotalPlannedAndSpent()
+    public async Task GetBudgetStatusAsyncCalculatesTotalPlannedAndSpent()
     {
         // Arrange
         var category1 = new Category { CategoryId = 1, Name = "Food" };
@@ -305,7 +305,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBudgetStatusAsync_IdentifiesOverspentCategories()
+    public async Task GetBudgetStatusAsyncIdentifiesOverspentCategories()
     {
         // Arrange
         var category1 = new Category { CategoryId = 1, Name = "Food" };
@@ -343,7 +343,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetBudgetStatusAsync_DeterminesCorrectStatus()
+    public async Task GetBudgetStatusAsyncDeterminesCorrectStatus()
     {
         // Arrange - Budget at 80% usage (Warning status)
         var category = new Category { CategoryId = 1, Name = "Food" };
@@ -376,7 +376,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUpcomingBillsAsync_ReturnsEmptyForUnauthenticatedUser()
+    public async Task GetUpcomingBillsAsyncReturnsEmptyForUnauthenticatedUser()
     {
         // Arrange
         _mockCurrentUserService.Setup(x => x.UserId).Returns((string?)null);
@@ -397,7 +397,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUpcomingBillsAsync_CombinesUpcomingAndOverdueBills()
+    public async Task GetUpcomingBillsAsyncCombinesUpcomingAndOverdueBills()
     {
         // Arrange
         var overdueBill = new Bill
@@ -437,7 +437,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUpcomingBillsAsync_CorrectlyCalculatesDaysUntilDue()
+    public async Task GetUpcomingBillsAsyncCorrectlyCalculatesDaysUntilDue()
     {
         // Arrange
         var today = DateTime.Today;
@@ -466,7 +466,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetRecentInsightsAsync_ReturnsEmptyForUnauthenticatedUser()
+    public async Task GetRecentInsightsAsyncReturnsEmptyForUnauthenticatedUser()
     {
         // Arrange
         _mockCurrentUserService.Setup(x => x.UserId).Returns((string?)null);
@@ -487,7 +487,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetRecentInsightsAsync_MapsNotificationsToInsights()
+    public async Task GetRecentInsightsAsyncMapsNotificationsToInsights()
     {
         // Arrange
         var notification = new Notification
@@ -520,7 +520,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetRecentInsightsAsync_RespectsLimitParameter()
+    public async Task GetRecentInsightsAsyncRespectsLimitParameter()
     {
         // Arrange
         var notifications = Enumerable.Range(1, 10).Select(i => new Notification
@@ -546,7 +546,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetFinancialTrendsAsync_ReturnsEmptyForUnauthenticatedUser()
+    public async Task GetFinancialTrendsAsyncReturnsEmptyForUnauthenticatedUser()
     {
         // Arrange
         _mockCurrentUserService.Setup(x => x.UserId).Returns((string?)null);
@@ -569,7 +569,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetFinancialTrendsAsync_CalculatesCurrentAndPreviousMonthData()
+    public async Task GetFinancialTrendsAsyncCalculatesCurrentAndPreviousMonthData()
     {
         // Arrange
         var now = DateTime.UtcNow;
@@ -628,7 +628,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetFinancialTrendsAsync_CalculatesPercentageChanges()
+    public async Task GetFinancialTrendsAsyncCalculatesPercentageChanges()
     {
         // Arrange
         var now = DateTime.UtcNow;
@@ -693,7 +693,7 @@ public class DashboardServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetFinancialTrendsAsync_HandlesNoPreviousData()
+    public async Task GetFinancialTrendsAsyncHandlesNoPreviousData()
     {
         // Arrange
         var now = DateTime.UtcNow;

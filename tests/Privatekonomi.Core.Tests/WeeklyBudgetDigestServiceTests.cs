@@ -20,7 +20,7 @@ public class WeeklyBudgetDigestServiceTests
     }
 
     [TestMethod]
-    public async Task SendUserDigest_IncludesAllBudgetCategories()
+    public async Task SendUserDigestIncludesAllBudgetCategories()
     {
         // Arrange
         var serviceCollection = new ServiceCollection();
@@ -131,7 +131,7 @@ public class WeeklyBudgetDigestServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateDailyRate_ReturnsCorrectRate()
+    public async Task CalculateDailyRateReturnsCorrectRate()
     {
         // Arrange
         var context = TestHelper.CreateInMemoryContext();
@@ -194,7 +194,7 @@ public class WeeklyBudgetDigestServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateForecast_PredictsCorrectDaysUntilExceeded()
+    public async Task CalculateForecastPredictsCorrectDaysUntilExceeded()
     {
         // Arrange
         var context = TestHelper.CreateInMemoryContext();

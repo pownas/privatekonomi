@@ -38,7 +38,7 @@ public class HouseholdServiceTests : IDisposable
     #region Household CRUD Tests
 
     [TestMethod]
-    public async Task UpdateHouseholdAsync_UpdatesHouseholdSuccessfully()
+    public async Task UpdateHouseholdAsyncUpdatesHouseholdSuccessfully()
     {
         // Arrange
         var household = new Household 
@@ -71,7 +71,7 @@ public class HouseholdServiceTests : IDisposable
     #region Activity Tests
 
     [TestMethod]
-    public async Task CreateActivityAsync_CreatesActivitySuccessfully()
+    public async Task CreateActivityAsyncCreatesActivitySuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -98,7 +98,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActivitiesAsync_ReturnsActivitiesOrderedByDate()
+    public async Task GetActivitiesAsyncReturnsActivitiesOrderedByDate()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -132,7 +132,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActivitiesAsync_FiltersWithDateRange()
+    public async Task GetActivitiesAsyncFiltersWithDateRange()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -168,7 +168,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteActivityAsync_RemovesActivity()
+    public async Task DeleteActivityAsyncRemovesActivity()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -196,7 +196,7 @@ public class HouseholdServiceTests : IDisposable
     #region Task Tests
 
     [TestMethod]
-    public async Task CreateTaskAsync_CreatesTaskSuccessfully()
+    public async Task CreateTaskAsyncCreatesTaskSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -225,7 +225,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTasksAsync_ReturnsTasksOrderedByPriority()
+    public async Task GetTasksAsyncReturnsTasksOrderedByPriority()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -258,7 +258,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTasksAsync_ExcludesCompletedTasksWhenRequested()
+    public async Task GetTasksAsyncExcludesCompletedTasksWhenRequested()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -290,7 +290,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkTaskCompleteAsync_MarksTaskAsCompleted()
+    public async Task MarkTaskCompleteAsyncMarksTaskAsCompleted()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -326,7 +326,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkTaskIncompleteAsync_MarksTaskAsIncomplete()
+    public async Task MarkTaskIncompleteAsyncMarksTaskAsIncomplete()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -354,7 +354,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SearchTasksAsync_FindsTasksByTitle()
+    public async Task SearchTasksAsyncFindsTasksByTitle()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -385,7 +385,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SearchTasksAsync_FindsTasksByDescription()
+    public async Task SearchTasksAsyncFindsTasksByDescription()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -411,7 +411,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteTaskAsync_RemovesTask()
+    public async Task DeleteTaskAsyncRemovesTask()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -439,7 +439,7 @@ public class HouseholdServiceTests : IDisposable
     #region Activity Image Tests
 
     [TestMethod]
-    public async Task AddActivityImageAsync_AddsImageSuccessfully()
+    public async Task AddActivityImageAsyncAddsImageSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -473,7 +473,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AddActivityImageAsync_SetsCorrectDisplayOrder()
+    public async Task AddActivityImageAsyncSetsCorrectDisplayOrder()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -515,7 +515,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActivityImagesAsync_ReturnsImagesInOrder()
+    public async Task GetActivityImagesAsyncReturnsImagesInOrder()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -552,7 +552,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteActivityImageAsync_DeletesImageSuccessfully()
+    public async Task DeleteActivityImageAsyncDeletesImageSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -583,7 +583,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateImageOrderAsync_UpdatesOrderSuccessfully()
+    public async Task UpdateImageOrderAsyncUpdatesOrderSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -615,7 +615,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActivitiesAsync_IncludesImages()
+    public async Task GetActivitiesAsyncIncludesImages()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -651,7 +651,7 @@ public class HouseholdServiceTests : IDisposable
     #region Shared Budget Tests
 
     [TestMethod]
-    public async Task CreateSharedBudgetAsync_CreatesSharedBudgetSuccessfully()
+    public async Task CreateSharedBudgetAsyncCreatesSharedBudgetSuccessfully()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -709,7 +709,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSharedBudgetAsync_ThrowsWhenContributionsDontSumTo100()
+    public async Task CreateSharedBudgetAsyncThrowsWhenContributionsDontSumTo100()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -764,7 +764,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSharedBudgetAsync_ThrowsWhenHouseholdIdIsNull()
+    public async Task CreateSharedBudgetAsyncThrowsWhenHouseholdIdIsNull()
     {
         // Arrange
         var budget = new Budget
@@ -796,7 +796,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHouseholdBudgetsAsync_ReturnsHouseholdBudgets()
+    public async Task GetHouseholdBudgetsAsyncReturnsHouseholdBudgets()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -843,7 +843,7 @@ public class HouseholdServiceTests : IDisposable
     #region Recurring Task Tests
 
     [TestMethod]
-    public async Task CreateNextRecurrenceAsync_CreatesNewTaskWithCorrectDueDate()
+    public async Task CreateNextRecurrenceAsyncCreatesNewTaskWithCorrectDueDate()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -880,7 +880,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateNextRecurrenceAsync_MonthlyRecurrence_CalculatesCorrectDate()
+    public async Task CreateNextRecurrenceAsyncMonthlyRecurrenceCalculatesCorrectDate()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -910,7 +910,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTaskStatusAsync_CompletingRecurringTask_CreatesNextOccurrence()
+    public async Task UpdateTaskStatusAsyncCompletingRecurringTaskCreatesNextOccurrence()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -944,7 +944,7 @@ public class HouseholdServiceTests : IDisposable
     #region Kanban Board Tests
 
     [TestMethod]
-    public async Task GetTasksByStatusAsync_ReturnsOnlyTasksWithSpecifiedStatus()
+    public async Task GetTasksByStatusAsyncReturnsOnlyTasksWithSpecifiedStatus()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -987,7 +987,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTasksGroupedByStatusAsync_ReturnsTasksGroupedByStatus()
+    public async Task GetTasksGroupedByStatusAsyncReturnsTasksGroupedByStatus()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -1029,7 +1029,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTaskStatusAsync_UpdatesStatusCorrectly()
+    public async Task UpdateTaskStatusAsyncUpdatesStatusCorrectly()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };
@@ -1058,7 +1058,7 @@ public class HouseholdServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTaskStatusAsync_MovingToDone_MarksAsCompleted()
+    public async Task UpdateTaskStatusAsyncMovingToDoneMarksAsCompleted()
     {
         // Arrange
         var household = new Household { Name = "Test Household" };

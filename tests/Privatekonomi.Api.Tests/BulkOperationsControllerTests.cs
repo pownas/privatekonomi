@@ -27,7 +27,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkDelete_ShouldReturnOk_WhenSuccessful()
+    public async Task BulkDeleteShouldReturnOkWhenSuccessful()
     {
         // Arrange
         var request = new BulkDeleteRequest
@@ -64,7 +64,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkCategorize_ShouldReturnOk_WhenSuccessful()
+    public async Task BulkCategorizeShouldReturnOkWhenSuccessful()
     {
         // Arrange
         var request = new BulkCategorizeRequest
@@ -98,7 +98,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkLinkHousehold_ShouldReturnOk_WhenSuccessful()
+    public async Task BulkLinkHouseholdShouldReturnOkWhenSuccessful()
     {
         // Arrange
         var request = new BulkLinkHouseholdRequest
@@ -128,7 +128,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkLinkHousehold_ShouldUnlink_WhenHouseholdIdIsNull()
+    public async Task BulkLinkHouseholdShouldUnlinkWhenHouseholdIdIsNull()
     {
         // Arrange
         var request = new BulkLinkHouseholdRequest
@@ -165,7 +165,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkExport_ShouldReturnCsvFile_WhenFormatIsCsv()
+    public async Task BulkExportShouldReturnCsvFileWhenFormatIsCsv()
     {
         // Arrange
         var request = new BulkExportRequest
@@ -190,7 +190,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkExport_ShouldReturnJsonFile_WhenFormatIsJson()
+    public async Task BulkExportShouldReturnJsonFileWhenFormatIsJson()
     {
         // Arrange
         var request = new BulkExportRequest
@@ -215,7 +215,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task CreateSnapshot_ShouldReturnSnapshot()
+    public async Task CreateSnapshotShouldReturnSnapshot()
     {
         // Arrange
         var transactionIds = new List<int> { 1, 2, 3 };
@@ -243,7 +243,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task Undo_ShouldReturnOk_WhenSuccessful()
+    public async Task UndoShouldReturnOkWhenSuccessful()
     {
         // Arrange
         var snapshot = new BulkOperationSnapshot
@@ -274,7 +274,7 @@ public class BulkOperationsControllerTests
     }
 
     [TestMethod]
-    public async Task BulkCategorize_ShouldMapCategories_Correctly()
+    public async Task BulkCategorizeShouldMapCategoriesCorrectly()
     {
         // Arrange
         var request = new BulkCategorizeRequest

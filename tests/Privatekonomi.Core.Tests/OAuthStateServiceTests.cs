@@ -16,7 +16,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void GenerateState_ShouldReturnNonEmptyString()
+    public void GenerateStateShouldReturnNonEmptyString()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -30,7 +30,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void GenerateState_ShouldReturnUniqueStates()
+    public void GenerateStateShouldReturnUniqueStates()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -44,7 +44,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void ValidateState_ValidState_ShouldReturnTrue()
+    public void ValidateStateValidStateShouldReturnTrue()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -58,7 +58,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void ValidateState_InvalidState_ShouldReturnFalse()
+    public void ValidateStateInvalidStateShouldReturnFalse()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -72,7 +72,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void ValidateState_WrongBankName_ShouldReturnFalse()
+    public void ValidateStateWrongBankNameShouldReturnFalse()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -86,7 +86,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void ValidateState_EmptyState_ShouldReturnFalse()
+    public void ValidateStateEmptyStateShouldReturnFalse()
     {
         // Arrange & Act
         var isValid = _stateService.ValidateState(string.Empty, "Swedbank");
@@ -96,7 +96,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void RemoveState_ShouldInvalidateState()
+    public void RemoveStateShouldInvalidateState()
     {
         // Arrange
         var bankName = "Swedbank";
@@ -111,7 +111,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void RemoveState_NonExistentState_ShouldNotThrow()
+    public void RemoveStateNonExistentStateShouldNotThrow()
     {
         // Arrange
         var nonExistentState = "non-existent-state";
@@ -122,7 +122,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void ValidateState_CaseInsensitiveBankName_ShouldWork()
+    public void ValidateStateCaseInsensitiveBankNameShouldWork()
     {
         // Arrange
         var state = _stateService.GenerateState("Swedbank");
@@ -137,7 +137,7 @@ public class OAuthStateServiceTests
     }
 
     [TestMethod]
-    public void StateLifecycle_GenerateValidateRemove_ShouldWork()
+    public void StateLifecycleGenerateValidateRemoveShouldWork()
     {
         // Arrange
         var bankName = "ICA-banken";

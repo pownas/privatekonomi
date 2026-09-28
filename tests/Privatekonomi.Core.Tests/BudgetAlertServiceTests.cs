@@ -32,7 +32,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateBudgetUsagePercentageAsync_ReturnsCorrectPercentage()
+    public async Task CalculateBudgetUsagePercentageAsyncReturnsCorrectPercentage()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -86,7 +86,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateDailyRateAsync_ReturnsCorrectRate()
+    public async Task CalculateDailyRateAsyncReturnsCorrectRate()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -146,7 +146,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task CalculateDaysUntilExceededAsync_ReturnsCorrectForecast()
+    public async Task CalculateDaysUntilExceededAsyncReturnsCorrectForecast()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -206,7 +206,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task GetOrCreateSettingsAsync_CreatesDefaultSettings()
+    public async Task GetOrCreateSettingsAsyncCreatesDefaultSettings()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -229,7 +229,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task FreezeBudgetAsync_CreatesFreezeSuccessfully()
+    public async Task FreezeBudgetAsyncCreatesFreezeSuccessfully()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -263,7 +263,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task IsBudgetFrozenAsync_ReturnsTrueWhenFrozen()
+    public async Task IsBudgetFrozenAsyncReturnsTrueWhenFrozen()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -302,7 +302,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task CheckBudgetAsync_CreatesAlertWhenThresholdExceeded()
+    public async Task CheckBudgetAsyncCreatesAlertWhenThresholdExceeded()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -394,7 +394,7 @@ public class BudgetAlertServiceTests
     }
 
     [TestMethod]
-    public async Task AcknowledgeAlertAsync_MarksAlertAsInactive()
+    public async Task AcknowledgeAlertAsyncMarksAlertAsInactive()
     {
         // Arrange
         using var context = CreateInMemoryContext();

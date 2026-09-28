@@ -22,7 +22,7 @@ public class BulkExportTests
     }
 
     [TestMethod]
-    public async Task ExportSelectedTransactionsToCsvAsync_ShouldExportSelectedTransactions()
+    public async Task ExportSelectedTransactionsToCsvAsyncShouldExportSelectedTransactions()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -102,7 +102,7 @@ public class BulkExportTests
     }
 
     [TestMethod]
-    public async Task ExportSelectedTransactionsToJsonAsync_ShouldExportSelectedTransactions()
+    public async Task ExportSelectedTransactionsToJsonAsyncShouldExportSelectedTransactions()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -178,7 +178,7 @@ public class BulkExportTests
     }
 
     [TestMethod]
-    public async Task ExportSelectedTransactionsToCsvAsync_ShouldHandleSpecialCharacters()
+    public async Task ExportSelectedTransactionsToCsvAsyncShouldHandleSpecialCharacters()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -214,7 +214,7 @@ public class BulkExportTests
     }
 
     [TestMethod]
-    public async Task ExportSelectedTransactionsAsync_ShouldFilterByCurrentUser()
+    public async Task ExportSelectedTransactionsAsyncShouldFilterByCurrentUser()
     {
         // Arrange
         using var context = CreateInMemoryContext();
@@ -257,7 +257,7 @@ public class BulkExportTests
     }
 
     [TestMethod]
-    public async Task ExportSelectedTransactionsToJsonAsync_ShouldIncludeAllRelevantFields()
+    public async Task ExportSelectedTransactionsToJsonAsyncShouldIncludeAllRelevantFields()
     {
         // Arrange
         using var context = CreateInMemoryContext();

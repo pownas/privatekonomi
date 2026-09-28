@@ -56,7 +56,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_ValidUpdate_SuccessfullyUpdatesTransaction()
+    public async Task UpdateTransactionWithAuditAsyncValidUpdateSuccessfullyUpdatesTransaction()
     {
         // Arrange
         var transaction = new Transaction
@@ -108,7 +108,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateTransactionAsync_NormalizesTimeComponentToMidnight()
+    public async Task CreateTransactionAsyncNormalizesTimeComponentToMidnight()
     {
         // Arrange
         var transactionDate = new DateTime(2026, 8, 28, 14, 30, 45, DateTimeKind.Utc);
@@ -128,7 +128,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_AmountZero_ThrowsArgumentException()
+    public async Task UpdateTransactionWithAuditAsyncAmountZeroThrowsArgumentException()
     {
         // Arrange
         var transaction = new Transaction
@@ -167,7 +167,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_NegativeAmount_ThrowsArgumentException()
+    public async Task UpdateTransactionWithAuditAsyncNegativeAmountThrowsArgumentException()
     {
         // Arrange
         var transaction = new Transaction
@@ -206,7 +206,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_EmptyDescription_ThrowsArgumentException()
+    public async Task UpdateTransactionWithAuditAsyncEmptyDescriptionThrowsArgumentException()
     {
         // Arrange
         var transaction = new Transaction
@@ -245,7 +245,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_LockedTransaction_ThrowsInvalidOperationException()
+    public async Task UpdateTransactionWithAuditAsyncLockedTransactionThrowsInvalidOperationException()
     {
         // Arrange
         var transaction = new Transaction
@@ -288,7 +288,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_ConcurrentModification_ThrowsInvalidOperationException()
+    public async Task UpdateTransactionWithAuditAsyncConcurrentModificationThrowsInvalidOperationException()
     {
         // Arrange
         var transaction = new Transaction
@@ -332,7 +332,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_TransactionNotFound_ThrowsInvalidOperationException()
+    public async Task UpdateTransactionWithAuditAsyncTransactionNotFoundThrowsInvalidOperationException()
     {
         // Act & Assert
         InvalidOperationException? exception = null;
@@ -362,7 +362,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_WithCategories_UpdatesCategoriesCorrectly()
+    public async Task UpdateTransactionWithAuditAsyncWithCategoriesUpdatesCategoriesCorrectly()
     {
         // Arrange
         var category1 = new Category { CategoryId = 1, Name = "Category1" };
@@ -414,7 +414,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_WithNullUpdatedAt_AllowsUpdate()
+    public async Task UpdateTransactionWithAuditAsyncWithNullUpdatedAtAllowsUpdate()
     {
         // Arrange
         var transaction = new Transaction
@@ -450,7 +450,7 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateTransactionWithAuditAsync_NormalizesTimeComponentToMidnight()
+    public async Task UpdateTransactionWithAuditAsyncNormalizesTimeComponentToMidnight()
     {
         // Arrange
         var transaction = new Transaction

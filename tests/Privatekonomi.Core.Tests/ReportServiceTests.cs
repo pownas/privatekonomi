@@ -37,7 +37,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithNoData_ReturnsZeroNetWorth()
+    public async Task GetNetWorthReportAsyncWithNoDataReturnsZeroNetWorth()
     {
         // Act
         var report = await _reportService.GetNetWorthReportAsync(TestUserId);
@@ -53,7 +53,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithAssets_CalculatesCorrectNetWorth()
+    public async Task GetNetWorthReportAsyncWithAssetsCalculatesCorrectNetWorth()
     {
         // Arrange
         var asset = new Asset
@@ -81,7 +81,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithInvestments_IncludesInTotalAssets()
+    public async Task GetNetWorthReportAsyncWithInvestmentsIncludesInTotalAssets()
     {
         // Arrange
         var investment = new Investment
@@ -112,7 +112,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithLoans_SubtractsFromNetWorth()
+    public async Task GetNetWorthReportAsyncWithLoansSubtractsFromNetWorth()
     {
         // Arrange
         var asset = new Asset
@@ -152,7 +152,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithMultipleUsers_FiltersCorrectly()
+    public async Task GetNetWorthReportAsyncWithMultipleUsersFiltersCorrectly()
     {
         // Arrange
         var userAsset = new Asset
@@ -188,7 +188,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_ReturnsHistoricalData()
+    public async Task GetNetWorthReportAsyncReturnsHistoricalData()
     {
         // Arrange
         var asset = new Asset
@@ -215,7 +215,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithSnapshots_UsesSnapshotData()
+    public async Task GetNetWorthReportAsyncWithSnapshotsUsesSnapshotData()
     {
         // Arrange
         var snapshot = new NetWorthSnapshot
@@ -239,7 +239,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_CalculatesPercentageChange()
+    public async Task GetNetWorthReportAsyncCalculatesPercentageChange()
     {
         // Arrange - Create two snapshots for different months
         var oldSnapshot = new NetWorthSnapshot
@@ -296,7 +296,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetNetWorthReportAsync_WithNullUserId_ReturnsAllUsersData()
+    public async Task GetNetWorthReportAsyncWithNullUserIdReturnsAllUsersData()
     {
         // Arrange
         var asset1 = new Asset
@@ -331,7 +331,7 @@ public class ReportServiceTests : IDisposable
     }
     
     [TestMethod]
-    public async Task GetPeriodComparisonAsync_WithTransactions_ReturnsCorrectComparison()
+    public async Task GetPeriodComparisonAsyncWithTransactionsReturnsCorrectComparison()
     {
         // Arrange
         var referenceDate = new DateTime(2025, 1, 15);
@@ -424,7 +424,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPeriodComparisonAsync_NoTransactions_ReturnsZeroValues()
+    public async Task GetPeriodComparisonAsyncNoTransactionsReturnsZeroValues()
     {
         // Arrange
         var referenceDate = new DateTime(2025, 1, 15);
@@ -443,7 +443,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPeriodComparisonAsync_IncreasingExpenses_ShowsWorsening()
+    public async Task GetPeriodComparisonAsyncIncreasingExpensesShowsWorsening()
     {
         // Arrange
         var referenceDate = new DateTime(2025, 1, 15);
@@ -478,7 +478,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPeriodComparisonAsync_StableExpenses_ShowsStable()
+    public async Task GetPeriodComparisonAsyncStableExpensesShowsStable()
     {
         // Arrange
         var referenceDate = new DateTime(2025, 1, 15);
@@ -512,7 +512,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetPeriodComparisonAsync_GeneratesSparklineData()
+    public async Task GetPeriodComparisonAsyncGeneratesSparklineData()
     {
         // Arrange
         var referenceDate = new DateTime(2025, 1, 15);
@@ -545,7 +545,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_WithNoData_ReturnsEmptyReport()
+    public async Task GetSpendingPatternReportAsyncWithNoDataReturnsEmptyReport()
     {
         // Arrange
         var fromDate = DateTime.Today.AddMonths(-1);
@@ -564,7 +564,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_CalculatesTotalSpending()
+    public async Task GetSpendingPatternReportAsyncCalculatesTotalSpending()
     {
         // Arrange
         var category = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -617,7 +617,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_CalculatesCategoryPercentages()
+    public async Task GetSpendingPatternReportAsyncCalculatesCategoryPercentages()
     {
         // Arrange
         var category1 = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -674,7 +674,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_IdentifiesTopCategories()
+    public async Task GetSpendingPatternReportAsyncIdentifiesTopCategories()
     {
         // Arrange - Create 6 categories with different amounts
         var categories = new List<Category>
@@ -723,7 +723,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_CalculatesMonthlyData()
+    public async Task GetSpendingPatternReportAsyncCalculatesMonthlyData()
     {
         // Arrange
         var category = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -776,7 +776,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_DetectsTrends()
+    public async Task GetSpendingPatternReportAsyncDetectsTrends()
     {
         // Arrange
         var category = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -816,7 +816,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_GeneratesRecommendations()
+    public async Task GetSpendingPatternReportAsyncGeneratesRecommendations()
     {
         // Arrange
         var category = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -854,7 +854,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetSpendingPatternReportAsync_FiltersByHousehold()
+    public async Task GetSpendingPatternReportAsyncFiltersByHousehold()
     {
         // Arrange
         var category = new Category { CategoryId = 1, Name = "Mat", Color = "#FF0000" };
@@ -906,7 +906,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_WithNoData_ReturnsEmptyReport()
+    public async Task GenerateMonthlyReportAsyncWithNoDataReturnsEmptyReport()
     {
         // Arrange
         var year = 2025;
@@ -929,7 +929,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_WithTransactions_CalculatesCorrectTotals()
+    public async Task GenerateMonthlyReportAsyncWithTransactionsCalculatesCorrectTotals()
     {
         // Arrange
         var year = 2025;
@@ -985,7 +985,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_CalculatesSavingsRate()
+    public async Task GenerateMonthlyReportAsyncCalculatesSavingsRate()
     {
         // Arrange
         var year = 2025;
@@ -1024,7 +1024,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_WithCategorizedExpenses_GeneratesCategorySummaries()
+    public async Task GenerateMonthlyReportAsyncWithCategorizedExpensesGeneratesCategorySummaries()
     {
         // Arrange
         var year = 2025;
@@ -1065,7 +1065,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_ComparesWithPreviousMonth()
+    public async Task GenerateMonthlyReportAsyncComparesWithPreviousMonth()
     {
         // Arrange
         var year = 2025;
@@ -1130,7 +1130,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_GeneratesInsights()
+    public async Task GenerateMonthlyReportAsyncGeneratesInsights()
     {
         // Arrange
         var year = 2025;
@@ -1172,7 +1172,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GenerateMonthlyReportAsync_IncludesTopMerchants()
+    public async Task GenerateMonthlyReportAsyncIncludesTopMerchants()
     {
         // Arrange
         var year = 2025;
@@ -1224,7 +1224,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMonthlyReportAsync_WithNoSavedReport_ReturnsNull()
+    public async Task GetMonthlyReportAsyncWithNoSavedReportReturnsNull()
     {
         // Act
         var report = await _reportService.GetMonthlyReportAsync(2025, 1, TestUserId);
@@ -1234,7 +1234,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveMonthlyReportAsync_SavesReportToDatabase()
+    public async Task SaveMonthlyReportAsyncSavesReportToDatabase()
     {
         // Arrange
         var reportData = new MonthlyReportData
@@ -1264,7 +1264,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveMonthlyReportAsync_UpdatesExistingReport()
+    public async Task SaveMonthlyReportAsyncUpdatesExistingReport()
     {
         // Arrange
         var initialReport = new MonthlyReportData
@@ -1306,7 +1306,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetMonthlyReportsAsync_ReturnsReportsInDescendingOrder()
+    public async Task GetMonthlyReportsAsyncReturnsReportsInDescendingOrder()
     {
         // Arrange
         var report1 = new MonthlyReportData { Year = 2024, Month = 11, GeneratedAt = DateTime.UtcNow };
@@ -1331,7 +1331,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetReportPreferencesAsync_WithNoPreferences_ReturnsDefaults()
+    public async Task GetReportPreferencesAsyncWithNoPreferencesReturnsDefaults()
     {
         // Act
         var preferences = await _reportService.GetReportPreferencesAsync(TestUserId);
@@ -1346,7 +1346,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveReportPreferencesAsync_SavesPreferences()
+    public async Task SaveReportPreferencesAsyncSavesPreferences()
     {
         // Arrange
         var preferences = new ReportPreference
@@ -1375,7 +1375,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SaveReportPreferencesAsync_UpdatesExistingPreferences()
+    public async Task SaveReportPreferencesAsyncUpdatesExistingPreferences()
     {
         // Arrange
         var initialPrefs = new ReportPreference
@@ -1409,7 +1409,7 @@ public class ReportServiceTests : IDisposable
     #region Historical Overview Tests
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_WithNoData_ReturnsZeroValues()
+    public async Task GetHistoricalOverviewAsyncWithNoDataReturnsZeroValues()
     {
         // Arrange
         var asOfDate = DateTime.Today.AddMonths(-1);
@@ -1430,7 +1430,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_WithBankAccounts_CalculatesHistoricalBalance()
+    public async Task GetHistoricalOverviewAsyncWithBankAccountsCalculatesHistoricalBalance()
     {
         // Arrange
         var asOfDate = DateTime.Today.AddMonths(-1);
@@ -1486,7 +1486,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_WithLoans_CalculatesLiabilities()
+    public async Task GetHistoricalOverviewAsyncWithLoansCalculatesLiabilities()
     {
         // Arrange
         var asOfDate = DateTime.Today.AddMonths(-1);
@@ -1516,7 +1516,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_WithInvestments_CalculatesAssets()
+    public async Task GetHistoricalOverviewAsyncWithInvestmentsCalculatesAssets()
     {
         // Arrange
         var asOfDate = DateTime.Today.AddMonths(-1);
@@ -1546,7 +1546,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_IncludesMonthlyTransactions()
+    public async Task GetHistoricalOverviewAsyncIncludesMonthlyTransactions()
     {
         // Arrange
         var asOfDate = new DateTime(2025, 1, 15);
@@ -1589,7 +1589,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetHistoricalOverviewAsync_IncludesComparisonWithCurrentValues()
+    public async Task GetHistoricalOverviewAsyncIncludesComparisonWithCurrentValues()
     {
         // Arrange
         var asOfDate = DateTime.Today.AddMonths(-1);
@@ -1617,7 +1617,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTimelineKeyDatesAsync_WithNoData_ReturnsEmptyList()
+    public async Task GetTimelineKeyDatesAsyncWithNoDataReturnsEmptyList()
     {
         // Act
         var keyDates = await _reportService.GetTimelineKeyDatesAsync(TestUserId, 12);
@@ -1628,7 +1628,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTimelineKeyDatesAsync_WithTransactions_ReturnsMonthlyDates()
+    public async Task GetTimelineKeyDatesAsyncWithTransactionsReturnsMonthlyDates()
     {
         // Arrange - Add transactions in different months
         for (int i = 1; i <= 3; i++)
@@ -1657,7 +1657,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetTimelineKeyDatesAsync_WithSnapshots_IncludesPeaksAndValleys()
+    public async Task GetTimelineKeyDatesAsyncWithSnapshotsIncludesPeaksAndValleys()
     {
         // Arrange - Add net worth snapshots
         var snapshots = new List<NetWorthSnapshot>
@@ -1702,7 +1702,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetJourneyStartInfoAsync_WithNoTransactions_ReturnsNull()
+    public async Task GetJourneyStartInfoAsyncWithNoTransactionsReturnsNull()
     {
         // Act
         var journeyStart = await _reportService.GetJourneyStartInfoAsync(TestUserId);
@@ -1712,7 +1712,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetJourneyStartInfoAsync_WithTransactions_ReturnsCorrectStartDate()
+    public async Task GetJourneyStartInfoAsyncWithTransactionsReturnsCorrectStartDate()
     {
         // Arrange - Add transactions with different dates
         var earliestDate = new DateTime(2023, 9, 15);
@@ -1751,7 +1751,7 @@ public class ReportServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetJourneyStartInfoAsync_WithUserFilter_ReturnsOnlyUserTransactions()
+    public async Task GetJourneyStartInfoAsyncWithUserFilterReturnsOnlyUserTransactions()
     {
         // Arrange - Add transactions for different users
         _context.Transactions.Add(new Transaction

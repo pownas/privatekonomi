@@ -19,7 +19,7 @@ public class OcrServiceTests
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithTotalAmount_ExtractsTotalAmount()
+    public void ParseReceiptTextWithTotalAmountExtractsTotalAmount()
     {
         // Arrange
         var ocrText = @"
@@ -47,7 +47,7 @@ Kvitto: 12345
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithDate_ExtractsDate()
+    public void ParseReceiptTextWithDateExtractsDate()
     {
         // Arrange
         var ocrText = @"
@@ -66,7 +66,7 @@ Totalt: 100,00 kr
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithSwedishDateFormat_ExtractsDate()
+    public void ParseReceiptTextWithSwedishDateFormatExtractsDate()
     {
         // Arrange
         var ocrText = @"
@@ -85,7 +85,7 @@ Summa: 50,00
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithMerchant_ExtractsMerchant()
+    public void ParseReceiptTextWithMerchantExtractsMerchant()
     {
         // Arrange
         var ocrText = @"
@@ -105,7 +105,7 @@ Totalt: 100,00
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithReceiptNumber_ExtractsReceiptNumber()
+    public void ParseReceiptTextWithReceiptNumberExtractsReceiptNumber()
     {
         // Arrange
         var ocrText = @"
@@ -124,7 +124,7 @@ Total: 75,50 kr
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithPaymentMethod_ExtractsPaymentMethod()
+    public void ParseReceiptTextWithPaymentMethodExtractsPaymentMethod()
     {
         // Arrange
         var ocrText = @"
@@ -142,7 +142,7 @@ Swish
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithLineItems_ExtractsLineItems()
+    public void ParseReceiptTextWithLineItemsExtractsLineItems()
     {
         // Arrange
         var ocrText = @"
@@ -167,7 +167,7 @@ Totalt:              144,50 kr
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithQuantityInLineItem_ExtractsQuantity()
+    public void ParseReceiptTextWithQuantityInLineItemExtractsQuantity()
     {
         // Arrange
         var ocrText = @"
@@ -191,7 +191,7 @@ Totalt:               30,00
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithEmptyString_ReturnsEmptyData()
+    public void ParseReceiptTextWithEmptyStringReturnsEmptyData()
     {
         // Arrange
         var ocrText = "";
@@ -207,7 +207,7 @@ Totalt:               30,00
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithAlternativeTotalFormat_ExtractsTotalAmount()
+    public void ParseReceiptTextWithAlternativeTotalFormatExtractsTotalAmount()
     {
         // Arrange
         var ocrText = @"
@@ -225,7 +225,7 @@ Kort
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithSEKCurrency_ExtractsTotalAmount()
+    public void ParseReceiptTextWithSEKCurrencyExtractsTotalAmount()
     {
         // Arrange
         var ocrText = @"
@@ -242,7 +242,7 @@ Summa: 150,00 SEK
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithKortPayment_ExtractsPaymentMethod()
+    public void ParseReceiptTextWithKortPaymentExtractsPaymentMethod()
     {
         // Arrange
         var ocrText = @"
@@ -260,7 +260,7 @@ Bankkort
     }
 
     [TestMethod]
-    public void ParseReceiptText_WithKontantPayment_ExtractsPaymentMethod()
+    public void ParseReceiptTextWithKontantPaymentExtractsPaymentMethod()
     {
         // Arrange
         var ocrText = @"
@@ -282,7 +282,7 @@ Kontant
     [DataRow("Total: 150,50", 150.50)]
     [DataRow("Summa: 75,25 kr", 75.25)]
     [DataRow("Att betala: 200,00", 200.00)]
-    public void ParseReceiptText_WithVariousTotalFormats_ExtractsTotalAmount(string totalLine, double expectedAmount)
+    public void ParseReceiptTextWithVariousTotalFormatsExtractsTotalAmount(string totalLine, double expectedAmount)
     {
         // Arrange
         var ocrText = $@"
@@ -303,7 +303,7 @@ Test Store
     [DataRow("15/01/2024", 2024, 1, 15)]
     [DataRow("15.01.2024", 2024, 1, 15)]
     [DataRow("20240115", 2024, 1, 15)]
-    public void ParseReceiptText_WithVariousDateFormats_ExtractsDate(string dateStr, int year, int month, int day)
+    public void ParseReceiptTextWithVariousDateFormatsExtractsDate(string dateStr, int year, int month, int day)
     {
         // Arrange
         var ocrText = $@"

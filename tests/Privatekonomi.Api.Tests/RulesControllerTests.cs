@@ -60,7 +60,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task GetAllRules_ReturnsEmptyList_WhenNoRulesExist()
+    public async Task GetAllRulesReturnsEmptyListWhenNoRulesExist()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -77,7 +77,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task GetAllRules_ReturnsList_WhenRulesExist()
+    public async Task GetAllRulesReturnsListWhenRulesExist()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -97,7 +97,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task GetActiveRules_ReturnsOnlyActiveRules()
+    public async Task GetActiveRulesReturnsOnlyActiveRules()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -140,7 +140,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task GetRule_ReturnsNotFound_WhenRuleDoesNotExist()
+    public async Task GetRuleReturnsNotFoundWhenRuleDoesNotExist()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -154,7 +154,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task GetRule_ReturnsRule_WhenRuleExists()
+    public async Task GetRuleReturnsRuleWhenRuleExists()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -174,7 +174,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task CreateRule_CreatesUserRule()
+    public async Task CreateRuleCreatesUserRule()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -206,7 +206,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task UpdateRule_IdMismatch_ReturnsBadRequest()
+    public async Task UpdateRuleIdMismatchReturnsBadRequest()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -238,7 +238,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task DeleteRule_RemovesRule()
+    public async Task DeleteRuleRemovesRule()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -257,7 +257,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task TestRule_ReturnsMatchingRule()
+    public async Task TestRuleReturnsMatchingRule()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");
@@ -279,7 +279,7 @@ public class RulesControllerTests
     }
 
     [TestMethod]
-    public async Task TestRule_ReturnsNotFound_WhenNoMatchingRule()
+    public async Task TestRuleReturnsNotFoundWhenNoMatchingRule()
     {
         // Arrange
         await using var factory = new ApiWebApplicationFactory($"RulesTest_{Guid.NewGuid()}");

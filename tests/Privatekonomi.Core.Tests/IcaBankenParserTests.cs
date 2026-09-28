@@ -15,14 +15,14 @@ public class IcaBankenParserTests
         "2025-12-22;Lekia Orebro                  ;Korttransaktion;-399,00 kr;-8 146,52 kr";
 
     [TestMethod]
-    public void IcaBankenParser_CanParse_ReturnsTrueForIcaFormat()
+    public void IcaBankenParserCanParseReturnsTrueForIcaFormat()
     {
         var parser = new IcaBankenParser();
         Assert.IsTrue(parser.CanParse(IcaCsvContent));
     }
 
     [TestMethod]
-    public async Task IcaBankenParser_ParseAsync_ParsesAmountsAndIncomeCorrectly()
+    public async Task IcaBankenParserParseAsyncParsesAmountsAndIncomeCorrectly()
     {
         var parser = new IcaBankenParser();
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(IcaCsvContent));
@@ -44,7 +44,7 @@ public class IcaBankenParserTests
     }
 
     [TestMethod]
-    public async Task IcaBankenParser_ParseAsync_NoAccountNumberWhenNotInFile()
+    public async Task IcaBankenParserParseAsyncNoAccountNumberWhenNotInFile()
     {
         // Standard ICA-banken format without account number metadata
         var parser = new IcaBankenParser();
@@ -63,7 +63,7 @@ public class IcaBankenParserTests
     }
 
     [TestMethod]
-    public async Task IcaBankenParser_ParseAsync_ExtractsAccountNumberFromMetadataSemicolonFormat()
+    public async Task IcaBankenParserParseAsyncExtractsAccountNumberFromMetadataSemicolonFormat()
     {
         // ICA-banken may include account info in a metadata line before the header
         var csvWithAccountMetadata =

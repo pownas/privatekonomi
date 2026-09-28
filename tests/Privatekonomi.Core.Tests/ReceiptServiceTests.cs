@@ -40,7 +40,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateReceiptAsync_WithLineItems_SavesSuccessfully()
+    public async Task CreateReceiptAsyncWithLineItemsSavesSuccessfully()
     {
         // Arrange
         var receipt = new Receipt
@@ -82,7 +82,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateReceiptAsync_WithImagePath_SavesImagePath()
+    public async Task CreateReceiptAsyncWithImagePathSavesImagePath()
     {
         // Arrange
         var receipt = new Receipt
@@ -106,7 +106,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetReceiptByIdAsync_WithLineItemsAndCategories_LoadsAllData()
+    public async Task GetReceiptByIdAsyncWithLineItemsAndCategoriesLoadsAllData()
     {
         // Arrange
         var category = new Category { Name = "Groceries", Color = "#FF5733" };
@@ -154,7 +154,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdateReceiptAsync_UpdatesAllFields()
+    public async Task UpdateReceiptAsyncUpdatesAllFields()
     {
         // Arrange
         var receipt = new Receipt
@@ -184,7 +184,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetReceiptsAsync_ReturnsOnlyUserReceipts()
+    public async Task GetReceiptsAsyncReturnsOnlyUserReceipts()
     {
         // Arrange
         var receipt1 = new Receipt
@@ -219,7 +219,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void LineItemTotalCalculation_QuantityTimesUnitPrice_CalculatesCorrectly()
+    public void LineItemTotalCalculationQuantityTimesUnitPriceCalculatesCorrectly()
     {
         // Arrange
         var lineItem = new ReceiptLineItem
@@ -238,7 +238,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public void LineItemTotalCalculation_WhenQuantityChanges_UpdatesTotal()
+    public void LineItemTotalCalculationWhenQuantityChangesUpdatesTotal()
     {
         // Arrange
         var lineItem = new ReceiptLineItem
@@ -258,7 +258,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteReceiptAsync_RemovesReceiptAndLineItems()
+    public async Task DeleteReceiptAsyncRemovesReceiptAndLineItems()
     {
         // Arrange
         var receipt = new Receipt
@@ -292,7 +292,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetReceiptsByTransactionIdAsync_ReturnsOnlyReceiptsForTransaction()
+    public async Task GetReceiptsByTransactionIdAsyncReturnsOnlyReceiptsForTransaction()
     {
         // Arrange
         var transaction = new Transaction
@@ -343,7 +343,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task LinkReceiptToTransactionAsync_LinksReceiptSuccessfully()
+    public async Task LinkReceiptToTransactionAsyncLinksReceiptSuccessfully()
     {
         // Arrange
         var transaction = new Transaction
@@ -386,7 +386,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task LinkReceiptToTransactionAsync_ThrowsWhenReceiptNotFound()
+    public async Task LinkReceiptToTransactionAsyncThrowsWhenReceiptNotFound()
     {
         // Arrange
         var transaction = new Transaction
@@ -415,7 +415,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task LinkReceiptToTransactionAsync_ThrowsWhenTransactionNotFound()
+    public async Task LinkReceiptToTransactionAsyncThrowsWhenTransactionNotFound()
     {
         // Arrange
         var receipt = new Receipt
@@ -442,7 +442,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UnlinkReceiptFromTransactionAsync_UnlinksReceiptSuccessfully()
+    public async Task UnlinkReceiptFromTransactionAsyncUnlinksReceiptSuccessfully()
     {
         // Arrange
         var transaction = new Transaction
@@ -486,7 +486,7 @@ public class ReceiptServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UnlinkReceiptFromTransactionAsync_ThrowsWhenReceiptNotFound()
+    public async Task UnlinkReceiptFromTransactionAsyncThrowsWhenReceiptNotFound()
     {
         // Act & Assert
         try

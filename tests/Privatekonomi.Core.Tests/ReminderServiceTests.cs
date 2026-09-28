@@ -43,7 +43,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateReminderAsync_ShouldCreateReminder()
+    public async Task CreateReminderAsyncShouldCreateReminder()
     {
         // Arrange
         var reminder = new Reminder
@@ -67,7 +67,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserRemindersAsync_ShouldReturnUserReminders()
+    public async Task GetUserRemindersAsyncShouldReturnUserReminders()
     {
         // Arrange
         var reminder1 = new Reminder
@@ -107,7 +107,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task SnoozeReminderAsync_ShouldSnoozeReminder()
+    public async Task SnoozeReminderAsyncShouldSnoozeReminder()
     {
         // Arrange
         var reminder = new Reminder
@@ -131,7 +131,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task MarkAsCompletedAsync_ShouldCompleteReminder()
+    public async Task MarkAsCompletedAsyncShouldCompleteReminder()
     {
         // Arrange
         var reminder = new Reminder
@@ -166,7 +166,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetActiveRemindersAsync_ShouldReturnOnlyActiveAndNonSnoozedReminders()
+    public async Task GetActiveRemindersAsyncShouldReturnOnlyActiveAndNonSnoozedReminders()
     {
         // Arrange
         var activeReminder = new Reminder
@@ -210,7 +210,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetDueRemindersAsync_ShouldReturnOnlyDueReminders()
+    public async Task GetDueRemindersAsyncShouldReturnOnlyDueReminders()
     {
         // Arrange
         var dueReminder = new Reminder
@@ -241,7 +241,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task ShouldEscalateReminderAsync_ShouldReturnTrueWhenThresholdExceeded()
+    public async Task ShouldEscalateReminderAsyncShouldReturnTrueWhenThresholdExceeded()
     {
         // Arrange
         var settings = new ReminderSettings
@@ -271,7 +271,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetUserSettingsAsync_ShouldCreateDefaultSettingsIfNotExist()
+    public async Task GetUserSettingsAsyncShouldCreateDefaultSettingsIfNotExist()
     {
         // Act
         var result = await _service.GetUserSettingsAsync(_testUserId);
@@ -284,7 +284,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetStatisticsAsync_ShouldReturnCorrectCounts()
+    public async Task GetStatisticsAsyncShouldReturnCorrectCounts()
     {
         // Arrange
         var activeReminder = new Reminder
@@ -328,7 +328,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DeleteReminderAsync_ShouldDeleteReminder()
+    public async Task DeleteReminderAsyncShouldDeleteReminder()
     {
         // Arrange
         var reminder = new Reminder
@@ -349,7 +349,7 @@ public class ReminderServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task DismissReminderAsync_ShouldDismissReminder()
+    public async Task DismissReminderAsyncShouldDismissReminder()
     {
         // Arrange
         var reminder = new Reminder

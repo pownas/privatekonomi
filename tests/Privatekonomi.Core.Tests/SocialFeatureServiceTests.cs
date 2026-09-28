@@ -58,7 +58,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Privacy Settings Tests
 
     [TestMethod]
-    public async Task GetPrivacySettingsAsync_FirstTime_CreatesDefaultSettings()
+    public async Task GetPrivacySettingsAsyncFirstTimeCreatesDefaultSettings()
     {
         // Act
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -75,7 +75,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UpdatePrivacySettingsAsync_ValidUpdate_UpdatesSettings()
+    public async Task UpdatePrivacySettingsAsyncValidUpdateUpdatesSettings()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -92,7 +92,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CanUseSocialFeaturesAsync_WhenDisabled_ReturnsFalse()
+    public async Task CanUseSocialFeaturesAsyncWhenDisabledReturnsFalse()
     {
         // Act
         var canUse = await _socialFeatureService.CanUseSocialFeaturesAsync(_testUserId);
@@ -102,7 +102,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CanUseSocialFeaturesAsync_WhenEnabled_ReturnsTrue()
+    public async Task CanUseSocialFeaturesAsyncWhenEnabledReturnsTrue()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -121,7 +121,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Goal Sharing Tests
 
     [TestMethod]
-    public async Task CreateGoalShareAsync_WhenSharingDisabled_ThrowsException()
+    public async Task CreateGoalShareAsyncWhenSharingDisabledThrowsException()
     {
         // Arrange
         var goal = CreateGoal("Test Goal");
@@ -143,7 +143,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateGoalShareAsync_WhenSharingEnabled_CreatesShare()
+    public async Task CreateGoalShareAsyncWhenSharingEnabledCreatesShare()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -174,7 +174,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task GetGoalShareByTokenAsync_ValidToken_ReturnsShare()
+    public async Task GetGoalShareByTokenAsyncValidTokenReturnsShare()
     {
         // Arrange
         // Add a test user first
@@ -217,7 +217,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task IncrementShareViewCountAsync_ValidToken_IncrementsCount()
+    public async Task IncrementShareViewCountAsyncValidTokenIncrementsCount()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -241,7 +241,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task RevokeShareAsync_ValidShare_DeactivatesShare()
+    public async Task RevokeShareAsyncValidShareDeactivatesShare()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -267,7 +267,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Savings Group Tests
 
     [TestMethod]
-    public async Task CreateSavingsGroupAsync_WhenGroupsDisabled_ThrowsException()
+    public async Task CreateSavingsGroupAsyncWhenGroupsDisabledThrowsException()
     {
         // Arrange
         var group = new SavingsGroup { Name = "Test Group" };
@@ -285,7 +285,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CreateSavingsGroupAsync_WhenGroupsEnabled_CreatesGroupAndOwnerMember()
+    public async Task CreateSavingsGroupAsyncWhenGroupsEnabledCreatesGroupAndOwnerMember()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -318,7 +318,7 @@ public class SocialFeatureServiceTests : IDisposable
 
     [TestMethod]
     [Ignore("InMemory database navigation property issue - works with real database")]
-    public async Task GetUserGroupsAsync_ReturnsOnlyUserGroups()
+    public async Task GetUserGroupsAsyncReturnsOnlyUserGroups()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -351,7 +351,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Group Member Tests
 
     [TestMethod]
-    public async Task InviteMemberAsync_ByOwner_CreatesInvitation()
+    public async Task InviteMemberAsyncByOwnerCreatesInvitation()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -383,7 +383,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task AcceptGroupInvitationAsync_ValidInvitation_ActivatesMember()
+    public async Task AcceptGroupInvitationAsyncValidInvitationActivatesMember()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -439,7 +439,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Group Goal Tests
 
     [TestMethod]
-    public async Task ShareGoalToGroupAsync_ValidGoal_SharesGoal()
+    public async Task ShareGoalToGroupAsyncValidGoalSharesGoal()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -468,7 +468,7 @@ public class SocialFeatureServiceTests : IDisposable
 
     [TestMethod]
     [Ignore("InMemory database navigation property issue - works with real database")]
-    public async Task GetGroupGoalsAsync_ReturnsActiveGoals()
+    public async Task GetGroupGoalsAsyncReturnsActiveGoals()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -500,7 +500,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Comment and Like Tests
 
     [TestMethod]
-    public async Task AddCommentAsync_ValidComment_CreatesComment()
+    public async Task AddCommentAsyncValidCommentCreatesComment()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -521,7 +521,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task LikeCommentAsync_ValidComment_CreatesLike()
+    public async Task LikeCommentAsyncValidCommentCreatesLike()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -544,7 +544,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task UnlikeCommentAsync_ValidLike_RemovesLike()
+    public async Task UnlikeCommentAsyncValidLikeRemovesLike()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
@@ -574,7 +574,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Leaderboard Tests
 
     [TestMethod]
-    public async Task GetHouseholdLeaderboardAsync_WithMultipleMembers_ReturnsRankedLeaderboard()
+    public async Task GetHouseholdLeaderboardAsyncWithMultipleMembersReturnsRankedLeaderboard()
     {
         // Arrange
         var household = new Household { Name = "Test Household", CreatedDate = DateTime.UtcNow };
@@ -611,7 +611,7 @@ public class SocialFeatureServiceTests : IDisposable
     #region Community Comparison Tests
 
     [TestMethod]
-    public async Task GetCommunityStatsAsync_WithParticipants_ReturnsStats()
+    public async Task GetCommunityStatsAsyncWithParticipantsReturnsStats()
     {
         // Arrange
         var user1Settings = new UserPrivacySettings 
@@ -643,7 +643,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CompareToCommunityAsync_WhenDisabled_ThrowsException()
+    public async Task CompareToCommunityAsyncWhenDisabledThrowsException()
     {
         // Act & Assert
         try
@@ -658,7 +658,7 @@ public class SocialFeatureServiceTests : IDisposable
     }
 
     [TestMethod]
-    public async Task CompareToCommunityAsync_WhenEnabled_ReturnsComparison()
+    public async Task CompareToCommunityAsyncWhenEnabledReturnsComparison()
     {
         // Arrange
         var settings = await _socialFeatureService.GetPrivacySettingsAsync(_testUserId);
