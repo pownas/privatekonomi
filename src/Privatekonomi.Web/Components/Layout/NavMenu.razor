@@ -18,10 +18,7 @@
         <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.AdminPanelSettings" Style="color: #ff6b6b;" OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">
             Admin Dashboard
         </MudNavLink>
-        @if (PiUpdates.IsAvailable)
-        {
-            <MudNavLink Href="/settings/pi-update" Icon="@Icons.Material.Filled.SystemUpdate">Uppdatera Raspberry Pi</MudNavLink>
-        }
+        <MudNavLink Href="/admin/site-changes" Icon="@Icons.Material.Filled.History">Senaste ändringar</MudNavLink>
     }
 
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">

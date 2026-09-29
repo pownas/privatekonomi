@@ -90,6 +90,7 @@ builder.Services.AddAuthorizationBuilder()
         .AddRequirements(new PiUpdateAdminRequirement()));
 builder.Services.AddScoped<IAuthorizationHandler, PiUpdateAdminHandler>();
 builder.Services.AddSingleton<PiUpdateService>();
+builder.Services.AddScoped<SiteChangeHistoryService>();
 builder.Services.AddHttpClient("pi-update", client =>
 {
     client.BaseAddress = new Uri("https://api.github.com/");
