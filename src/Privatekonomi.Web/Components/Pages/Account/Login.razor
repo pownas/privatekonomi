@@ -51,17 +51,20 @@
                 <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
             }
 
+            <MudAlert id="passkey-error" Severity="Severity.Error" Class="mb-4" Style="display: none;" />
+
             <form method="post" action="/Account/PerformLogin">
+                <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
 
                 <MudTextField Label="E-postadress"
                               @bind-Value="Email"
                               Variant="Variant.Outlined"
                               Class="mb-4"
+                              UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "username webauthn" })"
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Email"
                               AdornmentColor="Color.Primary"
-                              autocomplete="username"
                               FullWidth="true"
                               Required="true" />
 
@@ -70,10 +73,10 @@
                               InputType="InputType.Password"
                               Variant="Variant.Outlined"
                               Class="mb-4"
+                              UserAttributes="@(new Dictionary<string, object> { ["name"] = "Password", ["autocomplete"] = "current-password" })"
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Lock"
                               AdornmentColor="Color.Primary"
-                              autocomplete="current-password"
                               FullWidth="true"
                               Required="true" />
 
@@ -93,6 +96,18 @@
                     Logga in
                 </MudButton>
             </form>
+
+            <MudDivider Class="my-4" />
+
+            <MudButton id="passkey-login"
+                       data-return-url="@ReturnUrl"
+                       ButtonType="ButtonType.Button"
+                       Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Fingerprint">
+                Logga in med passkey
+            </MudButton>
 
             <MudDivider Class="my-4" />
 

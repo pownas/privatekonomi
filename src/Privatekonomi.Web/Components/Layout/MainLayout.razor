@@ -42,6 +42,10 @@
             <Authorized>
                 <NotificationBell />
                 <MudText Typo="Typo.body2" Class="mr-2 mainlayout-hide-mobile">@context.User.Identity?.Name</MudText>
+                <MudTooltip Text="Hantera passkeys" Class="mainlayout-hide-mobile">
+                    <MudButton Href="/Account/Manage/Passkeys" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Fingerprint">Passkeys</MudButton>
+                </MudTooltip>
+                <MudIconButton Href="/Account/Manage/Passkeys" Icon="@Icons.Material.Filled.Fingerprint" Color="Color.Inherit" Class="mainlayout-show-mobile" aria-label="Hantera passkeys" />
                 <MudTooltip Text="Logga ut" Class="mainlayout-hide-mobile">
                     <MudButton Href="/Account/Logout" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Logout">Logga ut</MudButton>
                 </MudTooltip>

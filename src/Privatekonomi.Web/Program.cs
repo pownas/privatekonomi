@@ -100,6 +100,7 @@ builder.Services.AddHttpClient("pi-update", client =>
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
@@ -256,6 +257,8 @@ try
         {
             context.Database.EnsureCreated();
         }
+
+        await PasskeySchemaInitializer.EnsurePasskeyTableAsync(context);
         
         // For JsonFile, load existing data
         if (storageSettings.Provider.Equals("JsonFile", StringComparison.OrdinalIgnoreCase))
@@ -337,6 +340,109 @@ app.MapPost("/settings/pi-update/start", async (HttpContext context, IAntiforger
 
 // Add Identity API endpoints (token-based auth for mobile/API clients)
 app.MapGroup("/Account").MapIdentityApi<ApplicationUser>();
+
+app.MapPost("/Account/PasskeyRequestOptions", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    SignInManager<ApplicationUser> signInManager) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user: null);
+    return Results.Content(optionsJson, contentType: "application/json");
+});
+
+app.MapPost("/Account/Manage/PasskeyCreationOptions", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    var user = await userManager.GetUserAsync(context.User);
+    if (user is null)
+        return Results.NotFound();
+
+    var userId = await userManager.GetUserIdAsync(user);
+    var userName = await userManager.GetUserNameAsync(user) ?? "User";
+    var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new()
+    {
+        Id = userId,
+        Name = userName,
+        DisplayName = userName
+    });
+
+    return Results.Content(optionsJson, contentType: "application/json");
+}).RequireAuthorization();
+
+app.MapPost("/Account/Manage/PerformPasskeyCreation", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    var request = await context.Request.ReadFromJsonAsync<PasskeyCredentialRequest>();
+    if (string.IsNullOrWhiteSpace(request?.CredentialJson))
+        return Results.BadRequest();
+
+    var user = await userManager.GetUserAsync(context.User);
+    if (user is null)
+        return Results.NotFound();
+
+    var passkeys = await userManager.GetPasskeysAsync(user);
+    if (passkeys.Count >= 100)
+        return Results.BadRequest("Kontot har nått gränsen för antal passkeys.");
+
+    var result = await signInManager.PerformPasskeyAttestationAsync(request.CredentialJson);
+    if (!result.Succeeded)
+        return Results.BadRequest("Det gick inte att lägga till passkey.");
+
+    var addResult = await userManager.AddOrUpdatePasskeyAsync(user, result.Passkey);
+    return addResult.Succeeded ? Results.Ok() : Results.BadRequest("Det gick inte att spara passkey.");
+}).RequireAuthorization();
+
+app.MapPost("/Account/PerformPasskeyLogin", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    SignInManager<ApplicationUser> signInManager,
+    ILogger<Program> logger) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    var request = await context.Request.ReadFromJsonAsync<PasskeyLoginRequest>();
+    if (string.IsNullOrWhiteSpace(request?.CredentialJson))
+        return Results.BadRequest();
+
+    SignInResult result;
+    try
+    {
+        result = await signInManager.PasskeySignInAsync(request.CredentialJson);
+    }
+    catch (InvalidOperationException)
+    {
+        return Results.BadRequest("Passkey-sessionen har upphört. Försök igen.");
+    }
+
+    if (!result.Succeeded)
+        return Results.Unauthorized();
+
+    logger.LogInformation("User logged in with a passkey.");
+    var returnUrl = request.ReturnUrl;
+    var isLocalReturnUrl = !string.IsNullOrEmpty(returnUrl) &&
+        (returnUrl.StartsWith("~/", StringComparison.Ordinal) ||
+         (returnUrl.StartsWith("/", StringComparison.Ordinal) &&
+          !returnUrl.StartsWith("//", StringComparison.Ordinal) &&
+          !returnUrl.StartsWith("/\\", StringComparison.Ordinal)));
+
+    return Results.Ok(new { redirectUrl = isLocalReturnUrl ? returnUrl : "/" });
+});
 
 // Add custom cookie-based login/logout endpoints for Blazor Server
 app.MapPost("/Account/PerformLogin", async (
@@ -437,3 +543,6 @@ app.MapGet("/Account/PerformLogout", PerformLogoutAsync);
 app.MapHub<Privatekonomi.Web.Hubs.BudgetAlertHub>("/hubs/budgetalert");
 
 app.Run();
+
+internal sealed record PasskeyCredentialRequest(string CredentialJson);
+internal sealed record PasskeyLoginRequest(string CredentialJson, string? ReturnUrl);
