@@ -111,6 +111,11 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+builder.Services.Configure<IdentityPasskeyOptions>(options =>
+{
+    options.ResidentKeyRequirement = "required";
+});
+
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, NoOpEmailSender>();
 
 builder.Services.AddCascadingAuthenticationState();
@@ -433,11 +438,11 @@ app.MapPost("/Account/PerformPasskeyLogin", async (
     if (!result.Succeeded)
         return Results.Unauthorized();
 
-    logger.LogInformation("User logged in with a passkey.");
+    PasskeyLog.UserLoggedIn(logger);
     var returnUrl = request.ReturnUrl;
     var isLocalReturnUrl = !string.IsNullOrEmpty(returnUrl) &&
         (returnUrl.StartsWith("~/", StringComparison.Ordinal) ||
-         (returnUrl.StartsWith("/", StringComparison.Ordinal) &&
+         (returnUrl.StartsWith('/') &&
           !returnUrl.StartsWith("//", StringComparison.Ordinal) &&
           !returnUrl.StartsWith("/\\", StringComparison.Ordinal)));
 
@@ -546,3 +551,9 @@ app.Run();
 
 internal sealed record PasskeyCredentialRequest(string CredentialJson);
 internal sealed record PasskeyLoginRequest(string CredentialJson, string? ReturnUrl);
+
+internal static partial class PasskeyLog
+{
+    [LoggerMessage(Level = LogLevel.Information, Message = "User logged in with a passkey.")]
+    internal static partial void UserLoggedIn(ILogger logger);
+}

@@ -115,6 +115,65 @@ test.describe('Login Page', () => {
     expect(assertion?.returnUrl).toBe('/dashboard');
   });
 
+  test('should register a discoverable passkey for a signed-in user', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true });
+      Object.defineProperty(window, 'PublicKeyCredential', { value: class {}, configurable: true });
+      Object.defineProperty(navigator, 'credentials', {
+        configurable: true,
+        value: {
+          create: async () => {
+            return {
+              id: 'AQID',
+              rawId: new Uint8Array([1, 2, 3]).buffer,
+              type: 'public-key',
+              authenticatorAttachment: 'platform',
+              response: {
+                clientDataJSON: new Uint8Array([4]).buffer,
+                attestationObject: new Uint8Array([5]).buffer,
+              },
+            };
+          },
+          get: async () => null,
+        },
+      });
+    });
+
+    let creationOptions: Record<string, unknown> | undefined;
+    let creation: Record<string, unknown> | undefined;
+    await page.route('**/Account/Manage/PasskeyCreationOptions', async route => {
+      const response = await route.fetch();
+      creationOptions = await response.json();
+      await route.fulfill({ response });
+    });
+    await page.route('**/Account/Manage/PerformPasskeyCreation', async route => {
+      creation = route.request().postDataJSON();
+      await route.fulfill({ status: 200 });
+    });
+
+    await page.goto('/Account/Register');
+    await page.waitForLoadState('networkidle');
+    await page.locator('input[autocomplete="given-name"]').fill('Ada');
+    await page.locator('input[autocomplete="family-name"]').fill('Lovelace');
+    await page.locator('input[autocomplete="username"]').fill(`passkey-${Date.now()}@example.com`);
+    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!');
+    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!');
+    const registrationResponsePromise = page.waitForResponse(response => response.url().endsWith('/Account/PerformRegister'));
+    await page.getByRole('button', { name: 'Registrera' }).click();
+    const registrationResponse = await registrationResponsePromise;
+    expect(registrationResponse.status()).toBe(302);
+    await expect(page).toHaveURL(/\/onboarding/);
+
+    await page.goto('/Account/Manage/Passkeys');
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Lägg till passkey' }).click();
+
+    await expect.poll(() => creation).not.toBeUndefined();
+    const authenticatorSelection = creationOptions?.authenticatorSelection as Record<string, string> | undefined;
+    expect(authenticatorSelection?.residentKey).toBe('required');
+    expect(JSON.parse(creation?.credentialJson as string).response.attestationObject).toBe('BQ');
+  });
+
   test('should post the email and password form values', async ({ page }) => {
     let submittedForm: URLSearchParams | undefined;
     await page.route('**/Account/PerformLogin', async route => {
