@@ -179,6 +179,12 @@ The Web API endpoints now support authentication through the Identity system. AP
 
 To add token-based authentication for the API, consider implementing JWT tokens.
 
+## Passkeys
+
+Signed-in users can register a passkey from **Passkeys** in the application header. Once registered, select **Logga in med passkey** on the login page to sign in without entering an email address or password. Passkeys are created as discoverable credentials so the authenticator can identify the account during passwordless sign-in.
+
+Passkeys require a browser with WebAuthn support and a secure origin: use HTTPS, or `localhost` during development. They are stored in the `AspNetUserPasskeys` Identity table.
+
 ## Future Enhancements
 
 Planned features for the authentication system:

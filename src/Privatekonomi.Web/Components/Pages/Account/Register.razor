@@ -21,7 +21,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="given-name"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "FirstName", ["autocomplete"] = "given-name" })"
                           Required="true" />
             
             <MudTextField Label="Efternamn" 
@@ -29,7 +29,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="family-name"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "LastName", ["autocomplete"] = "family-name" })"
                           Required="true" />
             
             <MudTextField Label="E-post" 
@@ -37,7 +37,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="username"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "username" })"
                           Required="true" />
             
             <MudTextField Label="Lösenord" 
@@ -46,7 +46,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="new-password"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "Password", ["autocomplete"] = "new-password" })"
                           Required="true" />
             
             <MudTextField Label="Bekräfta lösenord" 
@@ -55,7 +55,7 @@
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="new-password"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "ConfirmPassword", ["autocomplete"] = "new-password" })"
                           Required="true" />
             
             <MudButton ButtonType="ButtonType.Submit" 
