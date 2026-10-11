@@ -69,8 +69,8 @@
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
 
-                <MudTextField Label="E-postadress"
-                              @bind-Value="Email"
+                <MudTextField T="string" Label="E-postadress"
+                                  InputType="InputType.Email"
                               Variant="Variant.Outlined"
                               Class="mb-4"
                               UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "username webauthn" })"
@@ -80,9 +80,8 @@
                               FullWidth="true"
                               Required="true" />
 
-                <MudTextField Label="Lösenord"
-                              @bind-Value="Password"
-                              InputType="InputType.Password"
+                <MudTextField T="string" Label="Lösenord"
+                                  InputType="InputType.Password"
                               Variant="Variant.Outlined"
                               Class="mb-4"
                               UserAttributes="@(new Dictionary<string, object> { ["name"] = "Password", ["autocomplete"] = "current-password" })"
@@ -152,8 +151,6 @@
     [SupplyParameterFromQuery(Name = "passwordreset")]
     private bool PasswordReset { get; set; }
 
-    private string Email { get; set; } = "";
-    private string Password { get; set; } = "";
     private bool RememberMe { get; set; }
 
     private string? ErrorMessage => Error switch

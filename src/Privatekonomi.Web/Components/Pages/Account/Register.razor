@@ -42,41 +42,38 @@
         {
         <form method="post" action="/Account/PerformRegister">
             <AntiforgeryToken />
-            <MudTextField Label="Förnamn" 
-                          @bind-Value="FirstName"
+            <MudTextField T="string" Label="Förnamn"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
                           UserAttributes="@(new Dictionary<string, object> { ["name"] = "FirstName", ["autocomplete"] = "given-name" })"
                           Required="true" />
             
-            <MudTextField Label="Efternamn" 
-                          @bind-Value="LastName"
+            <MudTextField T="string" Label="Efternamn"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
                           UserAttributes="@(new Dictionary<string, object> { ["name"] = "LastName", ["autocomplete"] = "family-name" })"
                           Required="true" />
             
-            <MudTextField Label="E-post" 
-                          @bind-Value="Email"
+            <MudTextField T="string" Label="E-post"
+                          InputType="InputType.Email"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
                           UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "username" })"
                           Required="true" />
             
-            <MudTextField Label="Lösenord" 
-                          @bind-Value="Password"
+            <MudTextField T="string" Label="Lösenord"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
                           UserAttributes="@(new Dictionary<string, object> { ["name"] = "Password", ["autocomplete"] = "new-password" })"
                           Required="true" />
+            <MudText Typo="Typo.caption" Class="mb-4">Använd minst 12 tecken.</MudText>
             
-            <MudTextField Label="Bekräfta lösenord" 
-                          @bind-Value="ConfirmPassword"
+            <MudTextField T="string" Label="Bekräfta lösenord"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
@@ -112,12 +109,6 @@
 
     [SupplyParameterFromQuery(Name = "resend")]
     private bool ConfirmationResent { get; set; }
-
-    private string FirstName { get; set; } = "";
-    private string LastName { get; set; } = "";
-    private string Email { get; set; } = "";
-    private string Password { get; set; } = "";
-    private string ConfirmPassword { get; set; } = "";
 
     private string? ErrorMessage => Error switch
     {

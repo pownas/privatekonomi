@@ -16,9 +16,9 @@ test.describe('Login Page', () => {
     await expect(loginHeading).toBeVisible();
 
     // Verify form fields are present
-    const emailField = page.locator('input[type="email"]').or(page.locator('label:has-text("E-post") + input'));
+    const emailField = page.locator('input[name="Email"]');
     const passwordField = page.locator('input[type="password"]').first();
-    const submitButton = page.locator('button:has-text("Logga in")');
+    const submitButton = page.locator('form[action="/Account/PerformLogin"] button[type="submit"]');
 
     await expect(emailField).toBeVisible({ timeout: 5000 });
     await expect(passwordField).toBeVisible();
@@ -34,7 +34,7 @@ test.describe('Login Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Try to submit the form without entering any data
-    const submitButton = page.locator('button:has-text("Logga in")');
+    const submitButton = page.locator('form[action="/Account/PerformLogin"] button[type="submit"]');
     await submitButton.click();
 
     // Wait a bit for validation to run
@@ -182,9 +182,16 @@ test.describe('Login Page', () => {
     });
 
     await page.goto('/Account/Login');
-    await page.locator('input[autocomplete="username webauthn"]').fill('ada@example.com');
-    await page.locator('input[type="password"]').fill('Passw0rd!123');
+    await page.waitForLoadState('networkidle');
+    const email = page.locator('input[autocomplete="username webauthn"]');
+    const password = page.locator('input[type="password"]');
+    await email.fill('ada@example.com');
+    await expect(email).toHaveValue('ada@example.com');
+    await password.fill('Passw0rd!123');
+    await expect(password).toHaveValue('Passw0rd!123');
+    const loginResponse = page.waitForResponse(response => response.url().endsWith('/Account/PerformLogin'));
     await page.locator('form[action="/Account/PerformLogin"] button[type="submit"]').click();
+    await loginResponse;
 
     expect(submittedForm?.get('Email')).toBe('ada@example.com');
     expect(submittedForm?.get('Password')).toBe('Passw0rd!123');

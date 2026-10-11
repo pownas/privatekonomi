@@ -732,18 +732,23 @@ app.MapPost("/Account/Password/Reset", async (
     if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token) ||
         string.IsNullOrWhiteSpace(password) || password != confirmPassword)
     {
-        return Results.Redirect("/Account/Password/Reset?error=invalid");
+        return Results.Redirect(string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token)
+            ? "/Account/Password/Reset?error=invalid"
+            : BuildResetPasswordUrl(email, token, "mismatch"));
     }
 
     var user = await userManager.FindByEmailAsync(email);
     if (user is null)
-        return Results.Redirect("/Account/Password/Reset?error=invalid");
+        return Results.Redirect(BuildResetPasswordUrl(email, token, "invalid"));
 
     var result = await userManager.ResetPasswordAsync(user, token, password);
     if (!result.Succeeded)
     {
         logger.LogInformation("Password reset was rejected for user {Email}.", email);
-        return Results.Redirect("/Account/Password/Reset?error=invalid");
+        var error = result.Errors.Any(identityError => identityError.Code == "PasswordTooShort")
+            ? "password"
+            : "invalid";
+        return Results.Redirect(BuildResetPasswordUrl(email, token, error));
     }
 
     return Results.Redirect("/Account/Login?passwordreset=true");
@@ -795,6 +800,9 @@ static bool IsValidPublicBaseUrl(string? value) =>
     uri.AbsolutePath == "/" &&
     string.IsNullOrEmpty(uri.Query) &&
     string.IsNullOrEmpty(uri.Fragment);
+
+static string BuildResetPasswordUrl(string email, string code, string error) =>
+    $"/Account/Password/Reset?email={Uri.EscapeDataString(email)}&code={Uri.EscapeDataString(code)}&error={Uri.EscapeDataString(error)}";
 
 internal sealed record PasskeyCredentialRequest(string CredentialJson);
 internal sealed record PasskeyLoginRequest(string CredentialJson, string? ReturnUrl);

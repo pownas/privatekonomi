@@ -18,7 +18,7 @@ test.describe('Register Page', () => {
     // Verify form fields are present
     const firstNameField = page.locator('label:has-text("Förnamn")');
     const lastNameField = page.locator('label:has-text("Efternamn")');
-    const emailField = page.locator('input[type="email"]').or(page.locator('label:has-text("E-post") + input'));
+    const emailField = page.locator('input[name="Email"]');
     const passwordField = page.locator('input[type="password"]').first();
     const submitButton = page.locator('button:has-text("Registrera")');
 
@@ -38,7 +38,7 @@ test.describe('Register Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify the login link is present
-    const loginLink = page.locator('a[href="/Account/Login"]');
+    const loginLink = page.locator('.mud-paper a[href="/Account/Login"]');
     await expect(loginLink).toBeVisible();
   });
 
@@ -51,12 +51,24 @@ test.describe('Register Page', () => {
     });
 
     await page.goto('/Account/Register');
-    await page.locator('input[autocomplete="given-name"]').fill('Ada');
-    await page.locator('input[autocomplete="family-name"]').fill('Lovelace');
-    await page.locator('input[autocomplete="username"]').fill('ada@example.com');
-    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!123');
-    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!123');
+    await page.waitForLoadState('networkidle');
+    const firstName = page.locator('input[autocomplete="given-name"]');
+    const lastName = page.locator('input[autocomplete="family-name"]');
+    const email = page.locator('input[autocomplete="username"]');
+    const passwords = page.locator('input[type="password"]');
+    await firstName.fill('Ada');
+    await expect(firstName).toHaveValue('Ada');
+    await lastName.fill('Lovelace');
+    await expect(lastName).toHaveValue('Lovelace');
+    await email.fill('ada@example.com');
+    await expect(email).toHaveValue('ada@example.com');
+    await passwords.nth(0).fill('Passw0rd!123');
+    await expect(passwords.nth(0)).toHaveValue('Passw0rd!123');
+    await passwords.nth(1).fill('Passw0rd!123');
+    await expect(passwords.nth(1)).toHaveValue('Passw0rd!123');
+    const registrationResponse = page.waitForResponse(response => response.url().endsWith('/Account/PerformRegister'));
     await page.getByRole('button', { name: 'Registrera' }).click();
+    await registrationResponse;
 
     expect(submittedForm?.get('FirstName')).toBe('Ada');
     expect(submittedForm?.get('LastName')).toBe('Lovelace');
