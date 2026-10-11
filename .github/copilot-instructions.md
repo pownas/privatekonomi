@@ -153,7 +153,7 @@ Services are registered in `Program.cs` of each project. Follow existing pattern
 
 - ASP.NET Core Identity for user management
 - All pages require authentication by default (except login/register)
-- Test user: `test@example.com` / `Test123!`
+- Test user: `test@example.com` / `TestPassword123!`
 
 ### Data Models
 

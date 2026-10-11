@@ -30,7 +30,17 @@
                 @foreach (var passkey in _passkeys)
                 {
                     <MudListItem>
-                        @(string.IsNullOrWhiteSpace(passkey.Name) ? "Passkey" : passkey.Name)
+                        <div class="d-flex align-center justify-space-between w-100">
+                            <span>@(string.IsNullOrWhiteSpace(passkey.Name) ? "Passkey" : passkey.Name)</span>
+                            <MudButton ButtonType="ButtonType.Button"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Class="passkey-remove"
+                                       data-credential-id="@ToBase64Url(passkey.CredentialId)">
+                                Ta bort
+                            </MudButton>
+                        </div>
                     </MudListItem>
                 }
             </MudList>
@@ -44,6 +54,13 @@
         <MudAlert id="passkey-create-success" Severity="Severity.Success" Class="mb-4" Style="display: none;">
             Passkey har lagts till.
         </MudAlert>
+        <MudAlert id="passkey-remove-error" Severity="Severity.Error" Class="mb-4" Style="display: none;" />
+        <MudAlert id="passkey-unavailable" Severity="Severity.Warning" Class="mb-4" Style="display: none;">
+            Passkeys kräver en säker anslutning (HTTPS) och en webbläsare med WebAuthn-stöd.
+        </MudAlert>
+        <form id="passkey-manage-form" hidden>
+            <AntiforgeryToken />
+        </form>
 
         @if (!_isLoading && _supportsPasskeys)
         {
@@ -65,6 +82,9 @@
     private IList<UserPasskeyInfo> _passkeys = [];
     private bool _isLoading = true;
     private bool _supportsPasskeys;
+
+    private static string ToBase64Url(byte[] value) =>
+        Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     protected override async Task OnInitializedAsync()
     {

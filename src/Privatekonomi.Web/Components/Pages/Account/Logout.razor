@@ -1,23 +1,19 @@
 @page "/Account/Logout"
-@attribute [AllowAnonymous]
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-
-@inject NavigationManager NavigationManager
 
 <PageTitle>Loggar ut...</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     <MudPaper Elevation="3" Class="pa-6">
         <MudText Typo="Typo.h5" Align="Align.Center">
-            Loggar ut...
+            Vill du logga ut?
         </MudText>
+        <form method="post" action="/Account/PerformLogout">
+            <AntiforgeryToken />
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
+                Logga ut
+            </MudButton>
+        </form>
     </MudPaper>
 </MudContainer>
-
-@code {
-    protected override void OnInitialized()
-    {
-        // Redirect to the logout endpoint which handles the actual sign out
-        NavigationManager.NavigateTo("/Account/PerformLogout", forceLoad: true);
-    }
-}

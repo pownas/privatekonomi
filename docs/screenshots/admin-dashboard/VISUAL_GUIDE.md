@@ -327,7 +327,7 @@ private Color GetMetricColor(decimal actual, decimal target)
 
 För att testa admin-dashboarden:
 - Email: test@example.com
-- Password: Test123!
+- Password: TestPassword123!
 - Flaggad som SystemAdmin: Ja
 
 ## Filer i Implementationen

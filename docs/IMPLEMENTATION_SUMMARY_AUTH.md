@@ -86,7 +86,7 @@ This document summarizes the implementation of user authentication and managemen
 - `src/Privatekonomi.Core/Data/TestDataSeeder.cs` - Now creates users and associates data
 
 #### Features:
-- Creates test user (test@example.com / Test123!)
+- Creates test user (test@example.com / TestPassword123!)
 - Associates all test data with the test user
 - Async seeding method for proper user creation
 
@@ -146,7 +146,7 @@ This document summarizes the implementation of user authentication and managemen
 A test user is automatically created during application startup:
 
 - **Email**: test@example.com
-- **Password**: Test123!
+- **Password**: TestPassword123!
 - **Data**: 50 transactions, 2 budgets, 5 goals, sample investments, assets, and loans
 
 ## Database Schema Changes

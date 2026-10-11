@@ -10,12 +10,38 @@
             Skapa konto
         </MudText>
         
-        @if (!string.IsNullOrEmpty(ErrorMessage))
+        @if (Registered)
+        {
+            <MudAlert Severity="Severity.Success" Class="mb-4">
+                Kontot är skapat. Kontrollera din e-post för att bekräfta adressen innan du loggar in.
+            </MudAlert>
+        }
+        @if (ConfirmationResent)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Om kontot finns och ännu inte är bekräftat skickar vi en ny bekräftelselänk.
+            </MudAlert>
+        }
+        else if (!string.IsNullOrEmpty(ErrorMessage))
         {
             <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
         }
-        
+
+        @if (ShowResendConfirmation)
+        {
+            <form method="post" action="/Account/Email/Resend" class="mb-4">
+                <AntiforgeryToken />
+                <MudTextField Label="E-post" Type="InputType.Email" UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "email" })" Required="true" />
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                    Skicka bekräftelselänken igen
+                </MudButton>
+            </form>
+        }
+
+        @if (!Registered && Error != "email")
+        {
         <form method="post" action="/Account/PerformRegister">
+            <AntiforgeryToken />
             <MudTextField Label="Förnamn" 
                           @bind-Value="FirstName"
                           Variant="Variant.Outlined"
@@ -66,6 +92,7 @@
                 Registrera
             </MudButton>
         </form>
+        }
         
         <MudText Align="Align.Center">
             Har du redan ett konto? <MudLink Href="/Account/Login">Logga in</MudLink>
@@ -80,6 +107,12 @@
     [SupplyParameterFromQuery(Name = "details")]
     private string? Details { get; set; }
 
+    [SupplyParameterFromQuery(Name = "registered")]
+    private bool Registered { get; set; }
+
+    [SupplyParameterFromQuery(Name = "resend")]
+    private bool ConfirmationResent { get; set; }
+
     private string FirstName { get; set; } = "";
     private string LastName { get; set; } = "";
     private string Email { get; set; } = "";
@@ -88,11 +121,14 @@
 
     private string? ErrorMessage => Error switch
     {
-        "empty" => "E-post och lösenord krävs.",
+        "empty" or "required" => "Förnamn, efternamn, e-post och lösenord krävs.",
         "passwordmismatch" => "Lösenorden matchar inte.",
+        "email" => "Kontot skapades, men bekräftelselänken kunde inte skickas. Försök skicka länken igen eller kontakta support.",
         "create" => GetCreateErrorMessage(),
         _ => null
     };
+
+    private bool ShowResendConfirmation => Registered || Error == "email" || ConfirmationResent;
 
     private string GetCreateErrorMessage()
     {
@@ -102,7 +138,7 @@
         // Translate common Identity error codes to Swedish
         return Details switch
         {
-            var d when d.Contains("PasswordTooShort") => "Lösenordet måste vara minst 6 tecken.",
+            var d when d.Contains("PasswordTooShort") => "Lösenordet måste vara minst 12 tecken.",
             var d when d.Contains("DuplicateUserName") => "E-postadressen är redan registrerad.",
             var d when d.Contains("DuplicateEmail") => "E-postadressen är redan registrerad.",
             var d when d.Contains("InvalidEmail") => "Ogiltig e-postadress.",

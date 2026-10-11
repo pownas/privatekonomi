@@ -51,7 +51,19 @@
                 <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
             }
 
+            @if (Confirmed)
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-4">E-postadressen är bekräftad. Du kan nu logga in.</MudAlert>
+            }
+            @if (PasswordReset)
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-4">Lösenordet har återställts. Du kan logga in med ditt nya lösenord.</MudAlert>
+            }
+
             <MudAlert id="passkey-error" Severity="Severity.Error" Class="mb-4" Style="display: none;" />
+            <MudAlert id="passkey-unavailable" Severity="Severity.Warning" Class="mb-4" Style="display: none;">
+                Passkeys kräver en säker anslutning (HTTPS) och en webbläsare med WebAuthn-stöd.
+            </MudAlert>
 
             <form method="post" action="/Account/PerformLogin">
                 <AntiforgeryToken />
@@ -112,6 +124,12 @@
             <MudDivider Class="my-4" />
 
             <MudText Typo="Typo.body2" Align="Align.Center" Class="text-muted">
+                <MudLink Href="/Account/ForgotPassword" Typo="Typo.body2" Color="Color.Primary">
+                    Glömt lösenordet?
+                </MudLink>
+            </MudText>
+
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="text-muted mt-3">
                 Har du inget konto?
                 <MudLink Href="/Account/Register" Typo="Typo.body2" Color="Color.Primary">
                     <strong>Registrera dig här</strong>
@@ -128,6 +146,12 @@
     [SupplyParameterFromQuery(Name = "error")]
     private string? Error { get; set; }
 
+    [SupplyParameterFromQuery(Name = "confirmed")]
+    private bool Confirmed { get; set; }
+
+    [SupplyParameterFromQuery(Name = "passwordreset")]
+    private bool PasswordReset { get; set; }
+
     private string Email { get; set; } = "";
     private string Password { get; set; } = "";
     private bool RememberMe { get; set; }
@@ -137,6 +161,7 @@
         "invalid" => "Felaktigt användarnamn eller lösenord.",
         "lockedout" => "Kontot är låst. Vänta och försök igen senare.",
         "empty" => "E-post och lösenord krävs.",
+        "confirmation" => "Bekräftelselänken är ogiltig eller har gått ut. Begär en ny länk.",
         _ => null
     };
 }

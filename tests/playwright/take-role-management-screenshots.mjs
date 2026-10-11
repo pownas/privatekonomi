@@ -31,7 +31,7 @@ async function takeRoleManagementScreenshots() {
     // Login first
     console.log('Logging in...');
     await page.fill('input[name="Input.Email"]', 'test@example.com');
-    await page.fill('input[name="Input.Password"]', 'Test123!');
+    await page.fill('input[name="Input.Password"]', 'TestPassword123!');
     await page.click('button[type="submit"]');
     await page.waitForTimeout(2000);
     

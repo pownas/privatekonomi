@@ -156,8 +156,8 @@ test.describe('Login Page', () => {
     await page.locator('input[autocomplete="given-name"]').fill('Ada');
     await page.locator('input[autocomplete="family-name"]').fill('Lovelace');
     await page.locator('input[autocomplete="username"]').fill(`passkey-${Date.now()}@example.com`);
-    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!');
-    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!');
+    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!123');
+    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!123');
     const registrationResponsePromise = page.waitForResponse(response => response.url().endsWith('/Account/PerformRegister'));
     await page.getByRole('button', { name: 'Registrera' }).click();
     const registrationResponse = await registrationResponsePromise;
@@ -183,10 +183,10 @@ test.describe('Login Page', () => {
 
     await page.goto('/Account/Login');
     await page.locator('input[autocomplete="username webauthn"]').fill('ada@example.com');
-    await page.locator('input[type="password"]').fill('Passw0rd!');
+    await page.locator('input[type="password"]').fill('Passw0rd!123');
     await page.locator('form[action="/Account/PerformLogin"] button[type="submit"]').click();
 
     expect(submittedForm?.get('Email')).toBe('ada@example.com');
-    expect(submittedForm?.get('Password')).toBe('Passw0rd!');
+    expect(submittedForm?.get('Password')).toBe('Passw0rd!123');
   });
 });

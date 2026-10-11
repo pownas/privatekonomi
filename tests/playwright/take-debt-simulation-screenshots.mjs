@@ -50,7 +50,7 @@ async function takeDebtSimulationScreenshots() {
       // Try different selectors for password
       const passwordInput = await page.locator('input[type="password"]').first();
       if (await passwordInput.count() > 0) {
-        await passwordInput.fill('Test123!');
+        await passwordInput.fill('TestPassword123!');
       }
       
       // Click login button

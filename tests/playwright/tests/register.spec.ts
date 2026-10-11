@@ -54,15 +54,16 @@ test.describe('Register Page', () => {
     await page.locator('input[autocomplete="given-name"]').fill('Ada');
     await page.locator('input[autocomplete="family-name"]').fill('Lovelace');
     await page.locator('input[autocomplete="username"]').fill('ada@example.com');
-    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!');
-    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!');
+    await page.locator('input[type="password"]').nth(0).fill('Passw0rd!123');
+    await page.locator('input[type="password"]').nth(1).fill('Passw0rd!123');
     await page.getByRole('button', { name: 'Registrera' }).click();
 
     expect(submittedForm?.get('FirstName')).toBe('Ada');
     expect(submittedForm?.get('LastName')).toBe('Lovelace');
     expect(submittedForm?.get('Email')).toBe('ada@example.com');
-    expect(submittedForm?.get('Password')).toBe('Passw0rd!');
-    expect(submittedForm?.get('ConfirmPassword')).toBe('Passw0rd!');
+    expect(submittedForm?.get('Password')).toBe('Passw0rd!123');
+    expect(submittedForm?.get('ConfirmPassword')).toBe('Passw0rd!123');
+    expect(submittedForm?.get('__RequestVerificationToken')).toBeTruthy();
     await expect(page.locator('.mud-appbar a[href="/Account/Login"]')).toHaveCount(1);
   });
 });

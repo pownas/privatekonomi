@@ -86,30 +86,33 @@
         typeof window.PublicKeyCredential !== 'undefined';
 
     const setUnavailableMessage = () => {
-        const loginButton = document.getElementById('passkey-login');
-        if (loginButton) {
-            loginButton.disabled = true;
-            showMessage('passkey-error', 'Passkeys kräver en säker anslutning (HTTPS) och en webbläsare med WebAuthn-stöd.');
+        for (const button of document.querySelectorAll('#passkey-login, #passkey-create')) {
+            button.disabled = true;
         }
+        showMessage('passkey-unavailable', 'Passkeys kräver en säker anslutning (HTTPS) och en webbläsare med WebAuthn-stöd.');
     };
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('#passkey-login, #passkey-create');
+        const target = event.target instanceof Element ? event.target : null;
+        const button = target?.closest('#passkey-login, #passkey-create, .passkey-remove');
         if (!button) {
             return;
         }
 
         event.preventDefault();
-        const form = button.closest('form') ?? document.querySelector('#passkey-create-form, form[action="/Account/PerformLogin"]');
+        const remove = button.classList.contains('passkey-remove');
+        const form = remove
+            ? document.getElementById('passkey-manage-form')
+            : button.closest('form') ?? document.querySelector('#passkey-create-form, form[action="/Account/PerformLogin"]');
         const token = form && getToken(form);
         const login = button.id === 'passkey-login';
-        const errorId = login ? 'passkey-error' : 'passkey-create-error';
+        const errorId = remove ? 'passkey-remove-error' : login ? 'passkey-error' : 'passkey-create-error';
         const successId = 'passkey-create-success';
 
         document.getElementById(errorId)?.style && (document.getElementById(errorId).style.display = 'none');
         document.getElementById(successId)?.style && (document.getElementById(successId).style.display = 'none');
 
-        if (!supportsPasskeys()) {
+        if (!remove && !supportsPasskeys()) {
             setUnavailableMessage();
             return;
         }
@@ -120,6 +123,17 @@
 
         button.disabled = true;
         try {
+            if (remove) {
+                if (!window.confirm('Vill du ta bort den här passkeyn?')) {
+                    return;
+                }
+                await post('/Account/Manage/RemovePasskey', token, {
+                    credentialId: button.dataset.credentialId
+                });
+                window.location.reload();
+                return;
+            }
+
             const optionsUrl = login
                 ? '/Account/PasskeyRequestOptions'
                 : '/Account/Manage/PasskeyCreationOptions';

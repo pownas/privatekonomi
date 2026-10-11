@@ -93,7 +93,7 @@ public static class TestDataSeeder
         var existingUser = await userManager.FindByEmailAsync(testUser.Email);
         if (existingUser == null)
         {
-            await userManager.CreateAsync(testUser, "Test123!");
+            await userManager.CreateAsync(testUser, "TestPassword123!");
             existingUser = testUser;
         }
         else
