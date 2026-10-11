@@ -31,7 +31,7 @@
         {
             <form method="post" action="/Account/Email/Resend" class="mb-4">
                 <AntiforgeryToken />
-                <MudTextField Label="E-post" Type="InputType.Email" UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "email" })" Required="true" />
+                <MudTextField T="string" Label="E-post" Type="InputType.Email" UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "email" })" Required="true" />
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
                     Skicka bekräftelselänken igen
                 </MudButton>
