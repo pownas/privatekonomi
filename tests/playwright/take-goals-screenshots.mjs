@@ -52,9 +52,9 @@ async function takeGoalsScreenshots() {
       const passwordInputAlt = await page.locator('input[name="Input.Password"]').first();
       
       if (await passwordInput.count() > 0) {
-        await passwordInput.fill('Test123!');
+        await passwordInput.fill('TestPassword123!');
       } else {
-        await passwordInputAlt.fill('Test123!');
+        await passwordInputAlt.fill('TestPassword123!');
       }
       
       // Click login button

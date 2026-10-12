@@ -86,7 +86,7 @@ This document summarizes the implementation of user authentication and managemen
 - `src/Privatekonomi.Core/Data/TestDataSeeder.cs` - Now creates users and associates data
 
 #### Features:
-- Creates test user (test@example.com / Test123!)
+- Creates test user (test@example.com / TestPassword123!)
 - Associates all test data with the test user
 - Async seeding method for proper user creation
 
@@ -106,14 +106,15 @@ This document summarizes the implementation of user authentication and managemen
 1. **Registration**:
    - User fills in registration form
    - UserManager creates user with hashed password
-   - User is automatically signed in
-   - Redirected to dashboard
+   - When confirmation is configured, the user confirms their email before login
+   - Otherwise, the user is signed in and redirected to onboarding
 
 2. **Login**:
    - User enters email and password
    - SignInManager validates credentials
    - Cookie is created for session
    - User is redirected to requested page
+   - Passkeys can also be enrolled and used for passwordless login
 
 3. **Data Access**:
    - HttpContext provides current user information
@@ -131,6 +132,9 @@ This document summarizes the implementation of user authentication and managemen
 - Secure cookie-based authentication
 - HTTP-only cookies to prevent XSS
 - SameSite cookie attribute for CSRF protection
+- CSRF tokens on account forms and passkey operations
+- Five-attempt lockout and IP-based endpoint rate limits
+- Email confirmation and password-reset links when SMTP is configured
 - User data isolation at database query level
 - No shared data between users (unless in same household)
 
@@ -146,7 +150,7 @@ This document summarizes the implementation of user authentication and managemen
 A test user is automatically created during application startup:
 
 - **Email**: test@example.com
-- **Password**: Test123!
+- **Password**: TestPassword123!
 - **Data**: 50 transactions, 2 budgets, 5 goals, sample investments, assets, and loans
 
 ## Database Schema Changes
@@ -172,8 +176,8 @@ A test user is automatically created during application startup:
 
 ### Current State (Development)
 - InMemory database
-- Simple password requirements
-- No email confirmation
+- Minimum password length of 12 characters
+- Email confirmation is optional without production email configuration
 - Test user pre-created
 
 ### Production Recommendations
@@ -190,19 +194,10 @@ A test user is automatically created during application startup:
    dotnet ef database update
    ```
 
-2. **Security Hardening**:
-   - Enable stronger password requirements
-   - Add email confirmation
-   - Enable account lockout
-   - Configure secure cookie settings
-   - Use HTTPS only
+2. **Email Service**:
+   - Configure SMTP credentials and public HTTPS origin for confirmation and recovery links.
 
-3. **Email Service**:
-   - Replace NoOpEmailSender with real email service
-   - Configure SMTP settings
-   - Implement email templates
-
-4. **Additional Features**:
+3. **Additional Features**:
    - Add password reset functionality
    - Implement 2FA
    - Add admin roles
@@ -245,7 +240,7 @@ A test user is automatically created during application startup:
 ## Known Limitations
 
 1. **InMemory Database**: Data is lost on application restart
-2. **No Email**: Email confirmation and password reset require manual implementation
+2. **Email Delivery**: Confirmation and password recovery need valid SMTP settings in production
 3. **Single Role**: All users have the same permissions (no admin role yet)
 4. **No 2FA**: Two-factor authentication not implemented
 5. **Basic UI**: Authentication pages are functional but could be more polished
@@ -253,7 +248,6 @@ A test user is automatically created during application startup:
 ## Future Enhancements
 
 - [ ] Migrate to SQL Server/PostgreSQL for persistence
-- [ ] Add password reset via email
 - [ ] Implement two-factor authentication (2FA)
 - [ ] Add user profile management page
 - [ ] Create admin role with user management

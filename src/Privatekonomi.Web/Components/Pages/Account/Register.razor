@@ -10,52 +10,75 @@
             Skapa konto
         </MudText>
         
-        @if (!string.IsNullOrEmpty(ErrorMessage))
+        @if (Registered)
+        {
+            <MudAlert Severity="Severity.Success" Class="mb-4">
+                Kontot är skapat. Kontrollera din e-post för att bekräfta adressen innan du loggar in.
+            </MudAlert>
+        }
+        @if (ConfirmationResent)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Om kontot finns och ännu inte är bekräftat skickar vi en ny bekräftelselänk.
+            </MudAlert>
+        }
+        else if (!string.IsNullOrEmpty(ErrorMessage))
         {
             <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
         }
-        
+
+        @if (ShowResendConfirmation)
+        {
+            <form method="post" action="/Account/Email/Resend" class="mb-4">
+                <AntiforgeryToken />
+                <MudTextField T="string" Label="E-post" Type="InputType.Email" UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "email" })" Required="true" />
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                    Skicka bekräftelselänken igen
+                </MudButton>
+            </form>
+        }
+
+        @if (!Registered && Error != "email")
+        {
         <form method="post" action="/Account/PerformRegister">
-            <MudTextField Label="Förnamn" 
-                          @bind-Value="FirstName"
+            <AntiforgeryToken />
+            <MudTextField T="string" Label="Förnamn"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="given-name"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "FirstName", ["autocomplete"] = "given-name" })"
                           Required="true" />
             
-            <MudTextField Label="Efternamn" 
-                          @bind-Value="LastName"
+            <MudTextField T="string" Label="Efternamn"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="family-name"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "LastName", ["autocomplete"] = "family-name" })"
                           Required="true" />
             
-            <MudTextField Label="E-post" 
-                          @bind-Value="Email"
+            <MudTextField T="string" Label="E-post"
+                          InputType="InputType.Email"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="username"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "Email", ["autocomplete"] = "username" })"
                           Required="true" />
             
-            <MudTextField Label="Lösenord" 
-                          @bind-Value="Password"
+            <MudTextField T="string" Label="Lösenord"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="new-password"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "Password", ["autocomplete"] = "new-password" })"
                           Required="true" />
+            <MudText Typo="Typo.caption" Class="mb-4">Använd minst 12 tecken.</MudText>
             
-            <MudTextField Label="Bekräfta lösenord" 
-                          @bind-Value="ConfirmPassword"
+            <MudTextField T="string" Label="Bekräfta lösenord"
                           InputType="InputType.Password"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Class="mb-4"
-                          autocomplete="new-password"
+                          UserAttributes="@(new Dictionary<string, object> { ["name"] = "ConfirmPassword", ["autocomplete"] = "new-password" })"
                           Required="true" />
             
             <MudButton ButtonType="ButtonType.Submit" 
@@ -66,6 +89,7 @@
                 Registrera
             </MudButton>
         </form>
+        }
         
         <MudText Align="Align.Center">
             Har du redan ett konto? <MudLink Href="/Account/Login">Logga in</MudLink>
@@ -80,19 +104,22 @@
     [SupplyParameterFromQuery(Name = "details")]
     private string? Details { get; set; }
 
-    private string FirstName { get; set; } = "";
-    private string LastName { get; set; } = "";
-    private string Email { get; set; } = "";
-    private string Password { get; set; } = "";
-    private string ConfirmPassword { get; set; } = "";
+    [SupplyParameterFromQuery(Name = "registered")]
+    private bool Registered { get; set; }
+
+    [SupplyParameterFromQuery(Name = "resend")]
+    private bool ConfirmationResent { get; set; }
 
     private string? ErrorMessage => Error switch
     {
-        "empty" => "E-post och lösenord krävs.",
+        "empty" or "required" => "Förnamn, efternamn, e-post och lösenord krävs.",
         "passwordmismatch" => "Lösenorden matchar inte.",
+        "email" => "Kontot skapades, men bekräftelselänken kunde inte skickas. Försök skicka länken igen eller kontakta support.",
         "create" => GetCreateErrorMessage(),
         _ => null
     };
+
+    private bool ShowResendConfirmation => Registered || Error == "email" || ConfirmationResent;
 
     private string GetCreateErrorMessage()
     {
@@ -102,7 +129,7 @@
         // Translate common Identity error codes to Swedish
         return Details switch
         {
-            var d when d.Contains("PasswordTooShort") => "Lösenordet måste vara minst 6 tecken.",
+            var d when d.Contains("PasswordTooShort") => "Lösenordet måste vara minst 12 tecken.",
             var d when d.Contains("DuplicateUserName") => "E-postadressen är redan registrerad.",
             var d when d.Contains("DuplicateEmail") => "E-postadressen är redan registrerad.",
             var d when d.Contains("InvalidEmail") => "Ogiltig e-postadress.",

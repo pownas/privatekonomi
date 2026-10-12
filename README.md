@@ -435,7 +435,7 @@ Applikationen seedas automatiskt med en testanvändare och ca **50 testransaktio
 
 **Testanvändare:**
 - E-post: test@example.com
-- Lösenord: Test123!
+- Lösenord: TestPassword123!
 
 Testdata inkluderar:
 - Realistiska svenska transaktioner (ICA, SL-kort, Hyra, Netflix, etc.)

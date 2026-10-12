@@ -32,7 +32,7 @@ async function takeSimulationDetails() {
     const emailInput = await page.locator('input[type="email"]').first();
     if (await emailInput.count() > 0) {
       await emailInput.fill('test@example.com');
-      await page.locator('input[type="password"]').first().fill('Test123!');
+      await page.locator('input[type="password"]').first().fill('TestPassword123!');
       await page.locator('button[type="submit"]').first().click();
       await page.waitForTimeout(3000);
     }

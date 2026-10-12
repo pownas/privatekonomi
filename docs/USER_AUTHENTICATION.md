@@ -16,9 +16,12 @@ Privatekonomi now includes a comprehensive user authentication and management sy
 
 - **Registration**: Users can create accounts with email, password, first name, and last name
 - **Login**: Secure authentication with email and password
-- **Password Requirements**: Minimum 6 characters (configurable)
+- **Password Requirements**: Minimum 12 characters
 - **Remember Me**: Optional persistent login sessions
-- **Logout**: Secure session termination
+- **Logout**: CSRF-protected session termination
+- **Email confirmation**: Enabled in production when SMTP and the public HTTPS URL are configured
+- **Password recovery**: Email-based, with a generic response that does not disclose whether an account exists
+- **Account protection**: Five failed password attempts trigger a 15-minute lockout; account endpoints are rate-limited
 
 ### Data Isolation
 
@@ -45,7 +48,7 @@ Users can be members of households to share expenses and manage joint finances:
 A test user is automatically created with the following credentials:
 
 - **Email**: test@example.com
-- **Password**: Test123!
+- **Password**: TestPassword123!
 
 This account comes with pre-populated test data (50 transactions, budgets, goals, etc.).
 
@@ -58,10 +61,10 @@ This account comes with pre-populated test data (50 transactions, budgets, goals
    - First name
    - Last name
    - Email address
-   - Password (min 6 characters)
+   - Password (min 12 characters)
    - Confirm password
 5. Click "Registrera" (Register)
-6. You'll be automatically logged in and redirected to the dashboard
+6. In development, you'll be logged in and redirected to onboarding. When email confirmation is enabled, confirm your email before logging in.
 
 ### Logging In
 
@@ -114,27 +117,24 @@ This is implemented using the `ICurrentUserService` interface, which provides:
 
 ### Security Considerations
 
-#### Current Implementation (Development)
+The application enforces a 12-character minimum password, account lockout, rate limits, CSRF checks for account forms and passkey actions, and local-only post-login redirects. Email confirmation is required automatically in production when the SMTP host and public HTTPS origin are configured. To require confirmation explicitly, set `Authentication:RequireConfirmedAccount` to `true`; startup then fails if the required email settings are missing.
 
-- Uses in-memory database (data is lost on restart)
-- Simple password requirements for development convenience
-- Email confirmation disabled for easier testing
-- Account lockout disabled
+Configure email delivery using environment variables or another secret provider (do not commit SMTP credentials):
 
-#### Production Recommendations
+```text
+Email__SmtpHost=smtp.example.com
+Email__SmtpPort=587
+Email__SmtpUser=...
+Email__SmtpPassword=...
+Email__FromAddress=noreply@example.com
+Email__FromName=Privatekonomi
+Email__PublicBaseUrl=https://finance.example.com
+Authentication__RequireConfirmedAccount=true
+```
 
-For production deployment, consider:
+`Email:PublicBaseUrl` must be the public HTTPS origin without a path. Confirmation and password-reset links are generated only from this configured value, not from the incoming request's Host header. SMTP uses STARTTLS on the configured port.
 
-1. **Persistent Database**: Migrate from InMemory to SQL Server or PostgreSQL
-2. **Stronger Password Policy**: 
-   - Require uppercase, lowercase, digits, and special characters
-   - Minimum length of 8-12 characters
-3. **Email Confirmation**: Enable email verification for new accounts
-4. **Account Lockout**: Enable after multiple failed login attempts
-5. **Two-Factor Authentication**: Add 2FA support for enhanced security
-6. **HTTPS Only**: Enforce HTTPS in production
-7. **Secure Cookie Settings**: Configure secure, HTTP-only cookies
-8. **Password Reset**: Implement password reset via email
+Passkeys can be added and removed from the signed-in user's Passkeys page. WebAuthn operations require HTTPS or `localhost`; an HTTP LAN address is not a secure browser context.
 
 ### Migration to SQL Server
 
@@ -179,15 +179,19 @@ The Web API endpoints now support authentication through the Identity system. AP
 
 To add token-based authentication for the API, consider implementing JWT tokens.
 
+## Passkeys
+
+Signed-in users can register a passkey from **Passkeys** in the application header. Once registered, select **Logga in med passkey** on the login page to sign in without entering an email address or password. Passkeys are created as discoverable credentials so the authenticator can identify the account during passwordless sign-in.
+
+Passkeys require a browser with WebAuthn support and a secure origin: use HTTPS, or `localhost` during development. They are stored in the `AspNetUserPasskeys` Identity table.
+
 ## Future Enhancements
 
 Planned features for the authentication system:
 
 - [ ] Social login (Google, Microsoft, GitHub)
 - [ ] Two-factor authentication (2FA)
-- [ ] Password reset via email
-- [ ] Email confirmation
-- [ ] Account lockout after failed attempts
+- [ ] Two-factor authentication (2FA)
 - [ ] User profile management page
 - [ ] Admin user roles and permissions
 - [ ] Audit logging for security events

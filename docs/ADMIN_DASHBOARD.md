@@ -6,7 +6,7 @@ Admin-dashboarden ger systemadministratörer en central plats för att övervaka
 ## Åtkomst
 - **URL**: `/admin/metrics`
 - **Behörighet**: Endast systemadministratörer
-- **Test-användare**: test@example.com / Test123!
+- **Test-användare**: test@example.com / TestPassword123!
 
 ## Funktioner
 

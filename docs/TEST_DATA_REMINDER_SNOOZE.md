@@ -387,7 +387,7 @@ ORDER BY SnoozeCount DESC;
 
 2. **Logga in**
    - Email: `test@example.com`
-   - Password: `Test123!`
+   - Password: `TestPassword123!`
 
 3. **Navigera till Notifikationer**
    - Gå till `/settings/notifications`
