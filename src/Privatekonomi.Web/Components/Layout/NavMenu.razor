@@ -15,10 +15,18 @@
   
     @if (_isSystemAdmin)
     {
-        <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.AdminPanelSettings" Style="color: #ff6b6b;" OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">
+        <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.AdminPanelSettings" Style="color: #ff6b6b;"
+                    OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">
             Admin Dashboard
         </MudNavLink>
-        <MudNavLink Href="/admin/drift" Icon="@Icons.Material.Filled.SystemUpdateAlt">Drift och uppdateringar</MudNavLink>
+        <MudNavLink Href="/admin/drift" Icon="@Icons.Material.Filled.SettingsApplications"
+                   OnClick="@(() => TrackNavigation("/admin/drift", "Drift"))">
+            Drift
+        </MudNavLink>
+        <MudNavLink Href="/admin/site-changes" Icon="@Icons.Material.Filled.SystemUpdateAlt"
+                    OnClick="@(() => TrackNavigation("/admin/site-changes", "Drift och uppdateringar"))">
+            Drift och uppdateringar
+        </MudNavLink>
     }
 
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">

@@ -82,4 +82,4 @@ EOF
 systemctl daemon-reload
 systemctl enable --now privatekonomi-update.path
 systemctl restart privatekonomi-web.service
-echo "Webbuppdatering aktiverad under Inställningar → Uppdatera Raspberry Pi."
+echo "Uppdatering och omstart från driftssidan aktiverad för systemadministratörer."

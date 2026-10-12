@@ -54,6 +54,80 @@ public class TransactionService : ITransactionService
         return await query.OrderByDescending(t => t.Date).ToListAsync();
     }
 
+    public async Task<(List<Transaction> Transactions, int TotalCount)> GetTransactionsPageAsync(
+        int? accountId,
+        DateTime? startDate,
+        DateTime? endDate,
+        int? categoryId,
+        int? householdId,
+        int page,
+        int perPage)
+    {
+        if (page < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(page));
+        }
+
+        if (perPage <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(perPage));
+        }
+
+        var offset = ((long)page - 1) * perPage;
+        if (offset > int.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(page));
+        }
+
+        using var context = _contextFactory.CreateDbContext();
+        var query = context.Transactions.AsNoTracking().AsQueryable();
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(t => t.UserId == _currentUserService.UserId);
+        }
+
+        if (accountId.HasValue)
+        {
+            query = query.Where(t => t.BankSourceId == accountId.Value);
+        }
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(t => t.Date >= startDate.Value.Date);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(t => t.Date <= endDate.Value.Date);
+        }
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(t => t.TransactionCategories.Any(tc => tc.CategoryId == categoryId.Value));
+        }
+
+        if (householdId.HasValue)
+        {
+            query = query.Where(t => t.HouseholdId == householdId.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+        var transactions = await query
+            .Include(t => t.BankSource)
+            .Include(t => t.TransactionCategories)
+                .ThenInclude(tc => tc.Category)
+            .Include(t => t.Household)
+            .Include(t => t.Receipts)
+            .OrderByDescending(t => t.Date)
+            .ThenByDescending(t => t.TransactionId)
+            .Skip((int)offset)
+            .Take(perPage)
+            .ToListAsync();
+
+        return (transactions, totalCount);
+    }
+
     public async Task<Transaction?> GetTransactionByIdAsync(int id)
     {
         using var context = _contextFactory.CreateDbContext();

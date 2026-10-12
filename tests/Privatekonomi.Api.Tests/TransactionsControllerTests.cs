@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Privatekonomi.Api.Controllers;
 using Privatekonomi.Api.Models;
 using Privatekonomi.Api.Tests.Infrastructure;
 using Privatekonomi.Core.Data;
@@ -13,6 +14,79 @@ namespace Privatekonomi.Api.Tests;
 [TestClass]
 public class TransactionsControllerTests
 {
+    [TestMethod]
+    public async Task GetTransactionsFiltersCountsAndPaginatesInStableOrder()
+    {
+        await using var factory = new ApiWebApplicationFactory("Test_TransactionPagination_" + Guid.NewGuid());
+        var client = factory.CreateClient();
+        var categoryId = 0;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
+            var category = new Category { Name = "Pagination category" };
+            context.Categories.Add(category);
+            await context.SaveChangesAsync();
+            categoryId = category.CategoryId;
+
+            var transactions = new[]
+            {
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 10), Description = "Newest", BankSourceId = 1, HouseholdId = 7 },
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 10), Description = "Same date", BankSourceId = 1, HouseholdId = 7 },
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 9), Description = "Older", BankSourceId = 1, HouseholdId = 7 },
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 10), Description = "Wrong account", BankSourceId = 2, HouseholdId = 7 },
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 10), Description = "Wrong household", BankSourceId = 1, HouseholdId = 8 },
+                new Transaction { Amount = 10m, Date = new DateTime(2026, 5, 8), Description = "Outside date range", BankSourceId = 1, HouseholdId = 7 }
+            };
+            context.Transactions.AddRange(transactions);
+            await context.SaveChangesAsync();
+
+            context.TransactionCategories.AddRange(transactions.Take(3).Select(transaction => new TransactionCategory
+            {
+                TransactionId = transaction.TransactionId,
+                CategoryId = category.CategoryId,
+                Amount = transaction.Amount,
+                Percentage = 100
+            }));
+            await context.SaveChangesAsync();
+        }
+
+        var firstPage = await client.GetFromJsonAsync<TransactionListResponse>(
+            $"/api/transactions?accountId=1&startDate=2026-05-09&endDate=2026-05-10&categoryId={categoryId}&householdId=7&page=1&perPage=2");
+
+        Assert.IsNotNull(firstPage);
+        Assert.AreEqual(3, firstPage.TotalCount);
+        Assert.AreEqual(2, firstPage.TotalPages);
+        Assert.AreEqual(1, firstPage.Page);
+        Assert.AreEqual(2, firstPage.PerPage);
+        var firstPageTransactions = firstPage.Transactions.ToList();
+        Assert.AreEqual(2, firstPageTransactions.Count);
+        Assert.IsTrue(firstPageTransactions[0].Date >= firstPageTransactions[1].Date);
+        Assert.IsTrue(firstPageTransactions[0].Date != firstPageTransactions[1].Date ||
+            firstPageTransactions[0].TransactionId > firstPageTransactions[1].TransactionId);
+
+        var secondPage = await client.GetFromJsonAsync<TransactionListResponse>(
+            $"/api/transactions?accountId=1&startDate=2026-05-09&endDate=2026-05-10&categoryId={categoryId}&householdId=7&page=2&perPage=2");
+
+        Assert.IsNotNull(secondPage);
+        Assert.AreEqual(3, secondPage.TotalCount);
+        Assert.AreEqual(2, secondPage.TotalPages);
+        Assert.AreEqual(1, secondPage.Transactions.Count());
+        Assert.AreEqual(new DateTime(2026, 5, 9), secondPage.Transactions.Single().Date);
+    }
+
+    [TestMethod]
+    public async Task GetTransactionsRejectsInvalidPaginationParameters()
+    {
+        await using var factory = new ApiWebApplicationFactory("Test_InvalidTransactionPagination_" + Guid.NewGuid());
+        var client = factory.CreateClient();
+
+        var invalidPageResponse = await client.GetAsync("/api/transactions?page=0");
+        var invalidPerPageResponse = await client.GetAsync("/api/transactions?perPage=0");
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalidPageResponse.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalidPerPageResponse.StatusCode);
+    }
+
     private async Task<Transaction> CreateTestTransactionAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
