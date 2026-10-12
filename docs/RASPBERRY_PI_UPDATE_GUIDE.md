@@ -26,7 +26,9 @@ Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna **Drift** i m
 Sidan visar appens körmiljö, drifttid, installerad commit och senaste commit på main.
 Du kan starta en separat omstart av Web och API utan att bygga om, eller installera
 uppdateringen. Båda åtgärderna använder samma begränsade systemd-worker och hälsokontroll.
-Sidan visar commit från den faktiskt publicerade
+Drift-sidan söker efter ändringar på `main` när den öppnas. Välj **Sök efter uppdateringar**
+för en ny kontroll. När en nyare version finns visas commit-meddelanden och en länk till
+hela jämförelsen på GitHub innan installationen startas. Sidan visar commit från den faktiskt publicerade
 Web-katalogen (installerad version före aktivering eller efter manuell publicering
 visas när den har en `.privatekonomi-commit`-fil), senaste commit på GitHubs `main` när nätet fungerar,
 status och de sista 8 KiB från uppdateringsloggen. Starta uppdateringen med knappen.

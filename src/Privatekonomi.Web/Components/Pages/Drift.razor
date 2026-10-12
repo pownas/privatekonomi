@@ -40,11 +40,87 @@
         <MudCard Class="mb-4">
             <MudCardContent>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="drift-card-heading">
-                    <MudText Typo="Typo.h6">Åtgärder</MudText>
-                    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshAsync" Disabled="@_isRefreshing">
-                        Uppdatera status
+                    <MudText Typo="Typo.h6">Uppdateringar från main</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search"
+                               OnClick="CheckForUpdatesAsync" Disabled="@_isCheckingUpdates">
+                        @(_isCheckingUpdates ? "Söker..." : "Sök efter uppdateringar")
                     </MudButton>
                 </MudStack>
+                <MudText Typo="Typo.caption" Class="mb-3">Senast kontrollerad @_lastUpdateCheckAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+
+                @if (_history.StatusMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mb-3">@_history.StatusMessage</MudAlert>
+                }
+                else if (_history.InstalledCommit is null || _history.LatestCommit is null)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-3">
+                        Det går inte att avgöra om en uppdatering finns eftersom versionsinformationen saknas.
+                    </MudAlert>
+                }
+                else if (_history.InstalledCommit == _history.LatestCommit)
+                {
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.CheckCircle" Class="mb-3">
+                        Du har senaste versionen från main installerad.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.SystemUpdateAlt" Class="mb-3">
+                        En nyare version finns på main. Läs ändringarna nedan och välj sedan Installera uppdatering.
+                    </MudAlert>
+                }
+
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <tr><td>Installerad version</td><td class="text-end drift-commit">@FormatCommit(_history.InstalledCommit)</td></tr>
+                        <tr><td>Senaste på main</td><td class="text-end drift-commit">@FormatCommit(_history.LatestCommit)</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+
+                @if (_history.InstalledCommit is not null && _history.LatestCommit is not null && _history.InstalledCommit != _history.LatestCommit)
+                {
+                    var changes = GetChangesSinceInstalled();
+                    @if (changes.Count > 0)
+                    {
+                        <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Det här innehåller uppdateringen</MudText>
+                        @if (!_history.Commits.Any(commit => commit.IsInstalled))
+                        {
+                            <MudText Typo="Typo.caption" Class="mb-2">Den installerade versionen är äldre än de senast hämtade ändringarna. Visar de fem senaste commitsen på main.</MudText>
+                        }
+                        <MudStack Spacing="2">
+                            @foreach (var commit in changes)
+                            {
+                                <MudPaper Outlined="true" Class="pa-3">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="drift-commit-heading">
+                                        <MudText Typo="Typo.subtitle2">@commit.Title</MudText>
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@commit.ShortSha</MudChip>
+                                    </MudStack>
+                                    @if (commit.Summary is not null)
+                                    {
+                                        <MudText Typo="Typo.body2" Class="mt-1">@commit.Summary</MudText>
+                                    }
+                                    <MudText Typo="Typo.caption" Class="mt-1">
+                                        @commit.Author@if (commit.AuthoredAt is not null) { <span> · @commit.AuthoredAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span> }
+                                    </MudText>
+                                </MudPaper>
+                            }
+                        </MudStack>
+                    }
+                    @if (_history.CompareUrl is not null)
+                    {
+                        <MudButton Href="@_history.CompareUrl" Target="_blank" Rel="noopener noreferrer"
+                                   Variant="Variant.Text" StartIcon="@Icons.Material.Filled.OpenInNew" Class="mt-2">
+                            Visa alla ändringar på GitHub
+                        </MudButton>
+                    }
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Åtgärdsstatus</MudText>
                 <MudText Typo="Typo.body2" Class="mb-3">@GetStatusLabel(_status.State)</MudText>
 
                 @if (_status.State is "queued" or "running")
@@ -63,8 +139,9 @@
                     </MudAlert>
                     <MudStack Spacing="2" Class="drift-actions">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
-                                   StartIcon="@Icons.Material.Filled.SystemUpdateAlt" OnClick="ConfirmUpdateAsync" Disabled="@_isBusy">
-                            Installera uppdatering
+                                   StartIcon="@Icons.Material.Filled.SystemUpdateAlt" OnClick="ConfirmUpdateAsync"
+                                   Disabled="@(_isBusy || (_history.LatestCommit is not null && _history.InstalledCommit == _history.LatestCommit))">
+                            @(_history.InstalledCommit == _history.LatestCommit && _history.LatestCommit is not null ? "Senaste versionen installerad" : "Installera uppdatering")
                         </MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Size="Size.Large"
                                    StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="ConfirmRestartAsync" Disabled="@_isBusy">
@@ -106,33 +183,11 @@
                     </MudCardContent>
                 </MudCard>
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudCard Class="mb-4">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Version</MudText>
-                        <MudSimpleTable Dense="true" Hover="true" Class="mt-2">
-                            <tbody>
-                                <tr><td>Installerad commit</td><td class="text-end drift-commit">@FormatCommit(_history.InstalledCommit)</td></tr>
-                                <tr><td>Senaste commit på main</td><td class="text-end drift-commit">@FormatCommit(_history.LatestCommit)</td></tr>
-                            </tbody>
-                        </MudSimpleTable>
-                        @if (_history.InstalledCommit is not null && _history.LatestCommit is not null)
-                        {
-                            <MudAlert Severity="@(_history.InstalledCommit == _history.LatestCommit ? Severity.Success : Severity.Warning)" Variant="Variant.Outlined" Class="mt-3">
-                                @(_history.InstalledCommit == _history.LatestCommit ? "Senaste versionen är installerad" : "Det finns en nyare version att installera")
-                            </MudAlert>
-                        }
-                        @if (_history.StatusMessage is not null)
-                        {
-                            <MudAlert Severity="Severity.Info" Class="mt-3">@_history.StatusMessage</MudAlert>
-                        }
-                        <MudButton Href="/admin/site-changes" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.History" Class="mt-2">
-                            Visa versionshistorik
-                        </MudButton>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
         </MudGrid>
+
+        <MudButton Href="/admin/site-changes" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.History" Class="mb-4">
+            Visa versionshistorik
+        </MudButton>
 
         @if (!string.IsNullOrWhiteSpace(_status.Log))
         {
@@ -151,10 +206,11 @@
     private SiteChangeHistory? _history;
     private DateTimeOffset _processStartedAt;
     private DateTimeOffset _lastStatusRefreshAt;
+    private DateTimeOffset _lastUpdateCheckAt;
     private CancellationTokenSource? _pollCancellation;
     private Task? _pollTask;
     private IJSObjectReference? _module;
-    private bool _isRefreshing;
+    private bool _isCheckingUpdates;
     private bool _isBusy;
 
     protected override async Task OnInitializedAsync()
@@ -162,6 +218,7 @@
         _processStartedAt = new DateTimeOffset(Process.GetCurrentProcess().StartTime);
         RefreshLocalStatus();
         _history = await SiteChanges.GetRecentChangesAsync();
+        _lastUpdateCheckAt = DateTimeOffset.Now;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -185,8 +242,11 @@
                 {
                     var previousState = _status.State;
                     RefreshLocalStatus();
-                    if (previousState is "queued" or "running" && _status.State is "succeeded" or "restarted")
+                    if ((previousState is "queued" or "running") && (_status.State is "succeeded" or "restarted"))
+                    {
                         _history = await SiteChanges.GetRecentChangesAsync(cancellationToken: cancellationToken);
+                        _lastUpdateCheckAt = DateTimeOffset.Now;
+                    }
                     StateHasChanged();
                 });
             }
@@ -196,17 +256,17 @@
         }
     }
 
-    private async Task RefreshAsync()
+    private async Task CheckForUpdatesAsync()
     {
-        _isRefreshing = true;
+        _isCheckingUpdates = true;
         try
         {
-            RefreshLocalStatus();
             _history = await SiteChanges.GetRecentChangesAsync();
+            _lastUpdateCheckAt = DateTimeOffset.Now;
         }
         finally
         {
-            _isRefreshing = false;
+            _isCheckingUpdates = false;
         }
     }
 
@@ -214,6 +274,17 @@
     {
         _status = Updates.GetStatus();
         _lastStatusRefreshAt = DateTimeOffset.Now;
+    }
+
+    private IReadOnlyList<SiteChangeCommit> GetChangesSinceInstalled()
+    {
+        if (_history is null)
+            return Array.Empty<SiteChangeCommit>();
+
+        var installedIndex = _history.Commits.ToList().FindIndex(commit => commit.IsInstalled);
+        return installedIndex >= 0
+            ? _history.Commits.Take(installedIndex).ToArray()
+            : _history.Commits.Take(5).ToArray();
     }
 
     private async Task ConfirmUpdateAsync()
