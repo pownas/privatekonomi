@@ -42,8 +42,8 @@
     private ChartOptions _chartOptions = new ChartOptions
     {
         ChartPalette = new[] { "#4caf50", "#f44336", "#2196f3" },
-        TooltipSubtitleFormat = "MMM yyyy",
-        TooltipTitleFormat = "{0}: {1:C0}",
+        TooltipSubtitleFormat = "{{X_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}}",
         ShowToolTips = true,
         ShowLegend = true,
     };
@@ -70,24 +70,27 @@
                 
                 _cashFlowLabels = GenerateChartLabels(cashFlowDates);
                 
-        _cashFlowSeries = new List<ChartSeries<double>>
-        {
-            new ChartSeries<double>
-            {
-                Name = "Inkomster",
-                Data = cashFlowReport.Periods.Select(p => (double)p.Income).ToArray()
-            },
-            new ChartSeries<double>
-            {
-                Name = "Utgifter",
-                Data = cashFlowReport.Periods.Select(p => (double)p.Expenses).ToArray()
-            },
-            new ChartSeries<double>
-            {
-                Name = "Netto",
-                Data = cashFlowReport.Periods.Select(p => (double)p.NetFlow).ToArray()
-            }
-        };
+                _cashFlowSeries = new List<ChartSeries<double>>
+                {
+                    new ChartSeries<double>
+                    {
+                        Name = "Inkomster",
+                        Data = cashFlowReport.Periods.Select(p => (double)p.Income).ToArray(),
+                        TooltipYValueFormat = "C0"
+                    },
+                    new ChartSeries<double>
+                    {
+                        Name = "Utgifter",
+                        Data = cashFlowReport.Periods.Select(p => (double)p.Expenses).ToArray(),
+                        TooltipYValueFormat = "C0"
+                    },
+                    new ChartSeries<double>
+                    {
+                        Name = "Netto",
+                        Data = cashFlowReport.Periods.Select(p => (double)p.NetFlow).ToArray(),
+                        TooltipYValueFormat = "C0"
+                    }
+                };
             }
         }
         catch (Exception ex)
@@ -106,8 +109,8 @@
             return Array.Empty<string>();
             
         var culture = new System.Globalization.CultureInfo("sv-SE");
-        return months.Select((m, index) => 
-            index % 3 == 0 ? m.ToString("MMM yyyy", culture) : ""
+        return months.Select((m, index) =>
+            index % 3 == 0 || index == months.Count - 1 ? m.ToString("MMM yyyy", culture) : string.Empty
         ).ToArray();
     }
 }

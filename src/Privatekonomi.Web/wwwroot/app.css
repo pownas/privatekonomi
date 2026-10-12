@@ -131,6 +131,25 @@ a:hover, .btn-link:hover {
     }
 }
 
+.mainlayout-hide-mobile {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mainlayout-show-mobile {
+    display: none !important;
+}
+
+@media (max-width: 640.98px) {
+    .mainlayout-hide-mobile {
+        display: none !important;
+    }
+
+    .mainlayout-show-mobile {
+        display: inline-flex !important;
+    }
+}
+
 .content {
     padding-top: 1.1rem;
 }
@@ -1482,4 +1501,3 @@ html {
         animation: none;
     }
 }
-

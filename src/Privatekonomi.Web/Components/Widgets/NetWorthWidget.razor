@@ -76,8 +76,8 @@
     private ChartOptions _chartOptions = new ChartOptions
     {
         ChartPalette = new[] { Colors.Green.Default },
-        TooltipSubtitleFormat = "Nettoförmögenhet: {0:C}",
-        TooltipTitleFormat = "{0}",
+        TooltipSubtitleFormat = "{{X_VALUE}}",
+        TooltipTitleFormat = "{{Y_VALUE}}",
     };
 
     protected override async Task OnInitializedAsync()
@@ -95,18 +95,22 @@
             if (_netWorthReport?.History != null && _netWorthReport.History.Any())
             {
                 var culture = new System.Globalization.CultureInfo("sv-SE");
-                _netWorthLabels = _netWorthReport.History
-                    .Select(h => h.Date.ToString("MMM yyyy", culture))
+                var history = _netWorthReport.History;
+                _netWorthLabels = history
+                    .Select((item, index) => index % 3 == 0 || index == history.Count - 1
+                        ? item.Date.ToString("MMM yyyy", culture)
+                        : string.Empty)
                     .ToArray();
                 
-        _netWorthSeries = new List<ChartSeries<double>>
-        {
-            new ChartSeries<double>
-            {
-                Name = "Nettoförmögenhet",
-                Data = _netWorthReport.History.Select(h => (double)h.NetWorth).ToArray()
-            }
-        };
+                _netWorthSeries = new List<ChartSeries<double>>
+                {
+                    new ChartSeries<double>
+                    {
+                        Name = "Nettoförmögenhet",
+                        Data = history.Select(h => (double)h.NetWorth).ToArray(),
+                        TooltipYValueFormat = "C0"
+                    }
+                };
             }
         }
         catch (Exception ex)

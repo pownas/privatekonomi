@@ -36,15 +36,6 @@ main {
         text-overflow: ellipsis;
     }
 
-    .mainlayout-hide-mobile {
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .mainlayout-show-mobile {
-        display: none !important;
-    }
-
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -54,13 +45,6 @@ main {
         margin-left: 0;
     }
 
-        .mainlayout-hide-mobile {
-            display: none !important;
-        }
-
-        .mainlayout-show-mobile {
-            display: inline-flex !important;
-        }
 }
 
 @media (min-width: 641px) {

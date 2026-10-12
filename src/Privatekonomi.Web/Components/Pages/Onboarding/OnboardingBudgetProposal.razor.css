@@ -1,0 +1,16 @@
+.budget-rule-value {
+    color: #263238 !important;
+    font-weight: 600;
+}
+
+.budget-needs-card .budget-rule-title {
+    color: #334e9e !important;
+}
+
+.budget-wants-card .budget-rule-title {
+    color: #8a4b08 !important;
+}
+
+.budget-savings-card .budget-rule-title {
+    color: #1b6b45 !important;
+}
