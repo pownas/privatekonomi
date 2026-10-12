@@ -1,0 +1,35 @@
+.changes-header,
+.changes-list-heading,
+.change-commit-heading {
+    gap: 1rem;
+}
+
+.change-sha {
+    overflow-wrap: anywhere;
+    font-family: var(--mud-typography-default-family);
+}
+
+.update-log {
+    max-height: 24rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+
+@media (max-width: 599px) {
+    .changes-header,
+    .changes-list-heading {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .changes-header .mud-button-root {
+        min-height: 48px;
+    }
+
+    .change-commit-heading {
+        align-items: flex-start !important;
+        flex-direction: column;
+    }
+}

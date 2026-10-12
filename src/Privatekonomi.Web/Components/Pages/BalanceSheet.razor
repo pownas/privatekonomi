@@ -13,6 +13,9 @@
     <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
     Balansräkning
 </MudText>
+<MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
+    Kontonumren är BAS-förslag för en privatekonomisk översikt. Kontokopplingen för bankkonton kan anpassas under Konton.
+</MudAlert>
 
 @if (_loading)
 {
@@ -51,24 +54,21 @@ else
                 {
                     @foreach (var account in _bankAccounts)
                     {
-                        <div class="d-flex justify-space-between mb-2">
+                        var basAccount = BalanceSheetAccountPlan.ForBankSource(account);
+                        <div class="balance-sheet-row mb-2">
                             <div>
-                                <MudText>
-                                    <strong>@account.Name</strong>
-                                    @if (!string.IsNullOrEmpty(account.AccountNumber))
-                                    {
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Inline="true">
-                                            @if (!string.IsNullOrEmpty(account.ClearingNumber))
-                                            {
-                                                <text>(@account.ClearingNumber-@account.AccountNumber)</text>
-                                            }
-                                            else
-                                            {
-                                                <text>(@account.AccountNumber)</text>
-                                            }
-                                        </MudText>
-                                    }
+                                <MudText Typo="Typo.body1"><strong>@account.Name</strong></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    BAS @basAccount.Number · @basAccount.Name
                                 </MudText>
+                                @if (!string.IsNullOrEmpty(account.AccountNumber))
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Bankkontonr: @(string.IsNullOrEmpty(account.ClearingNumber)
+                                            ? account.AccountNumber
+                                            : $"{account.ClearingNumber}-{account.AccountNumber}")
+                                    </MudText>
+                                }
                                 @if (!string.IsNullOrEmpty(account.Institution))
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@account.Institution</MudText>
@@ -95,16 +95,16 @@ else
                 <MudDivider Class="mb-2" />
                 @if (_investments.Any())
                 {
-                    @foreach (var investment in _investments.Take(5))
+                    @foreach (var investment in _investments)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@investment.Name</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForInvestment(investment);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@investment.Name</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@investment.TotalValue.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
-                    }
-                    @if (_investments.Count() > 5)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">... och @(_investments.Count() - 5) fler</MudText>
                     }
                     <MudDivider Class="my-2" />
                     <div class="d-flex justify-space-between">
@@ -124,16 +124,16 @@ else
                 <MudDivider Class="mb-2" />
                 @if (_assets.Any())
                 {
-                    @foreach (var asset in _assets.Take(5))
+                    @foreach (var asset in _assets)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@asset.Name (@asset.Type)</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForAsset(asset);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@asset.Name (@asset.Type)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@asset.CurrentValue.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
-                    }
-                    @if (_assets.Count() > 5)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">... och @(_assets.Count() - 5) fler</MudText>
                     }
                     <MudDivider Class="my-2" />
                     <div class="d-flex justify-space-between">
@@ -172,8 +172,12 @@ else
                 {
                     @foreach (var loan in _loans)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@loan.Name (@loan.Type)</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForLoan(loan);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@loan.Name (@loan.Type)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@loan.Amount.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
                     }
