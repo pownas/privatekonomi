@@ -15,36 +15,36 @@ public class BankSourceService : IBankSourceService
         _currentUserService = currentUserService;
     }
 
-    public async Task<IEnumerable<BankSource>> GetAllBankSourcesAsync()
+    private IQueryable<BankSource> ApplyOwnershipFilter(IQueryable<BankSource> query)
     {
-        var query = _context.BankSources.AsQueryable();
-
-        // Filter by current user if authenticated
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        if (_currentUserService?.IsAuthenticated != true)
         {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
+            return query;
         }
 
-        return await query.OrderBy(b => b.Name).ToListAsync();
+        var userId = _currentUserService.UserId;
+        return string.IsNullOrWhiteSpace(userId)
+            ? query.Where(_ => false)
+            : query.Where(b => b.UserId == userId);
+    }
+
+    public async Task<IEnumerable<BankSource>> GetAllBankSourcesAsync()
+    {
+        return await ApplyOwnershipFilter(_context.BankSources)
+            .OrderBy(b => b.Name)
+            .ToListAsync();
     }
 
     public async Task<BankSource?> GetBankSourceByIdAsync(int id)
     {
-        var query = _context.BankSources.AsQueryable();
-
-        // Filter by current user if authenticated
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        return await query.FirstOrDefaultAsync(b => b.BankSourceId == id);
+        return await ApplyOwnershipFilter(_context.BankSources)
+            .FirstOrDefaultAsync(b => b.BankSourceId == id);
     }
 
     public async Task<BankSource> CreateBankSourceAsync(BankSource bankSource)
     {
         // Set user ID for new bank sources
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        if (_currentUserService?.IsAuthenticated == true)
         {
             bankSource.UserId = _currentUserService.UserId;
         }
@@ -56,19 +56,14 @@ public class BankSourceService : IBankSourceService
 
     public async Task<BankSource> UpdateBankSourceAsync(BankSource bankSource)
     {
-        var query = _context.BankSources.AsQueryable();
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        var existingBankSource = await query.FirstOrDefaultAsync(b => b.BankSourceId == bankSource.BankSourceId);
+        var existingBankSource = await ApplyOwnershipFilter(_context.BankSources)
+            .FirstOrDefaultAsync(b => b.BankSourceId == bankSource.BankSourceId);
         if (existingBankSource == null)
         {
             throw new InvalidOperationException($"Bank source with ID {bankSource.BankSourceId} not found");
         }
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        if (_currentUserService?.IsAuthenticated == true)
         {
             existingBankSource.UserId = _currentUserService.UserId;
         }
@@ -93,13 +88,8 @@ public class BankSourceService : IBankSourceService
 
     public async Task DeleteBankSourceAsync(int id)
     {
-        var query = _context.BankSources.AsQueryable();
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        var bankSource = await query.FirstOrDefaultAsync(b => b.BankSourceId == id);
+        var bankSource = await ApplyOwnershipFilter(_context.BankSources)
+            .FirstOrDefaultAsync(b => b.BankSourceId == id);
         if (bankSource != null)
         {
             _context.BankSources.Remove(bankSource);

@@ -23,12 +23,6 @@ public class BankSourceServiceTests : IDisposable
         _bankSourceService = new BankSourceService(_context);
     }
 
-    [TestCleanup]
-    public void Cleanup()
-    {
-        Dispose();
-    }
-
     public void Dispose()
     {
         _context?.Database.EnsureDeleted();

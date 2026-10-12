@@ -15,6 +15,32 @@ public class BudgetService : IBudgetService
         _currentUserService = currentUserService;
     }
 
+    private IQueryable<Budget> ApplyOwnershipFilter(IQueryable<Budget> query)
+    {
+        if (_currentUserService?.IsAuthenticated != true)
+        {
+            return query;
+        }
+
+        var userId = _currentUserService.UserId;
+        return string.IsNullOrWhiteSpace(userId)
+            ? query.Where(_ => false)
+            : query.Where(b => b.UserId == userId);
+    }
+
+    private IQueryable<Transaction> ApplyTransactionOwnershipFilter(IQueryable<Transaction> query)
+    {
+        if (_currentUserService?.IsAuthenticated != true)
+        {
+            return query;
+        }
+
+        var userId = _currentUserService.UserId;
+        return string.IsNullOrWhiteSpace(userId)
+            ? query.Where(_ => false)
+            : query.Where(t => t.UserId == userId);
+    }
+
     public async Task<IEnumerable<Budget>> GetAllBudgetsAsync()
     {
         var query = _context.Budgets
@@ -22,13 +48,7 @@ public class BudgetService : IBudgetService
             .ThenInclude(bc => bc.Category)
             .AsQueryable();
 
-        // Filter by current user if authenticated
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        return await query.OrderByDescending(b => b.StartDate).ToListAsync();
+        return await ApplyOwnershipFilter(query).OrderByDescending(b => b.StartDate).ToListAsync();
     }
 
     public async Task<Budget?> GetBudgetByIdAsync(int id)
@@ -38,13 +58,7 @@ public class BudgetService : IBudgetService
             .ThenInclude(bc => bc.Category)
             .AsQueryable();
 
-        // Filter by current user if authenticated
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        return await query.FirstOrDefaultAsync(b => b.BudgetId == id);
+        return await ApplyOwnershipFilter(query).FirstOrDefaultAsync(b => b.BudgetId == id);
     }
 
     public async Task<Budget> CreateBudgetAsync(Budget budget)
@@ -52,7 +66,7 @@ public class BudgetService : IBudgetService
         budget.CreatedAt = DateTime.UtcNow;
         
         // Set user ID for new budgets
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        if (_currentUserService?.IsAuthenticated == true)
         {
             budget.UserId = _currentUserService.UserId;
         }
@@ -71,10 +85,7 @@ public class BudgetService : IBudgetService
             .Include(b => b.BudgetCategories)
             .AsQueryable();
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
+        query = ApplyOwnershipFilter(query);
 
         var existingBudget = await query.FirstOrDefaultAsync(b => b.BudgetId == budget.BudgetId);
             
@@ -83,7 +94,7 @@ public class BudgetService : IBudgetService
             throw new InvalidOperationException($"Budget with ID {budget.BudgetId} not found");
         }
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        if (_currentUserService?.IsAuthenticated == true)
         {
             existingBudget.UserId = _currentUserService.UserId;
         }
@@ -119,13 +130,8 @@ public class BudgetService : IBudgetService
 
     public async Task DeleteBudgetAsync(int id)
     {
-        var query = _context.Budgets.AsQueryable();
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        var budget = await query.FirstOrDefaultAsync(b => b.BudgetId == id);
+        var budget = await ApplyOwnershipFilter(_context.Budgets)
+            .FirstOrDefaultAsync(b => b.BudgetId == id);
         if (budget != null)
         {
             _context.Budgets.Remove(budget);
@@ -141,24 +147,14 @@ public class BudgetService : IBudgetService
             .ThenInclude(bc => bc.Category)
             .Where(b => b.StartDate <= now && b.EndDate >= now);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        return await query
+        return await ApplyOwnershipFilter(query)
             .ToListAsync() ?? new List<Budget>();
     }
 
     public async Task<Dictionary<int, decimal>> GetActualAmountsByCategoryAsync(int budgetId)
     {
-        var budgetQuery = _context.Budgets.AsQueryable();
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
+        var budget = await ApplyOwnershipFilter(_context.Budgets)
+            .FirstOrDefaultAsync(b => b.BudgetId == budgetId);
         if (budget == null)
         {
             return new Dictionary<int, decimal>();
@@ -168,10 +164,7 @@ public class BudgetService : IBudgetService
             .Include(t => t.TransactionCategories)
             .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
-        }
+        transactionQuery = ApplyTransactionOwnershipFilter(transactionQuery);
 
         var transactions = await transactionQuery.ToListAsync();
 
@@ -196,13 +189,8 @@ public class BudgetService : IBudgetService
 
     public async Task<IEnumerable<Transaction>> GetTransactionsForBudgetAsync(int budgetId)
     {
-        var budgetQuery = _context.Budgets.AsQueryable();
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
+        var budget = await ApplyOwnershipFilter(_context.Budgets)
+            .FirstOrDefaultAsync(b => b.BudgetId == budgetId);
         if (budget == null)
         {
             return new List<Transaction>();
@@ -214,10 +202,7 @@ public class BudgetService : IBudgetService
             .Include(t => t.BankSource)
             .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
-        }
+        transactionQuery = ApplyTransactionOwnershipFilter(transactionQuery);
 
         return await transactionQuery
             .OrderByDescending(t => t.Date)
@@ -231,10 +216,7 @@ public class BudgetService : IBudgetService
             .ThenInclude(bc => bc.Category)
             .AsQueryable();
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
-        }
+        budgetQuery = ApplyOwnershipFilter(budgetQuery);
 
         var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
             
@@ -249,10 +231,7 @@ public class BudgetService : IBudgetService
             .Include(t => t.BankSource)
             .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate && !t.IsIncome);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
-        }
+        transactionQuery = ApplyTransactionOwnershipFilter(transactionQuery);
 
         var transactions = await transactionQuery
             .OrderByDescending(t => t.Date)
@@ -294,13 +273,7 @@ public class BudgetService : IBudgetService
             .Where(b => b.StartDate <= startDate && b.EndDate >= endDate && b.Period == BudgetPeriod.Monthly)
             .AsQueryable();
 
-        // Filter by current user if authenticated
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            query = query.Where(b => b.UserId == _currentUserService.UserId);
-        }
-
-        return await query.FirstOrDefaultAsync();
+        return await ApplyOwnershipFilter(query).FirstOrDefaultAsync();
     }
 
     public async Task<Budget> CreateOrUpdateCategoryBudgetAsync(int categoryId, DateTime monthDate, decimal plannedAmount)
@@ -381,10 +354,7 @@ public class BudgetService : IBudgetService
         var nextMonthBudgetQuery = _context.Budgets
             .Where(b => b.StartDate == nextMonthStart && b.EndDate == nextMonthEnd);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            nextMonthBudgetQuery = nextMonthBudgetQuery.Where(b => b.UserId == _currentUserService.UserId);
-        }
+        nextMonthBudgetQuery = ApplyOwnershipFilter(nextMonthBudgetQuery);
 
         var existingNextMonthBudget = await nextMonthBudgetQuery.FirstOrDefaultAsync();
 
@@ -434,11 +404,7 @@ public class BudgetService : IBudgetService
                        b.EndDate.Year == today.Year && 
                        b.EndDate.Month == today.Month);
 
-        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
-        {
-            activeMonthlyBudgetsQuery = activeMonthlyBudgetsQuery
-                .Where(b => b.UserId == _currentUserService.UserId);
-        }
+        activeMonthlyBudgetsQuery = ApplyOwnershipFilter(activeMonthlyBudgetsQuery);
 
         var activeMonthlyBudgets = await activeMonthlyBudgetsQuery.ToListAsync();
         var createdBudgets = new List<Budget>();

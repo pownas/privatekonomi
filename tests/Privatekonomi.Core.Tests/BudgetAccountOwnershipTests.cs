@@ -75,6 +75,9 @@ public class BudgetAccountOwnershipTests : IDisposable
         _context.Transactions.AddRange(ownTransaction, otherTransaction);
         await _context.SaveChangesAsync();
 
+        var budgets = await _budgetService.GetAllBudgetsAsync();
+        var ownBudgetById = await _budgetService.GetBudgetByIdAsync(ownBudget.BudgetId);
+        var inaccessibleBudgetById = await _budgetService.GetBudgetByIdAsync(otherBudget.BudgetId);
         var activeBudgets = await _budgetService.GetActiveBudgetsAsync();
         var amounts = await _budgetService.GetActualAmountsByCategoryAsync(ownBudget.BudgetId);
         var transactions = await _budgetService.GetTransactionsForBudgetAsync(ownBudget.BudgetId);
@@ -82,6 +85,9 @@ public class BudgetAccountOwnershipTests : IDisposable
         var inaccessibleTransactions = await _budgetService.GetTransactionsForBudgetAsync(otherBudget.BudgetId);
         var inaccessibleAmounts = await _budgetService.GetActualAmountsByCategoryAsync(otherBudget.BudgetId);
 
+        Assert.AreEqual(1, budgets.Count());
+        Assert.AreEqual("Own", ownBudgetById?.Name);
+        Assert.IsNull(inaccessibleBudgetById);
         Assert.AreEqual(1, activeBudgets.Count());
         Assert.AreEqual("Own", activeBudgets.Single().Name);
         Assert.AreEqual(10m, amounts[1]);
@@ -181,6 +187,47 @@ public class BudgetAccountOwnershipTests : IDisposable
 
         Assert.AreEqual(CurrentUserId, updated.UserId);
         Assert.AreEqual("Updated account", updated.Name);
+    }
+
+    [TestMethod]
+    public async Task AuthenticatedUserWithoutIdCannotReadOrModifyOwnedRecords()
+    {
+        var budget = new Budget
+        {
+            Name = "Owned budget",
+            UserId = CurrentUserId,
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(1)
+        };
+        var account = new BankSource
+        {
+            Name = "Owned account",
+            UserId = CurrentUserId
+        };
+        _context.AddRange(budget, account);
+        await _context.SaveChangesAsync();
+
+        var currentUser = new Mock<ICurrentUserService>();
+        currentUser.Setup(service => service.IsAuthenticated).Returns(true);
+        currentUser.Setup(service => service.UserId).Returns((string?)null);
+        var budgetService = new BudgetService(_context, currentUser.Object);
+        var bankSourceService = new BankSourceService(_context, currentUser.Object);
+
+        Assert.AreEqual(0, (await budgetService.GetAllBudgetsAsync()).Count());
+        Assert.IsNull(await budgetService.GetBudgetByIdAsync(budget.BudgetId));
+        Assert.AreEqual(0, (await budgetService.GetActiveBudgetsAsync()).Count());
+        Assert.IsNull(await bankSourceService.GetBankSourceByIdAsync(account.BankSourceId));
+        Assert.AreEqual(0, (await bankSourceService.GetAllBankSourcesAsync()).Count());
+
+        await budgetService.DeleteBudgetAsync(budget.BudgetId);
+        await bankSourceService.DeleteBankSourceAsync(account.BankSourceId);
+        await AssertInvalidOperationAsync(() =>
+            budgetService.UpdateBudgetAsync(new Budget { BudgetId = budget.BudgetId }));
+        await AssertInvalidOperationAsync(() =>
+            bankSourceService.UpdateBankSourceAsync(new BankSource { BankSourceId = account.BankSourceId }));
+
+        Assert.IsNotNull(await _context.Budgets.FindAsync(budget.BudgetId));
+        Assert.IsNotNull(await _context.BankSources.FindAsync(account.BankSourceId));
     }
 
     private static async Task AssertInvalidOperationAsync(Func<Task> action)
