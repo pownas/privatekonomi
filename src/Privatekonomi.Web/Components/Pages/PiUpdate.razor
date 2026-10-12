@@ -1,8 +1,6 @@
-@page "/settings/pi-update"
 @page "/admin/site-changes"
 @attribute [Authorize(Policy = "PiUpdateAdmin")]
 @using Privatekonomi.Web.Services
-@inject PiUpdateService Updates
 @inject SiteChangeHistoryService SiteChanges
 
 <PageTitle>Senaste ändringar</PageTitle>
@@ -10,6 +8,9 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     <MudText Typo="Typo.h4">Senaste ändringar</MudText>
     <MudText Class="mb-4">Visar de senaste uppdateringarna på sajten för systemadministratörer.</MudText>
+    <MudButton Href="/admin/drift" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.SettingsApplications" Class="mb-4">
+        Öppna drift
+    </MudButton>
 
     @if (_history is null)
     {
@@ -95,47 +96,14 @@
                 }
             </MudStack>
         }
-
-        @if (Updates.IsAvailable)
-        {
-            <MudDivider Class="my-6" />
-            <MudText Typo="Typo.h5" Class="mb-3">Raspberry Pi-uppdatering</MudText>
-            <MudAlert Severity="Severity.Warning" Class="my-4">
-                Appen startas om vid uppdatering. Anslutningen kan brytas tillfälligt och du kan behöva logga in igen.
-                Ladda om sidan efter några minuter för att se resultatet.
-            </MudAlert>
-            <MudText>Status: @(_status?.State switch
-            {
-                "queued" => "Väntar på start",
-                "running" => "Uppdatering pågår",
-                "succeeded" => "Uppdateringen lyckades",
-                "failed" => "Uppdateringen misslyckades – se logg och återställningsguide",
-                "blocked" => "Återställningen misslyckades – manuell åtgärd krävs innan ny uppdatering",
-                _ => "Ingen uppdatering pågår"
-            })</MudText>
-            @if (_status?.State is not ("queued" or "running" or "blocked"))
-            {
-                <form method="post" action="/settings/pi-update/start" class="mt-3">
-                    <AntiforgeryToken />
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
-                        Starta uppdatering
-                    </MudButton>
-                </form>
-            }
-            <MudButton Href="/admin/site-changes" Variant="Variant.Text" Class="mt-2">Uppdatera status</MudButton>
-            <MudText Typo="Typo.h6" Class="mt-4">Uppdateringslogg</MudText>
-            <pre style="white-space: pre-wrap; overflow-wrap: anywhere">@(_status?.Log ?? "")</pre>
-        }
     }
 </MudContainer>
 
 @code {
-    private PiUpdateStatus? _status;
     private SiteChangeHistory? _history;
 
     protected override async Task OnInitializedAsync()
     {
-        _status = Updates.GetStatus();
         _history = await SiteChanges.GetRecentChangesAsync();
     }
 

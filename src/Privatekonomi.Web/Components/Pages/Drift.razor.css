@@ -1,0 +1,28 @@
+.drift-actions .mud-button-root {
+    min-height: 56px;
+    font-size: 1rem;
+}
+
+.drift-commit {
+    overflow-wrap: anywhere;
+}
+
+.drift-log {
+    max-height: 24rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 1rem 0 0;
+}
+
+@media (max-width: 599px) {
+    .drift-card-heading {
+        align-items: flex-start !important;
+        flex-direction: column;
+    }
+
+    .drift-card-heading .mud-button-root {
+        width: 100%;
+        min-height: 48px;
+    }
+}

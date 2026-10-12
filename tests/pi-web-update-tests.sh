@@ -15,7 +15,7 @@ setup_case() {
     printf 'old\n' > "$root/home/privatekonomi/publish/Api/Privatekonomi.Api"
     printf 'settings\n' > "$root/home/privatekonomi/publish/Web/appsettings.Production.json"
     printf 'customer-data\n' > "$root/home/privatekonomi-data/data.db"
-    sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/raspberry-pi-web-update.sh" > "$root/worker"
+    sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/raspberry-pi-web-update.sh" | tr -d '\r' > "$root/worker"
     cat > "$root/bin/git" <<'EOF'
 #!/usr/bin/env bash
 case " $* " in
@@ -131,6 +131,17 @@ test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-commit")" = "$(
 test ! -e "$root/home/privatekonomi-update/request"
 test ! -e "$root/home/privatekonomi-update/transaction"
 
+setup_case restart_only
+touch "$root/home/privatekonomi-update/restart-request"
+run_worker
+test "$(cat "$root/home/privatekonomi-update/status")" = restarted
+test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = old
+test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = old
+test "$(grep -c 'stop privatekonomi-web.service' "$root/commands")" -eq 1
+test "$(grep -c 'start privatekonomi-web.service' "$root/commands")" -eq 1
+test ! -e "$root/home/privatekonomi-update/request"
+test ! -e "$root/home/privatekonomi-update/restart-request"
+
 setup_case missing_installation
 rm -rf "$root/home/privatekonomi/.git"
 if run_worker; then exit 1; fi
@@ -179,4 +190,4 @@ test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 test ! -e "$root/home/privatekonomi-update/request"
 
-echo "Lyckad uppdatering, publiceringsfel, omstartsfel, hälsofel och avbrott verifierade."
+echo "Uppdatering, fristående omstart, publiceringsfel, omstartsfel, hälsofel och avbrott verifierade."

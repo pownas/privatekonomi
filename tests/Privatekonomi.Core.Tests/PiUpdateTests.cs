@@ -83,6 +83,23 @@ public class PiUpdateTests
     }
 
     [TestMethod]
+    public void RestartRequestUsesExclusiveQueueAndReportsRestartedState()
+    {
+        using var fixture = new UpdateFixture();
+        var service = fixture.Service();
+
+        Assert.IsTrue(service.TryRequestRestart());
+        Assert.IsTrue(File.Exists(fixture.Path("restart-request")));
+        Assert.AreEqual("queued", service.GetStatus().State);
+        Assert.IsFalse(service.TryRequest());
+
+        File.Delete(fixture.Path("request"));
+        File.Delete(fixture.Path("restart-request"));
+        File.WriteAllText(fixture.Path("status"), "restarted\n");
+        Assert.AreEqual("restarted", fixture.Service().GetStatus().State);
+    }
+
+    [TestMethod]
     public void StatusUsesPublishedCommitInsteadOfStaleUpdateState()
     {
         using var fixture = new UpdateFixture();
