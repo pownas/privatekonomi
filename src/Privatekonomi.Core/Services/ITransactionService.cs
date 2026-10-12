@@ -5,6 +5,14 @@ namespace Privatekonomi.Core.Services;
 public interface ITransactionService
 {
     Task<IEnumerable<Transaction>> GetAllTransactionsAsync();
+    Task<(List<Transaction> Transactions, int TotalCount)> GetTransactionsPageAsync(
+        int? accountId,
+        DateTime? startDate,
+        DateTime? endDate,
+        int? categoryId,
+        int? householdId,
+        int page,
+        int perPage);
     Task<Transaction?> GetTransactionByIdAsync(int id);
     Task<Transaction> CreateTransactionAsync(Transaction transaction);
     Task<Transaction> UpdateTransactionAsync(Transaction transaction);

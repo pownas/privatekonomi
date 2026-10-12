@@ -37,48 +37,30 @@ public class TransactionsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int perPage = 50)
     {
-        var transactions = await _transactionService.GetAllTransactionsAsync();
-        
-        // Apply filters
-        if (accountId.HasValue)
+        if (page < 1 || perPage <= 0)
         {
-            transactions = transactions.Where(t => t.BankSourceId == accountId.Value);
+            return BadRequest("Page must be at least 1 and perPage must be greater than 0.");
         }
-        
-        if (startDate.HasValue)
+
+        var offset = ((long)page - 1) * perPage;
+        if (offset > int.MaxValue)
         {
-            transactions = transactions.Where(t => t.Date >= startDate.Value.Date);
+            return BadRequest("The requested page is too large.");
         }
-        
-        if (endDate.HasValue)
-        {
-            transactions = transactions.Where(t => t.Date <= endDate.Value.Date);
-        }
-        
-        if (categoryId.HasValue)
-        {
-            transactions = transactions.Where(t => 
-                t.TransactionCategories.Any(tc => tc.CategoryId == categoryId.Value));
-        }
-        
-        if (householdId.HasValue)
-        {
-            transactions = transactions.Where(t => t.HouseholdId == householdId.Value);
-        }
-        
-        // Apply pagination
-        var totalCount = transactions.Count();
+
+        var (transactions, totalCount) = await _transactionService.GetTransactionsPageAsync(
+            accountId,
+            startDate,
+            endDate,
+            categoryId,
+            householdId,
+            page,
+            perPage);
         var totalPages = (int)Math.Ceiling(totalCount / (double)perPage);
-        
-        var paginatedTransactions = transactions
-            .OrderByDescending(t => t.Date)
-            .Skip((page - 1) * perPage)
-            .Take(perPage)
-            .ToList();
-        
+
         return Ok(new TransactionListResponse
         {
-            Transactions = paginatedTransactions,
+            Transactions = transactions,
             Page = page,
             PerPage = perPage,
             TotalCount = totalCount,
