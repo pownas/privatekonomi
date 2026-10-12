@@ -226,6 +226,7 @@ else
                     }
                     @foreach (var category in _report.TopCategories)
                     {
+                        var rank = index + 1;
                         var barWidthPercent = _report.TopCategories.First().Amount > 0 
                             ? (double)(category.Amount / _report.TopCategories.First().Amount * 100m)
                             : 0.0;
@@ -233,7 +234,7 @@ else
                         <div>
                             <div class="d-flex justify-space-between align-center mb-1">
                                 <div class="d-flex align-center gap-2">
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">#@(index + 1)</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">#@rank</MudChip>
                                     <MudText Typo="Typo.body2">@category.CategoryName</MudText>
                                 </div>
                                 <MudText Typo="Typo.body2" Class="font-weight-bold">
