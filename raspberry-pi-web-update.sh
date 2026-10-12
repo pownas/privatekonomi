@@ -7,6 +7,7 @@ state="$HOME/privatekonomi-update"
 install_dir="$HOME/privatekonomi"
 publish="$install_dir/publish"
 stage=""
+restart_requested=0
 
 start_services() {
     sudo -n /usr/bin/systemctl start privatekonomi-api.service || return 1
@@ -71,18 +72,29 @@ finish() {
     trap - EXIT
     set +e
     if [ "$result" -ne 0 ]; then
-        echo "Uppdateringen misslyckades (kod $result)."
-        if ! recover; then
+        echo "Driftåtgärden misslyckades (kod $result)."
+        if [ "$restart_requested" -eq 1 ]; then
+            if ! start_services; then
+                echo "Tjänsterna kunde inte startas efter omstartsfel." >&2
+                printf 'failed\n' > "$state/status"
+                rm -f -- "$state/request" "$state/restart-request"
+                exit "$result"
+            fi
+        elif ! recover; then
             echo "Automatisk återställning misslyckades. Begäran lämnas spärrad; följ återställningsguiden." >&2
             printf 'failed\n' > "$state/status"
             exit "$result"
         fi
         printf 'failed\n' > "$state/status"
     else
-        printf 'succeeded\n' > "$state/status"
+        if [ "$restart_requested" -eq 1 ]; then
+            printf 'restarted\n' > "$state/status"
+        else
+            printf 'succeeded\n' > "$state/status"
+        fi
     fi
     [ -z "$stage" ] || rm -rf -- "$stage"
-    rm -f -- "$state/request"
+    rm -f -- "$state/request" "$state/restart-request"
     exit "$result"
 }
 
@@ -111,6 +123,19 @@ rm -f -- "$state/backup-ready"
 printf 'running\n' > "$state/status"
 : > "$state/log"
 exec >> "$state/log" 2>&1
+
+if [ -f "$state/restart-request" ]; then
+    restart_requested=1
+    echo "Startar om Privatekonomi Web och API..."
+    sudo -n /usr/bin/systemctl stop privatekonomi-web.service
+    sudo -n /usr/bin/systemctl stop privatekonomi-api.service
+    start_services
+    health_check api http://127.0.0.1:5277/internal/health
+    health_check web http://127.0.0.1:5274/internal/health
+    printf 'restarted\n' > "$state/status"
+    echo "Webb och API har startats om."
+    exit 0
+fi
 
 echo "Hämtar godkänd main från GitHub..."
 test -f "$state/enabled"

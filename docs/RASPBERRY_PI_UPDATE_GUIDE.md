@@ -22,8 +22,11 @@ skapa en begäran i `~/privatekonomi-update/`. Uppdatera den installerade worker
 genom att köra aktiveringsskriptet igen efter ändringar i uppdateringsskriptet.
 Om du har en annan tjänstlayout, fortsätt använda den manuella uppdateringen.
 
-Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna
-**Uppdatera Raspberry Pi** i menyn. Sidan visar commit från den faktiskt publicerade
+Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna **Drift** i menyn.
+Sidan visar appens körmiljö, drifttid, installerad commit och senaste commit på main.
+Du kan starta en separat omstart av Web och API utan att bygga om, eller installera
+uppdateringen. Båda åtgärderna använder samma begränsade systemd-worker och hälsokontroll.
+Sidan visar commit från den faktiskt publicerade
 Web-katalogen (installerad version före aktivering eller efter manuell publicering
 visas när den har en `.privatekonomi-commit`-fil), senaste commit på GitHubs `main` när nätet fungerar,
 status och de sista 8 KiB från uppdateringsloggen. Starta uppdateringen med knappen.

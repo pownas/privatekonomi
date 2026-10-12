@@ -382,7 +382,21 @@ app.MapPost("/settings/pi-update/start", async (HttpContext context, IAntiforger
     if (!updates.TryRequest())
         return Results.Conflict();
 
-    return Results.Redirect("/settings/pi-update");
+    return Results.Redirect("/admin/drift");
+}).RequireAuthorization("PiUpdateAdmin");
+
+app.MapPost("/settings/pi-update/restart", async (HttpContext context, IAntiforgery antiforgery, PiUpdateService updates) =>
+{
+    if (!await antiforgery.IsRequestValidAsync(context))
+        return Results.BadRequest();
+
+    if (!updates.IsAvailable)
+        return Results.NotFound();
+
+    if (!updates.TryRequestRestart())
+        return Results.Conflict();
+
+    return Results.Redirect("/admin/drift");
 }).RequireAuthorization("PiUpdateAdmin");
 
 // Add Identity API endpoints (token-based auth for mobile/API clients)

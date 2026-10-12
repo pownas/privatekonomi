@@ -1,0 +1,288 @@
+@page "/admin/drift"
+@page "/settings/pi-update"
+@attribute [Authorize(Policy = "PiUpdateAdmin")]
+@implements IAsyncDisposable
+@using System.Diagnostics
+@using System.Runtime.InteropServices
+@using Microsoft.JSInterop
+@using Privatekonomi.Web.Services
+@inject PiUpdateService Updates
+@inject SiteChangeHistoryService SiteChanges
+@inject IWebHostEnvironment HostEnvironment
+@inject IConfiguration Configuration
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Drift</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.overline">SYSTEM · DRIFT</MudText>
+    <MudText Typo="Typo.h4">Drift</MudText>
+    <MudText Class="mb-3">Överblick och säkra driftåtgärder för Privatekonomi.</MudText>
+
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.CheckCircle" Class="mb-4">
+        Webbappen är igång. Statusen uppdateras automatiskt var femte sekund.
+        <MudText Typo="Typo.caption" Class="mt-1">Senast kontrollerad @_lastStatusRefreshAt.ToLocalTime().ToString("HH:mm:ss")</MudText>
+    </MudAlert>
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Devices" Class="mb-4">
+        Öppnad adress: <strong>@NavigationManager.BaseUri</strong><br />
+        På mobil/iPad betyder <code>localhost</code> själva mobilen. Använd serverns lokala IP-adress på samma Wi-Fi om appen körs på en annan dator eller Raspberry Pi.
+    </MudAlert>
+
+    @if (_history is null)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mb-4" />
+    }
+    else
+    {
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2" Class="drift-card-heading">
+                    <MudText Typo="Typo.h6">Åtgärder</MudText>
+                    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshAsync" Disabled="@_isRefreshing">
+                        Uppdatera status
+                    </MudButton>
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="mb-3">@GetStatusLabel(_status.State)</MudText>
+
+                @if (_status.State is "queued" or "running")
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Info" Class="mb-3" />
+                    <MudAlert Severity="Severity.Info" Class="mb-3">Åtgärden körs. Knapparna är låsta tills den är klar.</MudAlert>
+                }
+                else if (_status.State == "blocked")
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-3">Automatisk återställning misslyckades. Åtgärda felet manuellt innan du startar en ny åtgärd.</MudAlert>
+                }
+                else if (Updates.IsAvailable)
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mb-3">
+                        Omstarten bryter anslutningen en kort stund. Vid uppdatering byggs och installeras senaste versionen från main innan Web och API startas igen.
+                    </MudAlert>
+                    <MudStack Spacing="2" Class="drift-actions">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.SystemUpdateAlt" OnClick="ConfirmUpdateAsync" Disabled="@_isBusy">
+                            Installera uppdatering
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="ConfirmRestartAsync" Disabled="@_isBusy">
+                            Starta om Web och API
+                        </MudButton>
+                    </MudStack>
+                    <form id="drift-update-form" method="post" action="/settings/pi-update/start" hidden>
+                        <AntiforgeryToken />
+                    </form>
+                    <form id="drift-restart-form" method="post" action="/settings/pi-update/restart" hidden>
+                        <AntiforgeryToken />
+                    </form>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">
+                        Omstart och installation via sidan är aktiverade för en konfigurerad 64-bitars Raspberry Pi-installation. Den här servern stöder inte åtgärderna.
+                    </MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard Class="mb-4">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Applikation</MudText>
+                        <MudSimpleTable Dense="true" Hover="true" Class="mt-2">
+                            <tbody>
+                                <tr><td>Miljö</td><td class="text-end">@HostEnvironment.EnvironmentName</td></tr>
+                                <tr><td>.NET</td><td class="text-end">@RuntimeInformation.FrameworkDescription</td></tr>
+                                <tr><td>Operativsystem</td><td class="text-end">@RuntimeInformation.OSDescription</td></tr>
+                                <tr><td>Arkitektur</td><td class="text-end">@RuntimeInformation.ProcessArchitecture</td></tr>
+                                <tr><td>Lagring</td><td class="text-end">@Configuration["Storage:Provider"]</td></tr>
+                                <tr><td>Process startad</td><td class="text-end">@_processStartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td></tr>
+                                <tr><td>Drifttid</td><td class="text-end">@FormatUptime(DateTimeOffset.Now - _processStartedAt)</td></tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard Class="mb-4">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Version</MudText>
+                        <MudSimpleTable Dense="true" Hover="true" Class="mt-2">
+                            <tbody>
+                                <tr><td>Installerad commit</td><td class="text-end drift-commit">@FormatCommit(_history.InstalledCommit)</td></tr>
+                                <tr><td>Senaste commit på main</td><td class="text-end drift-commit">@FormatCommit(_history.LatestCommit)</td></tr>
+                            </tbody>
+                        </MudSimpleTable>
+                        @if (_history.InstalledCommit is not null && _history.LatestCommit is not null)
+                        {
+                            <MudAlert Severity="@(_history.InstalledCommit == _history.LatestCommit ? Severity.Success : Severity.Warning)" Variant="Variant.Outlined" Class="mt-3">
+                                @(_history.InstalledCommit == _history.LatestCommit ? "Senaste versionen är installerad" : "Det finns en nyare version att installera")
+                            </MudAlert>
+                        }
+                        @if (_history.StatusMessage is not null)
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mt-3">@_history.StatusMessage</MudAlert>
+                        }
+                        <MudButton Href="/admin/site-changes" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.History" Class="mt-2">
+                            Visa versionshistorik
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        @if (!string.IsNullOrWhiteSpace(_status.Log))
+        {
+            <MudCard Class="mb-4">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Senaste driftlogg</MudText>
+                    <pre class="drift-log">@_status.Log</pre>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private PiUpdateStatus _status = new("disabled", null, string.Empty);
+    private SiteChangeHistory? _history;
+    private DateTimeOffset _processStartedAt;
+    private DateTimeOffset _lastStatusRefreshAt;
+    private CancellationTokenSource? _pollCancellation;
+    private Task? _pollTask;
+    private IJSObjectReference? _module;
+    private bool _isRefreshing;
+    private bool _isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _processStartedAt = new DateTimeOffset(Process.GetCurrentProcess().StartTime);
+        RefreshLocalStatus();
+        _history = await SiteChanges.GetRecentChangesAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Drift.razor.js");
+        _pollCancellation = new CancellationTokenSource();
+        _pollTask = PollStatusAsync(_pollCancellation.Token);
+    }
+
+    private async Task PollStatusAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(async () =>
+                {
+                    var previousState = _status.State;
+                    RefreshLocalStatus();
+                    if (previousState is "queued" or "running" && _status.State is "succeeded" or "restarted")
+                        _history = await SiteChanges.GetRecentChangesAsync(cancellationToken: cancellationToken);
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        _isRefreshing = true;
+        try
+        {
+            RefreshLocalStatus();
+            _history = await SiteChanges.GetRecentChangesAsync();
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
+    }
+
+    private void RefreshLocalStatus()
+    {
+        _status = Updates.GetStatus();
+        _lastStatusRefreshAt = DateTimeOffset.Now;
+    }
+
+    private async Task ConfirmUpdateAsync()
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Installera uppdatering",
+            "Senaste versionen hämtas och byggs. Web och API startas om och sidan kan kopplas från en stund. Vill du fortsätta?",
+            yesText: "Installera",
+            cancelText: "Avbryt");
+        if (confirmed == true)
+            await SubmitActionAsync("drift-update-form");
+    }
+
+    private async Task ConfirmRestartAsync()
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Starta om Web och API",
+            "Webbappen och API:t startas om. Anslutningen bryts tillfälligt. Vill du fortsätta?",
+            yesText: "Starta om",
+            cancelText: "Avbryt");
+        if (confirmed == true)
+            await SubmitActionAsync("drift-restart-form");
+    }
+
+    private async Task SubmitActionAsync(string formId)
+    {
+        if (_module is null)
+            return;
+
+        _isBusy = true;
+        await _module.InvokeVoidAsync("submitForm", formId);
+    }
+
+    private static string FormatCommit(string? sha) =>
+        sha is { Length: >= 8 } ? $"{sha[..8]} ({sha})" : "Okänd";
+
+    private static string GetStatusLabel(string state) => state switch
+    {
+        "queued" => "Väntar på start",
+        "running" => "Åtgärd pågår",
+        "succeeded" => "Uppdatering lyckades",
+        "restarted" => "Omstart lyckades",
+        "failed" => "Misslyckades – se loggen",
+        "blocked" => "Återställning misslyckades – manuell åtgärd krävs",
+        _ => "Ingen åtgärd pågår"
+    };
+
+    private static string FormatUptime(TimeSpan uptime) =>
+        $"{(int)uptime.TotalDays} d {uptime.Hours} h {uptime.Minutes} min";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_pollCancellation is not null)
+        {
+            await _pollCancellation.CancelAsync();
+            if (_pollTask is not null)
+                await _pollTask;
+            _pollCancellation.Dispose();
+        }
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+}

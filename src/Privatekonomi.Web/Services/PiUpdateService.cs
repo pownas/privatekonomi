@@ -26,7 +26,7 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
             return new("disabled", null, "");
 
         var state = ReadLimited("status", 40).Trim();
-        if (state is not ("running" or "succeeded" or "failed"))
+        if (state is not ("running" or "succeeded" or "restarted" or "failed"))
             state = "idle";
         if (File.Exists(Path.Combine(_directory!, "request")))
             state = File.Exists(Path.Combine(_directory!, "transaction"))
@@ -40,21 +40,43 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
     }
 
     public bool TryRequest()
+        => TryRequest(restart: false);
+
+    public bool TryRequestRestart()
+        => TryRequest(restart: true);
+
+    private bool TryRequest(bool restart)
     {
         if (!IsAvailable)
             return false;
 
-        var status = GetStatus();
-        if (status.State is "running" or "queued" or "blocked")
-            return false;
-
+        var restartRequestPath = Path.Combine(_directory!, "restart-request");
+        var restartMarkerCreated = false;
         try
         {
+            using var requestLock = new FileStream(Path.Combine(_directory!, "request-lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            if (File.Exists(Path.Combine(_directory!, "request")))
+                return false;
+
+            if (File.Exists(restartRequestPath))
+                File.Delete(restartRequestPath);
+
+            if (GetStatus().State is "running" or "queued" or "blocked")
+                return false;
+
+            if (restart)
+            {
+                using var restartRequest = new FileStream(restartRequestPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                restartMarkerCreated = true;
+            }
+
             using var request = new FileStream(Path.Combine(_directory!, "request"), FileMode.CreateNew, FileAccess.Write, FileShare.None);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            if (restartMarkerCreated)
+                File.Delete(restartRequestPath);
             return false;
         }
     }
