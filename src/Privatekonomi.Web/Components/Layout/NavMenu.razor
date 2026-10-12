@@ -18,7 +18,7 @@
         <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.AdminPanelSettings" Style="color: #ff6b6b;" OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">
             Admin Dashboard
         </MudNavLink>
-        <MudNavLink Href="/admin/site-changes" Icon="@Icons.Material.Filled.History">Senaste ändringar</MudNavLink>
+        <MudNavLink Href="/admin/drift" Icon="@Icons.Material.Filled.SystemUpdateAlt">Drift och uppdateringar</MudNavLink>
     }
 
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">

@@ -1,15 +1,16 @@
 @page "/settings/pi-update"
 @page "/admin/site-changes"
+@page "/admin/drift"
 @attribute [Authorize(Policy = "PiUpdateAdmin")]
 @using Privatekonomi.Web.Services
 @inject PiUpdateService Updates
 @inject SiteChangeHistoryService SiteChanges
 
-<PageTitle>Senaste ändringar</PageTitle>
+<PageTitle>Drift och uppdateringar</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudText Typo="Typo.h4">Senaste ändringar</MudText>
-    <MudText Class="mb-4">Visar de senaste uppdateringarna på sajten för systemadministratörer.</MudText>
+    <MudText Typo="Typo.h4">Drift och uppdateringar</MudText>
+    <MudText Class="mb-4">Driftstatus, installerad version och uppdateringar för systemadministratörer.</MudText>
 
     @if (_history is null)
     {
