@@ -56,14 +56,50 @@ public class BankSourceService : IBankSourceService
 
     public async Task<BankSource> UpdateBankSourceAsync(BankSource bankSource)
     {
-        _context.Entry(bankSource).State = EntityState.Modified;
+        var query = _context.BankSources.AsQueryable();
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var existingBankSource = await query.FirstOrDefaultAsync(b => b.BankSourceId == bankSource.BankSourceId);
+        if (existingBankSource == null)
+        {
+            throw new InvalidOperationException($"Bank source with ID {bankSource.BankSourceId} not found");
+        }
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            existingBankSource.UserId = _currentUserService.UserId;
+        }
+
+        existingBankSource.Name = bankSource.Name;
+        existingBankSource.Color = bankSource.Color;
+        existingBankSource.Logo = bankSource.Logo;
+        existingBankSource.AccountType = bankSource.AccountType;
+        existingBankSource.Currency = bankSource.Currency;
+        existingBankSource.Institution = bankSource.Institution;
+        existingBankSource.AccountNumber = bankSource.AccountNumber;
+        existingBankSource.ClearingNumber = bankSource.ClearingNumber;
+        existingBankSource.ChartOfAccountsCode = bankSource.ChartOfAccountsCode;
+        existingBankSource.InitialBalance = bankSource.InitialBalance;
+        existingBankSource.OpenedDate = bankSource.OpenedDate;
+        existingBankSource.ClosedDate = bankSource.ClosedDate;
+        existingBankSource.UpdatedAt = DateTime.UtcNow;
+
         await _context.SaveChangesAsync();
-        return bankSource;
+        return existingBankSource;
     }
 
     public async Task DeleteBankSourceAsync(int id)
     {
-        var bankSource = await _context.BankSources.FindAsync(id);
+        var query = _context.BankSources.AsQueryable();
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var bankSource = await query.FirstOrDefaultAsync(b => b.BankSourceId == id);
         if (bankSource != null)
         {
             _context.BankSources.Remove(bankSource);

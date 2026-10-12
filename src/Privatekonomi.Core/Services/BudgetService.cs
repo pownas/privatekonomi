@@ -67,13 +67,25 @@ public class BudgetService : IBudgetService
         budget.UpdatedAt = DateTime.UtcNow;
         
         // Get the existing budget with its categories
-        var existingBudget = await _context.Budgets
+        var query = _context.Budgets
             .Include(b => b.BudgetCategories)
-            .FirstOrDefaultAsync(b => b.BudgetId == budget.BudgetId);
+            .AsQueryable();
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var existingBudget = await query.FirstOrDefaultAsync(b => b.BudgetId == budget.BudgetId);
             
         if (existingBudget == null)
         {
             throw new InvalidOperationException($"Budget with ID {budget.BudgetId} not found");
+        }
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            existingBudget.UserId = _currentUserService.UserId;
         }
 
         // Update basic properties
@@ -107,7 +119,13 @@ public class BudgetService : IBudgetService
 
     public async Task DeleteBudgetAsync(int id)
     {
-        var budget = await _context.Budgets.FindAsync(id);
+        var query = _context.Budgets.AsQueryable();
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var budget = await query.FirstOrDefaultAsync(b => b.BudgetId == id);
         if (budget != null)
         {
             _context.Budgets.Remove(budget);
@@ -118,25 +136,44 @@ public class BudgetService : IBudgetService
     public async Task<IEnumerable<Budget>> GetActiveBudgetsAsync()
     {
         var now = DateTime.Now;
-        return await _context.Budgets
+        var query = _context.Budgets
             .Include(b => b.BudgetCategories)
             .ThenInclude(bc => bc.Category)
-            .Where(b => b.StartDate <= now && b.EndDate >= now)
+            .Where(b => b.StartDate <= now && b.EndDate >= now);
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        return await query
             .ToListAsync() ?? new List<Budget>();
     }
 
     public async Task<Dictionary<int, decimal>> GetActualAmountsByCategoryAsync(int budgetId)
     {
-        var budget = await _context.Budgets.FindAsync(budgetId);
+        var budgetQuery = _context.Budgets.AsQueryable();
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
         if (budget == null)
         {
             return new Dictionary<int, decimal>();
         }
 
-        var transactions = await _context.Transactions
+        var transactionQuery = _context.Transactions
             .Include(t => t.TransactionCategories)
-            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate)
-            .ToListAsync();
+            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate);
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
+        }
+
+        var transactions = await transactionQuery.ToListAsync();
 
         var actualAmounts = new Dictionary<int, decimal>();
         
@@ -159,38 +196,65 @@ public class BudgetService : IBudgetService
 
     public async Task<IEnumerable<Transaction>> GetTransactionsForBudgetAsync(int budgetId)
     {
-        var budget = await _context.Budgets.FindAsync(budgetId);
+        var budgetQuery = _context.Budgets.AsQueryable();
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
         if (budget == null)
         {
             return new List<Transaction>();
         }
 
-        return await _context.Transactions
+        var transactionQuery = _context.Transactions
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Include(t => t.BankSource)
-            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate)
+            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate);
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
+        }
+
+        return await transactionQuery
             .OrderByDescending(t => t.Date)
             .ToListAsync();
     }
 
     public async Task<Dictionary<int, List<Transaction>>> GetTransactionsByCategoryForBudgetAsync(int budgetId)
     {
-        var budget = await _context.Budgets
+        var budgetQuery = _context.Budgets
             .Include(b => b.BudgetCategories)
             .ThenInclude(bc => bc.Category)
-            .FirstOrDefaultAsync(b => b.BudgetId == budgetId);
+            .AsQueryable();
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            budgetQuery = budgetQuery.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var budget = await budgetQuery.FirstOrDefaultAsync(b => b.BudgetId == budgetId);
             
         if (budget == null)
         {
             return new Dictionary<int, List<Transaction>>();
         }
 
-        var transactions = await _context.Transactions
+        var transactionQuery = _context.Transactions
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Include(t => t.BankSource)
-            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate && !t.IsIncome)
+            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate && !t.IsIncome);
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            transactionQuery = transactionQuery.Where(t => t.UserId == _currentUserService.UserId);
+        }
+
+        var transactions = await transactionQuery
             .OrderByDescending(t => t.Date)
             .ToListAsync();
 
@@ -314,9 +378,15 @@ public class BudgetService : IBudgetService
         var nextMonthEnd = nextMonthStart.AddMonths(1).AddDays(-1);
 
         // Check if a budget already exists for next month
-        var existingNextMonthBudget = await _context.Budgets
-            .Where(b => b.StartDate == nextMonthStart && b.EndDate == nextMonthEnd)
-            .FirstOrDefaultAsync();
+        var nextMonthBudgetQuery = _context.Budgets
+            .Where(b => b.StartDate == nextMonthStart && b.EndDate == nextMonthEnd);
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            nextMonthBudgetQuery = nextMonthBudgetQuery.Where(b => b.UserId == _currentUserService.UserId);
+        }
+
+        var existingNextMonthBudget = await nextMonthBudgetQuery.FirstOrDefaultAsync();
 
         if (existingNextMonthBudget != null)
         {
@@ -358,21 +428,19 @@ public class BudgetService : IBudgetService
         }
 
         // Get all monthly budgets that end this month
-        var activeMonthlyBudgets = await _context.Budgets
+        var activeMonthlyBudgetsQuery = _context.Budgets
             .Include(b => b.BudgetCategories)
             .Where(b => b.Period == BudgetPeriod.Monthly && 
                        b.EndDate.Year == today.Year && 
-                       b.EndDate.Month == today.Month)
-            .ToListAsync();
+                       b.EndDate.Month == today.Month);
 
-        // Filter by current user if authenticated
         if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
         {
-            activeMonthlyBudgets = activeMonthlyBudgets
-                .Where(b => b.UserId == _currentUserService.UserId)
-                .ToList();
+            activeMonthlyBudgetsQuery = activeMonthlyBudgetsQuery
+                .Where(b => b.UserId == _currentUserService.UserId);
         }
 
+        var activeMonthlyBudgets = await activeMonthlyBudgetsQuery.ToListAsync();
         var createdBudgets = new List<Budget>();
 
         foreach (var budget in activeMonthlyBudgets)
