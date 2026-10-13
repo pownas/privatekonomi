@@ -22,6 +22,21 @@ public class BalanceSheetAccountPlanTests
     }
 
     [TestMethod]
+    public void CreditAndLoanBankSourcesAreLiabilitiesNotAssets()
+    {
+        var creditCard = new BankSource { AccountType = "credit_card", InitialBalance = -1250m };
+        var loan = new BankSource { AccountType = "loan", InitialBalance = 5000m };
+        var checking = new BankSource { AccountType = "checking", InitialBalance = 2500m };
+
+        Assert.IsTrue(BalanceSheetAccountPlan.IsLiabilityBankSource(creditCard));
+        Assert.IsTrue(BalanceSheetAccountPlan.IsLiabilityBankSource(loan));
+        Assert.IsFalse(BalanceSheetAccountPlan.IsLiabilityBankSource(checking));
+        Assert.AreEqual(1250m, BalanceSheetAccountPlan.GetBankSourceLiabilityValue(creditCard));
+        Assert.AreEqual(5000m, BalanceSheetAccountPlan.GetBankSourceLiabilityValue(loan));
+        Assert.AreEqual(0m, BalanceSheetAccountPlan.GetBankSourceLiabilityValue(checking));
+    }
+
+    [TestMethod]
     public void AssetTypesReceiveRelevantSuggestedCodes()
     {
         Assert.AreEqual("1110", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Fastighet" }).Number);

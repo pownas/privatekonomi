@@ -10,6 +10,12 @@ public sealed record BalanceSheetAccountCode(string Number, string Name);
 /// </summary>
 public static class BalanceSheetAccountPlan
 {
+    public static bool IsLiabilityBankSource(BankSource account) =>
+        Normalize(account.AccountType) is "credit_card" or "loan";
+
+    public static decimal GetBankSourceLiabilityValue(BankSource account) =>
+        IsLiabilityBankSource(account) ? Math.Abs(account.CurrentBalance) : 0;
+
     public static BalanceSheetAccountCode ForBankSource(BankSource account)
     {
         var suggested = Normalize(account.AccountType) switch
