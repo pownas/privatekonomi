@@ -2,12 +2,13 @@ using System.Text.RegularExpressions;
 
 namespace Privatekonomi.Web.Services;
 
-public sealed record PiUpdateStatus(string State, string? InstalledCommit, string Log);
+public sealed record PiUpdateStatus(string State, string? InstalledCommit, string InstalledBranch, string Log);
 
 public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? isRaspberryPi = null)
 {
     private readonly string? _directory = configuration["PiUpdate:StateDirectory"];
     private readonly string? _installedCommitFile = configuration["PiUpdate:InstalledCommitFile"];
+    private readonly string? _installedBranchFile = configuration["PiUpdate:InstalledBranchFile"];
     private readonly Func<bool> _isRaspberryPi = isRaspberryPi ?? (() =>
         System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 &&
         Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true" &&
@@ -22,8 +23,9 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
 
     public PiUpdateStatus GetStatus()
     {
+        var installedBranch = GetInstalledBranch();
         if (!IsAvailable)
-            return new("disabled", null, "");
+            return new("disabled", null, installedBranch, "");
 
         var state = ReadLimited("status", 40).Trim();
         if (state is not ("running" or "succeeded" or "restarted" or "failed"))
@@ -36,22 +38,37 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
             state = "failed";
 
         var commit = _installedCommitFile is null ? ReadLimited("installed", 64).Trim() : ReadLimitedPath(_installedCommitFile, 64).Trim();
-        return new(state, Regex.IsMatch(commit, @"\A[0-9a-f]{40}\z") ? commit : null, ReadLimited("log", 8192));
+        return new(state, Regex.IsMatch(commit, @"\A[0-9a-f]{40}\z") ? commit : null, installedBranch, ReadLimited("log", 8192));
+    }
+
+    private string GetInstalledBranch()
+    {
+        var branchFile = _installedBranchFile ?? Path.Combine(AppContext.BaseDirectory, ".privatekonomi-branch");
+        var branch = ReadLimitedPath(branchFile, 256).Trim();
+        return string.IsNullOrWhiteSpace(branch) || branch.Any(char.IsControl) ? "main" : branch;
     }
 
     public bool TryRequest()
-        => TryRequest(restart: false);
+        => TryRequest(restart: false, branch: null);
+
+    public bool TryRequest(string branch)
+        => TryRequest(restart: false, branch);
 
     public bool TryRequestRestart()
-        => TryRequest(restart: true);
+        => TryRequest(restart: true, branch: null);
 
-    private bool TryRequest(bool restart)
+    private bool TryRequest(bool restart, string? branch)
     {
         if (!IsAvailable)
             return false;
 
+        if (branch is { Length: > 255 } || branch?.Any(char.IsControl) == true || (branch is not null && string.IsNullOrWhiteSpace(branch)))
+            return false;
+
         var restartRequestPath = Path.Combine(_directory!, "restart-request");
+        var requestedBranchPath = Path.Combine(_directory!, "request-branch");
         var restartMarkerCreated = false;
+        var branchMarkerCreated = false;
         try
         {
             using var requestLock = new FileStream(Path.Combine(_directory!, "request-lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -70,6 +87,16 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
                 restartMarkerCreated = true;
             }
 
+            if (branch is not null)
+            {
+                using (var requestedBranch = new FileStream(requestedBranchPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    branchMarkerCreated = true;
+                    using (var writer = new StreamWriter(requestedBranch))
+                        writer.Write(branch);
+                }
+            }
+
             using var request = new FileStream(Path.Combine(_directory!, "request"), FileMode.CreateNew, FileAccess.Write, FileShare.None);
             return true;
         }
@@ -77,6 +104,8 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
         {
             if (restartMarkerCreated)
                 File.Delete(restartRequestPath);
+            if (branchMarkerCreated)
+                File.Delete(requestedBranchPath);
             return false;
         }
     }

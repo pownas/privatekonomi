@@ -100,6 +100,33 @@ public class PiUpdateTests
     }
 
     [TestMethod]
+    public void BranchRequestPersistsOnlyAValidSingleLineBranchName()
+    {
+        using var fixture = new UpdateFixture();
+        var service = fixture.Service();
+
+        Assert.IsTrue(service.TryRequest("feature/pi-testing"));
+        Assert.AreEqual("feature/pi-testing", File.ReadAllText(fixture.Path("request-branch")));
+        Assert.IsFalse(service.TryRequest("another-branch"));
+
+        File.Delete(fixture.Path("request"));
+        File.Delete(fixture.Path("request-branch"));
+        Assert.IsFalse(service.TryRequest("feature/\nmalicious"));
+        Assert.IsFalse(File.Exists(fixture.Path("request")));
+    }
+
+    [TestMethod]
+    public void StatusReportsInstalledBranchOrDefaultsToMain()
+    {
+        using var fixture = new UpdateFixture();
+        var branchFile = fixture.Path("published-branch");
+        File.WriteAllText(branchFile, "feature/pi-testing\n");
+        Assert.AreEqual("feature/pi-testing", fixture.Service(branchFile: branchFile).GetStatus().InstalledBranch);
+        Assert.AreEqual("feature/pi-testing", fixture.Service(enabled: false, branchFile: branchFile).GetStatus().InstalledBranch);
+        Assert.AreEqual("main", fixture.Service(branchFile: fixture.Path("missing-branch")).GetStatus().InstalledBranch);
+    }
+
+    [TestMethod]
     public void StatusUsesPublishedCommitInsteadOfStaleUpdateState()
     {
         using var fixture = new UpdateFixture();
@@ -123,7 +150,12 @@ public class PiUpdateTests
 
         public string Path(string name) => System.IO.Path.Combine(_directory, name);
 
-        public PiUpdateService Service(bool enabled = true, bool pi = true, bool marker = true, string? commitFile = null)
+        public PiUpdateService Service(
+            bool enabled = true,
+            bool pi = true,
+            bool marker = true,
+            string? commitFile = null,
+            string? branchFile = null)
         {
             if (!marker)
                 File.Delete(Path("enabled"));
@@ -131,7 +163,8 @@ public class PiUpdateTests
             {
                 ["PiUpdate:Enabled"] = enabled.ToString(),
                 ["PiUpdate:StateDirectory"] = _directory,
-                ["PiUpdate:InstalledCommitFile"] = commitFile
+                ["PiUpdate:InstalledCommitFile"] = commitFile,
+                ["PiUpdate:InstalledBranchFile"] = branchFile
             }).Build();
             return new PiUpdateService(config, () => pi);
         }

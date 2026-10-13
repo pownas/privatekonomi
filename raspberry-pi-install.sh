@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================================================
 # Privatekonomi Raspberry Pi Installation Script
@@ -43,6 +43,8 @@ DEFAULT_PORT="17127"
 WEB_PORT="5274"
 API_PORT="5277"
 SOLUTION_FILE="Privatekonomi.slnx"
+APP_BRANCH=""
+SKIP_INTERACTIVE=false
 
 # Logging functions
 log_info() {
@@ -87,6 +89,37 @@ resolve_build_target() {
 
     BUILD_TARGET=""
     return 1
+}
+
+select_repository_branch() {
+    local remote_refs
+    local -a branches
+    remote_refs=$(git ls-remote --heads "$REPO_URL") || {
+        log_error "Kunde inte hämta grenarna från GitHub"
+        return 1
+    }
+    mapfile -t branches < <(printf '%s\n' "$remote_refs" | awk '$2 ~ /^refs\/heads\// { sub(/^refs\/heads\//, "", $2); print $2 }')
+    if [ "${#branches[@]}" -eq 0 ]; then
+        log_error "Inga grenar hittades i GitHub-repot"
+        return 1
+    fi
+
+    if [ -z "$APP_BRANCH" ]; then
+        if [ -t 0 ] && [ "$SKIP_INTERACTIVE" != true ]; then
+            log_info "Tillgängliga grenar:"
+            printf '  %s\n' "${branches[@]}"
+            read -r -p "Välj gren [main]: " APP_BRANCH
+            APP_BRANCH=${APP_BRANCH:-main}
+        else
+            APP_BRANCH=main
+        fi
+    fi
+
+    if ! printf '%s\n' "${branches[@]}" | grep -Fxq -- "$APP_BRANCH"; then
+        log_error "Grenen '$APP_BRANCH' finns inte i GitHub-repot"
+        return 1
+    fi
+    log_info "Vald gren: $APP_BRANCH"
 }
 
 # Check if running on Raspberry Pi
@@ -225,27 +258,32 @@ setup_project() {
         read -p "Vill du uppdatera befintlig installation? (y/n): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            select_repository_branch
             log_info "Uppdaterar befintlig installation..."
             cd "$INSTALL_DIR"
             local old_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "okänd")
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin "+refs/heads/$APP_BRANCH:refs/remotes/origin/$APP_BRANCH"
+            git reset --hard "origin/$APP_BRANCH"
             local new_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "okänd")
 
             if [ "$old_commit" != "$new_commit" ]; then
                 log_info "Repository uppdaterat: $old_commit -> $new_commit"
                 log_warning "Installationsscriptet kan ha uppdaterats under körning"
                 log_info "Startar om installern automatiskt med senaste versionen..."
-                exec bash "$INSTALL_DIR/raspberry-pi-install.sh" "${script_args[@]}"
+                exec bash "$INSTALL_DIR/raspberry-pi-install.sh" "${script_args[@]}" --branch "$APP_BRANCH"
             fi
         else
             log_info "Använder befintlig installation"
             cd "$INSTALL_DIR"
+            APP_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo main)
         fi
     else
+        select_repository_branch
         log_info "Klonar privatekonomi repository..."
         git clone "$REPO_URL" "$INSTALL_DIR"
         cd "$INSTALL_DIR"
+        git fetch origin "+refs/heads/$APP_BRANCH:refs/remotes/origin/$APP_BRANCH"
+        git checkout -B "$APP_BRANCH" "origin/$APP_BRANCH"
     fi
     
     # Make scripts executable
@@ -363,6 +401,8 @@ publish_application() {
         printf '%s\n' "$published_commit" > "$publish_dir/Web/.privatekonomi-commit"
         printf '%s\n' "$published_commit" > "$publish_dir/Api/.privatekonomi-commit"
     fi
+    printf '%s\n' "${APP_BRANCH:-main}" > "$publish_dir/Web/.privatekonomi-branch"
+    printf '%s\n' "${APP_BRANCH:-main}" > "$publish_dir/Api/.privatekonomi-branch"
     
     log_success "Applikation publicerad till: $publish_dir"
     log_info "Publicerade binärer är optimerade för ARM64 och inkluderar alla beroenden"
@@ -1885,6 +1925,7 @@ main() {
 }
 
 # Handle script arguments
+original_args=("$@")
 SKIP_SERVICE=false
 SKIP_FIREWALL=false
 SKIP_BACKUP=false
@@ -1894,74 +1935,74 @@ SKIP_PUBLISH=false
 SKIP_NGINX=false
 SKIP_SSL=false
 
-case "${1:-}" in
-    --help|-h)
-        echo "Privatekonomi Raspberry Pi Installation Script"
-        echo ""
-        echo "Användning: $0 [ALTERNATIV]"
-        echo ""
-        echo "Alternativ:"
-        echo "  --help, -h           Visa denna hjälp"
-        echo "  --no-service         Hoppa över skapande av systemd-tjänst"
-        echo "  --no-firewall        Hoppa över brandväggskonfiguration"
-        echo "  --no-backup          Hoppa över backup-konfiguration"
-        echo "  --no-static-ip       Hoppa över statisk IP-konfiguration"
-        echo "  --no-swap            Hoppa över swap-optimering"
-        echo "  --no-publish         Hoppa över publicering (använd dotnet run istället)"
-        echo "  --no-nginx           Hoppa över Nginx reverse proxy-konfiguration"
-        echo "  --no-ssl             Hoppa över SSL/HTTPS-konfiguration"
-        echo "  --skip-interactive   Hoppa över alla interaktiva frågor (använd standardvärden)"
-        echo "  --configure-ssl      Kör endast SSL-konfiguration"
-        echo ""
-        echo "Exempel:"
-        echo "  $0                      # Full interaktiv installation"
-        echo "  $0 --no-service         # Installera utan systemd-tjänst"
-        echo "  $0 --skip-interactive   # Automatisk installation utan frågor"
-        echo "  $0 --no-publish         # Installera utan att publicera (snabbare utveckling)"
-        echo "  $0 --configure-ssl      # Konfigurera endast SSL för befintlig installation"
-        echo ""
-        exit 0
-        ;;
-    --no-service)
-        SKIP_SERVICE=true
-        ;;
-    --no-firewall)
-        SKIP_FIREWALL=true
-        ;;
-    --no-backup)
-        SKIP_BACKUP=true
-        ;;
-    --no-static-ip)
-        SKIP_STATIC_IP=true
-        ;;
-    --no-swap)
-        SKIP_SWAP=true
-        ;;
-    --no-publish)
-        SKIP_PUBLISH=true
-        ;;
-    --no-nginx)
-        SKIP_NGINX=true
-        ;;
-    --no-ssl)
-        SKIP_SSL=true
-        ;;
-    --configure-ssl)
-        # Only run SSL configuration
-        configure_ssl
-        exit 0
-        ;;
-    --skip-interactive)
-        SKIP_SERVICE=false  # Create service by default in non-interactive mode
-        SKIP_FIREWALL=true
-        SKIP_BACKUP=false   # Create backup script by default
-        SKIP_STATIC_IP=true
-        SKIP_SWAP=true
-        SKIP_PUBLISH=false  # Do publish in non-interactive mode
-        SKIP_NGINX=false    # Configure Nginx in non-interactive mode
-        SKIP_SSL=true       # Skip SSL in non-interactive mode (requires manual input)
-        ;;
-esac
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --help|-h)
+            echo "Privatekonomi Raspberry Pi Installation Script"
+            echo ""
+            echo "Användning: $0 [ALTERNATIV]"
+            echo ""
+            echo "Alternativ:"
+            echo "  --help, -h           Visa denna hjälp"
+            echo "  --branch BRANCH      Installera från en befintlig GitHub-gren"
+            echo "  --no-service         Hoppa över skapande av systemd-tjänst"
+            echo "  --no-firewall        Hoppa över brandväggskonfiguration"
+            echo "  --no-backup          Hoppa över backup-konfiguration"
+            echo "  --no-static-ip       Hoppa över statisk IP-konfiguration"
+            echo "  --no-swap            Hoppa över swap-optimering"
+            echo "  --no-publish         Hoppa över publicering (använd dotnet run istället)"
+            echo "  --no-nginx           Hoppa över Nginx reverse proxy-konfiguration"
+            echo "  --no-ssl             Hoppa över SSL/HTTPS-konfiguration"
+            echo "  --skip-interactive   Hoppa över alla interaktiva frågor (använd standardvärden)"
+            echo "  --configure-ssl      Kör endast SSL-konfiguration"
+            echo ""
+            echo "Exempel:"
+            echo "  $0                      # Full interaktiv installation"
+            echo "  $0 --branch feature/pi  # Installera en testgren"
+            echo "  $0 --no-service         # Installera utan systemd-tjänst"
+            echo "  $0 --skip-interactive   # Automatisk installation utan frågor"
+            echo "  $0 --no-publish         # Installera utan att publicera (snabbare utveckling)"
+            echo "  $0 --configure-ssl      # Konfigurera endast SSL för befintlig installation"
+            echo ""
+            exit 0
+            ;;
+        --branch)
+            if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+                log_error "--branch kräver ett grennamn"
+                exit 2
+            fi
+            APP_BRANCH=$2
+            shift
+            ;;
+        --branch=*)
+            APP_BRANCH=${1#--branch=}
+            ;;
+        --no-service) SKIP_SERVICE=true ;;
+        --no-firewall) SKIP_FIREWALL=true ;;
+        --no-backup) SKIP_BACKUP=true ;;
+        --no-static-ip) SKIP_STATIC_IP=true ;;
+        --no-swap) SKIP_SWAP=true ;;
+        --no-publish) SKIP_PUBLISH=true ;;
+        --no-nginx) SKIP_NGINX=true ;;
+        --no-ssl) SKIP_SSL=true ;;
+        --configure-ssl)
+            configure_ssl
+            exit 0
+            ;;
+        --skip-interactive)
+            SKIP_INTERACTIVE=true
+            SKIP_SERVICE=false
+            SKIP_FIREWALL=true
+            SKIP_BACKUP=false
+            SKIP_STATIC_IP=true
+            SKIP_SWAP=true
+            SKIP_PUBLISH=false
+            SKIP_NGINX=false
+            SKIP_SSL=true
+            ;;
+    esac
+    shift
+done
 
 # Run main function
-main "$@"
+main "${original_args[@]}"

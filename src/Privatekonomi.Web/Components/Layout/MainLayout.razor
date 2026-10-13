@@ -16,6 +16,7 @@
 @inject IServiceProvider ServiceProvider
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject PiUpdateService PiUpdates
 @implements IDisposable
 
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
@@ -86,6 +87,12 @@
     </MudDrawer>
     
     <MudMainContent Class="px-2 px-md-6">
+        @if (_installedBranch is { } branch && branch != "main")
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning" Class="mt-3">
+                ⚠️ Appen kör just nu på grenen <strong>@branch</strong> – inte main.
+            </MudAlert>
+        }
         @Body
     </MudMainContent>
 </MudLayout>
@@ -100,6 +107,7 @@
     private bool _isDarkMode = false;
     private bool _isCompactView = false;
     private bool _isSaving = false;
+    private string? _installedBranch;
     private MudThemeProvider? _mudThemeProvider;
     private MudTheme _theme = new MudTheme()
     {
@@ -278,6 +286,7 @@
     {
         _isDarkMode = ThemeService.IsDarkMode;
         _isCompactView = ViewDensityService.IsCompact;
+        _installedBranch = PiUpdates.GetStatus().InstalledBranch;
         ThemeService.OnThemeChanged += OnThemeChanged;
         ViewDensityService.OnViewDensityChanged += OnViewDensityChanged;
     }

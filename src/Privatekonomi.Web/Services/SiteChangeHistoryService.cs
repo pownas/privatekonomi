@@ -24,6 +24,7 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
 {
     private const int DefaultCommitCount = 10;
     private const string RepositoryCommitsUrl = "repos/pownas/Privatekonomi/commits?sha=main&per_page={0}";
+    private const string RepositoryBranchesUrl = "repos/pownas/Privatekonomi/branches?per_page=100&page={0}";
 
     public async Task<SiteChangeHistory> GetRecentChangesAsync(int count = DefaultCommitCount, CancellationToken cancellationToken = default)
     {
@@ -60,6 +61,32 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
                     ? "Versionsinformationen är inte tillgänglig just nu."
                     : "Det gick inte att hämta de senaste ändringarna just nu.",
                 Array.Empty<SiteChangeCommit>());
+        }
+    }
+
+    public async Task<IReadOnlyList<string>> GetBranchesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var client = httpClients.CreateClient("pi-update");
+            var branches = new List<string>();
+            for (var page = 1; ; page++)
+            {
+                var result = await client.GetFromJsonAsync<List<GitHubBranchDto>>(
+                    string.Format(System.Globalization.CultureInfo.InvariantCulture, RepositoryBranchesUrl, page),
+                    cancellationToken);
+                var pageBranches = (result ?? [])
+                    .Select(branch => branch.Name)
+                    .Where(name => !string.IsNullOrWhiteSpace(name) && name.Length <= 255 && !name.Any(char.IsControl))
+                    .ToArray();
+                branches.AddRange(pageBranches);
+                if (pageBranches.Length < 100)
+                    return branches.Distinct(StringComparer.Ordinal).ToArray();
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            return Array.Empty<string>();
         }
     }
 
@@ -141,6 +168,8 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
     }
 
     private sealed record GitHubCommitDto(string Sha, GitHubCommitDetails? Commit, string? HtmlUrl);
+
+    private sealed record GitHubBranchDto(string Name);
 
     private sealed record GitHubCommitDetails(string? Message, GitHubCommitAuthor? Author, GitHubCommitAuthor? Committer);
 

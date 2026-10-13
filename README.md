@@ -274,12 +274,16 @@ cd ~/Privatekonomi
 ```bash
 ./raspberry-pi-install.sh --help              # Visa hjälp
 ./raspberry-pi-install.sh --skip-interactive  # Automatisk installation
+./raspberry-pi-install.sh --branch feature/pi # Installera från en vald gren
 ./raspberry-pi-install.sh --no-service        # Hoppa över systemd-tjänst
 ./raspberry-pi-install.sh --no-publish        # Hoppa över publicering (använd dotnet run)
 ./raspberry-pi-install.sh --no-nginx          # Hoppa över Nginx reverse proxy
 ./raspberry-pi-install.sh --no-ssl            # Hoppa över SSL/HTTPS
 ./raspberry-pi-install.sh --configure-ssl     # Konfigurera endast SSL
 ```
+
+När skriptet körs interaktivt utan `--branch` kan du välja bland repots grenar; standardgrenen är `main`.
+På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med `sudo ./raspberry-pi-enable-web-update.sh`. Appen visar en tydlig varning när den kör en annan gren än `main`.
 
 **Nya funktioner:**
 - **Self-contained publish**: Optimerade ARM64-binärer med snabbare uppstart och lägre resursanvändning

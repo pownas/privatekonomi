@@ -371,7 +371,11 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapPost("/settings/pi-update/start", async (HttpContext context, IAntiforgery antiforgery, PiUpdateService updates) =>
+app.MapPost("/settings/pi-update/start", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    PiUpdateService updates,
+    SiteChangeHistoryService siteChanges) =>
 {
     if (!await antiforgery.IsRequestValidAsync(context))
         return Results.BadRequest();
@@ -379,7 +383,13 @@ app.MapPost("/settings/pi-update/start", async (HttpContext context, IAntiforger
     if (!updates.IsAvailable)
         return Results.NotFound();
 
-    if (!updates.TryRequest())
+    var form = await context.Request.ReadFormAsync();
+    var branch = form["branch"].ToString();
+    var branches = await siteChanges.GetBranchesAsync(context.RequestAborted);
+    if (!branches.Contains(branch, StringComparer.Ordinal))
+        return Results.BadRequest();
+
+    if (!updates.TryRequest(branch))
         return Results.Conflict();
 
     return Results.Redirect("/admin/drift");

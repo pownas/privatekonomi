@@ -80,6 +80,22 @@ public class SiteChangeHistoryServiceTests
         Assert.IsFalse(history.StatusMessage.Contains("network down", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public async Task GetBranchesAsyncReturnsAvailableRepositoryBranches()
+    {
+        using var fixture = new UpdateFixture();
+        var response = """
+        [
+          { "name": "main" },
+          { "name": "feature/pi-testing" }
+        ]
+        """;
+
+        var branches = await fixture.CreateHistoryService(response).GetBranchesAsync();
+
+        CollectionAssert.AreEqual(new[] { "main", "feature/pi-testing" }, branches.ToArray());
+    }
+
     private sealed class UpdateFixture : IDisposable
     {
         private readonly string _directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "site-change-history-" + Guid.NewGuid());
