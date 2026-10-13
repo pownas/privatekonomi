@@ -69,7 +69,7 @@ Följande Microsoft-paket har uppgraderats från 9.0.x till 10.0.0:
 Vissa paket har ännu inte släppt .NET 10-kompatibla versioner:
 - **Pomelo.EntityFrameworkCore.MySql** (9.0.0) - Fungerar med EF Core 10 tack vare backward compatibility
 - **Microsoft.ML** (3.0.1) - Ingen uppdatering behövs
-- **SixLabors.ImageSharp** (3.1.12) - Ingen uppdatering behövs
+- **SixLabors.ImageSharp** - Borttaget; bildavkodning hanteras av Tesseract
 - **Tesseract** (5.2.0) - Ingen uppdatering behövs
 - **MudBlazor** (8.13.0) - Ingen uppdatering behövs
 

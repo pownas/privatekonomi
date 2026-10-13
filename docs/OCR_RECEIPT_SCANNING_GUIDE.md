@@ -14,7 +14,7 @@ OCR (Optical Character Recognition) kvittoskanning gör det möjligt att automat
   - Kvittonummer
   - Betalningsmetod
   - Radposter (produkter med pris)
-- **Bildförbehandling**: Automatisk bildoptimering för bättre OCR-noggrannhet
+- **Bildhantering**: Bilden avkodas direkt av Tesseract vid OCR-bearbetning
 - **Svensk språkstöd**: Optimerad för svenska kvittoformat
 - **Redigerbar data**: Granska och redigera extraherad data innan sparning
 - **Säkerhetskontroller**: Filvalidering och storleksbegränsningar
@@ -90,13 +90,9 @@ När skanningen är klar visas:
 - **Språk**: Svenska + Engelska
 - **Datamodeller**: tessdata_fast (snabbare men något lägre noggrannhet)
 
-### Bildförbehandling
+### Bildhantering
 
-Följande optimeringar tillämpas automatiskt:
-1. Gråskalning
-2. Kontrastjustering (20% ökning)
-3. Skärpning (Gaussian sharpen)
-4. Storleksanpassning (optimalt 800-2000 pixlar)
+Den uppladdade bilden skickas direkt till Tesseract, som avkodar bilden före textigenkänningen. Ingen separat bildoptimering tillämpas.
 
 ### Parsing av kvittodata
 

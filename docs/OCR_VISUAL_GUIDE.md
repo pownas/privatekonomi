@@ -166,11 +166,8 @@ User uploads image
   • Check file type
   • Check file size
        ↓
-[Image preprocessing]
-  • Convert to grayscale
-  • Enhance contrast
-  • Sharpen image
-  • Resize if needed
+[Image decoding]
+  • Decode uploaded image with Tesseract
        ↓
 [Tesseract OCR]
   • Extract text (Swedish + English)

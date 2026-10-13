@@ -1,9 +1,6 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.PixelFormats;
 using Tesseract;
 
 namespace Privatekonomi.Core.Services;
@@ -64,12 +61,8 @@ public class TesseractOcrService : IOcrService
         {
             _logger.LogInformation("Processing receipt image: {FileName}", fileName);
 
-            // Preprocess the image for better OCR accuracy
-            using var preprocessedImage = await PreprocessImageAsync(imageStream);
-            
-            // Convert to byte array for Tesseract
             using var ms = new MemoryStream();
-            await preprocessedImage.SaveAsPngAsync(ms);
+            await imageStream.CopyToAsync(ms);
             var imageBytes = ms.ToArray();
 
             // Perform OCR
@@ -107,33 +100,6 @@ public class TesseractOcrService : IOcrService
                 ErrorMessage = $"Ett fel uppstod vid bildbehandling: {ex.Message}"
             };
         }
-    }
-
-    private async Task<Image<Rgb24>> PreprocessImageAsync(Stream imageStream)
-    {
-        // Load the image
-        var image = await Image.LoadAsync<Rgb24>(imageStream);
-
-        // Apply preprocessing to improve OCR accuracy
-        image.Mutate(x => x
-            .Grayscale()                    // Convert to grayscale
-            .Contrast(1.2f)                 // Increase contrast
-            .GaussianSharpen()              // Sharpen the image
-        );
-
-        // Optionally resize if image is too large or too small
-        if (image.Width > 2000 || image.Height > 2000)
-        {
-            var ratio = Math.Min(2000.0 / image.Width, 2000.0 / image.Height);
-            image.Mutate(x => x.Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-        }
-        else if (image.Width < 800 && image.Height < 800)
-        {
-            var ratio = Math.Max(800.0 / image.Width, 800.0 / image.Height);
-            image.Mutate(x => x.Resize((int)(image.Width * ratio), (int)(image.Height * ratio)));
-        }
-
-        return image;
     }
 
     private async Task<string> PerformOcrAsync(byte[] imageBytes)
