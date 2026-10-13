@@ -285,6 +285,7 @@ cd ~/Privatekonomi
 - **Self-contained publish**: Optimerade ARM64-binärer med snabbare uppstart och lägre resursanvändning
 - **Nginx reverse proxy**: Enkel HTTPS-åtkomst via port 80/443 för alla tjänster
 - **SSL/HTTPS**: Automatisk Let's Encrypt-konfiguration eller self-signed certifikat
+- **Let's Encrypt DNS-01**: Valbart Cloudflare DNS-01-flöde för subdomäner utan att exponera port 80
 
 Se följande guider för Raspberry Pi:
 - **[RASPBERRY_PI_QUICKSTART.md](docs/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!

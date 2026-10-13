@@ -835,12 +835,38 @@ configure_letsencrypt() {
         sudo apt update
         sudo apt install -y certbot python3-certbot-nginx
     fi
+
+    echo "Välj verifieringsmetod för Let's Encrypt:"
+    echo "  1) HTTP-01 (port 80 måste vara nåbar från internet)"
+    echo "  2) DNS-01 med Cloudflare (ingen inkommande port krävs)"
+    read -r -p "Ditt val (1/2) [1]: " challenge_method
+    challenge_method=${challenge_method:-1}
+    if [[ "$challenge_method" != "1" && "$challenge_method" != "2" ]]; then
+        log_error "Ogiltigt val"
+        return 1
+    fi
+
+    local cloudflare_credentials=""
+    if [ "$challenge_method" = "2" ]; then
+        log_info "Installerar Certbot-plugin för Cloudflare DNS..."
+        sudo apt update
+        sudo apt install -y python3-certbot-dns-cloudflare
+        cloudflare_credentials="/etc/letsencrypt/cloudflare.ini"
+        local cloudflare_token
+        read -r -s -p "Ange Cloudflare API-token (Zone:DNS:Edit för aktuell zon): " cloudflare_token
+        echo
+        if [ -z "$cloudflare_token" ]; then
+            log_error "Cloudflare API-token krävs"
+            return 1
+        fi
+    fi
     
     # Get domain name
     local server_ip=$(hostname -I | awk '{print $1}')
     read -p "Ange ditt domännamn (t.ex. privatekonomi.example.com): " domain_name
     
     if [ -z "$domain_name" ]; then
+        unset cloudflare_token
         log_error "Domännamn krävs för Let's Encrypt"
         return 1
     fi
@@ -849,21 +875,36 @@ configure_letsencrypt() {
     read -p "Ange din e-postadress för förnyelse-notifikationer: " email
     
     if [ -z "$email" ]; then
+        unset cloudflare_token
         log_error "E-postadress krävs för Let's Encrypt"
         return 1
     fi
     
     log_info "Hämtar SSL-certifikat från Let's Encrypt..."
-    log_warning "Kontrollera att domänen $domain_name pekar på $server_ip"
+    if [ "$challenge_method" = "1" ]; then
+        log_warning "Kontrollera att domänen $domain_name pekar på $server_ip och att port 80 når Raspberry Pi:n."
+    else
+        log_info "DNS-01 verifierar domänägarskap via Cloudflare; domänens A-record behöver inte peka på Pi:ns publika IP."
+    fi
     
     read -p "Fortsätt med certifikatförfrågan? (y/n): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        unset cloudflare_token
         return 0
+    fi
+
+    if [ "$challenge_method" = "2" ]; then
+        printf 'dns_cloudflare_api_token = %s\n' "$cloudflare_token" | sudo install -m 600 /dev/stdin "$cloudflare_credentials"
+        unset cloudflare_token
     fi
     
     # Run certbot
-    sudo certbot --nginx -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    if [ "$challenge_method" = "1" ]; then
+        sudo certbot --nginx -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    else
+        sudo certbot --nginx --authenticator dns-cloudflare --dns-cloudflare-credentials "$cloudflare_credentials" --dns-cloudflare-propagation-seconds 30 -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    fi
     
     if [ $? -eq 0 ]; then
         # Disable default Nginx site to prevent welcome page from showing
@@ -887,10 +928,13 @@ configure_letsencrypt() {
         echo -e ""
     else
         log_error "Misslyckades med att hämta Let's Encrypt certifikat"
-        log_info "Kontrollera att:"
-        log_info "  1. Domänen pekar på rätt IP-adress"
-        log_info "  2. Port 80 och 443 är öppna i brandväggen"
-        log_info "  3. Nginx är igång: sudo systemctl status nginx"
+        log_info "Kontrollera att domänen och DNS-verifieringen är korrekt konfigurerade."
+        if [ "$challenge_method" = "1" ]; then
+            log_info "Port 80 måste nå Raspberry Pi:n från internet."
+        else
+            log_info "Cloudflare-token måste ha DNS-redigeringsrättighet för rätt zon."
+        fi
+        log_info "Nginx-status: sudo systemctl status nginx"
         return 1
     fi
 }

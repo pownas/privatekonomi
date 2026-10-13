@@ -160,8 +160,8 @@ sudo ufw reload
 
 #### Förutsättningar
 - Registrerat domännamn
-- Domänen pekar på din Raspberry Pi IP-adress (A-record i DNS)
-- Port 80 och 443 öppna i brandväggen och router
+- **HTTP-01:** Domänen pekar på din publika IP-adress och routern vidarebefordrar port 80 till Raspberry Pi:n. Port 443 behövs för klienttrafiken.
+- **DNS-01 (Cloudflare):** DNS-zonen hanteras av Cloudflare och ett API-token med `Zone:DNS:Edit` för den aktuella zonen. Ingen inkommande port behöver exponeras och A-recorden behöver inte peka på Pi:n. Klienterna måste ändå kunna slå upp subdomänen till Pi:ns lokala IP, exempelvis via lokal DNS.
 
 #### Installation
 
@@ -183,6 +183,10 @@ sudo certbot --nginx -d privatekonomi.example.com
 # - Acceptera användarvillkor
 # - Välj att omdirigera HTTP till HTTPS (rekommenderat)
 ```
+
+Vid körning av `raspberry-pi-install.sh` kan du välja HTTP-01 eller DNS-01 med Cloudflare. DNS-01-alternativet installerar `python3-certbot-dns-cloudflare`, frågar efter token utan att visa det och sparar det i `/etc/letsencrypt/cloudflare.ini` med rättigheter `600`. Certbot sparar förnyelseinställningarna, och `certbot.timer` förnyar certifikatet automatiskt. Skapa ett begränsat API-token i Cloudflare och använd det bara på Pi:n; lägg aldrig token i kommandoraden, dokumentation eller versionshantering.
+
+En subdomän, till exempel `ekonomi.example.com`, är lämplig för installationen. Med DNS-01 kan samma namn ha en lokal DNS-post som pekar på Pi:ns privata IP; publika resolvrar behöver inte kunna nå applikationen. Klienter måste dock ansluta med just subdomänen som certifikatet utfärdats för. Om zonen inte hanteras av Cloudflare stöder installationsflödet inte DNS-01 för den leverantören; använd HTTP-01 eller konfigurera leverantörens Certbot-plugin separat.
 
 3. **Verifiera automatisk förnyelse**
 
