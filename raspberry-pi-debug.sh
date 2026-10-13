@@ -36,11 +36,11 @@ echo ""
 
 # 3. Kontrollera vilka portar som lyssnar
 echo -e "${BLUE}[3/11]${NC} Kontrollerar vilka portar som lyssnar..."
-echo "Portar som applikationen ska använda: 17127, 5274, 5277"
+echo "Portar som applikationen ska använda: 5274 (Web), 5277 (API)"
 echo ""
 
 # Kontrollera varje port
-for port in 17127 5274 5277; do
+for port in 5274 5277; do
     if ss -lntp 2>/dev/null | grep -q ":$port "; then
         BIND_ADDR=$(ss -lntp 2>/dev/null | grep ":$port " | awk '{print $4}' | head -1)
         if echo "$BIND_ADDR" | grep -q "0.0.0.0:$port\|*:$port"; then
@@ -76,10 +76,10 @@ if command -v ufw &> /dev/null; then
     if sudo ufw status 2>/dev/null | grep -q "Status: active"; then
         echo -e "${YELLOW}⚠ UFW brandvägg är aktiverad${NC}"
         echo "Brandväggsregler:"
-        sudo ufw status numbered | grep -E "17127|5274|5277|ALLOW"
+        sudo ufw status numbered | grep -E "5274|5277|ALLOW"
         
         # Kontrollera om våra portar är öppna
-        for port in 17127 5274 5277; do
+        for port in 5274 5277; do
             if sudo ufw status | grep -q "$port"; then
                 echo -e "${GREEN}✓ Port $port är öppen i brandväggen${NC}"
             else
@@ -99,7 +99,7 @@ echo ""
 echo -e "${BLUE}[6/11]${NC} Kontrollerar konfigurationsfiler..."
 
 # Kontrollera Web appsettings
-WEB_CONFIG="$HOME/Privatekonomi/src/Privatekonomi.Web/appsettings.Production.json"
+WEB_CONFIG="$HOME/privatekonomi/src/Privatekonomi.Web/appsettings.Production.json"
 if [ -f "$WEB_CONFIG" ]; then
     echo "Web appsettings.Production.json:"
     grep -A1 '"Urls"' "$WEB_CONFIG" || echo "Ingen Urls-konfiguration hittades"
@@ -109,7 +109,7 @@ fi
 echo ""
 
 # Kontrollera API appsettings
-API_CONFIG="$HOME/Privatekonomi/src/Privatekonomi.Api/appsettings.Production.json"
+API_CONFIG="$HOME/privatekonomi/src/Privatekonomi.Api/appsettings.Production.json"
 if [ -f "$API_CONFIG" ]; then
     echo "API appsettings.Production.json:"
     grep -A1 '"Urls"' "$API_CONFIG" || echo "Ingen Urls-konfiguration hittades"
@@ -120,7 +120,7 @@ echo ""
 
 # 7. Testa lokal åtkomst
 echo -e "${BLUE}[7/11]${NC} Testar lokal åtkomst..."
-for port in 17127 5274 5277; do
+for port in 5274 5277; do
     if curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://localhost:$port" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Port $port svarar lokalt${NC}"
     else
@@ -131,7 +131,7 @@ echo ""
 
 # 8. Testa nätverksåtkomst från Pi själv
 echo -e "${BLUE}[8/11]${NC} Testar nätverksåtkomst (från Pi till sig själv)..."
-for port in 17127 5274 5277; do
+for port in 5274 5277; do
     if curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://$MY_IP:$port" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Port $port är nåbar via nätverks-IP ($MY_IP:$port)${NC}"
     else
@@ -252,7 +252,6 @@ echo "   - Kontrollera att PRIVATEKONOMI_RASPBERRY_PI=true är satt"
 echo "   - Kör om installationen: ./raspberry-pi-install.sh"
 echo ""
 echo "3. Om brandväggen blockerar:"
-echo "   sudo ufw allow 17127/tcp"
 echo "   sudo ufw allow 5274/tcp"
 echo "   sudo ufw allow 5277/tcp"
 if command -v nginx &> /dev/null; then
@@ -270,7 +269,6 @@ echo "   ./raspberry-pi-install.sh --configure-ssl  # Lägg till SSL"
 echo ""
 echo "6. Testa åtkomst från annan enhet:"
 echo "   ${YELLOW}Direktåtkomst (utan proxy):${NC}"
-echo "   http://$MY_IP:17127  (Aspire Dashboard)"
 echo "   http://$MY_IP:5274   (Web App)"
 echo "   http://$MY_IP:5277   (API)"
 echo ""
