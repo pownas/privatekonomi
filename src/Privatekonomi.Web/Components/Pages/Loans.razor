@@ -166,6 +166,14 @@
             }
         }
 
+        <MudTextField @bind-Value="_formLoan.ChartOfAccountsCode"
+                      Label="Egen BAS-kod (valfritt)"
+                      Placeholder="Lämna tomt för förslag"
+                      HelperText="Lämna tomt för att använda föreslagen BAS-kod."
+                      Variant="Variant.Outlined"
+                      MaxLength="20"
+                      Class="mb-3" />
+
         <div class="d-flex gap-2">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLoan">
                 @(_editingLoan != null ? "Uppdatera" : "Lägg till")
@@ -853,7 +861,8 @@ else
             LoanProvider = loan.LoanProvider,
             IsFixedRate = loan.IsFixedRate,
             RateResetDate = loan.RateResetDate,
-            BindingPeriodMonths = loan.BindingPeriodMonths
+            BindingPeriodMonths = loan.BindingPeriodMonths,
+            ChartOfAccountsCode = loan.ChartOfAccountsCode
         };
         _showCreateForm = true;
     }

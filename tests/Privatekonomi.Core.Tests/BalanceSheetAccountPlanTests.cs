@@ -32,6 +32,30 @@ public class BalanceSheetAccountPlanTests
     }
 
     [TestMethod]
+    public void CustomMappingsOverrideSuggestionsForInvestmentsAssetsAndLoans()
+    {
+        var investment = new Investment { ChartOfAccountsCode = "1350" };
+        var asset = new Asset { Type = "Fordon", ChartOfAccountsCode = "1220" };
+        var loan = new Loan { Type = "Bolån", ChartOfAccountsCode = "2393" };
+
+        Assert.AreEqual("1350", BalanceSheetAccountPlan.ForInvestment(investment).Number);
+        Assert.AreEqual("1220", BalanceSheetAccountPlan.ForAsset(asset).Number);
+        Assert.AreEqual("2393", BalanceSheetAccountPlan.ForLoan(loan).Number);
+    }
+
+    [TestMethod]
+    public void InvestmentMappingOverridesLinkedBankMapping()
+    {
+        var investment = new Investment
+        {
+            ChartOfAccountsCode = "1350",
+            BankSource = new BankSource { ChartOfAccountsCode = "1811" }
+        };
+
+        Assert.AreEqual("1350", BalanceSheetAccountPlan.ForInvestment(investment).Number);
+    }
+
+    [TestMethod]
     public void LoansAreSeparatedIntoShortAndLongTermGroups()
     {
         Assert.AreEqual("2890", BalanceSheetAccountPlan.ForLoan(new Loan { Type = "Kreditkort" }).Number);

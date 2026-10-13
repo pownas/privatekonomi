@@ -29,6 +29,9 @@ public static class BalanceSheetAccountPlan
 
     public static BalanceSheetAccountCode ForInvestment(Investment investment)
     {
+        if (!string.IsNullOrWhiteSpace(investment.ChartOfAccountsCode))
+            return UseConfiguredCode(investment.ChartOfAccountsCode, new("1810", "Andelar i börsnoterade företag"));
+
         if (investment.BankSource is not null && !string.IsNullOrWhiteSpace(investment.BankSource.ChartOfAccountsCode))
             return ForBankSource(investment.BankSource);
 
@@ -38,29 +41,31 @@ public static class BalanceSheetAccountPlan
     public static BalanceSheetAccountCode ForAsset(Asset asset)
     {
         var type = Normalize(asset.Type);
-        if (ContainsAny(type, "mark", "tomt"))
-            return new("1130", "Mark och markanläggningar");
-        if (ContainsAny(type, "fastighet", "bostad", "hus", "villa"))
-            return new("1110", "Byggnader");
-        if (ContainsAny(type, "fordon", "bil", "motorcykel", "båt"))
-            return new("1240", "Bilar och andra transportmedel");
-        if (ContainsAny(type, "elektronik", "dator", "mobil"))
-            return new("1250", "Datorer och kringutrustning");
-        if (ContainsAny(type, "möbel", "inventarie"))
-            return new("1220", "Inventarier och verktyg");
+        var suggested = ContainsAny(type, "mark", "tomt")
+            ? new BalanceSheetAccountCode("1130", "Mark och markanläggningar")
+            : ContainsAny(type, "fastighet", "bostad", "hus", "villa")
+                ? new BalanceSheetAccountCode("1110", "Byggnader")
+                : ContainsAny(type, "fordon", "bil", "motorcykel", "båt")
+                    ? new BalanceSheetAccountCode("1240", "Bilar och andra transportmedel")
+                    : ContainsAny(type, "elektronik", "dator", "mobil")
+                        ? new BalanceSheetAccountCode("1250", "Datorer och kringutrustning")
+                        : ContainsAny(type, "möbel", "inventarie")
+                            ? new BalanceSheetAccountCode("1220", "Inventarier och verktyg")
+                            : new BalanceSheetAccountCode("1290", "Övriga materiella anläggningstillgångar");
 
-        return new("1290", "Övriga materiella anläggningstillgångar");
+        return UseConfiguredCode(asset.ChartOfAccountsCode, suggested);
     }
 
     public static BalanceSheetAccountCode ForLoan(Loan loan)
     {
         var type = Normalize(loan.Type);
-        if (ContainsAny(type, "kreditkort", "avbetalning", "bnpl", "kortfristig"))
-            return new("2890", "Övriga kortfristiga skulder");
-        if (ContainsAny(type, "bolån", "banklån", "kreditinstitut"))
-            return new("2350", "Övriga skulder till kreditinstitut");
+        var suggested = ContainsAny(type, "kreditkort", "avbetalning", "bnpl", "kortfristig")
+            ? new BalanceSheetAccountCode("2890", "Övriga kortfristiga skulder")
+            : ContainsAny(type, "bolån", "banklån", "kreditinstitut")
+                ? new BalanceSheetAccountCode("2350", "Övriga skulder till kreditinstitut")
+                : new BalanceSheetAccountCode("2390", "Övriga långfristiga skulder");
 
-        return new("2390", "Övriga långfristiga skulder");
+        return UseConfiguredCode(loan.ChartOfAccountsCode, suggested);
     }
 
     private static BalanceSheetAccountCode UseConfiguredCode(string? configuredCode, BalanceSheetAccountCode suggested) =>
