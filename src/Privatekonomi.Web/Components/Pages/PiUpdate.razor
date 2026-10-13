@@ -3,14 +3,11 @@
 @using Privatekonomi.Web.Services
 @inject SiteChangeHistoryService SiteChanges
 
-<PageTitle>Senaste ändringar</PageTitle>
+<PageTitle>Drift och uppdateringar</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudText Typo="Typo.h4">Senaste ändringar</MudText>
-    <MudText Class="mb-4">Visar de senaste uppdateringarna på sajten för systemadministratörer.</MudText>
-    <MudButton Href="/admin/drift" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.SettingsApplications" Class="mb-4">
-        Öppna drift
-    </MudButton>
+    <MudText Typo="Typo.h4">Drift och uppdateringar</MudText>
+    <MudText Class="mb-4">Driftstatus, installerad version och uppdateringar för systemadministratörer.</MudText>
 
     @if (_history is null)
     {
@@ -23,7 +20,18 @@
                 <MudCard>
                     <MudCardContent>
                         <MudText Typo="Typo.h6">Installerad version</MudText>
-                        <MudText Typo="Typo.body1">@FormatCommit(_history.InstalledCommit, "Versionsinformation saknas")</MudText>
+                        <MudText Typo="Typo.body1">
+                            @if (GetCommitUrl(_history.InstalledCommit) is { } installedCommitUrl)
+                            {
+                                <a href="@installedCommitUrl" target="_blank" rel="noopener noreferrer">
+                                    @FormatCommit(_history.InstalledCommit, "Versionsinformation saknas")
+                                </a>
+                            }
+                            else
+                            {
+                                @FormatCommit(_history.InstalledCommit, "Versionsinformation saknas")
+                            }
+                        </MudText>
                         @if (_history.InstalledCommit is not null && _history.LatestCommit is not null && _history.InstalledCommit == _history.LatestCommit)
                         {
                             <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined" Class="mt-2">Senaste versionen är installerad</MudChip>
@@ -35,7 +43,18 @@
                 <MudCard>
                     <MudCardContent>
                         <MudText Typo="Typo.h6">Senaste commit på main</MudText>
-                        <MudText Typo="Typo.body1">@FormatCommit(_history.LatestCommit, "Kan inte kontrolleras just nu")</MudText>
+                        <MudText Typo="Typo.body1">
+                            @if (GetCommitUrl(_history.LatestCommit) is { } latestCommitUrl)
+                            {
+                                <a href="@latestCommitUrl" target="_blank" rel="noopener noreferrer">
+                                    @FormatCommit(_history.LatestCommit, "Kan inte kontrolleras just nu")
+                                </a>
+                            }
+                            else
+                            {
+                                @FormatCommit(_history.LatestCommit, "Kan inte kontrolleras just nu")
+                            }
+                        </MudText>
                         @if (_history.CompareUrl is not null)
                         {
                             <MudButton Href="@_history.CompareUrl" Target="_blank" Rel="noopener noreferrer" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.OpenInNew" Class="mt-2">
@@ -71,7 +90,16 @@
                                     {
                                         <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Installerad</MudChip>
                                     }
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@commit.ShortSha</MudChip>
+                                    @if (GetCommitUrl(commit.Sha) is { } commitUrl)
+                                    {
+                                        <a href="@commitUrl" target="_blank" rel="noopener noreferrer" aria-label="Öppna commit @commit.Sha på GitHub">
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@commit.ShortSha</MudChip>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@commit.ShortSha</MudChip>
+                                    }
                                 </MudStack>
                             </MudStack>
                             @if (commit.Summary is not null)
@@ -109,4 +137,9 @@
 
     private static string FormatCommit(string? sha, string fallback) =>
         sha is { Length: >= 8 } ? $"{sha[..8]} ({sha})" : fallback;
+
+    private static string? GetCommitUrl(string? sha) =>
+        sha is { Length: 40 } && sha.All(Uri.IsHexDigit)
+            ? $"https://github.com/pownas/privatekonomi/commit/{sha}"
+            : null;
 }

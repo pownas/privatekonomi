@@ -49,37 +49,37 @@
                 
                 <MudGrid Spacing="2" Class="mb-4">
                     <MudItem xs="12" md="4">
-                        <MudCard Elevation="0" Style="background-color: #e3f2fd;">
+                        <MudCard Elevation="0" Class="budget-rule-card budget-needs-card" Style="background-color: #e3f2fd;">
                             <MudCardContent Class="pa-3">
-                                <MudText Typo="Typo.body2" Color="Color.Primary">
+                                <MudText Typo="Typo.body2" Class="budget-rule-title">
                                     <strong>Behov (50%)</strong>
                                 </MudText>
-                                <MudText Typo="Typo.h6">
-                                    @(_monthlyIncome * 0.50m).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                                <MudText Typo="Typo.h6" Class="budget-rule-value">
+                                    @((_monthlyIncome * 0.50m).ToString("C", new System.Globalization.CultureInfo("sv-SE")))
                                 </MudText>
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudCard Elevation="0" Style="background-color: #fff3e0;">
+                        <MudCard Elevation="0" Class="budget-rule-card budget-wants-card" Style="background-color: #fff3e0;">
                             <MudCardContent Class="pa-3">
-                                <MudText Typo="Typo.body2" Color="Color.Warning">
+                                <MudText Typo="Typo.body2" Class="budget-rule-title">
                                     <strong>Önskemål (30%)</strong>
                                 </MudText>
-                                <MudText Typo="Typo.h6">
-                                    @(_monthlyIncome * 0.30m).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                                <MudText Typo="Typo.h6" Class="budget-rule-value">
+                                    @((_monthlyIncome * 0.30m).ToString("C", new System.Globalization.CultureInfo("sv-SE")))
                                 </MudText>
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
                     <MudItem xs="12" md="4">
-                        <MudCard Elevation="0" Style="background-color: #e8f5e9;">
+                        <MudCard Elevation="0" Class="budget-rule-card budget-savings-card" Style="background-color: #e8f5e9;">
                             <MudCardContent Class="pa-3">
-                                <MudText Typo="Typo.body2" Color="Color.Success">
+                                <MudText Typo="Typo.body2" Class="budget-rule-title">
                                     <strong>Sparande (20%)</strong>
                                 </MudText>
-                                <MudText Typo="Typo.h6">
-                                    @(_monthlyIncome * 0.20m).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                                <MudText Typo="Typo.h6" Class="budget-rule-value">
+                                    @((_monthlyIncome * 0.20m).ToString("C", new System.Globalization.CultureInfo("sv-SE")))
                                 </MudText>
                             </MudCardContent>
                         </MudCard>

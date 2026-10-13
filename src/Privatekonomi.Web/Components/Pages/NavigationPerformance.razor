@@ -84,7 +84,7 @@
 
                 <MudPaper Outlined="true" Class="pa-3 mb-3">
                     <MudText Typo="Typo.subtitle2" Class="mb-2">1. Ärv från PerformanceTrackedPageBase</MudText>
-                    <pre style="background-color: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto;">@@page "/min-sida"
+                    <pre style="background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); padding: 12px; border-radius: 4px; overflow-x: auto;">@@page "/min-sida"
 @@inherits Privatekonomi.Web.Components.Shared.PerformanceTrackedPageBase
 
 @@code {{
@@ -94,7 +94,7 @@
 
                 <MudPaper Outlined="true" Class="pa-3 mb-3">
                     <MudText Typo="Typo.subtitle2" Class="mb-2">2. Alternativt: Manuell spårning</MudText>
-                    <pre style="background-color: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto;">@@inject INavigationPerformanceService NavigationPerformanceService
+                    <pre style="background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); padding: 12px; border-radius: 4px; overflow-x: auto;">@@inject INavigationPerformanceService NavigationPerformanceService
 
 @@code {{
     protected override void OnAfterRender(bool firstRender)
