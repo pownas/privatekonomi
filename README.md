@@ -283,7 +283,7 @@ cd ~/Privatekonomi
 ```
 
 När skriptet körs interaktivt utan `--branch` kan du välja bland repots grenar; standardgrenen är `main`.
-På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Appen visar en tydlig varning när den kör en annan gren än `main`.
+På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med `sudo ./raspberry-pi-enable-web-update.sh`. Appen visar en tydlig varning när den kör en annan gren än `main`.
 
 **Nya funktioner:**
 - **Self-contained publish**: Optimerade ARM64-binärer med snabbare uppstart och lägre resursanvändning
