@@ -17,7 +17,7 @@ Users needed an easier way to input receipt data into the system rather than man
 We implemented a comprehensive OCR solution using Tesseract OCR engine with Swedish language support. The solution includes:
 
 1. **Server-side OCR processing** using Tesseract.NET
-2. **Image preprocessing** to improve OCR accuracy
+2. **Image loading** through Tesseract's bundled image decoder
 3. **Intelligent text parsing** to extract structured data
 4. **User-friendly interface** to review and edit extracted data
 5. **Comprehensive security** measures
@@ -43,11 +43,7 @@ Defines the contract for OCR operations.
 
 - **Engine**: Tesseract OCR 5.x
 - **Languages**: Swedish + English (swe+eng)
-- **Image preprocessing**: 
-  - Grayscale conversion
-  - Contrast enhancement (20%)
-  - Gaussian sharpening
-  - Size optimization (800-2000 pixels)
+- **Image loading**: Uploaded image bytes are decoded by Tesseract before OCR
 - **Text parsing**: Regex-based extraction of receipt fields
 
 #### 3. User Interface (`OcrScanDialog.razor`)
@@ -234,11 +230,6 @@ Privatekonomi/
    - .NET wrapper for Tesseract OCR
    - Free and open source
    - License: Apache 2.0
-
-2. **SixLabors.ImageSharp** (3.1.12)
-   - Image processing library
-   - Used for preprocessing
-   - No known vulnerabilities
 
 ### External Data
 
@@ -436,5 +427,4 @@ The feature is ready for production use with the recommendation for manual testi
 ## References
 
 - [Tesseract OCR Documentation](https://tesseract-ocr.github.io/)
-- [SixLabors.ImageSharp Documentation](https://docs.sixlabors.com/articles/imagesharp/)
 - [Swedish Receipt Standards](https://www.skatteverket.se/)
