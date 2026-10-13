@@ -463,6 +463,14 @@ EOF
   "AllowedHosts": "*"
 }
 EOF
+
+    # Keep existing published services in sync when the installer skips republishing.
+    if [ -d "$INSTALL_DIR/publish/Web" ]; then
+        cp "$web_config" "$INSTALL_DIR/publish/Web/"
+    fi
+    if [ -d "$INSTALL_DIR/publish/Api" ]; then
+        cp "$api_config" "$INSTALL_DIR/publish/Api/"
+    fi
     
     log_success "Lagringskonfiguration skapad"
 }
@@ -1849,8 +1857,8 @@ main() {
     create_nuget_config
     install_dotnet_10
     setup_project "$@"
-    publish_application
     configure_storage
+    publish_application
     install_ef_tools
     configure_dev_certs
     optimize_swap
