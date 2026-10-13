@@ -78,6 +78,7 @@ finish() {
                 echo "Tjänsterna kunde inte startas efter omstartsfel." >&2
                 printf 'failed\n' > "$state/status"
                 rm -f -- "$state/request" "$state/restart-request"
+                rm -f -- "$state/request-branch"
                 exit "$result"
             fi
         elif ! recover; then
@@ -94,7 +95,7 @@ finish() {
         fi
     fi
     [ -z "$stage" ] || rm -rf -- "$stage"
-    rm -f -- "$state/request" "$state/restart-request"
+    rm -f -- "$state/request" "$state/restart-request" "$state/request-branch"
     exit "$result"
 }
 
@@ -109,7 +110,7 @@ if [ -f "$state/transaction" ]; then
     echo "Avbruten uppdatering upptäckt."
     if recover; then
         printf 'failed\n' > "$state/status"
-        rm -f -- "$state/request"
+        rm -f -- "$state/request" "$state/request-branch"
         [ -z "$stage" ] || rm -rf -- "$stage"
     else
         echo "Återställningen misslyckades; manuell åtgärd krävs." >&2
@@ -137,14 +138,24 @@ if [ -f "$state/restart-request" ]; then
     exit 0
 fi
 
-echo "Hämtar godkänd main från GitHub..."
+if [ -f "$state/request-branch" ]; then
+    IFS= read -r branch < "$state/request-branch"
+else
+    IFS= read -r branch < "$publish/Web/.privatekonomi-branch" || branch=main
+fi
+branch=${branch:-main}
+git -C "$install_dir" check-ref-format "refs/heads/$branch"
+if [ "$branch" != main ]; then
+    echo "⚠️ VARNING: installerar från grenen '$branch' i stället för main."
+fi
+echo "Hämtar grenen '$branch' från GitHub..."
 test -f "$state/enabled"
 test -d "$install_dir/.git"
 test -f "$publish/Web/Privatekonomi.Web"
 test -f "$publish/Api/Privatekonomi.Api"
-git -C "$install_dir" fetch --no-tags https://github.com/pownas/Privatekonomi.git main
+git -C "$install_dir" fetch --no-tags https://github.com/pownas/Privatekonomi.git "refs/heads/$branch"
 commit=$(git -C "$install_dir" rev-parse FETCH_HEAD)
-echo "Målcommit: $commit"
+echo "Målcommit på $branch: $commit"
 
 stage=$(mktemp -d "$state/staging.XXXXXXXX")
 mkdir -p "$stage/source" "$stage/publish/Web" "$stage/publish/Api"
@@ -161,6 +172,7 @@ for project in Web Api; do
         cp -a "$publish/$project/appsettings.Production.json" "$stage/publish/$project/"
     fi
     printf '%s\n' "$commit" > "$stage/publish/$project/.privatekonomi-commit"
+    printf '%s\n' "$branch" > "$stage/publish/$project/.privatekonomi-branch"
 done
 
 backup="$HOME/privatekonomi-backups/web-update-$(date +%Y%m%d_%H%M%S)-$$"
@@ -186,4 +198,4 @@ start_services
 health_check api http://127.0.0.1:5277/internal/health
 health_check web http://127.0.0.1:5274/internal/health
 rm -f -- "$state/transaction" "$state/backup-ready"
-echo "Uppdaterad till $commit. Säkerhetskopia: $backup"
+echo "Uppdaterad till $commit på grenen $branch. Säkerhetskopia: $backup"

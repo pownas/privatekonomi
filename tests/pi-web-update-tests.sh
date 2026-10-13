@@ -18,10 +18,12 @@ setup_case() {
     sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/raspberry-pi-web-update.sh" | tr -d '\r' > "$root/worker"
     cat > "$root/bin/git" <<'EOF'
 #!/usr/bin/env bash
-case " $* " in
-    *" rev-parse "*) printf '%040d\n' 1 ;;
-    *" archive "*) tar -C "$MOCK_ROOT/seed" -c . ;;
-    *" fetch "*) : ;;
+    printf '%s\n' "$*" >> "$MOCK_ROOT/git-commands"
+    case " $* " in
+        *" rev-parse "*) printf '%040d\n' 1 ;;
+        *" check-ref-format refs/heads/"*) exit 0 ;;
+        *" archive "*) tar -C "$MOCK_ROOT/seed" -c . ;;
+        *" fetch "*) : ;;
     *) exit 1 ;;
 esac
 EOF
@@ -128,8 +130,18 @@ test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = new
 test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = new
 test "$(cat "$root/home/privatekonomi/publish/Web/appsettings.Production.json")" = settings
 test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-commit")" = "$(printf '%040d' 1)"
+test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-branch")" = main
 test ! -e "$root/home/privatekonomi-update/request"
 test ! -e "$root/home/privatekonomi-update/transaction"
+
+setup_case selected_branch
+printf 'feature/pi-testing\n' > "$root/home/privatekonomi-update/request-branch"
+run_worker
+test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-branch")" = feature/pi-testing
+grep -Fq 'refs/heads/feature/pi-testing' "$root/git-commands"
+grep -Fq "VARNING: installerar från grenen 'feature/pi-testing' i stället för main." \
+    "$root/home/privatekonomi-update/log"
+test ! -e "$root/home/privatekonomi-update/request-branch"
 
 setup_case restart_only
 touch "$root/home/privatekonomi-update/restart-request"
@@ -190,4 +202,4 @@ test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 test ! -e "$root/home/privatekonomi-update/request"
 
-echo "Uppdatering, fristående omstart, publiceringsfel, omstartsfel, hälsofel och avbrott verifierade."
+echo "Uppdatering, branchval, fristående omstart, publiceringsfel, omstartsfel, hälsofel och avbrott verifierade."

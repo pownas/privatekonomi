@@ -135,13 +135,26 @@
                 else if (Updates.IsAvailable)
                 {
                     <MudAlert Severity="Severity.Warning" Class="mb-3">
-                        Omstarten bryter anslutningen en kort stund. Vid uppdatering byggs och installeras senaste versionen från main innan Web och API startas igen.
+                        Omstarten bryter anslutningen en kort stund. Vid uppdatering byggs och installeras vald gren innan Web och API startas igen.
                     </MudAlert>
                     <MudStack Spacing="2" Class="drift-actions">
+                        @if (_branches.Count > 0)
+                        {
+                            <MudSelect T="string" Label="Gren att installera" @bind-Value="_selectedBranch" Variant="Variant.Outlined" Disabled="@_isBusy">
+                                @foreach (var branch in _branches)
+                                {
+                                    <MudSelectItem T="string" Value="@branch">@branch</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Warning">Grenlistan kunde inte hämtas från GitHub. Försök igen senare.</MudAlert>
+                        }
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large"
                                    StartIcon="@Icons.Material.Filled.SystemUpdateAlt" OnClick="ConfirmUpdateAsync"
-                                   Disabled="@(_isBusy || (_history.LatestCommit is not null && _history.InstalledCommit == _history.LatestCommit))">
-                            @(_history.InstalledCommit == _history.LatestCommit && _history.LatestCommit is not null ? "Senaste versionen installerad" : "Installera uppdatering")
+                                   Disabled="@(_isBusy || _branches.Count == 0)">
+                            Installera vald gren
                         </MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Size="Size.Large"
                                    StartIcon="@Icons.Material.Filled.RestartAlt" OnClick="ConfirmRestartAsync" Disabled="@_isBusy">
@@ -150,6 +163,7 @@
                     </MudStack>
                     <form id="drift-update-form" method="post" action="/settings/pi-update/start" hidden>
                         <AntiforgeryToken />
+                        <input type="hidden" name="branch" value="@_selectedBranch" />
                     </form>
                     <form id="drift-restart-form" method="post" action="/settings/pi-update/restart" hidden>
                         <AntiforgeryToken />
@@ -202,8 +216,10 @@
 </MudContainer>
 
 @code {
-    private PiUpdateStatus _status = new("disabled", null, string.Empty);
+    private PiUpdateStatus _status = new("disabled", null, "main", string.Empty);
     private SiteChangeHistory? _history;
+    private IReadOnlyList<string> _branches = Array.Empty<string>();
+    private string _selectedBranch = "main";
     private DateTimeOffset _processStartedAt;
     private DateTimeOffset _lastStatusRefreshAt;
     private DateTimeOffset _lastUpdateCheckAt;
@@ -217,7 +233,16 @@
     {
         _processStartedAt = new DateTimeOffset(Process.GetCurrentProcess().StartTime);
         RefreshLocalStatus();
-        _history = await SiteChanges.GetRecentChangesAsync();
+        var historyTask = SiteChanges.GetRecentChangesAsync();
+        var branchesTask = Updates.IsAvailable
+            ? SiteChanges.GetBranchesAsync()
+            : Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+        await Task.WhenAll(historyTask, branchesTask);
+        _history = await historyTask;
+        _branches = await branchesTask;
+        _selectedBranch = _branches.Contains(_status.InstalledBranch, StringComparer.Ordinal)
+            ? _status.InstalledBranch
+            : _branches.Contains("main", StringComparer.Ordinal) ? "main" : _branches.FirstOrDefault() ?? "main";
         _lastUpdateCheckAt = DateTimeOffset.Now;
     }
 
@@ -291,7 +316,7 @@
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
             "Installera uppdatering",
-            "Senaste versionen hämtas och byggs. Web och API startas om och sidan kan kopplas från en stund. Vill du fortsätta?",
+            $"Senaste versionen från grenen '{_selectedBranch}' hämtas och byggs. Web och API startas om och sidan kan kopplas från en stund. Vill du fortsätta?",
             yesText: "Installera",
             cancelText: "Avbryt");
         if (confirmed == true)
