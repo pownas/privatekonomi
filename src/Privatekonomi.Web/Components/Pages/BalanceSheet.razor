@@ -6,6 +6,7 @@
 @inject IBankSourceService BankSourceService
 @inject ILoanService LoanService
 @inject ITransactionService TransactionService
+@inject IHouseholdBalanceSheetService HouseholdBalanceSheetService
 
 <PageTitle>Balansräkning - Privatekonomi</PageTitle>
 
@@ -13,6 +14,26 @@
     <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
     Balansräkning
 </MudText>
+<MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
+    Kontonumren är BAS-förslag för en privatekonomisk översikt. Kontokopplingen för bankkonton kan anpassas under Konton.
+</MudAlert>
+@if (_sharedHouseholds.Count > 0)
+{
+    <MudSelect T="int?" Value="_selectedSharedHouseholdId" ValueChanged="OnSharedHouseholdChanged"
+               Label="Visa balansräkning" Variant="Variant.Outlined" Class="mb-4">
+        <MudSelectItem T="int?" Value="@((int?)null)">Min ekonomi</MudSelectItem>
+        @foreach (var household in _sharedHouseholds)
+        {
+            <MudSelectItem T="int?" Value="@((int?)household.HouseholdId)">Hushåll: @household.Name</MudSelectItem>
+        }
+    </MudSelect>
+    @if (_selectedSharedHouseholdId.HasValue)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+            Hushållsvyn visar poster för alla aktiva medlemmar med kopplade appkonton. Gemensamma poster ska bara registreras en gång.
+        </MudAlert>
+    }
+}
 
 @if (_loading)
 {
@@ -47,28 +68,25 @@ else
             <MudPaper Class="pa-4 mb-3">
                 <MudText Typo="Typo.h6" Class="mb-2">Bankkonton</MudText>
                 <MudDivider Class="mb-2" />
-                @if (_bankAccounts.Any())
+                @if (_bankAccounts.Any(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account)))
                 {
-                    @foreach (var account in _bankAccounts)
+                    @foreach (var account in _bankAccounts.Where(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account)))
                     {
-                        <div class="d-flex justify-space-between mb-2">
+                        var basAccount = BalanceSheetAccountPlan.ForBankSource(account);
+                        <div class="balance-sheet-row mb-2">
                             <div>
-                                <MudText>
-                                    <strong>@account.Name</strong>
-                                    @if (!string.IsNullOrEmpty(account.AccountNumber))
-                                    {
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Inline="true">
-                                            @if (!string.IsNullOrEmpty(account.ClearingNumber))
-                                            {
-                                                <text>(@account.ClearingNumber-@account.AccountNumber)</text>
-                                            }
-                                            else
-                                            {
-                                                <text>(@account.AccountNumber)</text>
-                                            }
-                                        </MudText>
-                                    }
+                                <MudText Typo="Typo.body1"><strong>@account.Name</strong></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    BAS @basAccount.Number · @basAccount.Name
                                 </MudText>
+                                @if (!string.IsNullOrEmpty(account.AccountNumber))
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Bankkontonr: @(string.IsNullOrEmpty(account.ClearingNumber)
+                                            ? account.AccountNumber
+                                            : $"{account.ClearingNumber}-{account.AccountNumber}")
+                                    </MudText>
+                                }
                                 @if (!string.IsNullOrEmpty(account.Institution))
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@account.Institution</MudText>
@@ -95,16 +113,16 @@ else
                 <MudDivider Class="mb-2" />
                 @if (_investments.Any())
                 {
-                    @foreach (var investment in _investments.Take(5))
+                    @foreach (var investment in _investments)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@investment.Name</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForInvestment(investment);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@investment.Name</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@investment.TotalValue.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
-                    }
-                    @if (_investments.Count() > 5)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">... och @(_investments.Count() - 5) fler</MudText>
                     }
                     <MudDivider Class="my-2" />
                     <div class="d-flex justify-space-between">
@@ -124,16 +142,16 @@ else
                 <MudDivider Class="mb-2" />
                 @if (_assets.Any())
                 {
-                    @foreach (var asset in _assets.Take(5))
+                    @foreach (var asset in _assets)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@asset.Name (@asset.Type)</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForAsset(asset);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@asset.Name (@asset.Type)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@asset.CurrentValue.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
-                    }
-                    @if (_assets.Count() > 5)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">... och @(_assets.Count() - 5) fler</MudText>
                     }
                     <MudDivider Class="my-2" />
                     <div class="d-flex justify-space-between">
@@ -168,24 +186,39 @@ else
             <MudPaper Class="pa-4 mb-3">
                 <MudText Typo="Typo.h6" Class="mb-2">Lån & Krediter</MudText>
                 <MudDivider Class="mb-2" />
-                @if (_loans.Any())
+                @if (_liabilityBankAccounts.Any() || _loans.Any())
                 {
+                    @foreach (var account in _liabilityBankAccounts)
+                    {
+                        var basAccount = BalanceSheetAccountPlan.ForBankSource(account);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@account.Name</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
+                            <MudText>@BalanceSheetAccountPlan.GetBankSourceLiabilityValue(account).ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
+                        </div>
+                    }
                     @foreach (var loan in _loans)
                     {
-                        <div class="d-flex justify-space-between mb-2">
-                            <MudText>@loan.Name (@loan.Type)</MudText>
+                        var basAccount = BalanceSheetAccountPlan.ForLoan(loan);
+                        <div class="balance-sheet-row mb-2">
+                            <div>
+                                <MudText>@loan.Name (@loan.Type)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                            </div>
                             <MudText>@loan.Amount.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
                     }
                     <MudDivider Class="my-2" />
                     <div class="d-flex justify-space-between">
                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Totalt:</MudText>
-                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@_totalLoanValue.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">@_totalLiabilities.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                     </div>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">Inga lån registrerade</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Inga lån eller krediter registrerade</MudText>
                 }
             </MudPaper>
 
@@ -229,7 +262,7 @@ else
                 <MudCard>
                     <MudCardContent>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">Antal Tillgångar</MudText>
-                        <MudText Typo="Typo.h5">@(_bankAccounts.Count() + _investments.Count() + _assets.Count())</MudText>
+                        <MudText Typo="Typo.h5">@(_bankAccounts.Count(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account)) + _investments.Count() + _assets.Count())</MudText>
                         <MudText Typo="Typo.caption">Bankkonton, Investeringar, Fysiska</MudText>
                     </MudCardContent>
                 </MudCard>
@@ -531,6 +564,7 @@ else
     
     // Assets
     private IEnumerable<BankSource> _bankAccounts = new List<BankSource>();
+    private IEnumerable<BankSource> _liabilityBankAccounts = new List<BankSource>();
     private IEnumerable<Investment> _investments = new List<Investment>();
     private IEnumerable<Asset> _assets = new List<Asset>();
     private decimal _totalBankBalance = 0;
@@ -553,6 +587,9 @@ else
     
     // UI state
     private HashSet<string> _showExplanation = new();
+    private IReadOnlyList<Household> _sharedHouseholds = [];
+    private int? _selectedSharedHouseholdId;
+    private IEnumerable<Transaction>? _sharedTransactions;
 
     protected override async Task OnInitializedAsync()
     {
@@ -562,37 +599,76 @@ else
     private async Task LoadData()
     {
         _loading = true;
+        _sharedHouseholds = await HouseholdBalanceSheetService.GetAvailableSharedHouseholdsAsync();
 
         // Load all assets
         _bankAccounts = await BankSourceService.GetAllBankSourcesAsync();
+        _liabilityBankAccounts = _bankAccounts.Where(BalanceSheetAccountPlan.IsLiabilityBankSource).ToList();
         _investments = await InvestmentService.GetAllInvestmentsAsync();
         _assets = await AssetService.GetAllAssetsAsync();
         
         // Load all liabilities
         _loans = await LoanService.GetAllLoansAsync();
 
-        // Calculate totals for assets
-        _totalBankBalance = _bankAccounts.Sum(b => b.CurrentBalance);
+        await CalculateTotals();
+        await CalculateMonthlyAverages();
+        _loading = false;
+    }
+
+    private async Task OnSharedHouseholdChanged(int? householdId)
+    {
+        _selectedSharedHouseholdId = householdId;
+        if (!householdId.HasValue)
+        {
+            _sharedTransactions = null;
+            await LoadData();
+            return;
+        }
+
+        _loading = true;
+        var data = await HouseholdBalanceSheetService.GetSharedBalanceSheetAsync(householdId.Value);
+        if (data is null)
+        {
+            _selectedSharedHouseholdId = null;
+            _sharedTransactions = null;
+            await LoadData();
+            return;
+        }
+
+        _bankAccounts = data.BankSources;
+        _investments = data.Investments;
+        _assets = data.Assets;
+        _loans = data.Loans;
+        _sharedTransactions = data.Transactions;
+        await CalculateTotals();
+        await CalculateMonthlyAverages(_sharedTransactions);
+        _loading = false;
+    }
+
+    private Task CalculateTotals()
+    {
+        _liabilityBankAccounts = _bankAccounts.Where(BalanceSheetAccountPlan.IsLiabilityBankSource).ToList();
+
+        _totalBankBalance = _bankAccounts
+            .Where(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account))
+            .Sum(account => account.CurrentBalance);
         _totalInvestmentValue = _investments.Sum(i => i.TotalValue);
         _totalAssetValue = _assets.Sum(a => a.CurrentValue);
         _totalAssets = _totalBankBalance + _totalInvestmentValue + _totalAssetValue;
 
         // Calculate totals for liabilities
         _totalLoanValue = _loans.Sum(l => l.Amount);
-        _totalLiabilities = _totalLoanValue;
+        _totalLiabilities = _totalLoanValue + _liabilityBankAccounts.Sum(BalanceSheetAccountPlan.GetBankSourceLiabilityValue);
 
         // Calculate net worth
         _netWorth = _totalAssets - _totalLiabilities;
 
-        // Calculate monthly income and expenses (last 30 days average)
-        await CalculateMonthlyAverages();
-
-        _loading = false;
+        return Task.CompletedTask;
     }
     
-    private async Task CalculateMonthlyAverages()
+    private async Task CalculateMonthlyAverages(IEnumerable<Transaction>? transactions = null)
     {
-        var transactions = await TransactionService.GetAllTransactionsAsync();
+        transactions ??= await TransactionService.GetAllTransactionsAsync();
         var threeMonthsAgo = DateTime.Now.AddMonths(-3);
         var recentTransactions = transactions.Where(t => t.Date >= threeMonthsAgo).ToList();
         

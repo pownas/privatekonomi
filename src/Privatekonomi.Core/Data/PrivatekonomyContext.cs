@@ -359,6 +359,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.InstallmentFee).HasPrecision(18, 2);
             entity.Property(e => e.ExtraMonthlyPayment).HasPrecision(18, 2);
             entity.Property(e => e.Priority).IsRequired();
+            entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
             
             // Temporal tracking
             entity.Property(e => e.ValidFrom).IsRequired();
@@ -389,6 +390,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.CurrentValue).HasPrecision(18, 2);
             entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
             entity.Property(e => e.Location).HasMaxLength(200);
+            entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
             entity.Property(e => e.CreatedAt).IsRequired();
             
             // Temporal tracking
@@ -433,6 +435,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Currency).HasMaxLength(3);
             entity.Property(e => e.Country).HasMaxLength(2);
             entity.Property(e => e.Market).HasMaxLength(50);
+            entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
             
             // Relation to BankSource
             entity.HasOne(e => e.BankSource)
