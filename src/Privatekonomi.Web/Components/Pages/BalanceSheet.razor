@@ -6,6 +6,7 @@
 @inject IBankSourceService BankSourceService
 @inject ILoanService LoanService
 @inject ITransactionService TransactionService
+@inject IHouseholdBalanceSheetService HouseholdBalanceSheetService
 
 <PageTitle>Balansräkning - Privatekonomi</PageTitle>
 
@@ -16,6 +17,23 @@
 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
     Kontonumren är BAS-förslag för en privatekonomisk översikt. Kontokopplingen för bankkonton kan anpassas under Konton.
 </MudAlert>
+@if (_sharedHouseholds.Count > 0)
+{
+    <MudSelect T="int?" Value="_selectedSharedHouseholdId" ValueChanged="OnSharedHouseholdChanged"
+               Label="Visa balansräkning" Variant="Variant.Outlined" Class="mb-4">
+        <MudSelectItem T="int?" Value="@((int?)null)">Min ekonomi</MudSelectItem>
+        @foreach (var household in _sharedHouseholds)
+        {
+            <MudSelectItem T="int?" Value="@((int?)household.HouseholdId)">Hushåll: @household.Name</MudSelectItem>
+        }
+    </MudSelect>
+    @if (_selectedSharedHouseholdId.HasValue)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+            Hushållsvyn visar poster för alla aktiva medlemmar med kopplade appkonton. Gemensamma poster ska bara registreras en gång.
+        </MudAlert>
+    }
+}
 
 @if (_loading)
 {
@@ -569,6 +587,9 @@ else
     
     // UI state
     private HashSet<string> _showExplanation = new();
+    private IReadOnlyList<Household> _sharedHouseholds = [];
+    private int? _selectedSharedHouseholdId;
+    private IEnumerable<Transaction>? _sharedTransactions;
 
     protected override async Task OnInitializedAsync()
     {
@@ -578,6 +599,7 @@ else
     private async Task LoadData()
     {
         _loading = true;
+        _sharedHouseholds = await HouseholdBalanceSheetService.GetAvailableSharedHouseholdsAsync();
 
         // Load all assets
         _bankAccounts = await BankSourceService.GetAllBankSourcesAsync();
@@ -588,7 +610,45 @@ else
         // Load all liabilities
         _loans = await LoanService.GetAllLoansAsync();
 
-        // Calculate totals for assets
+        await CalculateTotals();
+        await CalculateMonthlyAverages();
+        _loading = false;
+    }
+
+    private async Task OnSharedHouseholdChanged(int? householdId)
+    {
+        _selectedSharedHouseholdId = householdId;
+        if (!householdId.HasValue)
+        {
+            _sharedTransactions = null;
+            await LoadData();
+            return;
+        }
+
+        _loading = true;
+        var data = await HouseholdBalanceSheetService.GetSharedBalanceSheetAsync(householdId.Value);
+        if (data is null)
+        {
+            _selectedSharedHouseholdId = null;
+            _sharedTransactions = null;
+            await LoadData();
+            return;
+        }
+
+        _bankAccounts = data.BankSources;
+        _investments = data.Investments;
+        _assets = data.Assets;
+        _loans = data.Loans;
+        _sharedTransactions = data.Transactions;
+        await CalculateTotals();
+        await CalculateMonthlyAverages(_sharedTransactions);
+        _loading = false;
+    }
+
+    private Task CalculateTotals()
+    {
+        _liabilityBankAccounts = _bankAccounts.Where(BalanceSheetAccountPlan.IsLiabilityBankSource).ToList();
+
         _totalBankBalance = _bankAccounts
             .Where(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account))
             .Sum(account => account.CurrentBalance);
@@ -603,15 +663,12 @@ else
         // Calculate net worth
         _netWorth = _totalAssets - _totalLiabilities;
 
-        // Calculate monthly income and expenses (last 30 days average)
-        await CalculateMonthlyAverages();
-
-        _loading = false;
+        return Task.CompletedTask;
     }
     
-    private async Task CalculateMonthlyAverages()
+    private async Task CalculateMonthlyAverages(IEnumerable<Transaction>? transactions = null)
     {
-        var transactions = await TransactionService.GetAllTransactionsAsync();
+        transactions ??= await TransactionService.GetAllTransactionsAsync();
         var threeMonthsAgo = DateTime.Now.AddMonths(-3);
         var recentTransactions = transactions.Where(t => t.Date >= threeMonthsAgo).ToList();
         
