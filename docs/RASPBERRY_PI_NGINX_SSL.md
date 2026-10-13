@@ -160,8 +160,8 @@ sudo ufw reload
 
 #### Förutsättningar
 - Registrerat domännamn
-- Domänen pekar på din Raspberry Pi IP-adress (A-record i DNS)
-- Port 80 och 443 öppna i brandväggen och router
+- **HTTP-01:** Domänen pekar på din publika IP-adress och routern vidarebefordrar port 80 till Raspberry Pi:n. Port 443 behövs för klienttrafiken.
+- **DNS-01 (Cloudflare):** DNS-zonen hanteras av Cloudflare och ett API-token med `Zone:DNS:Edit` för den aktuella zonen. Ingen inkommande port behöver exponeras och A-recorden behöver inte peka på Pi:n. Klienterna måste ändå kunna slå upp subdomänen till Pi:ns lokala IP, exempelvis via lokal DNS.
 
 #### Installation
 
@@ -183,6 +183,10 @@ sudo certbot --nginx -d privatekonomi.example.com
 # - Acceptera användarvillkor
 # - Välj att omdirigera HTTP till HTTPS (rekommenderat)
 ```
+
+Vid körning av `raspberry-pi-install.sh` kan du välja HTTP-01 eller DNS-01 med Cloudflare. DNS-01-alternativet installerar `python3-certbot-dns-cloudflare`, frågar efter token utan att visa det och sparar det i `/etc/letsencrypt/cloudflare.ini` med rättigheter `600`. Certbot sparar förnyelseinställningarna, och `certbot.timer` förnyar certifikatet automatiskt. Skapa ett begränsat API-token i Cloudflare och använd det bara på Pi:n; lägg aldrig token i kommandoraden, dokumentation eller versionshantering.
+
+En subdomän, till exempel `ekonomi.example.com`, är lämplig för installationen. Med DNS-01 kan samma namn ha en lokal DNS-post som pekar på Pi:ns privata IP; publika resolvrar behöver inte kunna nå applikationen. Klienter måste dock ansluta med just subdomänen som certifikatet utfärdats för. Om zonen inte hanteras av Cloudflare stöder installationsflödet inte DNS-01 för den leverantören; använd HTTP-01 eller konfigurera leverantörens Certbot-plugin separat.
 
 3. **Verifiera automatisk förnyelse**
 
@@ -227,7 +231,8 @@ cd /etc/ssl/privatekonomi
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout privatekonomi.key \
   -out privatekonomi.crt \
-  -subj "/C=SE/ST=Sweden/L=Stockholm/O=Privatekonomi/CN=192.168.1.100"
+  -subj "/C=SE/O=Privatekonomi/CN=192.168.1.100" \
+  -addext "subjectAltName=IP:192.168.1.100,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
 ```
 
 3. **Uppdatera Nginx-konfiguration**
@@ -274,9 +279,21 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-#### Acceptera self-signed certifikat i webbläsare
+#### Lita på certifikatet på klientenheter
 
-När du använder self-signed certifikat visar webbläsare en säkerhetsvarning:
+Installationsskriptet skapar ett certifikat med IP-adressen som rapporteras av Pi:n samt `privatekonomi.local` som Subject Alternative Names. För lokal DNS-åtkomst kan du konfigurera routern eller klienternas hosts-fil att slå upp `privatekonomi.local` till Pi:ns IP-adress. Använd sedan `https://privatekonomi.local` eller `https://<Pi-IP>`.
+
+Self-signed certifikat krypterar anslutningen men garanterar inte serverns identitet förrän certifikatet har betrotts på enheten. Kopiera certifikatet säkert till varje klient, jämför dess fingeravtryck mot Pi:n och importera det som betrott certifikat:
+
+```bash
+openssl x509 -in /etc/ssl/privatekonomi/privatekonomi.crt -noout -fingerprint -sha256
+```
+
+På Windows importeras `.crt` via certifikathantering till **Trusted Root Certification Authorities**. På macOS importeras det i Keychain Access och markeras som betrott. På Android importeras det under säkerhetsinställningarnas certifikatalternativ; iOS kräver import till profilen och att full tillit aktiveras under certifikattillit. Menynamn varierar mellan versioner. Dela aldrig `.key`-filen med klienter.
+
+Certifikatet är giltigt i 365 dagar. Installationsskriptet installerar en månatlig systemd-timer som förnyar certifikatet och laddar om Nginx. Eftersom detta är ett självsignerat servercertifikat innebär förnyelsen ett nytt fingeravtryck; klienter som installerat certifikatet behöver då lita på det nya igen. För automatisk förnyelse utan återimport, använd en privat CA (t.ex. mkcert) och installera CA-certifikatet en gång på varje klient.
+
+Om certifikatet inte har importerats visar webbläsaren en säkerhetsvarning:
 
 **Chrome/Edge:**
 1. Klicka på "Advanced"

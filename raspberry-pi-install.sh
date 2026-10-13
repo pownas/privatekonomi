@@ -624,7 +624,11 @@ configure_nginx() {
     sudo apt install -y nginx
     
     # Get server IP or domain
-    local server_ip=$(hostname -I | awk '{print $1}')
+    local server_ip
+    server_ip=$(hostname -I | awk '{print $1}')
+    if [ -z "$server_ip" ]; then
+        server_ip="127.0.0.1"
+    fi
     log_info "Detekterad IP-adress: $server_ip"
     
     read -p "Ange domännamn eller IP-adress [$server_ip]: " server_name
@@ -831,12 +835,38 @@ configure_letsencrypt() {
         sudo apt update
         sudo apt install -y certbot python3-certbot-nginx
     fi
+
+    echo "Välj verifieringsmetod för Let's Encrypt:"
+    echo "  1) HTTP-01 (port 80 måste vara nåbar från internet)"
+    echo "  2) DNS-01 med Cloudflare (ingen inkommande port krävs)"
+    read -r -p "Ditt val (1/2) [1]: " challenge_method
+    challenge_method=${challenge_method:-1}
+    if [[ "$challenge_method" != "1" && "$challenge_method" != "2" ]]; then
+        log_error "Ogiltigt val"
+        return 1
+    fi
+
+    local cloudflare_credentials=""
+    if [ "$challenge_method" = "2" ]; then
+        log_info "Installerar Certbot-plugin för Cloudflare DNS..."
+        sudo apt update
+        sudo apt install -y python3-certbot-dns-cloudflare
+        cloudflare_credentials="/etc/letsencrypt/cloudflare.ini"
+        local cloudflare_token
+        read -r -s -p "Ange Cloudflare API-token (Zone:DNS:Edit för aktuell zon): " cloudflare_token
+        echo
+        if [ -z "$cloudflare_token" ]; then
+            log_error "Cloudflare API-token krävs"
+            return 1
+        fi
+    fi
     
     # Get domain name
     local server_ip=$(hostname -I | awk '{print $1}')
     read -p "Ange ditt domännamn (t.ex. privatekonomi.example.com): " domain_name
     
     if [ -z "$domain_name" ]; then
+        unset cloudflare_token
         log_error "Domännamn krävs för Let's Encrypt"
         return 1
     fi
@@ -845,21 +875,36 @@ configure_letsencrypt() {
     read -p "Ange din e-postadress för förnyelse-notifikationer: " email
     
     if [ -z "$email" ]; then
+        unset cloudflare_token
         log_error "E-postadress krävs för Let's Encrypt"
         return 1
     fi
     
     log_info "Hämtar SSL-certifikat från Let's Encrypt..."
-    log_warning "Kontrollera att domänen $domain_name pekar på $server_ip"
+    if [ "$challenge_method" = "1" ]; then
+        log_warning "Kontrollera att domänen $domain_name pekar på $server_ip och att port 80 når Raspberry Pi:n."
+    else
+        log_info "DNS-01 verifierar domänägarskap via Cloudflare; domänens A-record behöver inte peka på Pi:ns publika IP."
+    fi
     
     read -p "Fortsätt med certifikatförfrågan? (y/n): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        unset cloudflare_token
         return 0
+    fi
+
+    if [ "$challenge_method" = "2" ]; then
+        printf 'dns_cloudflare_api_token = %s\n' "$cloudflare_token" | sudo install -m 600 /dev/stdin "$cloudflare_credentials"
+        unset cloudflare_token
     fi
     
     # Run certbot
-    sudo certbot --nginx -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    if [ "$challenge_method" = "1" ]; then
+        sudo certbot --nginx -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    else
+        sudo certbot --nginx --authenticator dns-cloudflare --dns-cloudflare-credentials "$cloudflare_credentials" --dns-cloudflare-propagation-seconds 30 -d "$domain_name" --non-interactive --agree-tos --email "$email" --redirect
+    fi
     
     if [ $? -eq 0 ]; then
         # Disable default Nginx site to prevent welcome page from showing
@@ -883,10 +928,13 @@ configure_letsencrypt() {
         echo -e ""
     else
         log_error "Misslyckades med att hämta Let's Encrypt certifikat"
-        log_info "Kontrollera att:"
-        log_info "  1. Domänen pekar på rätt IP-adress"
-        log_info "  2. Port 80 och 443 är öppna i brandväggen"
-        log_info "  3. Nginx är igång: sudo systemctl status nginx"
+        log_info "Kontrollera att domänen och DNS-verifieringen är korrekt konfigurerade."
+        if [ "$challenge_method" = "1" ]; then
+            log_info "Port 80 måste nå Raspberry Pi:n från internet."
+        else
+            log_info "Cloudflare-token måste ha DNS-redigeringsrättighet för rätt zon."
+        fi
+        log_info "Nginx-status: sudo systemctl status nginx"
         return 1
     fi
 }
@@ -896,7 +944,11 @@ configure_selfsigned() {
     log_info "Skapar self-signed SSL-certifikat..."
     
     local cert_dir="/etc/ssl/privatekonomi"
-    local server_ip=$(hostname -I | awk '{print $1}')
+    local server_ip
+    server_ip=$(hostname -I | awk '{print $1}')
+    if [ -z "$server_ip" ]; then
+        server_ip="127.0.0.1"
+    fi
     
     # Create directory for certificates
     sudo mkdir -p "$cert_dir"
@@ -906,12 +958,15 @@ configure_selfsigned() {
     sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout "$cert_dir/privatekonomi.key" \
         -out "$cert_dir/privatekonomi.crt" \
-        -subj "/C=SE/ST=Sweden/L=Stockholm/O=Privatekonomi/CN=$server_ip"
+        -subj "/C=SE/O=Privatekonomi/CN=$server_ip" \
+        -addext "subjectAltName=IP:$server_ip,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
     
     if [ $? -ne 0 ]; then
         log_error "Misslyckades med att generera certifikat"
         return 1
     fi
+    sudo chmod 600 "$cert_dir/privatekonomi.key"
+    sudo chmod 644 "$cert_dir/privatekonomi.crt"
     
     # Update Nginx configuration to use SSL
     log_info "Uppdaterar Nginx-konfiguration för SSL..."
@@ -1027,6 +1082,55 @@ EOF
         log_success "Nginx standardsida inaktiverad"
     fi
     
+    # Install a monthly renewal job; the certificate includes the current Pi IP.
+    sudo tee /usr/local/sbin/privatekonomi-renew-selfsigned > /dev/null << 'RENEW_SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cert_dir=/etc/ssl/privatekonomi
+if openssl x509 -in "$cert_dir/privatekonomi.crt" -checkend 2592000 -noout >/dev/null 2>&1; then
+    exit 0
+fi
+server_ip=$(hostname -I | awk '{print $1}')
+if [ -z "$server_ip" ]; then
+    echo "Could not determine the Raspberry Pi IP address" >&2
+    exit 1
+fi
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$cert_dir/privatekonomi.key.tmp" \
+    -out "$cert_dir/privatekonomi.crt.tmp" \
+    -subj "/C=SE/O=Privatekonomi/CN=$server_ip" \
+    -addext "subjectAltName=IP:$server_ip,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
+chmod 600 "$cert_dir/privatekonomi.key.tmp"
+chmod 644 "$cert_dir/privatekonomi.crt.tmp"
+mv "$cert_dir/privatekonomi.key.tmp" "$cert_dir/privatekonomi.key"
+mv "$cert_dir/privatekonomi.crt.tmp" "$cert_dir/privatekonomi.crt"
+nginx -t
+systemctl reload nginx
+RENEW_SCRIPT
+    sudo chmod 755 /usr/local/sbin/privatekonomi-renew-selfsigned
+    sudo tee /etc/systemd/system/privatekonomi-renew-selfsigned.service > /dev/null << 'RENEW_SERVICE'
+[Unit]
+Description=Renew Privatekonomi local HTTPS certificate
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/privatekonomi-renew-selfsigned
+RENEW_SERVICE
+    sudo tee /etc/systemd/system/privatekonomi-renew-selfsigned.timer > /dev/null << 'RENEW_TIMER'
+[Unit]
+Description=Monthly renewal of Privatekonomi local HTTPS certificate
+
+[Timer]
+OnCalendar=monthly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+RENEW_TIMER
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now privatekonomi-renew-selfsigned.timer
+
     # Test and reload Nginx
     if sudo nginx -t; then
         sudo systemctl reload nginx
