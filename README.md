@@ -288,6 +288,7 @@ cd ~/Privatekonomi
 
 Se följande guider för Raspberry Pi:
 - **[RASPBERRY_PI_QUICKSTART.md](docs/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!
+- **[RASPBERRY_PI_NGINX_SSL.md](docs/RASPBERRY_PI_NGINX_SSL.md)**: HTTPS, automatisk certifikatförnyelse och klienternas certifikatförtroende.
 - **[RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)**: Detaljerad installationsguide
 - **[RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](docs/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)**: Felsökning nätverksproblem
 - **[RASPBERRY_PI_DEVICE_TESTING.md](docs/RASPBERRY_PI_DEVICE_TESTING.md)**: Testa från olika enheter (mobil, desktop, etc.)

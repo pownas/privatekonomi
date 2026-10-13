@@ -624,7 +624,11 @@ configure_nginx() {
     sudo apt install -y nginx
     
     # Get server IP or domain
-    local server_ip=$(hostname -I | awk '{print $1}')
+    local server_ip
+    server_ip=$(hostname -I | awk '{print $1}')
+    if [ -z "$server_ip" ]; then
+        server_ip="127.0.0.1"
+    fi
     log_info "Detekterad IP-adress: $server_ip"
     
     read -p "Ange domännamn eller IP-adress [$server_ip]: " server_name
@@ -896,7 +900,11 @@ configure_selfsigned() {
     log_info "Skapar self-signed SSL-certifikat..."
     
     local cert_dir="/etc/ssl/privatekonomi"
-    local server_ip=$(hostname -I | awk '{print $1}')
+    local server_ip
+    server_ip=$(hostname -I | awk '{print $1}')
+    if [ -z "$server_ip" ]; then
+        server_ip="127.0.0.1"
+    fi
     
     # Create directory for certificates
     sudo mkdir -p "$cert_dir"
@@ -906,12 +914,15 @@ configure_selfsigned() {
     sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout "$cert_dir/privatekonomi.key" \
         -out "$cert_dir/privatekonomi.crt" \
-        -subj "/C=SE/ST=Sweden/L=Stockholm/O=Privatekonomi/CN=$server_ip"
+        -subj "/C=SE/O=Privatekonomi/CN=$server_ip" \
+        -addext "subjectAltName=IP:$server_ip,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
     
     if [ $? -ne 0 ]; then
         log_error "Misslyckades med att generera certifikat"
         return 1
     fi
+    sudo chmod 600 "$cert_dir/privatekonomi.key"
+    sudo chmod 644 "$cert_dir/privatekonomi.crt"
     
     # Update Nginx configuration to use SSL
     log_info "Uppdaterar Nginx-konfiguration för SSL..."
@@ -1027,6 +1038,55 @@ EOF
         log_success "Nginx standardsida inaktiverad"
     fi
     
+    # Install a monthly renewal job; the certificate includes the current Pi IP.
+    sudo tee /usr/local/sbin/privatekonomi-renew-selfsigned > /dev/null << 'RENEW_SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cert_dir=/etc/ssl/privatekonomi
+if openssl x509 -in "$cert_dir/privatekonomi.crt" -checkend 2592000 -noout >/dev/null 2>&1; then
+    exit 0
+fi
+server_ip=$(hostname -I | awk '{print $1}')
+if [ -z "$server_ip" ]; then
+    echo "Could not determine the Raspberry Pi IP address" >&2
+    exit 1
+fi
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$cert_dir/privatekonomi.key.tmp" \
+    -out "$cert_dir/privatekonomi.crt.tmp" \
+    -subj "/C=SE/O=Privatekonomi/CN=$server_ip" \
+    -addext "subjectAltName=IP:$server_ip,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
+chmod 600 "$cert_dir/privatekonomi.key.tmp"
+chmod 644 "$cert_dir/privatekonomi.crt.tmp"
+mv "$cert_dir/privatekonomi.key.tmp" "$cert_dir/privatekonomi.key"
+mv "$cert_dir/privatekonomi.crt.tmp" "$cert_dir/privatekonomi.crt"
+nginx -t
+systemctl reload nginx
+RENEW_SCRIPT
+    sudo chmod 755 /usr/local/sbin/privatekonomi-renew-selfsigned
+    sudo tee /etc/systemd/system/privatekonomi-renew-selfsigned.service > /dev/null << 'RENEW_SERVICE'
+[Unit]
+Description=Renew Privatekonomi local HTTPS certificate
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/privatekonomi-renew-selfsigned
+RENEW_SERVICE
+    sudo tee /etc/systemd/system/privatekonomi-renew-selfsigned.timer > /dev/null << 'RENEW_TIMER'
+[Unit]
+Description=Monthly renewal of Privatekonomi local HTTPS certificate
+
+[Timer]
+OnCalendar=monthly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+RENEW_TIMER
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now privatekonomi-renew-selfsigned.timer
+
     # Test and reload Nginx
     if sudo nginx -t; then
         sudo systemctl reload nginx

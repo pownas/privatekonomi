@@ -227,7 +227,8 @@ cd /etc/ssl/privatekonomi
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout privatekonomi.key \
   -out privatekonomi.crt \
-  -subj "/C=SE/ST=Sweden/L=Stockholm/O=Privatekonomi/CN=192.168.1.100"
+  -subj "/C=SE/O=Privatekonomi/CN=192.168.1.100" \
+  -addext "subjectAltName=IP:192.168.1.100,DNS:privatekonomi.local,DNS:localhost,IP:127.0.0.1"
 ```
 
 3. **Uppdatera Nginx-konfiguration**
@@ -274,9 +275,21 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-#### Acceptera self-signed certifikat i webbläsare
+#### Lita på certifikatet på klientenheter
 
-När du använder self-signed certifikat visar webbläsare en säkerhetsvarning:
+Installationsskriptet skapar ett certifikat med IP-adressen som rapporteras av Pi:n samt `privatekonomi.local` som Subject Alternative Names. För lokal DNS-åtkomst kan du konfigurera routern eller klienternas hosts-fil att slå upp `privatekonomi.local` till Pi:ns IP-adress. Använd sedan `https://privatekonomi.local` eller `https://<Pi-IP>`.
+
+Self-signed certifikat krypterar anslutningen men garanterar inte serverns identitet förrän certifikatet har betrotts på enheten. Kopiera certifikatet säkert till varje klient, jämför dess fingeravtryck mot Pi:n och importera det som betrott certifikat:
+
+```bash
+openssl x509 -in /etc/ssl/privatekonomi/privatekonomi.crt -noout -fingerprint -sha256
+```
+
+På Windows importeras `.crt` via certifikathantering till **Trusted Root Certification Authorities**. På macOS importeras det i Keychain Access och markeras som betrott. På Android importeras det under säkerhetsinställningarnas certifikatalternativ; iOS kräver import till profilen och att full tillit aktiveras under certifikattillit. Menynamn varierar mellan versioner. Dela aldrig `.key`-filen med klienter.
+
+Certifikatet är giltigt i 365 dagar. Installationsskriptet installerar en månatlig systemd-timer som förnyar certifikatet och laddar om Nginx. Eftersom detta är ett självsignerat servercertifikat innebär förnyelsen ett nytt fingeravtryck; klienter som installerat certifikatet behöver då lita på det nya igen. För automatisk förnyelse utan återimport, använd en privat CA (t.ex. mkcert) och installera CA-certifikatet en gång på varje klient.
+
+Om certifikatet inte har importerats visar webbläsaren en säkerhetsvarning:
 
 **Chrome/Edge:**
 1. Klicka på "Advanced"
