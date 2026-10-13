@@ -23,8 +23,9 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
 
     public PiUpdateStatus GetStatus()
     {
+        var installedBranch = GetInstalledBranch();
         if (!IsAvailable)
-            return new("disabled", null, "main", "");
+            return new("disabled", null, installedBranch, "");
 
         var state = ReadLimited("status", 40).Trim();
         if (state is not ("running" or "succeeded" or "restarted" or "failed"))
@@ -37,11 +38,14 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
             state = "failed";
 
         var commit = _installedCommitFile is null ? ReadLimited("installed", 64).Trim() : ReadLimitedPath(_installedCommitFile, 64).Trim();
-        var branch = _installedBranchFile is null ? "main" : ReadLimitedPath(_installedBranchFile, 256).Trim();
-        if (string.IsNullOrWhiteSpace(branch) || branch.Any(char.IsControl))
-            branch = "main";
+        return new(state, Regex.IsMatch(commit, @"\A[0-9a-f]{40}\z") ? commit : null, installedBranch, ReadLimited("log", 8192));
+    }
 
-        return new(state, Regex.IsMatch(commit, @"\A[0-9a-f]{40}\z") ? commit : null, branch, ReadLimited("log", 8192));
+    private string GetInstalledBranch()
+    {
+        var branchFile = _installedBranchFile ?? Path.Combine(AppContext.BaseDirectory, ".privatekonomi-branch");
+        var branch = ReadLimitedPath(branchFile, 256).Trim();
+        return string.IsNullOrWhiteSpace(branch) || branch.Any(char.IsControl) ? "main" : branch;
     }
 
     public bool TryRequest()
@@ -86,9 +90,11 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
             if (branch is not null)
             {
                 using (var requestedBranch = new FileStream(requestedBranchPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                using (var writer = new StreamWriter(requestedBranch))
-                    writer.Write(branch);
-                branchMarkerCreated = true;
+                {
+                    branchMarkerCreated = true;
+                    using (var writer = new StreamWriter(requestedBranch))
+                        writer.Write(branch);
+                }
             }
 
             using var request = new FileStream(Path.Combine(_directory!, "request"), FileMode.CreateNew, FileAccess.Write, FileShare.None);

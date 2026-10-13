@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # ============================================================================
 # Privatekonomi Raspberry Pi Installation Script

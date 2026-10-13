@@ -51,32 +51,6 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
                 commits.Length == 0 ? "Det finns ingen tillgänglig versionshistorik just nu." : null,
                 commits);
         }
-
-        public async Task<IReadOnlyList<string>> GetBranchesAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var client = httpClients.CreateClient("pi-update");
-                var branches = new List<string>();
-                for (var page = 1; ; page++)
-                {
-                    var result = await client.GetFromJsonAsync<List<GitHubBranchDto>>(
-                        string.Format(System.Globalization.CultureInfo.InvariantCulture, RepositoryBranchesUrl, page),
-                        cancellationToken);
-                    var pageBranches = (result ?? [])
-                        .Select(branch => branch.Name)
-                        .Where(name => !string.IsNullOrWhiteSpace(name) && name.Length <= 255 && !name.Any(char.IsControl))
-                        .ToArray();
-                    branches.AddRange(pageBranches);
-                    if (pageBranches.Length < 100)
-                        return branches.Distinct(StringComparer.Ordinal).ToArray();
-                }
-            }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
-            {
-                return Array.Empty<string>();
-            }
-        }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
             return new(
@@ -87,6 +61,32 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
                     ? "Versionsinformationen är inte tillgänglig just nu."
                     : "Det gick inte att hämta de senaste ändringarna just nu.",
                 Array.Empty<SiteChangeCommit>());
+        }
+    }
+
+    public async Task<IReadOnlyList<string>> GetBranchesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var client = httpClients.CreateClient("pi-update");
+            var branches = new List<string>();
+            for (var page = 1; ; page++)
+            {
+                var result = await client.GetFromJsonAsync<List<GitHubBranchDto>>(
+                    string.Format(System.Globalization.CultureInfo.InvariantCulture, RepositoryBranchesUrl, page),
+                    cancellationToken);
+                var pageBranches = (result ?? [])
+                    .Select(branch => branch.Name)
+                    .Where(name => !string.IsNullOrWhiteSpace(name) && name.Length <= 255 && !name.Any(char.IsControl))
+                    .ToArray();
+                branches.AddRange(pageBranches);
+                if (pageBranches.Length < 100)
+                    return branches.Distinct(StringComparer.Ordinal).ToArray();
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            return Array.Empty<string>();
         }
     }
 

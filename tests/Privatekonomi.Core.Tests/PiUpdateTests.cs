@@ -122,6 +122,7 @@ public class PiUpdateTests
         var branchFile = fixture.Path("published-branch");
         File.WriteAllText(branchFile, "feature/pi-testing\n");
         Assert.AreEqual("feature/pi-testing", fixture.Service(branchFile: branchFile).GetStatus().InstalledBranch);
+        Assert.AreEqual("feature/pi-testing", fixture.Service(enabled: false, branchFile: branchFile).GetStatus().InstalledBranch);
         Assert.AreEqual("main", fixture.Service(branchFile: fixture.Path("missing-branch")).GetStatus().InstalledBranch);
     }
 

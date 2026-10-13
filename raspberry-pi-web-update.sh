@@ -138,6 +138,10 @@ if [ -f "$state/restart-request" ]; then
     exit 0
 fi
 
+test -f "$state/enabled"
+test -d "$install_dir/.git"
+test -f "$publish/Web/Privatekonomi.Web"
+test -f "$publish/Api/Privatekonomi.Api"
 if [ -f "$state/request-branch" ]; then
     IFS= read -r branch < "$state/request-branch"
 else
@@ -149,10 +153,6 @@ if [ "$branch" != main ]; then
     echo "⚠️ VARNING: installerar från grenen '$branch' i stället för main."
 fi
 echo "Hämtar grenen '$branch' från GitHub..."
-test -f "$state/enabled"
-test -d "$install_dir/.git"
-test -f "$publish/Web/Privatekonomi.Web"
-test -f "$publish/Api/Privatekonomi.Api"
 git -C "$install_dir" fetch --no-tags https://github.com/pownas/Privatekonomi.git "refs/heads/$branch"
 commit=$(git -C "$install_dir" rev-parse FETCH_HEAD)
 echo "Målcommit på $branch: $commit"

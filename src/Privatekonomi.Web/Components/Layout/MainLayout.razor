@@ -286,8 +286,7 @@
     {
         _isDarkMode = ThemeService.IsDarkMode;
         _isCompactView = ViewDensityService.IsCompact;
-        if (PiUpdates.IsAvailable)
-            _installedBranch = PiUpdates.GetStatus().InstalledBranch;
+        _installedBranch = PiUpdates.GetStatus().InstalledBranch;
         ThemeService.OnThemeChanged += OnThemeChanged;
         ViewDensityService.OnViewDensityChanged += OnViewDensityChanged;
     }
