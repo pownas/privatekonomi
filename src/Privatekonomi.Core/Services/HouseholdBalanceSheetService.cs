@@ -52,11 +52,26 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
 
         var bankSources = await _context.BankSources
             .AsNoTracking()
-            .Include(account => account.Transactions.Where(transaction =>
-                userIds.Contains(transaction.UserId!) || transaction.UserId == null))
             .Where(account => userIds.Contains(account.UserId!))
             .OrderBy(account => account.Name)
             .ToListAsync();
+        var bankSourceIds = bankSources.Select(account => account.BankSourceId).ToArray();
+        var bankSourceTransactions = await _context.Transactions
+            .AsNoTracking()
+            .Where(transaction =>
+                transaction.BankSourceId.HasValue &&
+                bankSourceIds.Contains(transaction.BankSourceId.Value) &&
+                (transaction.UserId == null || userIds.Contains(transaction.UserId!)))
+            .ToListAsync();
+        foreach (var account in bankSources)
+        {
+            account.Transactions = bankSourceTransactions
+                .Where(transaction =>
+                    transaction.BankSourceId == account.BankSourceId &&
+                    (transaction.UserId == null || transaction.UserId == account.UserId))
+                .ToList();
+        }
+
         var investments = await _context.Investments
             .AsNoTracking()
             .Include(investment => investment.BankSource)
@@ -79,7 +94,6 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
             .Where(loan => userIds.Contains(loan.UserId!))
             .OrderBy(loan => loan.Name)
             .ToListAsync();
-        var bankSourceIds = bankSources.Select(account => account.BankSourceId).ToArray();
         var transactions = await _context.Transactions
             .AsNoTracking()
             .Where(transaction =>

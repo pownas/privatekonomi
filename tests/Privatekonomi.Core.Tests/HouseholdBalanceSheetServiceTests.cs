@@ -204,13 +204,23 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
         {
             Name = "Household",
             ShareBalanceSheet = true,
-            Members = [new HouseholdMember
-            {
-                Name = "One",
-                UserId = "user-1",
-                IsActive = true,
-                ShareBalanceSheetConsent = true
-            }]
+            Members =
+            [
+                new HouseholdMember
+                {
+                    Name = "One",
+                    UserId = "user-1",
+                    IsActive = true,
+                    ShareBalanceSheetConsent = true
+                },
+                new HouseholdMember
+                {
+                    Name = "Two",
+                    UserId = "user-2",
+                    IsActive = true,
+                    ShareBalanceSheetConsent = true
+                }
+            ]
         };
         var account = new BankSource
         {
@@ -224,16 +234,29 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
                 new Transaction { Amount = 50m, IsIncome = true, UserId = "user-2" }
             ]
         };
+        var partnerAccount = new BankSource
+        {
+            Name = "Partner account",
+            UserId = "user-2",
+            Transactions = [new Transaction { Amount = 40m, IsIncome = true, UserId = "user-2" }]
+        };
+        account.Transactions.Add(new Transaction
+        {
+            Amount = 30m,
+            IsIncome = true,
+            UserId = "user-2"
+        });
         _context.Households.Add(household);
-        _context.BankSources.Add(account);
+        _context.BankSources.AddRange(account, partnerAccount);
         _context.Transactions.Add(new Transaction { Amount = 1000m, IsIncome = true, UserId = null });
         await _context.SaveChangesAsync();
 
         var data = await _service.GetSharedBalanceSheetAsync(household.HouseholdId);
 
         Assert.IsNotNull(data);
-        Assert.AreEqual(110m, data.BankSources.Single().CurrentBalance);
-        Assert.AreEqual(2, data.Transactions.Count);
+        Assert.AreEqual(110m, data.BankSources.Single(source => source.UserId == "user-1").CurrentBalance);
+        Assert.AreEqual(40m, data.BankSources.Single(source => source.UserId == "user-2").CurrentBalance);
+        Assert.AreEqual(5, data.Transactions.Count);
     }
 
     public void Dispose()
