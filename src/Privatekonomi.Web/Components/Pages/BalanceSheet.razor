@@ -15,7 +15,7 @@
     Balansräkning
 </MudText>
 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4">
-    Kontonumren är BAS-förslag för en privatekonomisk översikt. Kontokopplingen för bankkonton kan anpassas under Konton.
+    BAS-koderna är vägledande för en privatekonomisk översikt, inte en fullständig eller kvalitetssäkrad kontoplan och inte bokföringsråd. Anpassa vid behov kontokopplingarna i respektive register.
 </MudAlert>
 @if (_sharedHouseholds.Count > 0)
 {
@@ -206,6 +206,12 @@ else
                             <div>
                                 <MudText>@loan.Name (@loan.Type)</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">BAS @basAccount.Number · @basAccount.Name</MudText>
+                                @if (loan.ExcludeFromBalanceSheet)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Warning">
+                                        Exkluderas från totalsumman (t.ex. om skulden redan visas som bankkonto)
+                                    </MudText>
+                                }
                             </div>
                             <MudText>@loan.Amount.ToString("C", new System.Globalization.CultureInfo("sv-SE"))</MudText>
                         </div>
@@ -657,8 +663,8 @@ else
         _totalAssets = _totalBankBalance + _totalInvestmentValue + _totalAssetValue;
 
         // Calculate totals for liabilities
-        _totalLoanValue = _loans.Sum(l => l.Amount);
-        _totalLiabilities = _totalLoanValue + _liabilityBankAccounts.Sum(BalanceSheetAccountPlan.GetBankSourceLiabilityValue);
+        _totalLoanValue = _loans.Where(loan => !loan.ExcludeFromBalanceSheet).Sum(loan => loan.Amount);
+        _totalLiabilities = BalanceSheetAccountPlan.GetTotalLiabilityValue(_bankAccounts, _loans);
 
         // Calculate net worth
         _netWorth = _totalAssets - _totalLiabilities;

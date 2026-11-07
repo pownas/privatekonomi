@@ -167,6 +167,7 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
             throw new InvalidOperationException("Ditt appkonto är redan kopplat till en aktiv hushållsmedlem.");
 
         member.UserId = userId;
+        member.ShareBalanceSheetConsent = false;
         await _context.SaveChangesAsync();
     }
 

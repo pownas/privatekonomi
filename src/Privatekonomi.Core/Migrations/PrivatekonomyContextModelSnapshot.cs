@@ -2970,6 +2970,9 @@ namespace Privatekonomi.Core.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("ShareBalanceSheetConsent")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
 
@@ -3592,6 +3595,9 @@ namespace Privatekonomi.Core.Migrations
                     b.Property<string>("ChartOfAccountsCode")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ExcludeFromBalanceSheet")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PropertyAddress")
                         .HasMaxLength(200)

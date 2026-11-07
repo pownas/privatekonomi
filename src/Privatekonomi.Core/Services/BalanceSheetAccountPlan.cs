@@ -5,7 +5,8 @@ namespace Privatekonomi.Core.Services;
 public sealed record BalanceSheetAccountCode(string Number, string Name);
 
 /// <summary>
-/// Supplies suggested BAS account codes for the household balance sheet.
+/// Supplies suggested BAS account codes for personal-finance balance sheets.
+/// Suggestions are not a complete BAS chart of accounts or accounting advice.
 /// A code configured on a bank account takes precedence over the suggested code.
 /// </summary>
 public static class BalanceSheetAccountPlan
