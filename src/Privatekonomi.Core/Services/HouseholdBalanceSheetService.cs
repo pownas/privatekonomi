@@ -23,7 +23,9 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
 
         return await _context.Households
             .AsNoTracking()
-            .Where(h => h.ShareBalanceSheet && h.Members.Any(m => m.IsActive && m.UserId == userId))
+            .Where(h => h.ShareBalanceSheet &&
+                        h.Members.Any(m => m.IsActive && m.UserId == userId && m.ShareBalanceSheetConsent) &&
+                        !h.Members.Any(m => m.IsActive && m.UserId != null && !m.ShareBalanceSheetConsent))
             .OrderBy(h => h.Name)
             .ToListAsync();
     }
@@ -37,7 +39,8 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
         var household = await _context.Households
             .Include(h => h.Members)
             .FirstOrDefaultAsync(h => h.HouseholdId == householdId && h.ShareBalanceSheet &&
-                                      h.Members.Any(m => m.IsActive && m.UserId == userId));
+                                      h.Members.Any(m => m.IsActive && m.UserId == userId && m.ShareBalanceSheetConsent) &&
+                                      !h.Members.Any(m => m.IsActive && m.UserId != null && !m.ShareBalanceSheetConsent));
         if (household is null)
             return null;
 
@@ -49,7 +52,8 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
 
         var bankSources = await _context.BankSources
             .AsNoTracking()
-            .Include(account => account.Transactions.Where(transaction => userIds.Contains(transaction.UserId!)))
+            .Include(account => account.Transactions.Where(transaction =>
+                userIds.Contains(transaction.UserId!) || transaction.UserId == null))
             .Where(account => userIds.Contains(account.UserId!))
             .OrderBy(account => account.Name)
             .ToListAsync();
@@ -75,9 +79,13 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
             .Where(loan => userIds.Contains(loan.UserId!))
             .OrderBy(loan => loan.Name)
             .ToListAsync();
+        var bankSourceIds = bankSources.Select(account => account.BankSourceId).ToArray();
         var transactions = await _context.Transactions
             .AsNoTracking()
-            .Where(transaction => userIds.Contains(transaction.UserId!))
+            .Where(transaction =>
+                userIds.Contains(transaction.UserId!) ||
+                (transaction.UserId == null && transaction.BankSourceId.HasValue &&
+                 bankSourceIds.Contains(transaction.BankSourceId.Value)))
             .ToListAsync();
 
         return new HouseholdBalanceSheetData(bankSources, investments, assets, loans, transactions);
@@ -95,8 +103,37 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
         if (household is null)
             throw new UnauthorizedAccessException("Du är inte en aktiv medlem i hushållet.");
 
+        if (enabled && await _context.HouseholdMembers.AnyAsync(member =>
+                member.HouseholdId == householdId &&
+                member.IsActive &&
+                member.UserId != null &&
+                !member.ShareBalanceSheetConsent))
+            throw new InvalidOperationException("Alla aktiva medlemmar med kopplat appkonto måste samtycka innan delning kan aktiveras.");
+
         household.ShareBalanceSheet = enabled;
         household.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task SetCurrentUserBalanceSheetConsentAsync(int householdId, bool enabled)
+    {
+        var userId = GetAuthenticatedUserId();
+        if (userId is null)
+            throw new UnauthorizedAccessException("Du måste vara inloggad för att ändra ditt samtycke.");
+
+        var member = await _context.HouseholdMembers
+            .Include(candidate => candidate.Household)
+            .FirstOrDefaultAsync(candidate =>
+                candidate.HouseholdId == householdId &&
+                candidate.IsActive &&
+                candidate.UserId == userId);
+        if (member is null)
+            throw new UnauthorizedAccessException("Du är inte en aktiv, kopplad medlem i hushållet.");
+
+        member.ShareBalanceSheetConsent = enabled;
+        if (!enabled)
+            member.Household!.ShareBalanceSheet = false;
+        member.Household!.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
 
@@ -106,12 +143,12 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
         if (userId is null)
             throw new UnauthorizedAccessException("Du måste vara inloggad för att koppla ditt konto.");
 
-        var accountEmail = await _context.Users
+        var account = await _context.Users
             .Where(user => user.Id == userId)
-            .Select(user => user.Email)
+            .Select(user => new { user.Email, user.EmailConfirmed })
             .FirstOrDefaultAsync();
-        if (string.IsNullOrWhiteSpace(accountEmail))
-            throw new UnauthorizedAccessException("Ditt appkonto saknar en e-postadress att verifiera.");
+        if (account is null || !account.EmailConfirmed || string.IsNullOrWhiteSpace(account.Email))
+            throw new UnauthorizedAccessException("Verifiera e-postadressen för ditt appkonto innan du kopplar det till hushållet.");
 
         var member = await _context.HouseholdMembers.FirstOrDefaultAsync(candidate =>
             candidate.HouseholdMemberId == householdMemberId &&
@@ -119,7 +156,7 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
             candidate.IsActive &&
             candidate.UserId == null);
         if (member is null ||
-            !string.Equals(member.Email?.Trim(), accountEmail.Trim(), StringComparison.OrdinalIgnoreCase))
+            !string.Equals(member.Email?.Trim(), account.Email.Trim(), StringComparison.OrdinalIgnoreCase))
             throw new UnauthorizedAccessException("Medlemmens e-postadress måste matcha ditt appkonto.");
 
         var alreadyLinked = await _context.HouseholdMembers.AnyAsync(candidate =>

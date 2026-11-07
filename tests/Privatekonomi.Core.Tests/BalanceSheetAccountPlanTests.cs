@@ -77,4 +77,21 @@ public class BalanceSheetAccountPlanTests
         Assert.AreEqual("2350", BalanceSheetAccountPlan.ForLoan(new Loan { Type = "Bolån" }).Number);
         Assert.AreEqual("2390", BalanceSheetAccountPlan.ForLoan(new Loan { Type = "CSN-lån" }).Number);
     }
+
+    [TestMethod]
+    public void ExcludedLoanDoesNotAddToBalanceSheetLiabilityTotal()
+    {
+        var bankSources = new[]
+        {
+            new BankSource { AccountType = "loan", InitialBalance = -100000m },
+            new BankSource { AccountType = "checking", InitialBalance = 5000m }
+        };
+        var loans = new[]
+        {
+            new Loan { Amount = 100000m, ExcludeFromBalanceSheet = true },
+            new Loan { Amount = 20000m }
+        };
+
+        Assert.AreEqual(120000m, BalanceSheetAccountPlan.GetTotalLiabilityValue(bankSources, loans));
+    }
 }

@@ -7,6 +7,7 @@ public interface IHouseholdBalanceSheetService
     Task<IReadOnlyList<Household>> GetAvailableSharedHouseholdsAsync();
     Task<HouseholdBalanceSheetData?> GetSharedBalanceSheetAsync(int householdId);
     Task LinkCurrentUserToMemberAsync(int householdId, int householdMemberId);
+    Task SetCurrentUserBalanceSheetConsentAsync(int householdId, bool enabled);
     Task SetBalanceSheetSharingAsync(int householdId, bool enabled);
 }
 

@@ -16,6 +16,10 @@ public static class BalanceSheetAccountPlan
     public static decimal GetBankSourceLiabilityValue(BankSource account) =>
         IsLiabilityBankSource(account) ? Math.Abs(account.CurrentBalance) : 0;
 
+    public static decimal GetTotalLiabilityValue(IEnumerable<BankSource> bankSources, IEnumerable<Loan> loans) =>
+        bankSources.Sum(GetBankSourceLiabilityValue) +
+        loans.Where(loan => !loan.ExcludeFromBalanceSheet).Sum(loan => loan.Amount);
+
     public static BalanceSheetAccountCode ForBankSource(BankSource account)
     {
         var suggested = Normalize(account.AccountType) switch

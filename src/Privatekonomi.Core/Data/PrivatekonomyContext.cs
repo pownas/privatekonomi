@@ -360,6 +360,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.ExtraMonthlyPayment).HasPrecision(18, 2);
             entity.Property(e => e.Priority).IsRequired();
             entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
+            entity.Property(e => e.ExcludeFromBalanceSheet).IsRequired();
             
             // Temporal tracking
             entity.Property(e => e.ValidFrom).IsRequired();
@@ -954,6 +955,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.IsActive).IsRequired();
+            entity.Property(e => e.ShareBalanceSheetConsent).IsRequired();
             entity.Property(e => e.JoinedDate).IsRequired();
             
             entity.HasOne(e => e.Household)

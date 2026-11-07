@@ -35,8 +35,8 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
                 ShareBalanceSheet = true,
                 Members =
                 [
-                    new HouseholdMember { Name = "One", UserId = "user-1", IsActive = true },
-                    new HouseholdMember { Name = "Two", UserId = "user-2", IsActive = true },
+                    new HouseholdMember { Name = "One", UserId = "user-1", IsActive = true, ShareBalanceSheetConsent = true },
+                    new HouseholdMember { Name = "Two", UserId = "user-2", IsActive = true, ShareBalanceSheetConsent = true },
                     new HouseholdMember { Name = "Former", UserId = "user-3", IsActive = false }
                 ]
             },
@@ -105,7 +105,13 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
     [TestMethod]
     public async Task CurrentUserCanLinkOnlyAnUnlinkedMemberWithMatchingAccountEmail()
     {
-        _context.Users.Add(new ApplicationUser { Id = "user-1", Email = "one@example.com", UserName = "one@example.com" });
+        _context.Users.Add(new ApplicationUser
+        {
+            Id = "user-1",
+            Email = "one@example.com",
+            UserName = "one@example.com",
+            EmailConfirmed = true
+        });
         var household = new Household
         {
             Name = "Household",
@@ -126,6 +132,92 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
         {
             await _service.LinkCurrentUserToMemberAsync(household.HouseholdId, household.Members.Last().HouseholdMemberId);
             Assert.Fail("Expected an email mismatch to be denied.");
+        }
+
+        [TestMethod]
+        public async Task UnverifiedEmailCannotBeUsedToLinkHouseholdMember()
+        {
+            _context.Users.Add(new ApplicationUser { Id = "user-1", Email = "one@example.com", UserName = "one@example.com" });
+            var household = new Household
+            {
+                Name = "Household",
+                Members = [new HouseholdMember { Name = "One", Email = "one@example.com", IsActive = true }]
+            };
+            _context.Households.Add(household);
+            await _context.SaveChangesAsync();
+
+            await Assert.ThrowsExceptionAsync<UnauthorizedAccessException>(() =>
+                _service.LinkCurrentUserToMemberAsync(household.HouseholdId, household.Members.Single().HouseholdMemberId));
+
+            Assert.IsNull((await _context.HouseholdMembers.FindAsync(household.Members.Single().HouseholdMemberId))!.UserId);
+        }
+
+        [TestMethod]
+        public async Task SharingRequiresConsentFromEveryActiveLinkedMemberAndCanBeWithdrawn()
+        {
+            var household = new Household
+            {
+                Name = "Household",
+                Members =
+                [
+                    new HouseholdMember { Name = "One", UserId = "user-1", IsActive = true, ShareBalanceSheetConsent = true },
+                    new HouseholdMember { Name = "Two", UserId = "user-2", IsActive = true }
+                ]
+            };
+            _context.Households.Add(household);
+            await _context.SaveChangesAsync();
+
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+                _service.SetBalanceSheetSharingAsync(household.HouseholdId, true));
+
+            var member = household.Members.First(candidate => candidate.UserId == "user-2");
+            member.ShareBalanceSheetConsent = true;
+            await _context.SaveChangesAsync();
+            await _service.SetBalanceSheetSharingAsync(household.HouseholdId, true);
+            Assert.AreEqual(1, (await _service.GetAvailableSharedHouseholdsAsync()).Count);
+
+            await _service.SetCurrentUserBalanceSheetConsentAsync(household.HouseholdId, false);
+            Assert.IsFalse((await _context.Households.FindAsync(household.HouseholdId))!.ShareBalanceSheet);
+            Assert.AreEqual(0, (await _service.GetAvailableSharedHouseholdsAsync()).Count);
+        }
+
+        [TestMethod]
+        public async Task SharedBalanceSheetIncludesLegacyTransactionsOnlyWhenLinkedToHouseholdAccount()
+        {
+            var household = new Household
+            {
+                Name = "Household",
+                ShareBalanceSheet = true,
+                Members = [new HouseholdMember
+                {
+                    Name = "One",
+                    UserId = "user-1",
+                    IsActive = true,
+                    ShareBalanceSheetConsent = true
+                }]
+            };
+            var account = new BankSource
+            {
+                Name = "Legacy account",
+                UserId = "user-1",
+                InitialBalance = 100m,
+                Transactions =
+                [
+                    new Transaction { Amount = 20m, IsIncome = true, UserId = null },
+                    new Transaction { Amount = 10m, IsIncome = false, UserId = null },
+                    new Transaction { Amount = 50m, IsIncome = true, UserId = "user-2" }
+                ]
+            };
+            _context.Households.Add(household);
+            _context.BankSources.Add(account);
+            _context.Transactions.Add(new Transaction { Amount = 1000m, IsIncome = true, UserId = null });
+            await _context.SaveChangesAsync();
+
+            var data = await _service.GetSharedBalanceSheetAsync(household.HouseholdId);
+
+            Assert.IsNotNull(data);
+            Assert.AreEqual(110m, data.BankSources.Single().CurrentBalance);
+            Assert.AreEqual(2, data.Transactions.Count);
         }
         catch (UnauthorizedAccessException)
         {
