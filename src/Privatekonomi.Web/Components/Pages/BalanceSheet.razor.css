@@ -1,0 +1,22 @@
+.balance-sheet-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.balance-sheet-row > div {
+    min-width: 0;
+}
+
+.balance-sheet-row > .mud-typography {
+    flex-shrink: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 599px) {
+    .balance-sheet-row {
+        gap: 0.5rem;
+    }
+}

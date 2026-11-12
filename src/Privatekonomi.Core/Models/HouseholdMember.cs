@@ -7,6 +7,7 @@ public class HouseholdMember
     public string Name { get; set; } = string.Empty;
     public string? Email { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool ShareBalanceSheetConsent { get; set; }
     public DateTime JoinedDate { get; set; }
     public DateTime? LeftDate { get; set; }
     

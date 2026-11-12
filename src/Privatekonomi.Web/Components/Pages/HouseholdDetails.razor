@@ -4,6 +4,8 @@
 @using Privatekonomi.Core.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject IHouseholdService HouseholdService
+@inject IHouseholdBalanceSheetService HouseholdBalanceSheetService
+@inject ICurrentUserService CurrentUserService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
@@ -37,6 +39,31 @@ else
         </MudButton>
     </MudStack>
 
+    @if (!string.IsNullOrWhiteSpace(CurrentUserService.UserId) &&
+         household.Members.Any(member => member.IsActive && member.UserId == CurrentUserService.UserId))
+    {
+        var currentUserMember = household.Members.First(member =>
+            member.IsActive && member.UserId == CurrentUserService.UserId);
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6">Delning av balansräkning</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                När delning är aktiverad kan alla aktiva medlemmar med kopplat appkonto se varandras konton, investeringar, tillgångar och lån i hushållets balansräkning.
+                Poster utan kopplad användare delas inte.
+            </MudText>
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-2">
+                Delningen gäller alla poster för hushållets kopplade användare. Markera eventuella dubbla lån som exkluderade på lånesidan.
+            </MudAlert>
+            <MudSwitch T="bool" Value="currentUserMember.ShareBalanceSheetConsent" ValueChanged="SetCurrentUserBalanceSheetConsent"
+                       Color="Color.Primary" Label="Jag samtycker till att dela mina ekonomiska uppgifter med hushållet" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                Delning kan aktiveras först när alla aktiva medlemmar med kopplade appkonton har samtyckt. Alla kan stänga av delningen; återkallat samtycke stänger av hushållsvyn.
+            </MudText>
+            <MudSwitch T="bool" Value="household.ShareBalanceSheet" ValueChanged="SetBalanceSheetSharing"
+                       Disabled="@(!household.ShareBalanceSheet && !AllLinkedMembersConsented)"
+                       Color="Color.Primary" Label="Dela balansräkning med hushållet" />
+        </MudPaper>
+    }
+
     <MudTabs Elevation="2" Rounded="true" Color="Color.Primary" Class="mt-4">
         <MudTabPanel Text="Medlemmar" Icon="@Icons.Material.Filled.People">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddMemberDialog" Class="my-4">
@@ -61,6 +88,13 @@ else
                         <MudTd DataLabel="E-post">@context.Email</MudTd>
                         <MudTd DataLabel="Gick med">@context.JoinedDate.ToString("yyyy-MM-dd")</MudTd>
                         <MudTd DataLabel="Åtgärder">
+                            @if (context.UserId == null && !string.IsNullOrWhiteSpace(CurrentUserService.UserId))
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                                           OnClick="@(() => LinkMemberToCurrentUser(context.HouseholdMemberId))">
+                                    Koppla mitt konto
+                                </MudButton>
+                            }
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveMember(context.HouseholdMemberId))" />
                         </MudTd>
                     </RowTemplate>
@@ -665,6 +699,69 @@ else
             memberTotals = await HouseholdService.GetMemberTotalSharesAsync(HouseholdId);
             await LoadActivities();
             await LoadTasks();
+        }
+    }
+
+    private async Task SetBalanceSheetSharing(bool enabled)
+    {
+        try
+        {
+            await HouseholdBalanceSheetService.SetBalanceSheetSharingAsync(HouseholdId, enabled);
+            if (household is not null)
+                household.ShareBalanceSheet = enabled;
+            Snackbar.Add(enabled ? "Balansräkningen delas med hushållet" : "Delning av balansräkningen har stängts av", Severity.Success);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Snackbar.Add("Endast aktiva hushållsmedlemmar kan ändra delningsinställningen", Severity.Error);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private bool AllLinkedMembersConsented =>
+        household?.Members
+            .Where(member => member.IsActive && !string.IsNullOrWhiteSpace(member.UserId))
+            .All(member => member.ShareBalanceSheetConsent) == true;
+
+    private async Task SetCurrentUserBalanceSheetConsent(bool enabled)
+    {
+        try
+        {
+            await HouseholdBalanceSheetService.SetCurrentUserBalanceSheetConsentAsync(HouseholdId, enabled);
+            if (household is not null)
+            {
+                var member = household.Members.First(candidate =>
+                    candidate.IsActive && candidate.UserId == CurrentUserService.UserId);
+                member.ShareBalanceSheetConsent = enabled;
+                if (!enabled)
+                    household.ShareBalanceSheet = false;
+            }
+            Snackbar.Add(enabled ? "Ditt samtycke till delning har sparats" : "Ditt samtycke har återkallats", Severity.Success);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Snackbar.Add("Endast aktiva medlemmar med kopplat appkonto kan ändra sitt samtycke", Severity.Error);
+        }
+    }
+
+    private async Task LinkMemberToCurrentUser(int householdMemberId)
+    {
+        try
+        {
+            await HouseholdBalanceSheetService.LinkCurrentUserToMemberAsync(HouseholdId, householdMemberId);
+            await LoadHousehold();
+            Snackbar.Add("Ditt appkonto har kopplats till hushållsmedlemmen", Severity.Success);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Snackbar.Add("Verifiera ditt appkontos e-postadress; den måste matcha en aktiv, okopplad hushållsmedlem", Severity.Error);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
         }
     }
 

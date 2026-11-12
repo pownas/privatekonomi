@@ -11,6 +11,7 @@ public class Asset : ITemporalEntity
     public DateTime? PurchaseDate { get; set; }
     public string Currency { get; set; } = "SEK";
     public string? Location { get; set; } // For real estate or where item is stored
+    public string? ChartOfAccountsCode { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     
