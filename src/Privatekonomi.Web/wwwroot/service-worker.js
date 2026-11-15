@@ -1,5 +1,5 @@
 // Service Worker for Privatekonomi PWA
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE_NAME = `privatekonomi-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `privatekonomi-dynamic-${CACHE_VERSION}`;
 const OFFLINE_PAGE = '/offline.html';
@@ -84,7 +84,8 @@ self.addEventListener('fetch', (event) => {
   // Handle API calls and dynamic content with network-first strategy
   if (url.pathname.startsWith('/api/') || 
       url.pathname.startsWith('/Account/') ||
-      url.pathname.includes('/_framework/')) {
+      url.pathname.includes('/_framework/') ||
+      url.pathname.startsWith('/_content/')) {
     event.respondWith(networkFirst(request));
     return;
   }
