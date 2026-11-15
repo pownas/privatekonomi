@@ -304,6 +304,7 @@ try
             context.Database.EnsureCreated();
         }
 
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
         await PasskeySchemaInitializer.EnsurePasskeyTableAsync(context);
         
         // For JsonFile, load existing data

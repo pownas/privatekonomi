@@ -66,7 +66,7 @@ else
 
     <MudTabs Elevation="2" Rounded="true" Color="Color.Primary" Class="mt-4">
         <MudTabPanel Text="Medlemmar" Icon="@Icons.Material.Filled.People">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddMemberDialog" Class="my-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddMemberDialog" Class="my-4" Disabled="@(!CanManageMembers)">
                 Lägg till medlem
             </MudButton>
 
@@ -95,7 +95,7 @@ else
                                     Koppla mitt konto
                                 </MudButton>
                             }
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveMember(context.HouseholdMemberId))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveMember(context.HouseholdMemberId))" Disabled="@(!CanManageMembers)" />
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -634,6 +634,8 @@ else
     public int HouseholdId { get; set; }
 
     private Household? household;
+    private bool CanManageMembers => CurrentUserService.IsAuthenticated &&
+        household?.Members.Any(member => member.IsActive && member.UserId == CurrentUserService.UserId) == true;
     private Dictionary<int, decimal>? memberTotals;
     private List<BreadcrumbItem> breadcrumbs = new();
     
@@ -812,15 +814,29 @@ else
         if (string.IsNullOrWhiteSpace(newMember.Name))
             return;
 
-        await HouseholdService.AddMemberAsync(newMember);
-        await LoadHousehold();
-        CloseAddMemberDialog();
+        try
+        {
+            await HouseholdService.AddMemberAsync(newMember);
+            await LoadHousehold();
+            CloseAddMemberDialog();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 
     private async Task RemoveMember(int memberId)
     {
-        await HouseholdService.RemoveMemberAsync(memberId);
-        await LoadHousehold();
+        try
+        {
+            await HouseholdService.RemoveMemberAsync(memberId);
+            await LoadHousehold();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 
     private void OpenAddExpenseDialog()

@@ -37,12 +37,33 @@ public class BalanceSheetAccountPlanTests
     }
 
     [TestMethod]
+    [DataRow(1000, true, 250)]
+    [DataRow(1250, true, 0)]
+    [DataRow(1500, true, -250)]
+    public void CreditCardPaymentOrRefundCrossingZeroOffsetsLiabilities(int amount, bool isIncome, int expectedDebt)
+    {
+        var account = new BankSource
+        {
+            AccountType = "credit_card",
+            InitialBalance = -1250m,
+            Transactions = [new Transaction { Amount = amount, IsIncome = isIncome }]
+        };
+
+        Assert.AreEqual((decimal)expectedDebt, BalanceSheetAccountPlan.GetBankSourceLiabilityValue(account));
+        Assert.AreEqual((decimal)expectedDebt, BalanceSheetAccountPlan.GetTotalLiabilityValue([account], []));
+    }
+
+    [TestMethod]
     public void AssetTypesReceiveRelevantSuggestedCodes()
     {
         Assert.AreEqual("1110", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Fastighet" }).Number);
         Assert.AreEqual("1130", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Mark" }).Number);
         Assert.AreEqual("1240", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Fordon" }).Number);
         Assert.AreEqual("1250", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Elektronik" }).Number);
+        Assert.AreEqual("1250", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Mobil" }).Number);
+        Assert.AreEqual("1250", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Mobiltelefon" }).Number);
+        Assert.AreEqual("1220", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Möbler" }).Number);
+        Assert.AreEqual("1220", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Möbel" }).Number);
         Assert.AreEqual("1290", BalanceSheetAccountPlan.ForAsset(new Asset { Type = "Samlarföremål" }).Number);
     }
 

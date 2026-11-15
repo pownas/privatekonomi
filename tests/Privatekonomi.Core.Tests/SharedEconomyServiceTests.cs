@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
@@ -11,6 +12,7 @@ public class SharedEconomyServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly HouseholdService _householdService;
+    private bool _disposed;
 
     public SharedEconomyServiceTests()
     {
@@ -19,7 +21,7 @@ public class SharedEconomyServiceTests : IDisposable
             .Options;
 
         _context = new PrivatekonomyContext(options);
-        _householdService = new HouseholdService(_context);
+        _householdService = new HouseholdService(_context, Mock.Of<ICurrentUserService>());
     }
 
     [TestCleanup]
@@ -30,8 +32,11 @@ public class SharedEconomyServiceTests : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return;
         _context?.Database.EnsureDeleted();
         _context?.Dispose();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 

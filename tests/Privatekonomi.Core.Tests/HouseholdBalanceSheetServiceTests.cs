@@ -10,14 +10,15 @@ namespace Privatekonomi.Core.Tests;
 public class HouseholdBalanceSheetServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
+    private readonly DbContextOptions<PrivatekonomyContext> _options;
     private readonly HouseholdBalanceSheetService _service;
 
     public HouseholdBalanceSheetServiceTests()
     {
-        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+        _options = new DbContextOptionsBuilder<PrivatekonomyContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _context = new PrivatekonomyContext(options);
+        _context = new PrivatekonomyContext(_options);
 
         var currentUser = new Mock<ICurrentUserService>();
         currentUser.SetupGet(service => service.UserId).Returns("user-1");
@@ -61,6 +62,37 @@ public class HouseholdBalanceSheetServiceTests : IDisposable
         Assert.AreEqual(1, available.Count);
         Assert.IsNotNull(data);
         CollectionAssert.AreEquivalent(new[] { "Own", "Partner" }, data.Assets.Select(asset => asset.Name).ToArray());
+    }
+
+    [TestMethod]
+    public async Task DeactivationInAnotherSessionExcludesPreviouslyTrackedMembers()
+    {
+        var household = new Household
+        {
+            Name = "Shared",
+            ShareBalanceSheet = true,
+            Members =
+            [
+                new HouseholdMember { Name = "One", UserId = "user-1", ShareBalanceSheetConsent = true },
+                new HouseholdMember { Name = "Two", UserId = "user-2", ShareBalanceSheetConsent = true }
+            ]
+        };
+        _context.Households.Add(household);
+        _context.Assets.AddRange(
+            new Asset { Name = "Own", UserId = "user-1" },
+            new Asset { Name = "Partner", UserId = "user-2" });
+        await _context.SaveChangesAsync();
+        Assert.AreEqual(2, (await _service.GetSharedBalanceSheetAsync(household.HouseholdId))!.Assets.Count);
+
+        await using var otherSession = new PrivatekonomyContext(_options);
+        var departed = await otherSession.HouseholdMembers.SingleAsync(member => member.UserId == "user-2");
+        departed.IsActive = false;
+        await otherSession.SaveChangesAsync();
+
+        var data = await _service.GetSharedBalanceSheetAsync(household.HouseholdId);
+
+        Assert.IsNotNull(data);
+        Assert.AreEqual("Own", data.Assets.Single().Name);
     }
 
     [TestMethod]

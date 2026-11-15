@@ -37,6 +37,7 @@ public sealed class HouseholdBalanceSheetService : IHouseholdBalanceSheetService
             return null;
 
         var household = await _context.Households
+            .AsNoTracking()
             .Include(h => h.Members)
             .FirstOrDefaultAsync(h => h.HouseholdId == householdId && h.ShareBalanceSheet &&
                                       h.Members.Any(m => m.IsActive && m.UserId == userId && m.ShareBalanceSheetConsent) &&

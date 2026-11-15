@@ -15,7 +15,12 @@ public static class BalanceSheetAccountPlan
         Normalize(account.AccountType) is "credit_card" or "loan";
 
     public static decimal GetBankSourceLiabilityValue(BankSource account) =>
-        IsLiabilityBankSource(account) ? Math.Abs(account.CurrentBalance) : 0;
+        Normalize(account.AccountType) switch
+        {
+            "credit_card" => -account.CurrentBalance,
+            "loan" => Math.Abs(account.CurrentBalance),
+            _ => 0
+        };
 
     public static decimal GetTotalLiabilityValue(IEnumerable<BankSource> bankSources, IEnumerable<Loan> loans) =>
         bankSources.Sum(GetBankSourceLiabilityValue) +
@@ -56,11 +61,11 @@ public static class BalanceSheetAccountPlan
             ? new BalanceSheetAccountCode("1130", "Mark och markanläggningar")
             : ContainsAny(type, "fastighet", "bostad", "hus", "villa")
                 ? new BalanceSheetAccountCode("1110", "Byggnader")
-                : ContainsAny(type, "fordon", "bil", "motorcykel", "båt")
-                    ? new BalanceSheetAccountCode("1240", "Bilar och andra transportmedel")
-                    : ContainsAny(type, "elektronik", "dator", "mobil")
-                        ? new BalanceSheetAccountCode("1250", "Datorer och kringutrustning")
-                        : ContainsAny(type, "möbel", "inventarie")
+                : ContainsAny(type, "elektronik", "dator", "mobil")
+                    ? new BalanceSheetAccountCode("1250", "Datorer och kringutrustning")
+                    : ContainsAny(type, "fordon", "bil", "motorcykel", "båt")
+                        ? new BalanceSheetAccountCode("1240", "Bilar och andra transportmedel")
+                        : ContainsAny(type, "möbel", "möbler", "inventarie")
                             ? new BalanceSheetAccountCode("1220", "Inventarier och verktyg")
                             : new BalanceSheetAccountCode("1290", "Övriga materiella anläggningstillgångar");
 
