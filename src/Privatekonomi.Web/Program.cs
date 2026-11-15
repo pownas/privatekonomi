@@ -304,12 +304,15 @@ try
             context.Database.EnsureCreated();
         }
 
+        await IdentitySchemaInitializer.EnsureColumnsAsync(context);
         await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
         await PasskeySchemaInitializer.EnsurePasskeyTableAsync(context);
         
         // For JsonFile, load existing data
         if (storageSettings.Provider.Equals("JsonFile", StringComparison.OrdinalIgnoreCase))
         {
+            await scope.ServiceProvider.GetRequiredService<Privatekonomi.Core.Services.Persistence.JsonIdentityPersistenceService>()
+                .LoadAsync(context);
             var persistenceService = scope.ServiceProvider.GetService<Privatekonomi.Core.Services.Persistence.IDataPersistenceService>();
             if (persistenceService != null && persistenceService.Exists())
             {
@@ -324,24 +327,15 @@ try
         TestDataSeeder.SeedProductionReferenceData(context);
         logger.LogInformation("Production reference data seeded successfully");
         
-        // Seed test data only if configured
-        if (storageSettings.SeedTestData)
-        {
-            logger.LogInformation("Seeding test data...");
-            await TestDataSeeder.SeedTestDataAsync(context, userManager);
-            logger.LogInformation("Database seeding completed successfully");
-        }
-        else
-        {
-            logger.LogInformation("Test data seeding is disabled in configuration");
-        }
+        await DevelopmentDataInitializer.InitializeAsync(
+            context, userManager, app.Environment, app.Configuration);
     }
 }
 catch (Exception ex)
 {
-    // Log the error but don't crash the application
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred while seeding the database. Application will continue without test data.");
+    logger.LogCritical(ex, "Database initialization failed. Startup stopped to protect existing data.");
+    throw;
 }
 
 // Configure the HTTP request pipeline.
@@ -554,7 +548,7 @@ app.MapPost("/Account/PerformLogin", async (
         return Results.BadRequest();
 
     var form = await context.Request.ReadFormAsync();
-    var email = form["Email"].ToString();
+    var email = form["Email"].ToString().Trim();
     var password = form["Password"].ToString();
     var rememberMe = form["RememberMe"].ToString() == "on" || form["RememberMe"].ToString() == "true";
     var returnUrl = form["ReturnUrl"].ToString();

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Privatekonomi.Core.Models;
+﻿using Privatekonomi.Core.Models;
 using System.Globalization;
 
 namespace Privatekonomi.Core.Data;
@@ -16,16 +15,13 @@ public static class TestDataSeeder
         SeedChallengeTemplates(context);
     }
 
-    public static async Task SeedTestDataAsync(PrivatekonomyContext context, UserManager<ApplicationUser> userManager)
+    public static Task SeedTestDataAsync(PrivatekonomyContext context, string testUserId)
     {
         // Check if there are already transactions to avoid duplicate seeding
         if (context.Transactions.Any())
         {
-            return;
+            return Task.CompletedTask;
         }
-
-        // Create test users first
-        var testUserId = await SeedUsers(userManager);
         
         // Seed data with user association
         SeedTransactions(context, testUserId);
@@ -74,36 +70,7 @@ public static class TestDataSeeder
         // SeedNotificationPreferences(context, testUserId);
         // SeedDoNotDisturbSchedules(context, testUserId);
         // SeedUserPrivacySettings(context, testUserId);
-    }
-    
-    private static async Task<string> SeedUsers(UserManager<ApplicationUser> userManager)
-    {
-        // Create a test user
-        var testUser = new ApplicationUser
-        {
-            UserName = "test@example.com",
-            Email = "test@example.com",
-            FirstName = "Test",
-            LastName = "Användare",
-            EmailConfirmed = true,
-            CreatedAt = DateTime.UtcNow,
-            IsSystemAdmin = true // Mark test user as system admin for testing admin dashboard
-        };
-
-        var existingUser = await userManager.FindByEmailAsync(testUser.Email);
-        if (existingUser == null)
-        {
-            await userManager.CreateAsync(testUser, "TestPassword123!");
-            existingUser = testUser;
-        }
-        else
-        {
-            // Update existing user to be system admin
-            existingUser.IsSystemAdmin = true;
-            await userManager.UpdateAsync(existingUser);
-        }
-
-        return existingUser.Id;
+        return Task.CompletedTask;
     }
 
     private static void SeedCategoryRules(PrivatekonomyContext context)

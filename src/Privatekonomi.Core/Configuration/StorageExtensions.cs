@@ -67,8 +67,10 @@ public static class StorageExtensions
 
             case "jsonfile":
                 // JsonFile uses InMemory with persistence layer
-                services.AddDbContextFactory<PrivatekonomyContext>(options =>
-                    options.UseInMemoryDatabase("PrivatekonomyDb"));
+                services.AddSingleton<JsonIdentityPersistenceService>();
+                services.AddDbContextFactory<PrivatekonomyContext>((provider, options) =>
+                    options.UseInMemoryDatabase("PrivatekonomyDb")
+                        .AddInterceptors(provider.GetRequiredService<JsonIdentityPersistenceService>()));
                 services.AddSingleton<IDataPersistenceService, JsonFilePersistenceService>();
                 services.AddHostedService<JsonFilePersistenceHostedService>();
                 break;

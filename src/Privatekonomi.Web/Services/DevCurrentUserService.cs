@@ -12,16 +12,18 @@ namespace Privatekonomi.Web.Services;
 public class DevCurrentUserService : ICurrentUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IConfiguration _configuration;
     private string? _cachedUserId;
 
-    public DevCurrentUserService(UserManager<ApplicationUser> userManager)
+    public DevCurrentUserService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
     {
         _userManager = userManager;
+        _configuration = configuration;
     }
 
     /// <summary>
     /// Returns the test user ID from the seeded test data.
-    /// This matches the user created in TestDataSeeder (test@example.com).
+    /// This matches the account configured in DemoUser:Email.
     /// </summary>
     public string? UserId
     {
@@ -30,12 +32,14 @@ public class DevCurrentUserService : ICurrentUserService
             if (_cachedUserId == null)
             {
                 // Get the test user synchronously (not ideal but necessary for property)
-                var testUser = _userManager.FindByEmailAsync("test@example.com").GetAwaiter().GetResult();
+                var email = _configuration["DemoUser:Email"];
+                var testUser = string.IsNullOrWhiteSpace(email) ? null
+                    : _userManager.FindByEmailAsync(email).GetAwaiter().GetResult();
                 _cachedUserId = testUser?.Id;
             }
             return _cachedUserId;
         }
     }
 
-    public bool IsAuthenticated => true;
+    public bool IsAuthenticated => UserId is not null;
 }

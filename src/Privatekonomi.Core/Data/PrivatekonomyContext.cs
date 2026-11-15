@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Text.Json;
 using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Data;
@@ -145,6 +147,22 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        if (Database.IsInMemory() && SchemaVersion >= IdentitySchemaVersions.Version3)
+        {
+            // InMemory does not materialize owned properties mapped to JSON columns.
+            builder.Ignore<IdentityPasskeyData>();
+            builder.Entity<IdentityUserPasskey<string>>().Property(passkey => passkey.Data)
+                .HasConversion(
+                    data => JsonSerializer.Serialize(data, (JsonSerializerOptions?)null),
+                    json => JsonSerializer.Deserialize<IdentityPasskeyData>(json, (JsonSerializerOptions?)null)!)
+                .Metadata.SetValueComparer(new ValueComparer<IdentityPasskeyData>(
+                    (left, right) => JsonSerializer.Serialize(left, (JsonSerializerOptions?)null) ==
+                                     JsonSerializer.Serialize(right, (JsonSerializerOptions?)null),
+                    data => JsonSerializer.Serialize(data, (JsonSerializerOptions?)null).GetHashCode(),
+                    data => JsonSerializer.Deserialize<IdentityPasskeyData>(
+                        JsonSerializer.Serialize(data, (JsonSerializerOptions?)null), (JsonSerializerOptions?)null)!));
+        }
 
         builder.Entity<BankSource>(entity =>
         {
