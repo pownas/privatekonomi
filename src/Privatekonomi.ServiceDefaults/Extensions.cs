@@ -1,9 +1,12 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
+using Serilog;
+using Serilog.Events;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -15,6 +18,49 @@ namespace Microsoft.Extensions.Hosting;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
+    public static IHostApplicationBuilder AddPersistentFileLogging(
+        this IHostApplicationBuilder builder,
+        string applicationName)
+    {
+        var configuredLogDirectory = builder.Configuration["PRIVATEKONOMI_LOG_DIRECTORY"];
+        var logDirectory = string.IsNullOrWhiteSpace(configuredLogDirectory)
+            ? Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "logs"))
+            : Path.GetFullPath(Path.IsPathRooted(configuredLogDirectory)
+                ? configuredLogDirectory
+                : Path.Combine(builder.Environment.ContentRootPath, configuredLogDirectory));
+
+        Directory.CreateDirectory(logDirectory);
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                logDirectory,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
+        Serilog.Debugging.SelfLog.Enable(Console.Error);
+
+        var logger = new LoggerConfiguration()
+            .MinimumLevel.Is(LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Application", applicationName)
+            .WriteTo.File(
+                Path.Combine(logDirectory, $"privatekonomi-{applicationName}-.log"),
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
+                fileSizeLimitBytes: 5 * 1024 * 1024,
+                rollOnFileSizeLimit: true,
+                shared: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{Application}] {SourceContext} {Message:lj}{Properties:j}{NewLine}{Exception}",
+                formatProvider: CultureInfo.InvariantCulture)
+            .CreateLogger();
+
+        builder.Logging.AddSerilog(logger, dispose: true);
+        return builder;
+    }
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.ConfigureOpenTelemetry();

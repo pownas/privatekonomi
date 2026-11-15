@@ -46,6 +46,7 @@ CultureInfo.DefaultThreadCurrentUICulture = swedishCulture;
 
 // Add Aspire service defaults
 builder.AddServiceDefaults();
+builder.AddPersistentFileLogging("web");
 
 // Add SignalR for real-time budget alerts
 builder.Services.AddSignalR();

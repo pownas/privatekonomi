@@ -32,6 +32,7 @@ if (isRaspberryPi)
 
 // Add Aspire service defaults
 builder.AddServiceDefaults();
+builder.AddPersistentFileLogging("api");
 
 // Add services to the container.
 builder.Services.AddControllers()

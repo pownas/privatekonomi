@@ -65,6 +65,20 @@ Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Private
    ./raspberry-pi-update.sh --force
    ```
 
+### Hitta applikationsloggar och exceptions
+
+Webbappen och API:t skriver roterande loggfiler till `~/privatekonomi/logs/`, utanfor publiceringskatalogen sa att de finns kvar efter uppdateringar. Filer behalls i upp till 14 rullningar och ar begransade till 5 MB per fil. Pa Linux skyddas katalogen sa att bara tjansteanvandaren kan lasa den.
+
+```bash
+ls -lh ~/privatekonomi/logs
+tail -f ~/privatekonomi/logs/privatekonomi-web-*.log
+tail -f ~/privatekonomi/logs/privatekonomi-api-*.log
+sudo journalctl -u privatekonomi-web -n 200 --no-pager
+sudo journalctl -u privatekonomi-api -n 200 --no-pager
+```
+
+Sok efter `ERR`, `FTL` eller `Exception`. Vid ett API-fel kan `traceId` i svaret anvandas for att hitta motsvarande post i loggen. Om loggarna ska ligga pa en annan skrivbar plats kan `PRIVATEKONOMI_LOG_DIRECTORY` anges for Web- och API-tjansterna.
+
 ### Brandvagg/UFW blockerar trafik
 
 * Kontrollera status:
