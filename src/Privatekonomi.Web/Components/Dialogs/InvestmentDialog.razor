@@ -21,6 +21,13 @@
                 <MudSelectItem Value="@("Aktie")">Aktie</MudSelectItem>
                 <MudSelectItem Value="@("Fond")">Fond</MudSelectItem>
             </MudSelect>
+
+            <MudTextField @bind-Value="Investment.ChartOfAccountsCode"
+                          Label="Egen BAS-kod (valfritt)"
+                          Placeholder="Förslag: 1810"
+                          HelperText="Lämna tomt för BAS-förslag eller bankkontots kod."
+                          Variant="Variant.Outlined"
+                          Class="mb-3" />
             
             <MudNumericField @bind-Value="Investment.Quantity" 
                              Label="Antal" 

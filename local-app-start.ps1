@@ -96,14 +96,14 @@ function Test-Prerequisites {
         throw "Missing .NET SDK"
     }
     
-    # Check if .NET 10 is available
+    # Check if .NET 11 is available
     $sdks = dotnet --list-sdks | Out-String
-    if (-not ($sdks -match "9\.")) {
-        Write-LogError ".NET 10 SDK is not installed"
-        Write-LogWarning "Please run '.\local-app-install.ps1' first to install .NET 10"
-        throw "Missing .NET 10 SDK"
+    if (-not ($sdks -match "11\.")) {
+        Write-LogError ".NET 11 SDK is not installed"
+        Write-LogWarning "Please run '.\local-app-install.ps1' first to install .NET 11"
+        throw "Missing .NET 11 SDK"
     }
-    Write-LogInfo "✅ .NET 10 SDK is available"
+    Write-LogInfo "✅ .NET 11 SDK is available"
     
     # Check if solution exists
     if (-not (Test-Path "Privatekonomi.slnx")) {
@@ -251,7 +251,7 @@ function Show-Help {
     Write-Host " first to set up the development environment"
     Write-Host ""
     Write-Host "What this script does:" -ForegroundColor Yellow
-    Write-Host "  1. Checks that prerequisites are installed (.NET 10)"
+    Write-Host "  1. Checks that prerequisites are installed (.NET 11)"
     Write-Host "  2. Verifies the project builds successfully"
     Write-Host "  3. Starts the Aspire Dashboard with all services"
     Write-Host "     - Default: dotnet watch run (hot reload)"
@@ -292,7 +292,7 @@ function Main {
         Write-Host "Common solutions:" -ForegroundColor Yellow
         Write-Host "  • Run '.\local-app-install.ps1' first"
         Write-Host "  • Check that you're in the project root directory"
-    Write-Host "  • Ensure .NET 10 is installed"
+    Write-Host "  • Ensure .NET 11 is installed"
         Write-Host "  • Try running PowerShell as Administrator"
         Write-Host "  • Check for any build errors in the output above"
         exit 1

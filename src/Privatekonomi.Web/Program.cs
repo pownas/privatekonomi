@@ -193,6 +193,7 @@ builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<IBudgetSuggestionService, BudgetSuggestionService>();
 builder.Services.AddScoped<IBankSourceService, BankSourceService>();
 builder.Services.AddScoped<IHouseholdService, HouseholdService>();
+builder.Services.AddScoped<IHouseholdBalanceSheetService, HouseholdBalanceSheetService>();
 builder.Services.AddScoped<IRbacService, RbacService>();
 builder.Services.AddScoped<IChildAllowanceService, ChildAllowanceService>();
 builder.Services.AddScoped<IGoalMilestoneService, GoalMilestoneService>();
@@ -303,6 +304,7 @@ try
             context.Database.EnsureCreated();
         }
 
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
         await PasskeySchemaInitializer.EnsurePasskeyTableAsync(context);
         
         // For JsonFile, load existing data

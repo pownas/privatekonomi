@@ -87,6 +87,22 @@ När du har registrerat konton med kontonummer visas dessa automatiskt i balansr
 - Institution (om angiven)
 - Aktuellt saldo
 
+Kreditkort och konton av typen lån visas som skulder. Ett positivt kreditkortssaldo
+(till exempel efter en överbetalning eller återbetalning) minskar skuldsumman.
+För lånekonton används däremot saldots absoluta belopp.
+
+### Dela balansräkning inom hushållet
+
+- Den som skapar ett hushåll kopplas automatiskt som medlem. Delning är avstängd från början.
+- Endast aktiva medlemmar med kopplat appkonto får lägga till, ändra eller ta bort medlemmar.
+- Lägg till den andra personens e-postadress. Personen väljer **Koppla mitt konto** på sin medlemspost; appkontots e-postadress måste vara verifierad och matcha.
+- Varje aktiv, kopplad medlem måste själv samtycka innan hushållets delning kan aktiveras. Samtycke kan återkallas.
+- I äldre hushåll behöver en befintlig medlem först koppla sitt konto via sin registrerade e-postadress. Ett tomt hushåll kan inte tas över genom att lägga till sig själv; skapa i så fall ett nytt hushåll.
+
+Vid start uppgraderar Web och API automatiskt de balansräkningskolumner som saknas
+i befintliga relationsdatabaser, även om databasen skapats utan migrationshistorik.
+När individuellt samtycke införs stängs tidigare delning av tills medlemmarna har samtyckt.
+
 ## Tips och rekommendationer
 
 1. **Ge tydliga namn** - Använd beskrivande namn som "Swedbank Lönekonto" eller "Nordea Bolånekonto"

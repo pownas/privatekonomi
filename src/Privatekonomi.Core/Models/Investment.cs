@@ -24,6 +24,7 @@ public class Investment : ITemporalEntity
     public string? Currency { get; set; }
     public string? Country { get; set; }
     public string? Market { get; set; }
+    public string? ChartOfAccountsCode { get; set; }
     
     // Swedish account type specific fields
     /// <summary>

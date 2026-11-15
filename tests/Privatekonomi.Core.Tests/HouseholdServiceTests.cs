@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
@@ -11,6 +12,7 @@ public class HouseholdServiceTests : IDisposable
 {
     private readonly PrivatekonomyContext _context;
     private readonly HouseholdService _householdService;
+    private bool _disposed;
 
     public HouseholdServiceTests()
     {
@@ -19,7 +21,12 @@ public class HouseholdServiceTests : IDisposable
             .Options;
 
         _context = new PrivatekonomyContext(options);
-        _householdService = new HouseholdService(_context);
+        var currentUser = new Mock<ICurrentUserService>();
+        currentUser.SetupGet(user => user.UserId).Returns("creator");
+        currentUser.SetupGet(user => user.IsAuthenticated).Returns(true);
+        _context.Users.Add(new ApplicationUser { Id = "creator", UserName = "creator" });
+        _context.SaveChanges();
+        _householdService = new HouseholdService(_context, currentUser.Object);
     }
 
     [TestCleanup]
@@ -30,12 +37,145 @@ public class HouseholdServiceTests : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+            return;
         _context?.Database.EnsureDeleted();
         _context?.Dispose();
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 
     #region Household CRUD Tests
+
+    [TestMethod]
+    public async Task CreatorIsLinkedAtomicallyAndInvitedMembersMustLinkAndConsentThemselves()
+    {
+        var created = await _householdService.CreateHouseholdAsync(new Household
+        {
+            Name = "New household",
+            ShareBalanceSheet = true,
+            Members = [new HouseholdMember { Name = "Injected", UserId = "outsider", ShareBalanceSheetConsent = true }]
+        });
+        Assert.AreEqual("creator", created.Members.Single().UserId);
+        Assert.IsFalse(created.ShareBalanceSheet);
+        Assert.IsFalse(created.Members.Single().ShareBalanceSheetConsent);
+
+        var invited = await _householdService.AddMemberAsync(new HouseholdMember
+        {
+            HouseholdId = created.HouseholdId,
+            Name = "Invited",
+            Email = "invited@example.com",
+            UserId = "outsider",
+            ShareBalanceSheetConsent = true
+        });
+        Assert.IsNull(invited.UserId);
+        Assert.IsFalse(invited.ShareBalanceSheetConsent);
+    }
+
+    [TestMethod]
+    public async Task OutsiderCannotAddUpdateRemoveOrInjectMembersThroughHouseholdGraph()
+    {
+        var household = new Household
+        {
+            Name = "Other household",
+            Members = [new HouseholdMember { Name = "Other", UserId = "other" }]
+        };
+        _context.Households.Add(household);
+        await _context.SaveChangesAsync();
+        var member = household.Members.Single();
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.AddMemberAsync(new HouseholdMember { HouseholdId = household.HouseholdId, Email = "creator@example.com" }));
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.UpdateMemberAsync(new HouseholdMember
+            {
+                HouseholdMemberId = member.HouseholdMemberId,
+                HouseholdId = household.HouseholdId,
+                UserId = "creator"
+            }));
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.RemoveMemberAsync(member.HouseholdMemberId));
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.UpdateHouseholdAsync(new Household
+            {
+                HouseholdId = household.HouseholdId,
+                Members = [new HouseholdMember { UserId = "creator" }]
+            }));
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.DeleteHouseholdAsync(household.HouseholdId));
+        Assert.AreEqual(1, await _context.HouseholdMembers.CountAsync());
+    }
+
+    [TestMethod]
+    public async Task MemberUpdatesCannotMoveAccountsOrGrantConsent()
+    {
+        var household = await _householdService.CreateHouseholdAsync(new Household { Name = "Own" });
+        var member = household.Members.Single();
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            _householdService.UpdateMemberAsync(new HouseholdMember
+            {
+                HouseholdMemberId = member.HouseholdMemberId,
+                HouseholdId = household.HouseholdId,
+                UserId = "outsider"
+            }));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            _householdService.UpdateMemberAsync(new HouseholdMember
+            {
+                HouseholdMemberId = member.HouseholdMemberId,
+                HouseholdId = household.HouseholdId,
+                UserId = "creator",
+                ShareBalanceSheetConsent = true
+            }));
+    }
+
+    [TestMethod]
+    public async Task InvitedVerifiedUserCanJoinAndShareOnlyAfterBothMembersConsent()
+    {
+        var household = await _householdService.CreateHouseholdAsync(new Household { Name = "Shared" });
+        var invited = await _householdService.AddMemberAsync(new HouseholdMember
+        {
+            HouseholdId = household.HouseholdId,
+            Name = "Partner",
+            Email = "partner@example.com"
+        });
+        _context.Users.Add(new ApplicationUser
+        {
+            Id = "partner",
+            UserName = "partner@example.com",
+            Email = "partner@example.com",
+            EmailConfirmed = true
+        });
+        await _context.SaveChangesAsync();
+        var partner = new HouseholdBalanceSheetService(_context,
+            Mock.Of<ICurrentUserService>(user => user.IsAuthenticated && user.UserId == "partner"));
+        var creator = new HouseholdBalanceSheetService(_context,
+            Mock.Of<ICurrentUserService>(user => user.IsAuthenticated && user.UserId == "creator"));
+
+        await partner.LinkCurrentUserToMemberAsync(household.HouseholdId, invited.HouseholdMemberId);
+        await creator.SetCurrentUserBalanceSheetConsentAsync(household.HouseholdId, true);
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            creator.SetBalanceSheetSharingAsync(household.HouseholdId, true));
+
+        await partner.SetCurrentUserBalanceSheetConsentAsync(household.HouseholdId, true);
+        await creator.SetBalanceSheetSharingAsync(household.HouseholdId, true);
+        Assert.IsNotNull(await partner.GetSharedBalanceSheetAsync(household.HouseholdId));
+
+        await _householdService.RemoveMemberAsync(invited.HouseholdMemberId);
+        Assert.IsNull(await partner.GetSharedBalanceSheetAsync(household.HouseholdId));
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            new HouseholdService(_context, Mock.Of<ICurrentUserService>(user => user.IsAuthenticated && user.UserId == "partner"))
+                .AddMemberAsync(new HouseholdMember { HouseholdId = household.HouseholdId, Name = "Rejoin" }));
+    }
+
+    [TestMethod]
+    public async Task EmptyLegacyHouseholdCannotBeClaimedByAddingFirstMember()
+    {
+        var household = new Household { Name = "Legacy" };
+        _context.Households.Add(household);
+        await _context.SaveChangesAsync();
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() =>
+            _householdService.AddMemberAsync(new HouseholdMember { HouseholdId = household.HouseholdId, UserId = "creator" }));
+    }
 
     [TestMethod]
     public async Task UpdateHouseholdAsyncUpdatesHouseholdSuccessfully()

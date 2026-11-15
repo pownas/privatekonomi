@@ -3,6 +3,8 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @inject IHouseholdService HouseholdService
+@inject ICurrentUserService CurrentUserService
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
 <PageTitle>Hushåll</PageTitle>
@@ -43,11 +45,11 @@
                         </CardHeaderContent>
                         <CardHeaderActions>
                             <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                                <MudMenuItem OnClick="@(() => OpenEditDialog(household))">
+                                <MudMenuItem OnClick="@(() => OpenEditDialog(household))" Disabled="@(!CanManageHousehold(household))">
                                     <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" Size="Size.Small" />
                                     Redigera namn
                                 </MudMenuItem>
-                                <MudMenuItem OnClick="@(() => DeleteHousehold(household.HouseholdId))">
+                                <MudMenuItem OnClick="@(() => DeleteHousehold(household.HouseholdId))" Disabled="@(!CanManageHousehold(household))">
                                     <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-2" Size="Size.Small" Color="Color.Error" />
                                     <MudText Color="Color.Error">Ta bort</MudText>
                                 </MudMenuItem>
@@ -110,6 +112,8 @@
 
 @code {
     private List<Household>? households;
+    private bool CanManageHousehold(Household household) => CurrentUserService.IsAuthenticated &&
+        household.Members.Any(member => member.IsActive && member.UserId == CurrentUserService.UserId);
     private bool showCreateDialog = false;
     private bool showEditDialog = false;
     private Household newHousehold = new Household();
@@ -170,9 +174,16 @@
         if (string.IsNullOrWhiteSpace(editHousehold.Name))
             return;
 
-        await HouseholdService.UpdateHouseholdAsync(editHousehold);
-        await LoadHouseholds();
-        CloseEditDialog();
+        try
+        {
+            await HouseholdService.UpdateHouseholdAsync(editHousehold);
+            await LoadHouseholds();
+            CloseEditDialog();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 
     private void ViewHousehold(int householdId)
@@ -182,7 +193,14 @@
 
     private async Task DeleteHousehold(int householdId)
     {
-        await HouseholdService.DeleteHouseholdAsync(householdId);
-        await LoadHouseholds();
+        try
+        {
+            await HouseholdService.DeleteHouseholdAsync(householdId);
+            await LoadHouseholds();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

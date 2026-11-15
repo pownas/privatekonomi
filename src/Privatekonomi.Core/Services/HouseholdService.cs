@@ -7,10 +7,12 @@ namespace Privatekonomi.Core.Services;
 public class HouseholdService : IHouseholdService
 {
     private readonly PrivatekonomyContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public HouseholdService(PrivatekonomyContext context)
+    public HouseholdService(PrivatekonomyContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     // Household operations
@@ -34,7 +36,24 @@ public class HouseholdService : IHouseholdService
 
     public async Task<Household> CreateHouseholdAsync(Household household)
     {
-        household.CreatedDate = DateTime.Now;
+        var userId = GetAuthenticatedUserId();
+        var user = await _context.Users.AsNoTracking().FirstAsync(user => user.Id == userId);
+        household = new Household
+        {
+            Name = household.Name,
+            Description = household.Description,
+            CreatedDate = DateTime.Now,
+            Members =
+            [
+                new HouseholdMember
+                {
+                    Name = user.FirstName ?? user.UserName ?? "Jag",
+                    Email = user.Email,
+                    UserId = userId,
+                    JoinedDate = DateTime.Now
+                }
+            ]
+        };
         _context.Households.Add(household);
         await _context.SaveChangesAsync();
         return household;
@@ -42,13 +61,18 @@ public class HouseholdService : IHouseholdService
 
     public async Task<Household> UpdateHouseholdAsync(Household household)
     {
-        _context.Households.Update(household);
+        await RequireActiveMemberAsync(household.HouseholdId);
+        var existing = await _context.Households.FirstAsync(h => h.HouseholdId == household.HouseholdId);
+        existing.Name = household.Name;
+        existing.Description = household.Description;
+        existing.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return household;
+        return existing;
     }
 
     public async Task<bool> DeleteHouseholdAsync(int id)
     {
+        await RequireActiveMemberAsync(id);
         var household = await _context.Households.FindAsync(id);
         if (household == null)
             return false;
@@ -61,8 +85,15 @@ public class HouseholdService : IHouseholdService
     // Member operations
     public async Task<HouseholdMember> AddMemberAsync(HouseholdMember member)
     {
-        member.JoinedDate = DateTime.Now;
-        member.IsActive = true;
+        await RequireActiveMemberAsync(member.HouseholdId);
+        member = new HouseholdMember
+        {
+            HouseholdId = member.HouseholdId,
+            Name = member.Name,
+            Email = member.Email,
+            DateOfBirth = member.DateOfBirth,
+            JoinedDate = DateTime.Now
+        };
         _context.HouseholdMembers.Add(member);
         await _context.SaveChangesAsync();
         return member;
@@ -70,21 +101,52 @@ public class HouseholdService : IHouseholdService
 
     public async Task<HouseholdMember> UpdateMemberAsync(HouseholdMember member)
     {
-        _context.HouseholdMembers.Update(member);
+        var persisted = await _context.HouseholdMembers.AsNoTracking()
+            .FirstAsync(candidate => candidate.HouseholdMemberId == member.HouseholdMemberId);
+        await RequireActiveMemberAsync(persisted.HouseholdId);
+        if (member.HouseholdId != persisted.HouseholdId ||
+            member.UserId != persisted.UserId ||
+            member.ShareBalanceSheetConsent != persisted.ShareBalanceSheetConsent)
+            throw new InvalidOperationException("Kontokoppling och samtycke får bara ändras av medlemmen själv.");
+
+        var existing = await _context.HouseholdMembers.FindAsync(member.HouseholdMemberId);
+        existing!.Name = member.Name;
+        existing.Email = member.Email;
+        existing.DateOfBirth = member.DateOfBirth;
+        existing.IsActive = member.IsActive;
+        existing.LeftDate = member.IsActive ? null : DateTime.Now;
         await _context.SaveChangesAsync();
-        return member;
+        return existing;
     }
 
     public async Task<bool> RemoveMemberAsync(int memberId)
     {
-        var member = await _context.HouseholdMembers.FindAsync(memberId);
-        if (member == null)
+        var householdId = await _context.HouseholdMembers
+            .Where(member => member.HouseholdMemberId == memberId)
+            .Select(member => (int?)member.HouseholdId)
+            .FirstOrDefaultAsync();
+        if (householdId is null)
             return false;
+        await RequireActiveMemberAsync(householdId.Value);
+        var member = await _context.HouseholdMembers.FindAsync(memberId);
 
-        member.IsActive = false;
+        member!.IsActive = false;
         member.LeftDate = DateTime.Now;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    private string GetAuthenticatedUserId() =>
+        _currentUserService.IsAuthenticated && !string.IsNullOrWhiteSpace(_currentUserService.UserId)
+            ? _currentUserService.UserId
+            : throw new UnauthorizedAccessException("Du måste vara inloggad för att hantera hushållet.");
+
+    private async Task RequireActiveMemberAsync(int householdId)
+    {
+        var userId = GetAuthenticatedUserId();
+        if (!await _context.HouseholdMembers.AnyAsync(member =>
+                member.HouseholdId == householdId && member.IsActive && member.UserId == userId))
+            throw new UnauthorizedAccessException("Endast aktiva, kopplade hushållsmedlemmar får hantera hushållet.");
     }
 
     public async Task<IEnumerable<HouseholdMember>> GetHouseholdMembersAsync(int householdId)

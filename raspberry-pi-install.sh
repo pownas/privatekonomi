@@ -9,7 +9,7 @@
 #
 # Summary of setup performed:
 # 1. Check system requirements and dependencies
-# 2. Install/verify .NET 10 SDK
+# 2. Install/verify .NET 11 SDK
 # 3. Configure PATH for .NET tools
 # 4. Clone or update Privatekonomi repository
 # 5. Install Entity Framework CLI tools
@@ -208,24 +208,24 @@ EOF
     log_success "NuGet.Config skapad"
 }
 
-# Install .NET 10 SDK
-install_dotnet_10() {
-    log_section "Installerar .NET 10 SDK"
+# Install .NET 11 SDK
+install_dotnet_11() {
+    log_section "Installerar .NET 11 SDK"
     
     if command -v dotnet &> /dev/null; then
         local current_version=$(dotnet --version 2>/dev/null || echo "Okänd")
         log_info "Befintlig .NET-version: $current_version"
         
-        if [[ "$current_version" == 10.* ]]; then
-            log_success ".NET 10 SDK är redan installerat"
+        if [[ "$current_version" == 11.* ]]; then
+            log_success ".NET 11 SDK är redan installerat"
             return 0
         fi
     fi
     
-    log_info "Laddar ner och installerar .NET 10 SDK..."
+    log_info "Laddar ner och installerar .NET 11 SDK..."
     
     # Download and run the install script
-    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 10.0
+    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 11.0
     
     # Add to PATH for current session
     export PATH="$PATH:$HOME/.dotnet"
@@ -241,9 +241,9 @@ install_dotnet_10() {
     # Verify installation
     if [ -f "$HOME/.dotnet/dotnet" ]; then
         local version=$($HOME/.dotnet/dotnet --version)
-        log_success ".NET 10 SDK installerat: version $version"
+        log_success ".NET 11 SDK installerat: version $version"
     else
-        log_error "Misslyckades med att installera .NET 10 SDK"
+        log_error "Misslyckades med att installera .NET 11 SDK"
         exit 1
     fi
 }
@@ -552,10 +552,10 @@ install_ef_tools() {
     log_info "Installerar dotnet-ef globalt..."
     
     # Try to install, if it fails due to cache corruption, clear cache and retry
-    if ! dotnet tool install --global dotnet-ef 2>&1; then
+    if ! dotnet tool install --global dotnet-ef --version 10.0.12 2>&1; then
         log_warning "Installation misslyckades, försöker uppdatera befintligt verktyg..."
         
-        if ! dotnet tool update --global dotnet-ef 2>&1; then
+        if ! dotnet tool update --global dotnet-ef --version 10.0.12 2>&1; then
             log_warning "Uppdatering misslyckades, rensar NuGet cache och försöker igen..."
             
             # Clear the NuGet cache to resolve potential corruption
@@ -566,14 +566,13 @@ install_ef_tools() {
             
             # Try fresh install after cache clear
             log_info "Försöker installera igen efter cache-rensning..."
-            if ! dotnet tool install --global dotnet-ef; then
-                # If still failing, try with explicit version matching .NET SDK
+            if ! dotnet tool install --global dotnet-ef --version 10.0.12; then
+                # Retry the selected EF Core tool version explicitly
                 log_warning "Installation utan version misslyckades, försöker med specifik version..."
-                local dotnet_version=$(dotnet --version | cut -d'.' -f1)
-                if ! dotnet tool install --global dotnet-ef --version ${dotnet_version}.0.0; then
+                if ! dotnet tool install --global dotnet-ef --version 10.0.12; then
                     # Last resort: try with --ignore-failed-sources flag (Solution 3 from issue)
                     log_warning "Försöker med --ignore-failed-sources som sista utväg..."
-                    if ! dotnet tool install --global dotnet-ef --ignore-failed-sources; then
+                    if ! dotnet tool install --global dotnet-ef --version 10.0.12 --ignore-failed-sources; then
                         log_error "Misslyckades att installera Entity Framework-verktyg efter alla försök"
                         log_error ""
                         log_error "Manuella lösningar att prova:"
@@ -1895,7 +1894,7 @@ main() {
     check_raspberry_pi
     check_system_requirements
     create_nuget_config
-    install_dotnet_10
+    install_dotnet_11
     setup_project "$@"
     configure_storage
     publish_application

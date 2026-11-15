@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # Allow manual triggering for testing
 
 env:
-  DOTNET_VERSION: '10.0.x'
+  DOTNET_VERSION: '11.0.x'
   WEB_PROJECT_PATH: 'src/Privatekonomi.Web/Privatekonomi.Web.csproj'
   API_PROJECT_PATH: 'src/Privatekonomi.Api/Privatekonomi.Api.csproj'
   WEB_PUBLISH_DIR: 'publish-web'
@@ -288,7 +288,7 @@ jobs:
           echo "4. Kör API: \`./Privatekonomi.Api\`" >> release_notes.md
           echo "" >> release_notes.md
           echo "### Systemkrav" >> release_notes.md
-          echo "- .NET 10.0 Runtime (eller använd self-contained build)" >> release_notes.md
+          echo "- .NET 11.0 Runtime (eller använd self-contained build)" >> release_notes.md
           echo "- Linux x64 (eller motsvarande för din plattform)" >> release_notes.md
           echo "- MySQL/MariaDB 5.7+ eller SQLite (se dokumentation)" >> release_notes.md
           echo "" >> release_notes.md

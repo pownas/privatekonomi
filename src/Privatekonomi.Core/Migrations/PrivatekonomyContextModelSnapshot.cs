@@ -15,7 +15,7 @@ namespace Privatekonomi.Core.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -352,6 +352,10 @@ namespace Privatekonomi.Core.Migrations
                     b.Property<int>("AssetId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChartOfAccountsCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -2816,6 +2820,9 @@ namespace Privatekonomi.Core.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("ShareBalanceSheet")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
@@ -2962,6 +2969,9 @@ namespace Privatekonomi.Core.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ShareBalanceSheetConsent")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
@@ -3186,6 +3196,10 @@ namespace Privatekonomi.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("AccountType")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChartOfAccountsCode")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
@@ -3576,6 +3590,13 @@ namespace Privatekonomi.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChartOfAccountsCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ExcludeFromBalanceSheet")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PropertyAddress")

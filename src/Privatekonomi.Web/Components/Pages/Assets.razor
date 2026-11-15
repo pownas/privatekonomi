@@ -76,6 +76,14 @@
                       MaxLength="200"
                       Class="mb-3" />
 
+        <MudTextField @bind-Value="_formAsset.ChartOfAccountsCode"
+                      Label="Egen BAS-kod (valfritt)"
+                      Placeholder="Lämna tomt för förslag"
+                      HelperText="Lämna tomt för att använda föreslagen BAS-kod."
+                      Variant="Variant.Outlined"
+                      MaxLength="20"
+                      Class="mb-3" />
+
         <div class="d-flex gap-2">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsset">
                 @(_editingAsset != null ? "Uppdatera" : "Lägg till")
@@ -241,7 +249,8 @@ else
             PurchaseValue = asset.PurchaseValue,
             CurrentValue = asset.CurrentValue,
             PurchaseDate = asset.PurchaseDate,
-            Location = asset.Location
+            Location = asset.Location,
+            ChartOfAccountsCode = asset.ChartOfAccountsCode
         };
         _showCreateForm = true;
     }

@@ -6,7 +6,7 @@
 # for the Privatekonomi project on Windows/PowerShell.
 #
 # Summary of setup performed:
-# 1. Install .NET 10 SDK (required for this project)
+# 1. Install .NET 11 SDK (required for this project)
 # 2. Restore project dependencies
 # 3. Clean and rebuild solution
 # 4. Install Entity Framework CLI tools
@@ -84,9 +84,9 @@ function Test-AdminPrivileges {
     }
 }
 
-# Step 1: Install .NET 10 SDK
-function Install-DotNet10 {
-    Write-LogSection "Installing .NET 10 SDK"
+# Step 1: Install .NET 11 SDK
+function Install-DotNet11 {
+    Write-LogSection "Installing .NET 11 SDK"
     
     Write-LogInfo "Checking current .NET installation..."
     try {
@@ -95,10 +95,10 @@ function Install-DotNet10 {
         Write-LogInfo "Installed SDKs:"
         dotnet --list-sdks
         
-        # Check if .NET 10 is already installed
+        # Check if .NET 11 is already installed
         $sdks = dotnet --list-sdks | Out-String
-        if ($sdks -match "10\.") {
-            Write-LogSuccess ".NET 10 SDK is already installed"
+        if ($sdks -match "11\.") {
+            Write-LogSuccess ".NET 11 SDK is already installed"
             return
         }
     }
@@ -106,7 +106,7 @@ function Install-DotNet10 {
         Write-LogWarning ".NET not found in PATH"
     }
     
-    Write-LogInfo "Downloading and installing .NET 10 SDK..."
+    Write-LogInfo "Downloading and installing .NET 11 SDK..."
     try {
         # Download the .NET install script
         $installScript = Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -UseBasicParsing
@@ -114,7 +114,7 @@ function Install-DotNet10 {
         $installScript.Content | Out-File -FilePath $scriptPath -Encoding UTF8
         
         # Run the installer
-        & $scriptPath -Channel 10.0 -InstallDir "$env:LOCALAPPDATA\Microsoft\dotnet"
+        & $scriptPath -Channel 11.0 -InstallDir "$env:LOCALAPPDATA\Microsoft\dotnet"
         
         # Add to PATH for current session
         $dotnetPath = "$env:LOCALAPPDATA\Microsoft\dotnet"
@@ -128,13 +128,13 @@ function Install-DotNet10 {
             [Environment]::SetEnvironmentVariable("PATH", "$dotnetPath;$userPath", "User")
         }
         
-        Write-LogInfo "Verifying .NET 10 installation..."
+        Write-LogInfo "Verifying .NET 11 installation..."
         dotnet --list-sdks
-        Write-LogSuccess ".NET 10 SDK installation completed"
+        Write-LogSuccess ".NET 11 SDK installation completed"
     }
     catch {
-        Write-LogError "Failed to install .NET 10 SDK: $($_.Exception.Message)"
-        Write-LogWarning "Please manually download and install .NET 10 SDK from: https://dotnet.microsoft.com/download/dotnet/10.0"
+        Write-LogError "Failed to install .NET 11 SDK: $($_.Exception.Message)"
+        Write-LogWarning "Please manually download and install .NET 11 SDK from: https://dotnet.microsoft.com/download/dotnet/11.0"
         throw
     }
 }
@@ -188,7 +188,7 @@ function Install-EFTools {
     
     Write-LogInfo "Installing Entity Framework global tools..."
     try {
-        dotnet tool install --global dotnet-ef 2>&1 | Out-Null
+        dotnet tool install --global dotnet-ef --version 10.0.12 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             throw "Installation failed"
         }
@@ -197,18 +197,16 @@ function Install-EFTools {
         Write-LogWarning "Installation failed, clearing NuGet cache and retrying..."
         dotnet nuget locals all --clear | Out-Null
         
-        # Try with explicit version matching .NET SDK
-        $dotnetVersion = (dotnet --version).Split('.')[0]
-        Write-LogInfo "Attempting installation with version $dotnetVersion.0.0..."
+        Write-LogInfo "Attempting installation with version 10.0.12..."
         try {
-            dotnet tool install --global dotnet-ef --version "$dotnetVersion.0.0"
+            dotnet tool install --global dotnet-ef --version 10.0.12
             if ($LASTEXITCODE -ne 0) {
                 throw "Installation failed after cache clear"
             }
         }
         catch {
             Write-LogError "Failed to install Entity Framework tools after cache clear"
-            Write-LogError "Try manually: dotnet tool install --global dotnet-ef --version $dotnetVersion.0.0"
+            Write-LogError "Try manually: dotnet tool install --global dotnet-ef --version 10.0.12"
             throw
         }
     }
@@ -378,7 +376,7 @@ function Show-UsageInfo {
     Write-Host "  • Privatekonomi.ServiceDefaults - Shared service configurations" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Installed Tools:" -ForegroundColor Blue
-    Write-Host "  • .NET 10 SDK"
+    Write-Host "  • .NET 11 SDK"
     Write-Host "  • Entity Framework CLI tools"
     Write-Host "  • HTTPS development certificates (trusted)"
     Write-Host "Aspire hanteras via projektets NuGet-paket – ingen separat workload krävs." -ForegroundColor Blue
@@ -395,7 +393,7 @@ function Main {
     
     try {
         Test-AdminPrivileges
-        Install-DotNet10
+        Install-DotNet11
         Setup-Project
         Install-EFTools
         Configure-DevCerts

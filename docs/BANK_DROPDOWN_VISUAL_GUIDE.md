@@ -2,7 +2,7 @@
 
 ## Screenshots Description
 
-Since the application uses .NET 10.0 preview which isn't available in the current environment, here's a detailed description of what the UI will look like when running.
+This guide describes the expected UI appearance; the application currently targets .NET 11.
 
 ## 1. Account Settings Page (/settings/accounts)
 

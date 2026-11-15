@@ -123,6 +123,8 @@ using (var scope = app.Services.CreateScope())
         context.Database.EnsureCreated();
     }
     
+    await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+
     logger.LogInformation("Database initialized with provider: {Provider}", storageSettings.Provider);
 }
 

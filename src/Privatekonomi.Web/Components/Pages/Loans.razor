@@ -166,6 +166,22 @@
             }
         }
 
+        <MudTextField @bind-Value="_formLoan.ChartOfAccountsCode"
+                      Label="Egen BAS-kod (valfritt)"
+                      Placeholder="Lämna tomt för förslag"
+                      HelperText="Lämna tomt för att använda föreslagen BAS-kod."
+                      Variant="Variant.Outlined"
+                      MaxLength="20"
+                      Class="mb-3" />
+
+        <MudSwitch @bind-Value="_formLoan.ExcludeFromBalanceSheet"
+                   Label="Exkludera från balansräkningens skuldsumma"
+                   Color="Color.Warning"
+                   Class="mb-2" />
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
+            Använd om samma skuld redan visas via ett kredit- eller lånekonto. Lånet finns kvar i låneöversikten.
+        </MudText>
+
         <div class="d-flex gap-2">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLoan">
                 @(_editingLoan != null ? "Uppdatera" : "Lägg till")
@@ -284,6 +300,12 @@ else
                         {
                             <MudChip T="string" Size="Size.Small" Color="Color.Info">
                                 Extra: @context.ExtraMonthlyPayment.Value.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))
+                            </MudChip>
+                        }
+                        @if (context.ExcludeFromBalanceSheet)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                Exkluderas i balansräkning
                             </MudChip>
                         }
                     </MudTd>
@@ -853,7 +875,9 @@ else
             LoanProvider = loan.LoanProvider,
             IsFixedRate = loan.IsFixedRate,
             RateResetDate = loan.RateResetDate,
-            BindingPeriodMonths = loan.BindingPeriodMonths
+            BindingPeriodMonths = loan.BindingPeriodMonths,
+            ChartOfAccountsCode = loan.ChartOfAccountsCode,
+            ExcludeFromBalanceSheet = loan.ExcludeFromBalanceSheet
         };
         _showCreateForm = true;
     }

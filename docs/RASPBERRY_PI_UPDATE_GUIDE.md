@@ -14,7 +14,7 @@ cd ~/privatekonomi
 sudo ./raspberry-pi-enable-web-update.sh
 ```
 
-Installationskontot behöver .NET 10 SDK och åtkomst till GitHub/NuGet. Installationen
+Installationskontot behöver .NET 11 SDK och åtkomst till GitHub/NuGet. Installationen
 lägger en root-ägd worker i `/usr/local/bin/privatekonomi-web-update`, en systemd
 `.path`/`.service` och en begränsad sudoers-regel för att starta/stoppa **endast**
 appens två tjänster. Webbappen kör inga skal- eller sudo-kommandon: den kan endast
