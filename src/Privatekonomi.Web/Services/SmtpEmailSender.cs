@@ -47,7 +47,7 @@ public sealed class SmtpEmailSender(
             await client.AuthenticateAsync(options.SmtpUser, options.SmtpPassword);
         }
 
-        await client.SendAsync(emailMessage);
+        await client.SendAsync(FormatOptions.Default, new MailKit.SendRequest(emailMessage));
         await client.DisconnectAsync(true);
     }
 }

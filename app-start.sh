@@ -102,14 +102,14 @@ check_prerequisites() {
     
     log_info "✅ .NET SDK version: $(dotnet --version)"
     
-    # Check if .NET 10 is available
-    if ! dotnet --list-sdks | grep -q "9\."; then
-        log_error ".NET 10 SDK is not installed"
-        log_warning "Please run './app-install.sh' first to install .NET 10"
+    # Check if .NET 11 is available
+    if ! dotnet --list-sdks | grep -q "11\."; then
+        log_error ".NET 11 SDK is not installed"
+        log_warning "Please run './app-install.sh' first to install .NET 11"
         exit 1
     fi
     
-    log_info "✅ .NET 10 SDK is available"
+    log_info "✅ .NET 11 SDK is available"
     
     # Check if Aspire packages are available (via NuGet, not workload)
     log_info "Checking for Aspire support..."
@@ -197,7 +197,7 @@ show_help() {
     echo ""
     echo -e "${YELLOW}What this script does:${NC}"
     echo -e "  1. Stops any existing .NET processes and frees up ports"
-    echo -e "  2. Checks that prerequisites are installed (.NET 10, Aspire dependencies)"
+    echo -e "  2. Checks that prerequisites are installed (.NET 11, Aspire dependencies)"
     echo -e "  3. Verifies the project builds successfully"
     echo -e "  4. Starts the Aspire Dashboard with all services"
     echo ""

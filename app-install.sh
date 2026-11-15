@@ -8,7 +8,7 @@
 # for the Privatekonomi project in GitHub Codespaces.
 #
 # Summary of setup performed:
-# 1. Install .NET 10 SDK (required for this project)
+# 1. Install .NET 11 SDK (required for this project)
 # 2. Configure PATH for .NET tools (Codespaces)
 # 3. Restore project dependencies
 # 4. Clean and rebuild solution
@@ -62,9 +62,9 @@ check_codespace() {
     fi
 }
 
-# Step 1: Install .NET 10 SDK
-install_dotnet_10() {
-    log_section "Installing .NET 10 SDK"
+# Step 1: Install .NET 11 SDK
+install_dotnet_11() {
+    log_section "Installing .NET 11 SDK"
     
     log_info "Checking current .NET installation..."
     if command -v dotnet &> /dev/null; then
@@ -72,25 +72,25 @@ install_dotnet_10() {
         log_info "Installed SDKs:"
         dotnet --list-sdks
         
-        # Check if .NET 10 is already installed
-        if dotnet --list-sdks | grep -q "10\."; then
-            log_success ".NET 10 SDK is already installed"
+        # Check if .NET 11 is already installed
+        if dotnet --list-sdks | grep -q "11\."; then
+            log_success ".NET 11 SDK is already installed"
             return 0
         fi
     else
         log_warning ".NET not found in PATH"
     fi
     
-    log_info "Installing .NET 10 SDK using Microsoft's installation script..."
-    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version latest --channel 10.0
+    log_info "Installing .NET 11 SDK using Microsoft's installation script..."
+    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version latest --channel 11.0
     
     log_info "Configuring PATH for .NET..."
     export PATH="$HOME/.dotnet:$PATH"
     echo 'export PATH="$HOME/.dotnet:$PATH"' >> ~/.bashrc
     
-    log_info "Verifying .NET 10 installation..."
+    log_info "Verifying .NET 11 installation..."
     dotnet --list-sdks
-    log_success ".NET 10 SDK installation completed"
+    log_success ".NET 11 SDK installation completed"
 }
 
 # Step 2: Restore and build project
@@ -126,16 +126,14 @@ install_ef_tools() {
     fi
     
     log_info "Installing Entity Framework global tools..."
-    if ! dotnet tool install --global dotnet-ef; then
+    if ! dotnet tool install --global dotnet-ef --version 10.0.12; then
         log_warning "Installation failed, clearing NuGet cache and retrying..."
         dotnet nuget locals all --clear
         
-        # Try with explicit version matching .NET SDK
-        local dotnet_version=$(dotnet --version | cut -d'.' -f1)
-        log_info "Attempting installation with version ${dotnet_version}.0.0..."
-        if ! dotnet tool install --global dotnet-ef --version ${dotnet_version}.0.0; then
+        log_info "Attempting installation with version 10.0.12..."
+        if ! dotnet tool install --global dotnet-ef --version 10.0.12; then
             log_error "Failed to install Entity Framework tools after cache clear"
-            log_error "Try manually: dotnet tool install --global dotnet-ef --version ${dotnet_version}.0.0"
+            log_error "Try manually: dotnet tool install --global dotnet-ef --version 10.0.12"
             return 1
         fi
     fi
@@ -235,7 +233,7 @@ show_usage_info() {
     echo -e "  • ${YELLOW}Privatekonomi.ServiceDefaults${NC} - Shared service configurations"
     echo -e ""
     echo -e "${BLUE}Installed Tools:${NC}"
-    echo -e "  • .NET 10 SDK"
+    echo -e "  • .NET 11 SDK"
     echo -e "  • Entity Framework CLI tools"
     echo -e "  • HTTPS development certificates (trusted)"
     echo -e "${BLUE}Aspire hanteras via projektets NuGet-paket – ingen separat workload krävs längre.${NC}"
@@ -249,7 +247,7 @@ main() {
     log_info "Starting automated environment setup..."
     
     check_codespace
-    install_dotnet_10
+    install_dotnet_11
     setup_project
     install_ef_tools
     configure_dev_certs

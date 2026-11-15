@@ -1,6 +1,6 @@
 ﻿# Privatekonomi
 
-En privatekonomi-applikation byggd med .NET 10 LTS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
+En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
 
 ## 🌐 Landningssida (Beta)
 
@@ -229,7 +229,7 @@ Se [ASPIRE_GUIDE.md](docs/ASPIRE_GUIDE.md) för mer information.
 
 ### Förutsättningar
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (för Aspire Orchestrator)
 - [Node.js](https://nodejs.org/) (för Playwright-tester)
 
@@ -257,7 +257,7 @@ cd ~/Privatekonomi
 ```
 
 **Installationsskriptet hanterar automatiskt:**
-- ✅ Installation av .NET 10 SDK
+- ✅ Installation av .NET 11 SDK
 - ✅ **Publicering för linux-arm64 med self-contained binärer**
 - ✅ Val av lagringsalternativ (SQLite/JsonFile)
 - ✅ Skapande av konfigurationsfiler
@@ -322,7 +322,7 @@ cd Privatekonomi
 .\app-start.ps1
 ```
 
-Skriptet säkerställer att .NET 10 finns installerat och startar Aspire Dashboard som visar alla tjänster, logs, traces och metrics.
+Skriptet säkerställer att .NET 11 finns installerat och startar Aspire Dashboard som visar alla tjänster, logs, traces och metrics.
 
 #### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
 
@@ -357,7 +357,7 @@ cd Privatekonomi
 3. Installera .Net SDK
 ```bash
 # install .Net
-bash <(curl -sSL https://dot.net/v1/dotnet-install.sh) --channel 10.0 --install-dir "$HOME/.dotnet"
+bash <(curl -sSL https://dot.net/v1/dotnet-install.sh) --channel 11.0 --install-dir "$HOME/.dotnet"
 
 # add to current session (and add these lines to ~/.bashrc or ~/.profile to persist)
 export DOTNET_ROOT="$HOME/.dotnet"
@@ -542,7 +542,7 @@ Hantering av utgifts- och inkomstkategorier med färgkodning för enkel överbli
 - **Backend**: ASP.NET Core Web API
 - **Databas**: Entity Framework Core med flera providers (InMemory, SQLite, SQL Server, JsonFile)
 - **UI-komponenter**: MudBlazor
-- **Språk**: C# (.NET 10)
+- **Språk**: C# (.NET 11)
 - **Orchestration**: .NET Aspire
 
 ## 📁 Projektstruktur

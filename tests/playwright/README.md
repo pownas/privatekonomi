@@ -10,7 +10,7 @@ Testerna verifierar att testdata visas korrekt i användargränssnittet, särski
 
 - [Node.js](https://nodejs.org/) (v16 eller senare)
 - [npm](https://www.npmjs.com/)
-- .NET 10 SDK (för att köra webbapplikationen)
+- .NET 11 SDK (för att köra webbapplikationen)
 
 ## Installation
 
@@ -135,7 +135,7 @@ wget https://playwright.azureedge.net/builds/chromium/1194/chromium-headless-she
 ### Applikationen körs inte
 
 Om testerna misslyckas med "connection refused", säkerställ att:
-1. .NET 10 SDK är installerat
+1. .NET 11 SDK är installerat
 2. Applikationen kan starta med `dotnet run` från `src/Privatekonomi.Web`
 3. Port 5274 är tillgänglig
 
