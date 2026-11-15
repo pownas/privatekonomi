@@ -53,7 +53,9 @@ programfiler vid releaser. Säkerhetskopiera före schemaändringar och radera i
 databasen eller migrationshistoriken för att uppgradera.
 
 Initieringsfel stoppar uppstarten i stället för att fortsätta med ett tomt eller
-ofullständigt datalager. Åtgärda felet innan appen startas igen.
+ofullständigt datalager. Om kontodata inte kan skrivas till JSON stoppas värden
+och fler ändringar blockeras; den senaste fullständiga kontofilen behålls.
+Åtgärda lagringsfelet innan appen startas igen.
 
 - **Web UI**: https://localhost:5001 or http://localhost:5000
 - **API**: https://localhost:5101 (or check console output)

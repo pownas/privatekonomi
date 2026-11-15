@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Privatekonomi.Core.Configuration;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
@@ -13,14 +14,16 @@ namespace Privatekonomi.Core.Services.Persistence;
 /// <summary>
 /// Persists Identity changes immediately when using JSON storage.
 /// </summary>
-public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> settings) : SaveChangesInterceptor
+public sealed class JsonIdentityPersistenceService(
+    IOptions<StorageSettings> settings,
+    IHostApplicationLifetime? applicationLifetime = null) : SaveChangesInterceptor
 {
     private readonly string _path = Path.Combine(
         string.IsNullOrEmpty(settings.Value.ConnectionString) ? "data" : settings.Value.ConnectionString,
         "identity.json");
     private readonly ConditionalWeakTable<DbContext, object> _pending = new();
     private readonly object _saveLock = new();
-    private static readonly JsonSerializerOptions JsonOptions = new() { RespectNullableAnnotations = true };
+    private Exception? _persistenceFailure;
 
     /// <summary>
     /// Loads accounts before seeding or accepting requests. Existing accounts are never replaced.
@@ -30,8 +33,12 @@ public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> set
         if (!File.Exists(_path) || await context.Users.AnyAsync() || await context.Roles.AnyAsync())
             return;
 
-        var snapshot = JsonSerializer.Deserialize<IdentitySnapshot>(await File.ReadAllTextAsync(_path), JsonOptions)
+        var snapshot = JsonSerializer.Deserialize<IdentitySnapshot>(await File.ReadAllTextAsync(_path))
             ?? throw new InvalidDataException("Identity data is invalid.");
+        if (snapshot.Users is null || snapshot.Roles is null || snapshot.UserRoles is null ||
+            snapshot.UserClaims is null || snapshot.UserLogins is null || snapshot.UserTokens is null ||
+            snapshot.RoleClaims is null || snapshot.UserPasskeys is null)
+            throw new InvalidDataException("Identity collections must not be null.");
         context.Users.AddRange(snapshot.Users);
         context.Roles.AddRange(snapshot.Roles);
         context.UserRoles.AddRange(snapshot.UserRoles);
@@ -58,6 +65,7 @@ public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> set
 
     private void TrackChanges(DbContext? context)
     {
+        ThrowIfPersistenceFailed();
         if (context is not null && context.ChangeTracker.Entries().Any(entry =>
                 entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                 (entry.Entity is ApplicationUser || entry.Metadata.ClrType.Namespace == typeof(IdentityRole).Namespace)))
@@ -84,6 +92,7 @@ public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> set
 
         lock (_saveLock)
         {
+            ThrowIfPersistenceFailed();
             var temporaryPath = _path + ".tmp";
             try
             {
@@ -104,12 +113,21 @@ public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> set
                     options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
                 using (var stream = new FileStream(temporaryPath, options))
                 {
-                    JsonSerializer.Serialize(stream, snapshot, JsonOptions);
+                    JsonSerializer.Serialize(stream, snapshot);
                     stream.Flush(flushToDisk: true);
                 }
 
                 // Replace the complete snapshot atomically, never a partially written account file.
                 File.Move(temporaryPath, _path, overwrite: true);
+            }
+            catch (Exception exception)
+            {
+                // InMemory has already committed. Stop rather than serve accounts that are not durable.
+                Volatile.Write(ref _persistenceFailure, exception);
+                applicationLifetime?.StopApplication();
+                throw new InvalidOperationException(
+                    "Identity changes could not be persisted. The application must stop and restart after storage is repaired.",
+                    exception);
             }
             finally
             {
@@ -117,6 +135,12 @@ public sealed class JsonIdentityPersistenceService(IOptions<StorageSettings> set
                     File.Delete(temporaryPath);
             }
         }
+    }
+
+    private void ThrowIfPersistenceFailed()
+    {
+        if (Volatile.Read(ref _persistenceFailure) is { } failure)
+            throw new InvalidOperationException("Identity storage is unavailable. Restart after repairing storage.", failure);
     }
 
     private sealed class IdentitySnapshot

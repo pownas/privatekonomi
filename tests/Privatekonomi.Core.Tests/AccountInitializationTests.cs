@@ -98,7 +98,9 @@ public class AccountInitializationTests
     }
 
     [TestMethod]
-    public async Task JsonAccountsAndPermissionsSurviveRestartWithoutPeriodicSave()
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task JsonAccountsAndPermissionsSurviveRestartWithoutPeriodicSave(bool includeAttestation)
     {
         var configuration = Configuration(seed: false);
         string id;
@@ -128,8 +130,8 @@ public class AccountInitializationTests
                     Name = "Existing passkey",
                     SignCount = 42,
                     Transports = ["internal"],
-                    AttestationObject = [7, 8],
-                    ClientDataJson = [9, 10]
+                    AttestationObject = includeAttestation ? [7, 8] : null!,
+                    ClientDataJson = includeAttestation ? [9, 10] : null!
                 }
             });
             user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
@@ -171,6 +173,11 @@ public class AccountInitializationTests
         CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, passkey.CredentialId);
         CollectionAssert.AreEqual(new byte[] { 4, 5, 6 }, passkey.Data.PublicKey);
         Assert.AreEqual(42u, passkey.Data.SignCount);
+        if (!includeAttestation)
+        {
+            Assert.IsNull(passkey.Data.AttestationObject);
+            Assert.IsNull(passkey.Data.ClientDataJson);
+        }
         Assert.AreEqual(1, await restored.Users.CountAsync());
     }
 
@@ -208,6 +215,29 @@ public class AccountInitializationTests
 
         Assert.AreEqual(contents, await File.ReadAllTextAsync(path));
         Assert.AreEqual(0, await context.Users.CountAsync());
+    }
+
+    [TestMethod]
+    public async Task IdentityWriteFailureStopsHostAndPreservesLastDurableSnapshot()
+    {
+        var lifetime = new Mock<IHostApplicationLifetime>();
+        await using var provider = Services(Configuration(seed: false), lifetime.Object);
+        await using var scope = provider.CreateAsyncScope();
+        var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = new ApplicationUser { UserName = DemoEmail, Email = DemoEmail };
+        Assert.IsTrue((await manager.CreateAsync(user, DemoPassword)).Succeeded);
+        var path = Path.Combine(_directory, "identity.json");
+        var durableSnapshot = await File.ReadAllTextAsync(path);
+        Directory.CreateDirectory(path + ".tmp");
+        user.IsSystemAdmin = true;
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => manager.UpdateAsync(user));
+
+        lifetime.Verify(value => value.StopApplication(), Times.Once);
+        Assert.AreEqual(durableSnapshot, await File.ReadAllTextAsync(path));
+        Directory.Delete(path + ".tmp");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => manager.UpdateAsync(user));
+        Assert.AreEqual(durableSnapshot, await File.ReadAllTextAsync(path));
     }
 
     [TestMethod]
@@ -286,10 +316,12 @@ public class AccountInitializationTests
         return environment.Object;
     }
 
-    private static ServiceProvider Services(IConfiguration configuration)
+    private static ServiceProvider Services(IConfiguration configuration, IHostApplicationLifetime? lifetime = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        if (lifetime is not null)
+            services.AddSingleton(lifetime);
         services.AddPrivatekonomyStorage(configuration);
         if (configuration["Storage:Provider"] == "JsonFile")
         {

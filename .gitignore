@@ -82,7 +82,9 @@ ScaffoldingReadMe.txt
 *.db
 *.db-shm
 *.db-wal
-**/data/
+/data/
+/src/Privatekonomi.Web/data/
+/src/Privatekonomi.Api/data/
 appsettings.local.json
 **/appsettings.local.json
 
