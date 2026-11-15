@@ -79,6 +79,12 @@ artifacts/
 ScaffoldingReadMe.txt
 
 # Local configuration overrides
+*.db
+*.db-shm
+*.db-wal
+/data/
+/src/Privatekonomi.Web/data/
+/src/Privatekonomi.Api/data/
 appsettings.local.json
 **/appsettings.local.json
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Moq;
+﻿using Microsoft.EntityFrameworkCore;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +16,6 @@ public class TestDataSeederTests : IDisposable
     private const int MinimumExpectedDateRangeDays = 650; // Allow some margin for randomness
     
     private readonly PrivatekonomyContext _context;
-    private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
 
     public TestDataSeederTests()
     {
@@ -28,45 +25,6 @@ public class TestDataSeederTests : IDisposable
 
         _context = new PrivatekonomyContext(options);
 
-        // Setup mock UserManager
-        var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
-        var optionsAccessorMock = new Mock<Microsoft.Extensions.Options.IOptions<IdentityOptions>>();
-        var passwordHasherMock = new Mock<IPasswordHasher<ApplicationUser>>();
-        var userValidatorMock = new Mock<IUserValidator<ApplicationUser>>();
-        var passwordValidatorMock = new Mock<IPasswordValidator<ApplicationUser>>();
-        var keyNormalizerMock = new Mock<ILookupNormalizer>();
-        var errorsMock = new Mock<IdentityErrorDescriber>();
-        var serviceProviderMock = new Mock<System.IServiceProvider>();
-        var loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<UserManager<ApplicationUser>>>();
-
-        _mockUserManager = new Mock<UserManager<ApplicationUser>>(
-            userStoreMock.Object, 
-            optionsAccessorMock.Object, 
-            passwordHasherMock.Object, 
-            new[] { userValidatorMock.Object }, 
-            new[] { passwordValidatorMock.Object }, 
-            keyNormalizerMock.Object, 
-            errorsMock.Object, 
-            serviceProviderMock.Object, 
-            loggerMock.Object);
-        
-        // Setup FindByEmailAsync to return null (user doesn't exist)
-        _mockUserManager.Setup(x => x.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync((ApplicationUser?)null);
-        
-        // Setup CreateAsync to succeed and set the user ID
-        _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
-            .ReturnsAsync(IdentityResult.Success)
-            .Callback<ApplicationUser, string>((user, password) => 
-            {
-                user.Id = Guid.NewGuid().ToString();
-            });
-    }
-
-    [TestCleanup]
-    public void Cleanup()
-    {
-        Dispose();
     }
 
     public void Dispose()
@@ -81,10 +39,10 @@ public class TestDataSeederTests : IDisposable
     {
         // Arrange
         var today = DateTime.UtcNow;
-        var expectedMinDate = today.AddDays(-ExpectedDateRangeDays);
+        var expectedMinDate = today.AddDays(-ExpectedDateRangeDays).Date;
         
         // Act
-        await TestDataSeeder.SeedTestDataAsync(_context, _mockUserManager.Object);
+        await TestDataSeeder.SeedTestDataAsync(_context, "demo-user");
         
         // Assert
         var transactions = await _context.Transactions.ToListAsync();
@@ -115,7 +73,7 @@ public class TestDataSeederTests : IDisposable
     public async Task SeedTestDataAsyncGeneratesCorrectNumberOfTransactions()
     {
         // Act
-        await TestDataSeeder.SeedTestDataAsync(_context, _mockUserManager.Object);
+        await TestDataSeeder.SeedTestDataAsync(_context, "demo-user");
         
         // Assert
         var transactions = await _context.Transactions.ToListAsync();
@@ -131,7 +89,7 @@ public class TestDataSeederTests : IDisposable
         var testStartTime = DateTime.UtcNow;
         
         // Act
-        await TestDataSeeder.SeedTestDataAsync(_context, _mockUserManager.Object);
+        await TestDataSeeder.SeedTestDataAsync(_context, "demo-user");
         
         // Assert
         var transactions = await _context.Transactions.ToListAsync();

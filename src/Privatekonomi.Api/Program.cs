@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Api.Middleware;
@@ -49,6 +50,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure storage based on appsettings
+builder.Services.Configure<IdentityOptions>(options => options.Stores.SchemaVersion = IdentitySchemaVersions.Version3);
 builder.Services.AddPrivatekonomyStorage(builder.Configuration);
 
 // Register services
@@ -123,7 +125,18 @@ using (var scope = app.Services.CreateScope())
         context.Database.EnsureCreated();
     }
     
+    await IdentitySchemaInitializer.EnsureColumnsAsync(context);
     await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+    await PasskeySchemaInitializer.EnsurePasskeyTableAsync(context);
+
+    if (storageSettings.Provider.Equals("JsonFile", StringComparison.OrdinalIgnoreCase))
+    {
+        await scope.ServiceProvider.GetRequiredService<Privatekonomi.Core.Services.Persistence.JsonIdentityPersistenceService>()
+            .LoadAsync(context);
+        var persistence = scope.ServiceProvider.GetRequiredService<Privatekonomi.Core.Services.Persistence.IDataPersistenceService>();
+        if (persistence.Exists())
+            await persistence.LoadAsync(context);
+    }
 
     logger.LogInformation("Database initialized with provider: {Provider}", storageSettings.Provider);
 }

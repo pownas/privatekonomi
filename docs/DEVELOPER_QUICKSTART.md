@@ -29,6 +29,34 @@ dotnet run
 
 ## Accessing the Application
 
+### Demoanvändare och beständiga konton
+
+Webbprojektets `appsettings.Development.json` konfigurerar `DemoUser:Enabled`,
+`DemoUser:Email` och `DemoUser:Password`. Uppgifterna är offentliga utvecklingsuppgifter
+och får aldrig återanvändas för riktiga konton. Demoanvändaren skapas endast när
+miljön är **Development**, utan administratörsbehörighet. `Storage:SeedTestData`
+lägger till exempeldata när ett nytt demokonto skapas. Befintliga konton ändras
+aldrig av initieringen, inte heller om demolösenordet ändras i konfigurationen.
+
+Development använder SQLite (`privatekonomi-development.db`) så att konton och
+exempeldata finns kvar efter omstart. InMemory är fortfarande tillgängligt för
+isolerade tester men bevarar inte konton. Använd separata datalager för utveckling
+och produktion; kopiera inte utvecklingsdatabasen till produktion.
+
+Vid JSON-lagring sparas konton, lösenordshashar och övriga Identity-data omedelbart
+i `identity.json` i `Storage:ConnectionString`-katalogen, separat från ekonomidatans
+periodiska sparning. Skydda och säkerhetskopiera hela datakatalogen. Redan förlorade
+konton från äldre JSON-versioner kan inte återskapas automatiskt. JSON-lagring är
+avsedd för en enda skrivande process; använd en gemensam relationsdatabas för flera
+instanser. Behåll datakatalog/databas på en beständig sökväg utanför publicerade
+programfiler vid releaser. Säkerhetskopiera före schemaändringar och radera inte
+databasen eller migrationshistoriken för att uppgradera.
+
+Initieringsfel stoppar uppstarten i stället för att fortsätta med ett tomt eller
+ofullständigt datalager. Om kontodata inte kan skrivas till JSON stoppas värden
+och fler ändringar blockeras; den senaste fullständiga kontofilen behålls.
+Åtgärda lagringsfelet innan appen startas igen.
+
 - **Web UI**: https://localhost:5001 or http://localhost:5000
 - **API**: https://localhost:5101 (or check console output)
 - **Bank Connections Page**: https://localhost:5001/bank-connections
@@ -62,42 +90,32 @@ Navigate to `/bank-connections` to see the bank connections management page.
 
 ## Database
 
-The application uses an **in-memory database** by default. This means:
-- Data is lost when the application restarts
-- No database setup required for development
-- Perfect for testing
+Webbprojektet använder SQLite i Development. API-projektet använder fortfarande
+InMemory som standard; konfigurera samma beständiga relationsdatabas i båda
+projekten om de ska dela data.
 
 ### Using a Real Database
 
-To switch to SQL Server or PostgreSQL:
+För SQL Server, konfigurera `Storage` i båda projektens konfiguration:
 
-1. Update `appsettings.json` in both Api and Web projects:
 ```json
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=PrivatekonomyDb;..."
+  "Storage": {
+    "Provider": "SqlServer",
+    "ConnectionString": "Server=localhost;Database=PrivatekonomyDb;Integrated Security=true;TrustServerCertificate=true",
+    "SeedTestData": false
   }
 }
 ```
 
-2. Update `Program.cs`:
-```csharp
-// Replace this:
-builder.Services.AddDbContext<PrivatekonomyContext>(options =>
-    options.UseInMemoryDatabase("PrivatekonomyDb"));
-
-// With this (SQL Server):
-builder.Services.AddDbContext<PrivatekonomyContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-```
-
-3. Run the migration script:
-```bash
-dotnet ef migrations add InitialCreate --project src/Privatekonomi.Core
-dotnet ef database update --project src/Privatekonomi.Api
-```
-
-Or manually run the SQL script in `docs/migrations/001_Add_AuditLog_Table.sql`
+Lagringsleverantören registreras redan i `Program.cs`; inga kodändringar behövs.
+Uppstarten skapar nya databaser och lägger till saknade kontoprofilkolumner och
+passkey-tabellen i äldre databaser utan att återskapa konton. Befintliga
+lösenordshashar, säkerhetsstämplar och behörigheter behålls. Dessa additiva
+uppdateringar kan köras flera gånger, även på databaser utan migrationshistorik.
+Kör inte en ny `InitialCreate` eller hela migrationskedjan på en befintlig databas
+skapad med `EnsureCreated`; schemaändringar måste vara kompatibla med dess
+befintliga schema. Se även [lagringsguiden](STORAGE_GUIDE.md).
 
 ## Debugging
 

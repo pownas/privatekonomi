@@ -302,6 +302,37 @@ Se följande guider för Raspberry Pi:
 - **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/RASPBERRY_PI_UPDATE_GUIDE.md)**: Uppdatera befintlig installation
 - **[RASPBERRY_PI_INSTALL_TEST.md](docs/RASPBERRY_PI_INSTALL_TEST.md)**: Testguide för installation
 
+### Tilldela systemadministratörer (`IsSystemAdmin`)
+
+Systemadministratörer får åtkomst till bland annat `/admin/metrics` och administratörsåtgärder på sidan **Drift**. Behörigheten styrs av `ApplicationUser.IsSystemAdmin`, inte av hushållsroller eller en Identity-roll med namnet `Admin`.
+
+**Ingen användare blir automatiskt systemadministratör**, inte heller den första registrerade användaren eller demoanvändaren i Development. Detta förhindrar att den första som registrerar sig på en ny installation tar över administratörsåtkomsten. Det finns för närvarande inget gränssnitt, API eller `appsettings`-inställning för att tilldela nya systemadministratörer; en betrodd driftansvarig gör ändringen direkt i kontolagringen.
+
+1. Registrera ett vanligt, personligt konto och verifiera vilket konto som ska få behörigheten. Använd aldrig det offentliga demokontot som produktionsadministratör.
+2. Stoppa **alla instanser av Web och API** som använder lagringen och ta en säkerhetskopia. På Raspberry Pi med systemd:
+   ```bash
+   sudo systemctl stop privatekonomi-web.service privatekonomi-api.service
+   ```
+3. Kontrollera `Storage:Provider` och `Storage:ConnectionString` i den effektiva konfigurationen (inklusive miljövariabler). Ändra den befintliga lagringen, inte en ny databas med samma filnamn i en annan arbetskatalog:
+   - **SQLite:** öppna den befintliga databasfilen med ett databasverktyg. Identifiera kontot och använd dess exakta `Id`:
+     ```sql
+     SELECT Id, Email, IsSystemAdmin FROM AspNetUsers;
+     BEGIN TRANSACTION;
+     UPDATE AspNetUsers SET IsSystemAdmin = 1 WHERE Id = '<kontots-exakta-id>';
+     SELECT Id, Email, IsSystemAdmin FROM AspNetUsers WHERE Id = '<kontots-exakta-id>';
+     COMMIT;
+     ```
+     Ersätt platshållaren med rätt ID före körning. Kontrollera att exakt ett avsett konto har ändrats; använd `ROLLBACK` i stället för `COMMIT` om något är fel.
+   - **SQL Server/MySQL/MariaDB:** gör motsvarande uppdatering av `AspNetUsers.IsSystemAdmin` med databasens verktyg och transaktionssyntax. Värdet `1` ger behörighet, `0` tar bort den.
+   - **JsonFile:** öppna `identity.json` i katalogen angiven av `Storage:ConnectionString`. Hitta kontot via `Id` och `Email` i rotobjektets `Users`-lista och ändra enbart `"IsSystemAdmin": false` till `"IsSystemAdmin": true`. Behåll resten av filen oförändrad och giltig JSON, inklusive lösenordshashar, säkerhetsstämplar och övriga Identity-listor. Redigera aldrig filen medan appen körs: nästa kontosparning kan annars skriva över ändringen.
+   - **InMemory:** konton och behörigheter försvinner vid omstart. Välj beständig lagring innan du skapar konton som ska behållas.
+4. Starta tjänsterna igen och logga ut/in för att kontrollera åtkomsten:
+   ```bash
+   sudo systemctl start privatekonomi-api.service privatekonomi-web.service
+   ```
+
+Upprepa samma procedur för ytterligare administratörer. Återkalla behörigheten genom att sätta `IsSystemAdmin` till `0` i databasen respektive `false` i JSON. Omstarten stänger även befintliga Blazor-sessioner. Vanlig initiering och nya releaser ändrar inte befintliga kontons administratörsflagga; säkerhetskopiera och behåll därför samma beständiga datalager vid uppgraderingar.
+
 #### Snabbstart med startskript (Enklast för Codespaces)
 
 1. Klona repositoriet:
