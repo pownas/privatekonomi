@@ -35,17 +35,20 @@ public class GlobalExceptionHandler : IExceptionHandler
     private ProblemDetails CreateProblemDetails(HttpContext httpContext, Exception exception)
     {
         var statusCode = GetStatusCode(exception);
+        var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
             Title = GetTitle(exception),
-            Detail = exception.Message,
+            Detail = statusCode >= StatusCodes.Status500InternalServerError
+                ? "An unexpected error occurred. Use the traceId to find details in the server logs."
+                : exception.Message,
             Instance = httpContext.Request.Path,
             Type = GetType(statusCode)
         };
 
         // Add trace ID for correlation
-        problemDetails.Extensions["traceId"] = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        problemDetails.Extensions["traceId"] = traceId;
 
         // Add validation errors if it's a ValidationException
         if (exception is ValidationException validationException && validationException.Errors.Any())
@@ -54,7 +57,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         }
 
         // Log the exception
-        LogException(exception, statusCode, httpContext.TraceIdentifier);
+        LogException(exception, statusCode, traceId);
 
         return problemDetails;
     }
