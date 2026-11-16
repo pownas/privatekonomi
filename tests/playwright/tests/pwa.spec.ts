@@ -119,6 +119,18 @@ test.describe('PWA Functionality', () => {
     expect(hasMethods).toBe(true);
   });
 
+  test('should not show the install prompt when installation becomes available', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event('beforeinstallprompt', { cancelable: true }));
+    });
+
+    await page.waitForTimeout(3500);
+    await expect(page.locator('.install-prompt')).toHaveCount(0);
+  });
+
   test('should have manifest link in HTML', async ({ page }) => {
     await page.goto('/');
     
