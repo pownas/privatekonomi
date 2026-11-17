@@ -31,11 +31,13 @@ Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-pr
 bash setup-macos.sh start
 ```
 
-Aspire körs i förgrunden och visar Dashboard samt tjänsternas adresser. Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Startskriptet använder dessa fasta portar och binder appen till nätverksgränssnitten, så andra enheter i hemnätverket kan öppna `http://<Macens-IP-adress>:5274`. IP-adressen visas vid start när den kan identifieras. Avsluta med `Ctrl+C`. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
+Startskriptet frågar vilken lagring som ska användas: SQLite (standard) eller JSON-filer. SQLite-databasen eller JSON-datafilerna sparas under `~/Library/Application Support/Privatekonomi/`. Aspire körs interaktivt i förgrunden så AppHost förblir ansluten till Dashboard; avsluta med `Ctrl+C`. Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Startskriptet använder dessa fasta portar och binder appen till nätverksgränssnitten, så andra enheter i hemnätverket kan öppna `http://<Macens-IP-adress>:5274`. IP-adressen visas vid start när den kan identifieras. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
 
 Som standard används `Development`, `Local` och SQLite enligt projektets utvecklingskonfiguration. Du kan ange miljövariabler före start om du vill ändra detta. Starta inte en andra instans om samma portar redan används; Aspire visar då vilket resurs- eller portfel som uppstod.
 
 LAN-åtkomst är avsedd för ett betrott hemnätverk. macOS-brandväggen kan behöva tillåta inkommande anslutningar. LAN-adressen använder HTTP; öppna inte portar mot internet. Aspire Dashboard exponeras inte på LAN.
+
+PostgreSQL är inte tillgängligt som val ännu eftersom projektet saknar PostgreSQL EF Core-provider och serverkonfiguration. Välj SQLite eller JSON-filer tills PostgreSQL-stöd har implementerats.
 
 ## Felsökning
 

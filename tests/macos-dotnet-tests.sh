@@ -10,6 +10,8 @@ system_path="$PATH"
 mkdir -p "$HOME/.dotnet" "$temp/bin"
 ln -s "$(command -v awk)" "$temp/bin/awk"
 ln -s "$(command -v dirname)" "$temp/bin/dirname"
+ln -s "$(command -v grep)" "$temp/bin/grep"
+ln -s "$(command -v mkdir)" "$temp/bin/mkdir"
 
 cat > "$temp/bin/dotnet" <<'EOF'
 #!/bin/bash
@@ -52,7 +54,9 @@ printf '192.168.1.23\n'
 EOF
 cat > "$temp/bin/aspire" <<'EOF'
 #!/bin/bash
-printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nARGS=%s\n' "$PRIVATEKONOMI_LAN_ACCESS" "$*"
+printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nPRIVATEKONOMI_STORAGE_PROVIDER=%s\nStorage__Provider=%s\nStorage__ConnectionString=%s\nPRIVATEKONOMI_STORAGE_CONNECTION_STRING=%s\nARGS=%s\n' \
+    "$PRIVATEKONOMI_LAN_ACCESS" "$PRIVATEKONOMI_STORAGE_PROVIDER" \
+    "$Storage__Provider" "$Storage__ConnectionString" "$PRIVATEKONOMI_STORAGE_CONNECTION_STRING" "$*"
 EOF
 chmod +x "$temp/bin/uname" "$temp/bin/route" "$temp/bin/ipconfig" "$temp/bin/aspire"
 
@@ -60,10 +64,24 @@ PATH_SDKS=10.0.100 HOME_SDKS=11.0.100
 export PATH_SDKS HOME_SDKS
 PATH="$temp/bin"
 export PATH
-output="$(PATH="$temp/bin" /bin/bash "$repo/scripts/macos/start.sh" --test-option)"
+output="$(PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite /bin/bash "$repo/scripts/macos/start.sh" --test-option)"
 [[ "$output" == *"Web: http://localhost:5274"* ]]
 [[ "$output" == *"http://192.168.1.23:5274"* ]]
 [[ "$output" == *"PRIVATEKONOMI_LAN_ACCESS=true"* ]]
-[[ "$output" == *"ARGS=start --test-option"* ]]
+[[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite"* ]]
+[[ "$output" == *"Storage__Provider=Sqlite"* ]]
+[[ "$output" == *"privatekonomi.db"* ]]
+[[ "$output" == *"ARGS=run --test-option"* ]]
 
-echo ".NET SDK discovery selects an installed .NET 11 host."
+output="$(PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile /bin/bash "$repo/scripts/macos/start.sh")"
+[[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile"* ]]
+[[ "$output" == *"Storage__Provider=JsonFile"* ]]
+[[ "$output" == *"Application Support/Privatekonomi/json"* ]]
+
+if PRIVATEKONOMI_STORAGE_PROVIDER=PostgreSQL /bin/bash "$repo/scripts/macos/start.sh" >"$temp/postgres-output" 2>&1; then
+    echo "Expected unsupported PostgreSQL selection to fail."
+    exit 1
+fi
+grep -Fq 'saknar PostgreSQL EF Core-provider' "$temp/postgres-output"
+
+echo "macOS startup selects .NET 11, runs Aspire attached, and configures supported storage providers."

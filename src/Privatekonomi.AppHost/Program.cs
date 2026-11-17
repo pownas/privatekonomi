@@ -25,7 +25,11 @@ var dotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
 var privatekonomiEnvironment = Environment.GetEnvironmentVariable("PRIVATEKONOMI_ENVIRONMENT")
     ?? aspnetEnvironment;
 
-var storageProvider = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_PROVIDER") ?? "Unknown";
+var configuredStorageProvider = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_PROVIDER");
+var storageProvider = configuredStorageProvider ?? "Unknown";
+var storageConnectionString = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_CONNECTION_STRING");
+// JSON persistence is process-local, so keep it in Web and leave API on its in-memory default.
+var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
 // Add the API project
 var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
@@ -33,16 +37,28 @@ var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
+
+if (configuredStorageProvider is not null)
+{
+    apiBuilder = apiBuilder
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+        .WithEnvironment("Storage__Provider", usesJsonFileStorage ? "InMemory" : storageProvider);
+    if (!string.IsNullOrWhiteSpace(storageConnectionString) && !usesJsonFileStorage)
+    {
+        apiBuilder = apiBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+    }
+}
 
 if (exposeServiceEndpoints)
 {
     // Explicitly set the HTTP endpoint port when exposing services on the LAN.
     // The service binds to 0.0.0.0 based on the environment flag.
-    apiBuilder = apiBuilder
-        .WithHttpEndpoint(port: 5277, name: "http")
-        .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
+    apiBuilder = apiBuilder.WithHttpEndpoint(port: 5277, name: "http");
+}
+if (isRaspberryPi)
+{
+    apiBuilder = apiBuilder.WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
 }
 
 var api = apiBuilder;
@@ -54,16 +70,28 @@ var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
+
+if (configuredStorageProvider is not null)
+{
+    webBuilder = webBuilder
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+        .WithEnvironment("Storage__Provider", storageProvider);
+    if (!string.IsNullOrWhiteSpace(storageConnectionString))
+    {
+        webBuilder = webBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+    }
+}
 
 if (exposeServiceEndpoints)
 {
     // Explicitly set the HTTP endpoint port when exposing services on the LAN.
     // The service binds to 0.0.0.0 based on the environment flag.
-    webBuilder = webBuilder
-        .WithHttpEndpoint(port: 5274, name: "http")
-        .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
+    webBuilder = webBuilder.WithHttpEndpoint(port: 5274, name: "http");
+}
+if (isRaspberryPi)
+{
+    webBuilder = webBuilder.WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
 }
 
 var web = webBuilder;
