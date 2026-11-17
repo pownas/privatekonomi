@@ -70,6 +70,17 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.net-worth-warning-snackbar,
+.net-worth-warning-snackbar .mud-snackbar-content-message,
+.net-worth-warning-snackbar .mud-snackbar-icon,
+.net-worth-warning-snackbar .mud-snackbar-content-action > button {
+    color: #1f2937 !important;
+}
+
+.net-worth-warning-snackbar {
+    background-color: var(--mud-palette-warning) !important;
+}
+
 a, .btn-link {
     color: #3B82F6;
     transition: color var(--transition-fast);
