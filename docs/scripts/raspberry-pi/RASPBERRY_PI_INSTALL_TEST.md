@@ -21,7 +21,7 @@ Detta dokument beskriver hur du kan testa Raspberry Pi-installationsskriptet.
 
 ```bash
 cd /workspaces/Privatekonomi
-bash setup-raspberry-pi.sh --help
+bash setup-raspberry-pi.sh install --help
 
 # Testrun (skippa systemd service och firewall)
 bash setup-raspberry-pi.sh --no-service --no-firewall
