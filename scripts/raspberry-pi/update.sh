@@ -40,6 +40,7 @@ BACKUP_DIR="$HOME/privatekonomi-backups"
 SERVICE_NAME="privatekonomi"
 WEB_SERVICE_NAME="privatekonomi-web"
 API_SERVICE_NAME="privatekonomi-api"
+SOLUTION_FILE="Privatekonomi.slnx"
 
 # Logging functions
 log_info() {
@@ -82,7 +83,7 @@ check_installation() {
         exit 1
     fi
     
-    if [ ! -f "$INSTALL_DIR/Privatekonomi.slnx" ]; then
+    if [ ! -f "$INSTALL_DIR/$SOLUTION_FILE" ]; then
         log_error "Ogiltig installation i $INSTALL_DIR"
         exit 1
     fi
@@ -247,6 +248,12 @@ build_application() {
     log_section "Bygger uppdaterad applikation"
     
     cd "$INSTALL_DIR"
+    local solution_file="$INSTALL_DIR/$SOLUTION_FILE"
+
+    if [ ! -f "$solution_file" ]; then
+        log_error "Lösningsfilen hittas inte: $solution_file"
+        return 1
+    fi
     
     # Ensure .NET is in PATH
     if [ -d "$HOME/.dotnet" ]; then
@@ -255,21 +262,21 @@ build_application() {
     fi
     
     # Restore NuGet packages
-    log_info "Återställer NuGet-paket..."
-    dotnet restore
+    log_info "Återställer NuGet-paket ($solution_file)..."
+    dotnet restore "$solution_file"
     
     # Clean previous build
-    log_info "Rensar tidigare byggen..."
-    dotnet clean --configuration Release
+    log_info "Rensar tidigare byggen ($solution_file)..."
+    dotnet clean "$solution_file" --configuration Release
     
     # Build solution
-    log_info "Bygger lösningen..."
-    dotnet build --configuration Release
+    log_info "Bygger lösningen ($solution_file)..."
+    dotnet build "$solution_file" --configuration Release
     
     log_success "Applikation byggd framgångsrikt"
 }
 
-# Publish application (optional)
+# Publish application when the installation has published binaries
 publish_application() {
     if [ "$SKIP_PUBLISH" = true ]; then
         log_info "Hoppar över publicering (--no-publish)"
@@ -285,13 +292,8 @@ publish_application() {
         return 0
     fi
     
-    read -p "Vill du publicera om applikationen för bättre prestanda? (y/n): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Hoppar över publicering"
-        return 0
-    fi
-    
+    log_info "Befintliga publicerade binärer hittades. Publicerar om för att ta med den nya koden..."
+
     cd "$INSTALL_DIR"
     
     local publish_dir="$INSTALL_DIR/publish"
@@ -659,11 +661,11 @@ case "${1:-}" in
         echo ""
         echo "Alternativ:"
         echo "  --help, -h        Visa denna hjälp"
-        echo "  --no-publish      Hoppa över publicering (snabbare)"
+        echo "  --no-publish      Hoppa över publicering (publicerade tjänster uppdateras då inte)"
         echo ""
         echo "Exempel:"
         echo "  $0                # Full uppdatering med publicering"
-        echo "  $0 --no-publish   # Uppdatera utan att publicera om"
+        echo "  $0 --no-publish   # Hoppa över publicering av nya binärer"
         echo ""
         exit 0
         ;;
