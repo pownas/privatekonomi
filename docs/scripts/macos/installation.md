@@ -16,9 +16,10 @@ Homebrew krävs inte. Installeraren skapar en lokal byggmiljö och försöker ä
 Kör från repositoryts rot:
 
 ```bash
-cd scripts/macos
-bash install.sh
+bash setup-macos.sh
 ```
+
+Startaren visar den här dokumentationen och implementationsskriptet `scripts/macos/install.sh`, och kräver ett aktivt ja innan installationen startar.
 
 Skriptet kontrollerar macOS och processorns arkitektur, installerar .NET 11 SDK och Aspire CLI vid behov, återställer NuGet-paket, skapar ett betrott HTTPS-utvecklarcertifikat och bygger lösningen. Certifikatet kan utlösa en bekräftelse från macOS Keychain. Installationsloggar sparas i `~/Library/Logs/Privatekonomi/`.
 

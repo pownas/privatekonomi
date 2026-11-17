@@ -5,18 +5,15 @@
 **Enklaste sättet:** Använd det automatiserade installationsskriptet som hanterar hela processen:
 
 ```bash
-# Ladda ner och kör installationsskriptet
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
-
-# Eller klona repository och kör lokalt
-git clone https://github.com/pownas/Privatekonomi.git
-cd Privatekonomi
-./raspberry-pi-install.sh
+# Klona repositoryt och kör den godkännandestyrda root-startaren
+git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
+cd Privatekonomi-setup
+bash setup-raspberry-pi.sh
 ```
 
 Installationsskriptet hanterar:
 - ✅ Kontroll av systemkrav och Raspberry Pi-miljö
-- ✅ Installation av .NET 9 SDK
+- ✅ Installation av .NET 11 SDK
 - ✅ Skapande av NuGet.Config om det saknas
 - ✅ Konfiguration av PATH och miljövariabler
 - ✅ Kloning/uppdatering av Privatekonomi-projekt
@@ -40,34 +37,34 @@ Installationsskriptet hanterar:
 **Kommandoradsalternativ:**
 ```bash
 # Full interaktiv installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 
 # Automatisk installation utan interaktiva frågor
-./raspberry-pi-install.sh --skip-interactive
+bash setup-raspberry-pi.sh --skip-interactive
 
 # Anpassad installation (hoppa över vissa steg)
-./raspberry-pi-install.sh --no-service --no-firewall --no-backup
+bash setup-raspberry-pi.sh --no-service --no-firewall --no-backup
 
 # Installera utan publicering (använd dotnet run istället)
-./raspberry-pi-install.sh --no-publish
+bash setup-raspberry-pi.sh --no-publish
 
 # Installera utan Nginx reverse proxy
-./raspberry-pi-install.sh --no-nginx
+bash setup-raspberry-pi.sh --no-nginx
 
 # Installera utan SSL/HTTPS
-./raspberry-pi-install.sh --no-ssl
+bash setup-raspberry-pi.sh --no-ssl
 
 # Konfigurera endast SSL (för befintlig installation)
-./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
 
 # Visa hjälp
-./raspberry-pi-install.sh --help
+bash setup-raspberry-pi.sh --help
 ```
 
 **Efter installation:**
 ```bash
-cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash start.sh
 ```
 
 **Åtkomst till tjänsterna:**
@@ -129,8 +126,8 @@ sudo nginx -t
    - Gratis SSL-certifikat
    - Automatisk förnyelse
    - Kräver domännamn som pekar på din Raspberry Pi
-   - Installeras automatiskt vid `./raspberry-pi-install.sh` om Nginx är aktiverat
-   - Eller kör: `./raspberry-pi-install.sh --configure-ssl`
+    - Installeras automatiskt vid `bash setup-raspberry-pi.sh` om Nginx är aktiverat
+    - Eller kör: `bash setup-raspberry-pi.sh --configure-ssl`
 
 2. **Self-signed Certificate (För lokal användning)**
    - Fungerar utan domännamn
@@ -151,7 +148,7 @@ Installationsskriptet publicerar applikationen med följande optimeringar:
 
 För snabbare utveckling/testning kan du hoppa över publicering:
 ```bash
-./raspberry-pi-install.sh --no-publish
+bash setup-raspberry-pi.sh --no-publish
 # Systemd-tjänsten använder då "dotnet run" istället
 ```
 
@@ -366,7 +363,7 @@ PRIVATEKONOMI_ENVIRONMENT=RaspberryPi
 
 ### Startup-skript
 
-Ett dedikerat startup-skript `raspberry-pi-start.sh` hanterar automatiskt:
+Ett dedikerat startup-skript `scripts/raspberry-pi/start.sh` hanterar automatiskt:
 - Sätter alla nödvändiga miljövariabler
 - Konfigurerar URL:er för alla tjänster
 - Startar Aspire AppHost med rätt inställningar
@@ -375,7 +372,7 @@ Ett dedikerat startup-skript `raspberry-pi-start.sh` hanterar automatiskt:
 ```bash
 # Från repository-roten
 cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 #### Manuell start med miljövariabler:

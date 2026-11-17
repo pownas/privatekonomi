@@ -325,7 +325,7 @@ setup_project() {
                 log_info "Repository uppdaterat: $old_commit -> $new_commit"
                 log_warning "Installationsscriptet kan ha uppdaterats under körning"
                 log_info "Startar om installern automatiskt med senaste versionen..."
-                exec bash "$INSTALL_DIR/raspberry-pi-install.sh" "${script_args[@]}" --branch "$APP_BRANCH"
+                exec bash "$INSTALL_DIR/scripts/raspberry-pi/install.sh" "${script_args[@]}" --branch "$APP_BRANCH"
             fi
         else
             log_info "Använder befintlig installation"
@@ -342,7 +342,7 @@ setup_project() {
     fi
     
     # Make scripts executable
-    chmod +x app-install.sh app-start.sh raspberry-pi-install.sh raspberry-pi-start.sh raspberry-pi-update.sh raspberry-pi-debug.sh raspberry-pi-enable-web-update.sh raspberry-pi-web-update.sh setup-tesseract.sh 2>/dev/null || true
+    chmod +x setup-raspberry-pi.sh scripts/raspberry-pi/*.sh scripts/linux/*.sh 2>/dev/null || true
     
     if resolve_build_target; then
         CURRENT_STEP="NuGet-aterstallning"
@@ -750,7 +750,7 @@ configure_nginx() {
     
     sudo tee /etc/nginx/sites-available/privatekonomi > /dev/null << EOF
 # Privatekonomi Nginx Reverse Proxy Configuration
-# Created by raspberry-pi-install.sh
+# Created by setup-raspberry-pi.sh
 
 # Define upstream servers for better error handling
 upstream privatekonomi_web {
@@ -870,7 +870,7 @@ EOF
         echo -e ""
         echo -e "${BLUE}Nästa steg:${NC}"
         echo -e "  1. Konfigurera SSL/HTTPS med: ${YELLOW}sudo certbot --nginx -d $server_name${NC}"
-        echo -e "  2. Eller kör: ${YELLOW}./raspberry-pi-install.sh --configure-ssl${NC}"
+        echo -e "  2. Eller kör från repositoryts rot: ${YELLOW}bash setup-raspberry-pi.sh --configure-ssl${NC}"
         echo -e ""
     else
         log_error "Nginx-konfigurationen är ogiltig"
@@ -1075,7 +1075,7 @@ configure_selfsigned() {
     
     sudo tee /etc/nginx/sites-available/privatekonomi > /dev/null << EOF
 # Privatekonomi Nginx Reverse Proxy Configuration with Self-Signed SSL
-# Created by raspberry-pi-install.sh
+# Created by setup-raspberry-pi.sh
 
 # Define upstream servers for better error handling
 upstream privatekonomi_web {
@@ -1910,7 +1910,7 @@ show_usage_info() {
     echo -e "  ${YELLOW}Uppdatera projekt:${NC}"
     echo -e "    cd $INSTALL_DIR"
     echo -e "    git pull origin main"
-    echo -e "    ./raspberry-pi-install.sh"
+    echo -e "    ./setup-raspberry-pi.sh"
     echo -e ""
     echo -e "  ${YELLOW}Manuell backup:${NC}"
     echo -e "    ~/scripts/backup-privatekonomi.sh"

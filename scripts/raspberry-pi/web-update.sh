@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installed outside the checkout by raspberry-pi-enable-web-update.sh.
+# Installed outside the checkout by scripts/raspberry-pi/enable-web-update.sh.
 set -Eeuo pipefail
 umask 077
 

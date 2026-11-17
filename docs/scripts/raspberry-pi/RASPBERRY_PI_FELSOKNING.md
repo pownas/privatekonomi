@@ -7,7 +7,7 @@ Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Private
 1. **Uppdatera installationen**
    ```bash
    cd ~/Privatekonomi
-   ./raspberry-pi-update.sh
+   cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
    ```
 2. **Starta om tjansten**
    ```bash
@@ -35,7 +35,7 @@ Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Private
   ```bash
   unset ASPNETCORE_URLS
   unset DOTNET_URLS
-  ./raspberry-pi-start.sh
+  cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
   ```
 * Om systemd anvands, kontrollera att miljovariabeln inte finns kvar:
   ```bash
@@ -51,7 +51,7 @@ Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Private
   ```json
   "Urls": "http://0.0.0.0:5274"
   ```
-* Atgard: Kora `./raspberry-pi-install.sh` igen eller lagg till varden manuellt.
+* Atgard: Kora `bash setup-raspberry-pi.sh` igen fran repositoryts rot eller lagg till varden manuellt.
 
 ### Systemd-tjansten startar men inga portar ar oppna
 
@@ -62,7 +62,7 @@ Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Private
 2. Leta efter fel kring portar, databas eller ASP.NET Core.
 3. Uppdatera publicerade binarer vid behov:
    ```bash
-   ./raspberry-pi-update.sh --force
+   cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --force
    ```
 
 ### Hitta applikationsloggar och exceptions
@@ -126,7 +126,7 @@ Om du far felmeddelandet:
 Tool 'dotnet-ef' failed to update due to the following: The settings file in the tool's NuGet package is invalid: Settings file 'DotnetToolSettings.xml' was not found in the package.
 ```
 
-Detta beror vanligtvis pa korrupt NuGet-cache eller saknade paketkallor. `raspberry-pi-install.sh` hanterar nu detta automatiskt, men om problemet kvarhaller:
+`setup-raspberry-pi.sh` hanterar nu detta automatiskt
 
 **Losning 1: Skapa NuGet.Config manuellt**
 ```bash
@@ -190,9 +190,9 @@ PRIVATEKONOMI_RASPBERRY_PI=true DOTNET_DASHBOARD_URLS=http://0.0.0.0:17127 dotne
 
 Se till att loggar visar att Web/API binders till 0.0.0.0:5274/5277.
 
-### Kontroll av `raspberry-pi-debug.sh`
+### Kontroll av `scripts/raspberry-pi/debug.sh`
 
-* Kora `./raspberry-pi-debug.sh` efter atgarder.
+* Kora `cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh` efter atgarder.
 * Avsnitt 3, 7 och 8 ska markeras som OK.
 
 ## Relaterade resurser
@@ -206,5 +206,5 @@ Se till att loggar visar att Web/API binders till 0.0.0.0:5274/5277.
 
 * Satt aldrig `ASPNETCORE_URLS` globalt nar flera hostar ska lyssna pa olika portar.
 * Verifiera alltid systemd-miljo och testkora med manuell `dotnet run` om nagot ser konstigt ut.
-* Anvand `journalctl` nar `raspberry-pi-debug.sh` rapporterar rott pa steg 3 eller 7.
+* Anvand `journalctl` nar `scripts/raspberry-pi/debug.sh` rapporterar rott pa steg 3 eller 7.
 * Dokumentera resultat efter varje felsokningskorsning for snabbare support i framtiden.

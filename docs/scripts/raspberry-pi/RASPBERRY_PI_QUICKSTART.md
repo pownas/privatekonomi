@@ -8,7 +8,7 @@ Denna korta guide hjälper dig att snabbt komma igång med nätverksåtkomst til
 
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 **Välj under installationen:**
@@ -25,7 +25,7 @@ cd ~/Privatekonomi
 sudo systemctl start privatekonomi
 
 # Eller manuellt
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 ### 3. Hitta din IP-adress
@@ -58,7 +58,7 @@ http://192.168.1.100
 ### 5. Diagnostik (vid problem)
 
 ```bash
-./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
 ```
 
 ## ✅ Checklista
@@ -101,7 +101,7 @@ http://raspberrypi.local:5274
 sudo systemctl start privatekonomi
 
 # Eller
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 ### Problem: Portar lyssnar på 127.0.0.1
@@ -114,7 +114,7 @@ ss -lntp | grep 5274
 Om du ser `127.0.0.1:5274`:
 ```bash
 # Kör om installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 ### Problem: Brandväggen blockerar
@@ -146,7 +146,7 @@ sudo ufw reload
 # Logga in på router och skapa DHCP-reservation för Pi
 
 # 2. Installera med Nginx och SSL
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj Nginx: Ja
 # Välj SSL: Self-signed
 
@@ -197,7 +197,7 @@ Om något inte fungerar:
 
 1. **Kör diagnostik:**
    ```bash
-   ./raspberry-pi-debug.sh > ~/diagnostics.txt
+    cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh > ~/diagnostics.txt
    ```
 
 2. **Samla loggar:**
@@ -218,7 +218,7 @@ GitHub: https://github.com/pownas/Privatekonomi/issues
 - **Hårdvara:** Raspberry Pi 4 (4GB+) rekommenderas för flera användare
 - **Backup:** Testa återställning från backup regelbundet
 - **Säkerhet:** Exponera INTE Privatekonomi direkt på internet utan VPN
-- **Uppdateringar:** Kör `./raspberry-pi-update.sh` regelbundet
+- **Uppdateringar:** Kör `cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh` regelbundet
 
 ## 🎉 Klart!
 

@@ -127,7 +127,7 @@ OCR-tjänsten använder regex-mönster för att identifiera:
 **Lösning**:
 ```bash
 # Kör installationsskriptet
-./setup-tesseract.sh
+cd scripts/linux && bash setup-tesseract.sh
 
 # Eller manuellt:
 mkdir -p src/Privatekonomi.Web/tessdata

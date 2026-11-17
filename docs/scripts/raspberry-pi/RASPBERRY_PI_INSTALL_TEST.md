@@ -21,22 +21,18 @@ Detta dokument beskriver hur du kan testa Raspberry Pi-installationsskriptet.
 
 ```bash
 cd /workspaces/Privatekonomi
-./raspberry-pi-install.sh --help
+bash setup-raspberry-pi.sh --help
 
 # Testrun (skippa systemd service och firewall)
-./raspberry-pi-install.sh --no-service --no-firewall
+bash setup-raspberry-pi.sh --no-service --no-firewall
 ```
 
-### 2. Test via curl (simulerar riktig installation):
+### 2. Test från en ren klon:
 
 ```bash
-# Ladda ner och kör skriptet
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
-
-# Eller ladda ner först, granska, sedan kör
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh > raspberry-pi-install.sh
-chmod +x raspberry-pi-install.sh
-./raspberry-pi-install.sh
+git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
+cd Privatekonomi-setup
+bash setup-raspberry-pi.sh
 ```
 
 ### 3. Test på Raspberry Pi:
@@ -45,12 +41,14 @@ chmod +x raspberry-pi-install.sh
 # SSH till din Raspberry Pi
 ssh pi@<raspberry-pi-ip>
 
-# Kör installationsskriptet
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
+# Hämta repot och starta installeraren med godkännande
+git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
+cd Privatekonomi-setup
+bash setup-raspberry-pi.sh
 
 # Efter installation
-cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash start.sh
 ```
 
 ## Vad skriptet gör
@@ -58,9 +56,9 @@ cd ~/Privatekonomi
 1. **Systemkontroll**: Verifierar Raspberry Pi-miljö och systemkrav
 2. **Dependencies**: Installerar git, curl om de saknas
 3. **NuGet Config**: Skapar NuGet.Config om den saknas
-4. **. NET Installation**: Laddar ner och installerar .NET 9 SDK
+4. **.NET-installation**: Laddar ner och installerar .NET 11 SDK
 5. **Projekt Setup**: Klonar/uppdaterar Privatekonomi repository
-6. **Workload Restore**: Återställer Aspire workloads
+6. **NuGet-återställning**: Återställer projektets paket
 7. **Storage Config**: Interaktivt val av SQLite eller JsonFile
 8. **appsettings.json**: Skapar Production-konfiguration automatiskt
 9. **EF Tools**: Installerar Entity Framework CLI-verktyg
@@ -89,8 +87,8 @@ Applikationen kommer att vara tillgänglig på:
 
 ### Starta manuellt:
 ```bash
-cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash start.sh
 ```
 
 ### Med systemd (om installerat):

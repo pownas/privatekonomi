@@ -8,8 +8,6 @@ Plattformsspecifika installations-, start- och underhållsskript finns här:
 - `codespaces/` – utvecklingsmiljö för GitHub Codespaces.
 - `linux/` – Linux-hjälpskript, till exempel OCR-språkdata.
 
-Användarguiden och körinstruktionerna finns i [`../docs/scripts/README.md`](../docs/scripts/README.md).
+Rootens enda startare per miljö är `setup-macos.sh`, `setup-windows.ps1`, `setup-raspberry-pi.sh` och `setup-codespaces.sh`. De visar dokumentation och installerarsökväg och kräver ett aktivt godkännande innan installationen startar.
 
-Det finns högst en installerare i repositoryts rot per miljö: `app-install.sh` för Linux/Codespaces, `local-app-install.ps1` för Windows och `raspberry-pi-install.sh` för Raspberry Pi. macOS installeras direkt via `scripts/macos/install.sh`.
-
-Övriga plattformsskript körs från respektive underkatalog, till exempel `cd scripts/raspberry-pi`. Övriga äldre root-skript är bara kompatibilitetsstartare och ska inte användas i nya instruktioner.
+Övriga plattformsskript körs från respektive underkatalog, till exempel `cd scripts/raspberry-pi`. Dokumentationen finns i [`../docs/scripts/README.md`](../docs/scripts/README.md).

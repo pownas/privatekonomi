@@ -7,7 +7,7 @@
 # This script starts the Privatekonomi application using .NET Aspire Dashboard.
 # 
 # Prerequisites:
-# - Run ./app-install.sh first to set up the development environment
+# - Run bash setup-codespaces.sh first to set up the development environment
 # 
 # What this script does:
 # 1. Stop any existing .NET processes and free up ports
@@ -100,7 +100,7 @@ check_prerequisites() {
     # Check if .NET is installed and accessible
     if ! command -v dotnet &> /dev/null; then
         log_error ".NET SDK is not installed or not in PATH"
-        log_warning "Please run './app-install.sh' first to set up the environment"
+        log_warning "Please run 'bash setup-codespaces.sh' first to set up the environment"
         exit 1
     fi
     
@@ -109,7 +109,7 @@ check_prerequisites() {
     # Check if .NET 11 is available
     if ! dotnet --list-sdks | grep -q "11\."; then
         log_error ".NET 11 SDK is not installed"
-        log_warning "Please run './app-install.sh' first to install .NET 11"
+        log_warning "Please run 'bash setup-codespaces.sh' first to install .NET 11"
         exit 1
     fi
     
@@ -197,7 +197,7 @@ show_help() {
     echo -e "  bash start.sh --help                      Show this help message"
     echo ""
     echo -e "${YELLOW}Prerequisites:${NC}"
-    echo -e "  Run ${GREEN}./app-install.sh${NC} first to set up the development environment"
+    echo -e "  Run ${GREEN}bash setup-codespaces.sh${NC} first to set up the development environment"
     echo ""
     echo -e "${YELLOW}What this script does:${NC}"
     echo -e "  1. Stops any existing .NET processes and frees up ports"
@@ -206,7 +206,7 @@ show_help() {
     echo -e "  4. Starts the Aspire Dashboard with all services"
     echo ""
     echo -e "${YELLOW}Troubleshooting:${NC}"
-    echo -e "  • If you get 'command not found' errors, run ${GREEN}./app-install.sh${NC}"
+    echo -e "  • If you get 'command not found' errors, run ${GREEN}bash setup-codespaces.sh${NC}"
     echo -e "  • If services fail to start, check the Aspire Dashboard logs"
     echo -e "  • For HTTPS certificate issues, run ${GREEN}dotnet dev-certs https --trust${NC}"
 }

@@ -244,7 +244,7 @@ Privatekonomi/
 
 ```bash
 # 1. Download Tesseract language files
-./setup-tesseract.sh
+cd scripts/linux && bash setup-tesseract.sh
 
 # 2. Build the project
 dotnet build

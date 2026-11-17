@@ -128,7 +128,7 @@ main() {
     if [[ ! -s "$tessdata_dir/eng.traineddata" || ! -s "$tessdata_dir/swe.traineddata" ]]; then
         CURRENT_STEP="hämtning av OCR-språkdata"
         if ! bash "$REPO_ROOT/scripts/linux/setup-tesseract.sh"; then
-            log_warning "OCR-språkdata kunde inte hämtas. Appen kan starta, men kvitto-OCR är inte tillgänglig förrän setup-tesseract.sh körs."
+            log_warning "OCR-språkdata kunde inte hämtas. Appen kan starta, men kvitto-OCR är inte tillgänglig förrän bash scripts/linux/setup-tesseract.sh körs."
         fi
     fi
 

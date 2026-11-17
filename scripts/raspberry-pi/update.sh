@@ -281,7 +281,7 @@ publish_application() {
     # Check if published directory exists
     if [ ! -d "$INSTALL_DIR/publish" ]; then
         log_info "Ingen publicerad version finns. Hoppar över publicering."
-        log_info "Om du vill använda publicerade binärer, kör: ./raspberry-pi-install.sh"
+        log_info "Om du vill använda publicerade binärer, kör: bash ~/privatekonomi/setup-raspberry-pi.sh"
         return 0
     fi
     
@@ -498,7 +498,7 @@ restart_services() {
     log_info "Ingen systemd-tjänst installerad"
     log_info "Du kan starta applikationen manuellt med:"
     echo "  cd $INSTALL_DIR"
-    echo "  ./raspberry-pi-start.sh"
+    echo "  cd \"$INSTALL_DIR/scripts/raspberry-pi\" && bash start.sh"
 }
 
 # Verify update
@@ -615,7 +615,7 @@ show_post_update_info() {
     else
         echo -e "${BLUE}Starta applikationen:${NC}"
         echo -e "  cd $INSTALL_DIR"
-        echo -e "  ./raspberry-pi-start.sh"
+        echo -e "  cd \"$INSTALL_DIR/scripts/raspberry-pi\" && bash start.sh"
         echo -e ""
         echo -e "  ${YELLOW}eller med systemd (om installerat):${NC}"
         echo -e "  sudo systemctl start $SERVICE_NAME"

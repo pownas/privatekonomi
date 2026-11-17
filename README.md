@@ -242,8 +242,8 @@ Installations-, start- och felsökningsinstruktioner per plattform finns i [doku
 På Apple Silicon (M-serien, inklusive M2) eller Intel:
 
 ```bash
+bash setup-macos.sh
 cd scripts/macos
-bash install.sh
 bash start.sh
 ```
 
@@ -256,10 +256,13 @@ Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
 ```bash
-# Installera via den enda root-startaren
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
+# Hämta repot och starta den enda Raspberry Pi-startaren
+cd ~
+git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
+cd Privatekonomi-setup
+bash setup-raspberry-pi.sh
 
-# Starta från Raspberry Pi-skriptkatalogen
+# Starta från Raspberry Pi-skriptkatalogen efter installation
 cd ~/privatekonomi/scripts/raspberry-pi
 bash start.sh
 ```
@@ -287,40 +290,29 @@ bash update.sh
 
 **Kommandoradsalternativ:**
 ```bash
-./raspberry-pi-install.sh --help              # Visa hjälp
-./raspberry-pi-install.sh --skip-interactive  # Automatisk installation
-./raspberry-pi-install.sh --branch feature/pi # Installera från en vald gren
-./raspberry-pi-install.sh --no-service        # Hoppa över systemd-tjänst
-./raspberry-pi-install.sh --no-publish        # Hoppa över publicering (använd dotnet run)
-./raspberry-pi-install.sh --no-nginx          # Hoppa över Nginx reverse proxy
-./raspberry-pi-install.sh --no-ssl            # Hoppa över SSL/HTTPS
-./raspberry-pi-install.sh --configure-ssl     # Konfigurera endast SSL
+bash setup-raspberry-pi.sh --help              # Visa hjälp
+bash setup-raspberry-pi.sh --skip-interactive  # Hoppa över installerarens egna frågor efter root-bekräftelsen
+bash setup-raspberry-pi.sh --branch feature/pi # Installera från en vald gren
+bash setup-raspberry-pi.sh --no-service        # Hoppa över systemd-tjänst
+bash setup-raspberry-pi.sh --no-publish        # Hoppa över publicering (använd dotnet run)
+bash setup-raspberry-pi.sh --no-nginx          # Hoppa över Nginx reverse proxy
+bash setup-raspberry-pi.sh --no-ssl            # Hoppa över SSL/HTTPS
+bash setup-raspberry-pi.sh --configure-ssl     # Konfigurera endast SSL
 ```
 
 När skriptet körs interaktivt utan `--branch` kan du välja bland repots grenar; standardgrenen är `main`.
-På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med `sudo ./raspberry-pi-enable-web-update.sh`. Appen visar en tydlig varning när den kör en annan gren än `main`.
+På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med:
 
-**Nya funktioner:**
-- **Self-contained publish**: Optimerade ARM64-binärer med snabbare uppstart och lägre resursanvändning
-- **Nginx reverse proxy**: Enkel HTTPS-åtkomst via port 80/443 för alla tjänster
-- **SSL/HTTPS**: Automatisk Let's Encrypt-konfiguration eller self-signed certifikat
-- **Let's Encrypt DNS-01**: Valbart Cloudflare DNS-01-flöde för subdomäner utan att exponera port 80
-
-Se följande guider för Raspberry Pi:
-- **[RASPBERRY_PI_QUICKSTART.md](docs/scripts/raspberry-pi/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!
-- **[RASPBERRY_PI_NGINX_SSL.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NGINX_SSL.md)**: HTTPS, automatisk certifikatförnyelse och klienternas certifikatförtroende.
-- **[RASPBERRY_PI_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)**: Detaljerad installationsguide
-- **[RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)**: Felsökning nätverksproblem
-- **[RASPBERRY_PI_DEVICE_TESTING.md](docs/scripts/raspberry-pi/RASPBERRY_PI_DEVICE_TESTING.md)**: Testa från olika enheter (mobil, desktop, etc.)
-- **[RASPBERRY_PI_NETWORK_ACCESS.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_ACCESS.md)**: Nätverkskonfiguration
-- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_UPDATE_GUIDE.md)**: Uppdatera befintlig installation
-- **[RASPBERRY_PI_INSTALL_TEST.md](docs/scripts/raspberry-pi/RASPBERRY_PI_INSTALL_TEST.md)**: Testguide för installation
+```bash
+cd ~/privatekonomi/scripts/raspberry-pi
+sudo bash enable-web-update.sh
+```
 
 ### Tilldela systemadministratörer (`IsSystemAdmin`)
 
 Systemadministratörer får åtkomst till bland annat `/admin/metrics` och administratörsåtgärder på sidan **Drift**. Behörigheten styrs av `ApplicationUser.IsSystemAdmin`, inte av hushållsroller eller en Identity-roll med namnet `Admin`.
 
-**Ingen användare blir automatiskt systemadministratör**, inte heller den första registrerade användaren eller demoanvändaren i Development. Detta förhindrar att den första som registrerar sig på en ny installation tar över administratörsåtkomsten. Det finns för närvarande inget gränssnitt, API eller `appsettings`-inställning för att tilldela nya systemadministratörer; en betrodd driftansvarig gör ändringen direkt i kontolagringen.
+**Ingen användare blir automatiskt systemadministratör**, inte heller den första registrerade användaren eller demoanvändaren in Development. Detta förhindrar att den första som registrerar sig på en ny installation tar över administratörsåtkomsten. Det finns för närvarande inget gränssnitt, API eller `appsettings`-inställning för att tilldela nya systemadministratörer; en betrodd driftansvarig gör ändringen direkt i kontolagringen.
 
 1. Registrera ett vanligt, personligt konto och verifiera vilket konto som ska få behörigheten. Använd aldrig det offentliga demokontot som produktionsadministratör.
 2. Stoppa **alla instanser av Web och API** som använder lagringen och ta en säkerhetskopia. På Raspberry Pi med systemd:
@@ -359,14 +351,14 @@ cd Privatekonomi
 
 **Linux/Codespaces:**
 ```bash
-bash ./app-install.sh
+bash setup-codespaces.sh
 cd scripts/codespaces
 bash start.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\local-app-install.ps1
+.\setup-windows.ps1
 Set-Location .\scripts\windows
 .\start.ps1
 ```

@@ -175,8 +175,7 @@ setup_scripts() {
     log_section "Setting up Project Scripts"
     
     log_info "Making project scripts executable..."
-    chmod +x ./app-start.sh
-    chmod +x ./app-install.sh
+    chmod +x ./scripts/codespaces/start.sh
     
     log_success "Project scripts are now executable"
 }

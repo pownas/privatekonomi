@@ -84,7 +84,7 @@ fi
 # Verifiera att dotnet finns
 if ! command -v dotnet &> /dev/null; then
     log_error "dotnet hittades inte i PATH"
-    echo "Kör först: ./raspberry-pi-install.sh"
+    echo "Kör först från repositoryts rot: bash setup-raspberry-pi.sh"
     echo "Eller lägg till .NET manuellt i PATH:"
     echo "  export PATH=\"\$PATH:\$HOME/.dotnet\""
     exit 1
@@ -115,7 +115,7 @@ else
         log_warning "appsettings.Production.json saknas för Web eller API"
         echo ""
         echo "Kör installationsskriptet igen för att skapa konfigurationsfiler:"
-        echo "  ./raspberry-pi-install.sh"
+        echo "  bash setup-raspberry-pi.sh"
         echo ""
     fi
 fi

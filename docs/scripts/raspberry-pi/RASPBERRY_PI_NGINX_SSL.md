@@ -39,16 +39,16 @@ Det enklaste sättet är att låta installationsskriptet hantera allt:
 
 ```bash
 # Full installation med Nginx och SSL
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 
 # Hoppa över Nginx
-./raspberry-pi-install.sh --no-nginx
+bash setup-raspberry-pi.sh --no-nginx
 
 # Hoppa över SSL (men behåll Nginx)
-./raspberry-pi-install.sh --no-ssl
+bash setup-raspberry-pi.sh --no-ssl
 
 # Konfigurera endast SSL (för befintlig installation)
-./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
 ```
 
 ## Manuell Nginx-installation
@@ -184,7 +184,7 @@ sudo certbot --nginx -d privatekonomi.example.com
 # - Välj att omdirigera HTTP till HTTPS (rekommenderat)
 ```
 
-Vid körning av `raspberry-pi-install.sh` kan du välja HTTP-01 eller DNS-01 med Cloudflare. DNS-01-alternativet installerar `python3-certbot-dns-cloudflare`, frågar efter token utan att visa det och sparar det i `/etc/letsencrypt/cloudflare.ini` med rättigheter `600`. Certbot sparar förnyelseinställningarna, och `certbot.timer` förnyar certifikatet automatiskt. Skapa ett begränsat API-token i Cloudflare och använd det bara på Pi:n; lägg aldrig token i kommandoraden, dokumentation eller versionshantering.
+setup-raspberry-pi.sh
 
 En subdomän, till exempel `ekonomi.example.com`, är lämplig för installationen. Med DNS-01 kan samma namn ha en lokal DNS-post som pekar på Pi:ns privata IP; publika resolvrar behöver inte kunna nå applikationen. Klienter måste dock ansluta med just subdomänen som certifikatet utfärdats för. Om zonen inte hanteras av Cloudflare stöder installationsflödet inte DNS-01 för den leverantören; använd HTTP-01 eller konfigurera leverantörens Certbot-plugin separat.
 
@@ -354,7 +354,7 @@ ss -lntp | grep '5274\|5277\|17127'
 ```bash
 # Starta Privatekonomi
 cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 
 # Eller med systemd
 sudo systemctl start privatekonomi
@@ -504,7 +504,7 @@ location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2)$ {
 ### Med Let's Encrypt
 ```bash
 # Installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Följ instruktionerna och välj Let's Encrypt
 
 # Åtkomst
@@ -514,7 +514,7 @@ https://privatekonomi.example.com
 ### Med Self-Signed Certificate
 ```bash
 # Installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Följ instruktionerna och välj Self-Signed
 
 # Åtkomst
@@ -525,7 +525,7 @@ https://192.168.1.100
 ### Utan SSL (endast HTTP)
 ```bash
 # Installation
-./raspberry-pi-install.sh --no-ssl
+bash setup-raspberry-pi.sh --no-ssl
 
 # Åtkomst
 http://192.168.1.100
@@ -534,7 +534,7 @@ http://192.168.1.100
 ### Utan Nginx (direktåtkomst)
 ```bash
 # Installation
-./raspberry-pi-install.sh --no-nginx
+bash setup-raspberry-pi.sh --no-nginx
 
 # Åtkomst
 http://192.168.1.100:5274  # Web App

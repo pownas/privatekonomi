@@ -18,7 +18,7 @@ git pull origin main
 dotnet build --configuration Release
 
 # Kör om installationen för att uppdatera konfigurationsfiler
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 Efter uppdatering bör alla tjänster automatiskt lyssna på rätt adress (0.0.0.0) och vara tillgängliga från nätverket.
@@ -28,7 +28,7 @@ Efter uppdatering bör alla tjänster automatiskt lyssna på rätt adress (0.0.0
 Kör diagnostikskriptet först:
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
 ```
 
 Detta ger dig en komplett översikt över din installation och pekar ut eventuella problem.
@@ -110,7 +110,7 @@ Ska innehålla:
 Om någon av dessa filer saknas eller har fel innehåll:
 ```bash
 # Kör om installationen för att skapa rätt konfigurationsfiler
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 ### Lösning B: Kontrollera miljövariabler
@@ -132,7 +132,7 @@ Environment=DOTNET_DASHBOARD_URLS=http://0.0.0.0:17127
 sudo systemctl stop privatekonomi
 sudo systemctl disable privatekonomi
 sudo rm /etc/systemd/system/privatekonomi.service
-./raspberry-pi-install.sh  # Välj att skapa ny systemd-tjänst
+bash setup-raspberry-pi.sh  # Välj att skapa ny systemd-tjänst
 ```
 
 ### Lösning C: Starta om tjänsterna
@@ -143,7 +143,7 @@ sudo systemctl restart privatekonomi
 
 # Eller manuellt
 cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 Vänta 30 sekunder och kontrollera portarna igen:
@@ -260,7 +260,7 @@ sudo systemctl reload nginx
 
 ```bash
 # Om konfigurationsfilen saknas eller är felaktig
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 
 # Under installationen, välj att konfigurera Nginx
 ```
@@ -291,7 +291,7 @@ curl http://localhost:5277
 # Om inte, starta dem
 sudo systemctl start privatekonomi
 # eller
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 ## Problem 4: HTTPS/SSL fungerar inte
@@ -348,7 +348,7 @@ sudo systemctl start certbot.timer
 
 ```bash
 # Använd installationsskriptet
-./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
 
 # Under installationen, välj "Self-signed certificate"
 ```
@@ -657,7 +657,7 @@ Om ingen av dessa lösningar fungerar:
 
 1. Kör fullständig diagnostik:
    ```bash
-   ./raspberry-pi-debug.sh > diagnostics.txt
+    cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh > diagnostics.txt
    ```
 
 2. Samla loggar:

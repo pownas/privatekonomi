@@ -3,8 +3,10 @@
 Installera från repositoryts rot i PowerShell:
 
 ```powershell
-.\local-app-install.ps1
+.\setup-windows.ps1
 ```
+
+Startaren visar dokumentationen och implementationsskriptet `scripts\windows\install.ps1` och ber om godkännande innan installationen startar.
 
 För start och övriga Windows-kommandon:
 
@@ -17,6 +19,3 @@ Starta utan hot reload med `-NoWatch`:
 
 ```powershell
 .\start.ps1 -NoWatch
-```
-
-Den äldre root-sökvägen `local-app-install.ps1` finns kvar som kompatibilitetsstartare.

@@ -74,9 +74,8 @@ dotnet run  # Swagger at http://localhost:5000/swagger
 ```
 
 **Helper scripts:**
-- `bash app-start.sh` (Linux/Codespaces compatibility wrapper)
-- `bash scripts/macos/start.sh` (macOS)
-- `scripts/windows/start.ps1` (Windows PowerShell)
+- Run `bash setup-codespaces.sh` on Linux/Codespaces, `bash setup-macos.sh` on macOS, `setup-windows.ps1` on Windows, or `bash setup-raspberry-pi.sh` on Raspberry Pi. Each setup launcher prints documentation and installer locations and requires confirmation.
+- For startup and other operations, change to `scripts/codespaces`, `scripts/macos`, `scripts/windows`, or `scripts/raspberry-pi` respectively and run that directory's script.
 
 ### Running Tests
 

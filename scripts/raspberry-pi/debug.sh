@@ -171,7 +171,7 @@ if command -v nginx &> /dev/null; then
             fi
         else
             echo -e "${YELLOW}⚠ Privatekonomi Nginx-konfiguration saknas${NC}"
-            echo -e "${YELLOW}  Konfigurera med: ./raspberry-pi-install.sh${NC}"
+            echo -e "${YELLOW}  Konfigurera med: bash ~/privatekonomi/setup-raspberry-pi.sh${NC}"
         fi
     else
         echo -e "${YELLOW}⚠ Nginx är installerat men körs inte${NC}"
@@ -179,7 +179,7 @@ if command -v nginx &> /dev/null; then
     fi
 else
     echo -e "${YELLOW}⚠ Nginx är inte installerat${NC}"
-    echo -e "${YELLOW}  Installera med: ./raspberry-pi-install.sh (välj Nginx-installation)${NC}"
+    echo -e "${YELLOW}  Installera med: bash ~/privatekonomi/setup-raspberry-pi.sh (välj Nginx-installation)${NC}"
 fi
 echo ""
 
@@ -232,7 +232,7 @@ elif [ -d /etc/ssl/privatekonomi ]; then
     fi
 else
     echo -e "${YELLOW}⚠ Inga SSL-certifikat konfigurerade${NC}"
-    echo -e "${YELLOW}  Konfigurera med: ./raspberry-pi-install.sh --configure-ssl${NC}"
+    echo -e "${YELLOW}  Konfigurera med: bash ~/privatekonomi/setup-raspberry-pi.sh --configure-ssl${NC}"
 fi
 echo ""
 
@@ -249,7 +249,7 @@ echo "   cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh"
 echo ""
 echo "2. Om portar lyssnar på 127.0.0.1 istället för 0.0.0.0:"
 echo "   - Kontrollera att PRIVATEKONOMI_RASPBERRY_PI=true är satt"
-echo "   - Kör om installationen: ./raspberry-pi-install.sh"
+echo "   - Kör om installationen: bash ~/privatekonomi/setup-raspberry-pi.sh"
 echo ""
 echo "3. Om brandväggen blockerar:"
 echo "   sudo ufw allow 5274/tcp"
@@ -261,11 +261,11 @@ fi
 echo "   sudo ufw reload"
 echo ""
 echo "4. Om appsettings.Production.json saknas eller är fel:"
-echo "   Kör om installationen: ./raspberry-pi-install.sh"
+echo "   Kör om installationen: bash ~/privatekonomi/setup-raspberry-pi.sh"
 echo ""
 echo "5. Om Nginx inte är konfigurerat:"
-echo "   ./raspberry-pi-install.sh  # Välj Nginx-installation"
-echo "   ./raspberry-pi-install.sh --configure-ssl  # Lägg till SSL"
+echo "   bash ~/privatekonomi/setup-raspberry-pi.sh  # Välj Nginx-installation"
+echo "   bash ~/privatekonomi/setup-raspberry-pi.sh --configure-ssl  # Lägg till SSL"
 echo ""
 echo "6. Testa åtkomst från annan enhet:"
 echo "   ${YELLOW}Direktåtkomst (utan proxy):${NC}"

@@ -15,7 +15,7 @@ Privatekonomi installeras med stöd för åtkomst från:
 Installationsskriptet konfigurerar automatiskt Privatekonomi att lyssna på alla nätverksinterface:
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 Detta sätter automatiskt:
@@ -94,14 +94,14 @@ http://192.168.1.100:5274
 För krypterad åtkomst via HTTPS, konfigurera Nginx:
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj att installera Nginx och SSL under installationen
 ```
 
 Eller för befintlig installation:
 
 ```bash
-./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
 ```
 
 Efter SSL-konfiguration, använd HTTPS:
@@ -153,7 +153,7 @@ http://privatekonomi.local:5274
 Installationsskriptet kan konfigurera statisk IP:
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj att konfigurera statisk IP under installationen
 ```
 
@@ -183,7 +183,7 @@ sudo systemctl restart dhcpcd
 Installationsskriptet kan konfigurera UFW:
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj att konfigurera brandvägg under installationen
 ```
 
@@ -233,7 +233,7 @@ För åtkomst från internet (INTE rekommenderat utan säkerhetskonfiguration):
 
 1. **Använd HTTPS**
    ```bash
-   ./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
    ```
 
 2. **Starka lösenord**
@@ -244,7 +244,7 @@ För åtkomst från internet (INTE rekommenderat utan säkerhetskonfiguration):
 3. **Håll systemet uppdaterat**
    ```bash
    sudo apt update && sudo apt upgrade -y
-   ./raspberry-pi-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
    ```
 
 4. **Begränsa SSH-åtkomst**
@@ -255,7 +255,7 @@ För åtkomst från internet (INTE rekommenderat utan säkerhetskonfiguration):
 
 5. **Aktivera automatisk backup**
    ```bash
-   ./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
    # Välj att konfigurera automatisk backup
    ```
 
@@ -319,7 +319,7 @@ Om inte körande:
 ```bash
 sudo systemctl start privatekonomi
 # Eller:
-cd ~/Privatekonomi && ./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 ### 5. Testa från Raspberry Pi först
@@ -446,7 +446,7 @@ Om du stöter på problem med nätverksåtkomst:
 1. **Kör diagnostikskript:**
    ```bash
    cd ~/Privatekonomi
-   ./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
    ```
 
 2. **Se omfattande felsökningsguide:**
@@ -459,11 +459,11 @@ Om du stöter på problem med nätverksåtkomst:
 
 | Problem | Lösning |
 |---------|---------|
-| Tjänster lyssnar på `127.0.0.1` | `./raspberry-pi-install.sh` |
+| Tjänster lyssnar på `127.0.0.1` | `bash setup-raspberry-pi.sh` |
 | Brandväggen blockerar | `sudo ufw allow 5274/tcp && sudo ufw allow 5277/tcp` |
 | WiFi-isolering aktiverad | Inaktivera i router-inställningar |
 | Nginx svarar inte | `sudo systemctl start nginx` |
-| SSL-certifikat saknas | `./raspberry-pi-install.sh --configure-ssl` |
+| SSL-certifikat saknas | `bash setup-raspberry-pi.sh --configure-ssl` |
 
 ## ✅ Checklista för lokal åtkomst
 
@@ -487,7 +487,7 @@ Med korrekt nätverkskonfiguration är Privatekonomi tillgängligt från:
 
 **Rekommenderad setup:**
 ```
-1. Installera med automatiskt script: ./raspberry-pi-install.sh
+1. Installera från repositoryts rot: bash setup-raspberry-pi.sh
 2. Konfigurera statisk IP eller DHCP-reservation
 3. Installera Nginx + SSL för HTTPS
 4. Installera som PWA på mobila enheter

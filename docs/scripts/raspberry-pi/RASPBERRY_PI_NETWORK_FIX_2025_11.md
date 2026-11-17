@@ -70,7 +70,7 @@ if (isRaspberryPi)
 - Använder `UseUrls()` för att explicit konfigurera Kestrel att lyssna på `0.0.0.0`
 - Överskriver alla localhost-bindningar från Aspire
 
-#### 3. raspberry-pi-install.sh
+#### 3. setup-raspberry-pi.sh
 
 **Förbättrad systemd-tjänst:**
 ```bash
@@ -174,7 +174,7 @@ Eller öppna i webbläsare: `http://192.168.50.111:5274`
 ### 5. Kör diagnostikskript
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
 ```
 
 Alla porttester ska visa gröna checkmarks (✓).
@@ -185,7 +185,7 @@ Alla porttester ska visa gröna checkmarks (✓).
 ```bash
 git clone https://github.com/pownas/Privatekonomi.git
 cd Privatekonomi
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 Installationsskriptet konfigurerar automatiskt allt korrekt.
@@ -197,7 +197,7 @@ git pull origin main
 dotnet build --configuration Release
 
 # Kör om installationen för att uppdatera konfiguration
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 ```
 
 Välj att uppdatera befintlig installation när du får frågan.
@@ -205,7 +205,7 @@ Välj att uppdatera befintlig installation när du får frågan.
 ### Manuell start (för test)
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 Detta sätter alla miljövariabler korrekt och startar applikationen.

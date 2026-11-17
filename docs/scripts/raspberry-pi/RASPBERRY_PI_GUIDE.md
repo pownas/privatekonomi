@@ -378,7 +378,7 @@ För att undvika att IP-adressen ändras:
 **Alternativ B: Statisk IP på Raspberry Pi**
 ```bash
 # Under installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj att konfigurera statisk IP
 
 # Eller manuellt
@@ -428,7 +428,7 @@ http://privatekonomi:5274
 För bästa användarupplevelse, konfigurera Nginx:
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 # Välj att installera och konfigurera Nginx
 ```
 
@@ -452,12 +452,12 @@ Om du inte kan nå applikationen från andra enheter:
 **Snabbdiagnostik:**
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
 ```
 
 **Vanliga problem:**
 - ❌ Portar lyssnar på `127.0.0.1` istället för `0.0.0.0`
-  - Lösning: Kör om installation med `./raspberry-pi-install.sh`
+  - Lösning: Kör om installation med `bash setup-raspberry-pi.sh`
   
 - ❌ Brandväggen blockerar
   - Lösning: `sudo ufw allow 5274/tcp`
@@ -678,7 +678,7 @@ Om du får ett felmeddelande "Connection refused (localhost:7023)" när du förs
 3. Starta om båda tjänsterna:
    ```bash
    cd ~/Privatekonomi
-   ./raspberry-pi-start.sh
+    cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
    ```
 
 **OBS:** Sedan version 0.0.4+ är detta problem automatiskt åtgärdat genom korrekt konfiguration av API-URL:er.

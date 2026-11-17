@@ -10,8 +10,8 @@ standard och stöds inte för Aspire, `dotnet run`, äldre enskilda systemd-tjä
 andra maskiner. Installera först som vanligt, och aktivera sedan en gång på Pi:n:
 
 ```bash
-cd ~/privatekonomi
-sudo ./raspberry-pi-enable-web-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+sudo bash enable-web-update.sh
 ```
 
 Installationskontot behöver .NET 11 SDK och åtkomst till GitHub/NuGet. Installationen
@@ -87,8 +87,8 @@ en andra uppdatering medan tjänsten körs. Inaktivera funktionen med
 **Enklaste sättet:** Använd det automatiserade uppdateringsskriptet:
 
 ```bash
-cd ~/privatekonomi
-./raspberry-pi-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash update.sh
 ```
 
 Uppdateringsskriptet hanterar automatiskt:
@@ -106,13 +106,13 @@ Uppdateringsskriptet hanterar automatiskt:
 
 ```bash
 # Full uppdatering (rekommenderat)
-./raspberry-pi-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
 
 # Uppdatera utan att publicera om (snabbare)
-./raspberry-pi-update.sh --no-publish
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish
 
 # Visa hjälp
-./raspberry-pi-update.sh --help
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --help
 ```
 
 ## 📋 Vad händer under uppdateringen?
@@ -269,7 +269,7 @@ sudo systemctl status privatekonomi
 **Manuellt:**
 ```bash
 cd ~/privatekonomi
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
 ```
 
 ## 🔍 Kontrollera version
@@ -435,7 +435,7 @@ cp -r ~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/home/*/Privatekonomi
 crontab -e
 
 # Lägg till (uppdatera varje söndag kl 03:00)
-0 3 * * 0 cd ~/privatekonomi && ./raspberry-pi-update.sh --no-publish >> ~/privatekonomi-update.log 2>&1
+0 3 * * 0 cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish >> ~/privatekonomi-update.log 2>&1
 ```
 
 **Rekommendation:** Använd `--no-publish` för automatiska uppdateringar för att minimera driftstopp.
@@ -447,7 +447,7 @@ crontab -e
 sudo apt install mailutils
 
 # Modifiera cron-jobb
-0 3 * * 0 cd ~/privatekonomi && ./raspberry-pi-update.sh --no-publish 2>&1 | mail -s "Privatekonomi Update" din@email.com
+0 3 * * 0 cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish 2>&1 | mail -s "Privatekonomi Update" din@email.com
 ```
 
 ## 📊 Efter uppdatering
@@ -535,7 +535,7 @@ Med det automatiska uppdateringsskriptet är det enkelt att hålla din Privateko
 
 ```bash
 cd ~/privatekonomi
-./raspberry-pi-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
 ```
 
 För manuell kontroll över processen, följ den manuella uppdateringsguiden ovan.

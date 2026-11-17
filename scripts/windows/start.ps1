@@ -5,7 +5,7 @@
 # This script starts the Privatekonomi application using .NET Aspire Dashboard.
 #
 # Prerequisites:
-# - Run .\local-app-install.ps1 first to set up the development environment
+# - Run .\setup-windows.ps1 first to set up the development environment
 #
 # What this script does:
 # 1. Check prerequisites are installed
@@ -89,7 +89,7 @@ function Test-Prerequisites {
     }
     catch {
         Write-LogError ".NET SDK is not installed or not in PATH"
-        Write-LogWarning "Please run '.\local-app-install.ps1' first to set up the environment"
+        Write-LogWarning "Please run '.\setup-windows.ps1' first to set up the environment"
         throw "Missing .NET SDK"
     }
     
@@ -97,7 +97,7 @@ function Test-Prerequisites {
     $sdks = dotnet --list-sdks | Out-String
     if (-not ($sdks -match "11\.")) {
         Write-LogError ".NET 11 SDK is not installed"
-        Write-LogWarning "Please run '.\local-app-install.ps1' first to install .NET 11"
+        Write-LogWarning "Please run '.\setup-windows.ps1' first to install .NET 11"
         throw "Missing .NET 11 SDK"
     }
     Write-LogInfo "✅ .NET 11 SDK is available"
@@ -238,13 +238,14 @@ function Show-Help {
     Write-Host "Privatekonomi Application Startup Script" -ForegroundColor Blue
     Write-Host ""
     Write-Host "Usage:" -ForegroundColor Yellow
-    Write-Host "  .\local-app-start.ps1                     Start the application with hot reload"
-    Write-Host "  .\local-app-start.ps1 -NoWatch            Start without dotnet watch"
-    Write-Host "  .\local-app-start.ps1 -Help               Show this help message"
+    Write-Host "  Set-Location .\scripts\windows"
+    Write-Host "  .\start.ps1                               Start the application with hot reload"
+    Write-Host "  .\start.ps1 -NoWatch                      Start without dotnet watch"
+    Write-Host "  .\start.ps1 -Help                         Show this help message"
     Write-Host ""
     Write-Host "Prerequisites:" -ForegroundColor Yellow
     Write-Host "  Run " -NoNewline
-    Write-Host ".\local-app-install.ps1" -NoNewline -ForegroundColor Green
+    Write-Host ".\setup-windows.ps1" -NoNewline -ForegroundColor Green
     Write-Host " first to set up the development environment"
     Write-Host ""
     Write-Host "What this script does:" -ForegroundColor Yellow
@@ -256,7 +257,7 @@ function Show-Help {
     Write-Host ""
     Write-Host "Troubleshooting:" -ForegroundColor Yellow
     Write-Host "  • If you get 'command not found' errors, run " -NoNewline
-    Write-Host ".\local-app-install.ps1" -ForegroundColor Green
+    Write-Host ".\setup-windows.ps1" -ForegroundColor Green
     Write-Host "  • If services fail to start, check the Aspire Dashboard logs"
     Write-Host "  • For HTTPS certificate issues, run " -NoNewline
     Write-Host "dotnet dev-certs https --trust" -ForegroundColor Green
@@ -287,7 +288,7 @@ function Main {
         Write-LogError "Startup failed: $($_.Exception.Message)"
         Write-Host ""
         Write-Host "Common solutions:" -ForegroundColor Yellow
-        Write-Host "  • Run '.\local-app-install.ps1' first"
+        Write-Host "  • Run '.\setup-windows.ps1' first"
         Write-Host "  • Check that you're in the project root directory"
     Write-Host "  • Ensure .NET 11 is installed"
         Write-Host "  • Try running PowerShell as Administrator"

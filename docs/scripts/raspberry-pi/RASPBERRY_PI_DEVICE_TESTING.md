@@ -19,7 +19,7 @@ Spara denna IP-adress, du kommer att använda den i alla tester nedan.
 
 ```bash
 cd ~/Privatekonomi
-./raspberry-pi-debug.sh
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
 ```
 
 Kontrollera att alla kontroller är gröna (✓).
@@ -462,7 +462,7 @@ ping raspberrypi.local
 **Support:**
 Om något inte fungerar, kör:
 ```bash
-./raspberry-pi-debug.sh > ~/test-resultat.txt
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh > ~/test-resultat.txt
 ```
 
 Och skapa en GitHub Issue med resultatfilen.

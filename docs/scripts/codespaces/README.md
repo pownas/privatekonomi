@@ -1,12 +1,12 @@
 # Linux och GitHub Codespaces
 
-`./app-install.sh` finns kvar som enda root-installerare för Linux/Codespaces och vidarebefordrar till `scripts/codespaces/`.
-
-Installera från repositoryts rot:
+Kör den bekräftelse-gated installeraren från repositoryts rot:
 
 ```bash
-bash ./app-install.sh
+bash setup-codespaces.sh
 ```
+
+Startaren visar dokumentationen och implementationsskriptet `scripts/codespaces/install.sh` och frågar innan installationen startar.
 
 Starta från Codespaces-skriptkatalogen:
 
@@ -15,7 +15,4 @@ cd scripts/codespaces
 bash start.sh
 ```
 
-AppHost startas i förgrunden. Avsluta med `Ctrl+C`. OCR-språkdata kan hämtas separat med:
-
-```bash
-bash scripts/linux/setup-tesseract.sh
+AppHost startas i förgrunden. Avsluta med `Ctrl+C`. OCR-språkdata körs med `cd scripts/linux` och `bash setup-tesseract.sh`.
