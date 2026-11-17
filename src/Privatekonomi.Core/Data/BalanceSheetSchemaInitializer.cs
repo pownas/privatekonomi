@@ -30,9 +30,12 @@ public static class BalanceSheetSchemaInitializer
         };
         var columns = new[]
         {
+            new AddColumnOperation { Table = "Transactions", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true },
+            new AddColumnOperation { Table = "Transactions", Name = "ClearingNumber", ClrType = typeof(string), IsNullable = true },
             new AddColumnOperation { Table = "Assets", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Investments", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Loans", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
+            new AddColumnOperation { Table = "CurrencyAccounts", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Households", Name = "ShareBalanceSheet", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "HouseholdMembers", Name = "ShareBalanceSheetConsent", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "Loans", Name = "ExcludeFromBalanceSheet", ClrType = typeof(bool), DefaultValue = false }

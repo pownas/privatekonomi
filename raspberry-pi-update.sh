@@ -156,6 +156,10 @@ create_backup() {
     if [ -f "$DATA_DIR/privatekonomi.db" ]; then
         log_info "Backup av SQLite-databas..."
         cp "$DATA_DIR/privatekonomi.db" "$BACKUP_DIR/${backup_name}.db"
+        if ! cmp -s -- "$DATA_DIR/privatekonomi.db" "$BACKUP_DIR/${backup_name}.db"; then
+            log_error "SQLite-backupen kunde inte verifieras; avbryter uppdateringen"
+            return 1
+        fi
         log_success "SQLite backup: $BACKUP_DIR/${backup_name}.db"
     fi
     
@@ -431,6 +435,7 @@ EOF
 # Restart services
 restart_services() {
     log_section "Startar om tjänster"
+    log_info "Saknade databaskolumner och tabeller uppdateras säkert när tjänsterna startar"
 
     sudo systemctl daemon-reload
 

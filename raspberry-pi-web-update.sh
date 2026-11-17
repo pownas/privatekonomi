@@ -185,6 +185,17 @@ mkdir -p "$backup"
 if [ -d "$HOME/privatekonomi-data" ]; then
     cp -a -- "$HOME/privatekonomi-data" "$backup/data"
 fi
+if [ -f "$HOME/privatekonomi-data/privatekonomi.db" ]; then
+    test -f "$backup/data/privatekonomi.db" || {
+        echo "SQLite-databasen saknas i uppdateringens säkerhetskopia." >&2
+        exit 1
+    }
+    cmp -s -- "$HOME/privatekonomi-data/privatekonomi.db" "$backup/data/privatekonomi.db" || {
+        echo "SQLite-databasen i säkerhetskopian matchar inte originalet." >&2
+        exit 1
+    }
+    echo "SQLite-databasens säkerhetskopia verifierad."
+fi
 cp -a -- "$publish/Web" "$publish/Api" "$backup/"
 touch "$state/backup-ready"
 sync
@@ -193,7 +204,7 @@ for project in Web Api; do
     mv -- "$stage/publish/$project" "$publish/$project"
 done
 
-echo "Startar tjänster och verifierar hälsa..."
+echo "Startar tjänster; saknade databaskolumner och tabeller uppdateras säkert vid uppstart..."
 start_services
 health_check api http://127.0.0.1:5277/internal/health
 health_check web http://127.0.0.1:5274/internal/health

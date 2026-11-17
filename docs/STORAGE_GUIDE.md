@@ -328,6 +328,14 @@ cp privatekonomi.backup.db privatekonomi.db
 # Starta applikationen igen
 ```
 
+## Databasschema vid Raspberry Pi-uppdatering
+
+En SQLite-databas ska inte återskapas för att få med nya kolumner eller tabeller. `EnsureCreated` skapar en ny databas, men uppdaterar inte schemat i en befintlig databas. Vid start kör Web och API idempotenta, additiva schemauppdateringar: saknade kolumner läggs till och befintliga rader lämnas kvar. Nya schemaändringar måste därför ha en motsvarande säker uppdatering som kontrollerar om kolumnen eller tabellen redan finns.
+
+Kör `raspberry-pi-update.sh` eller den aktiverade webbuppdateringen för att publicera en ny version. Skripten stoppar tjänsterna och säkerhetskopierar databasen före omstart; webbuppdateringen verifierar även att SQLite-filen finns oförändrad i säkerhetskopian. När tjänsterna startar tillämpas schemauppdateringen automatiskt. Kontrollera efteråt loggarna med `journalctl -u privatekonomi-web -u privatekonomi-api`.
+
+Anropa inte `Database.Migrate()` blint mot äldre Pi-databaser: de kan sakna EF:s migrationshistorik och tidigare tabeller, vilket gör att äldre migrationer inte säkert kan spelas om. Säkerhetskopiera alltid före schemauppdatering och gör varje uppdatering idempotent.
+
 ## Felsökning
 
 ### Problem: "Database is locked"
