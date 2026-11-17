@@ -46,6 +46,24 @@
     margin: 0 auto;
 }
 
+/* Keep text readable on the pastel budget cards in both color themes. */
+.budget-rule-card .budget-rule-value {
+    color: #263238 !important;
+    font-weight: 600;
+}
+
+.budget-needs-card .budget-rule-title {
+    color: #334e9e !important;
+}
+
+.budget-wants-card .budget-rule-title {
+    color: #8a4b08 !important;
+}
+
+.budget-savings-card .budget-rule-title {
+    color: #1b6b45 !important;
+}
+
 /* Category icon alignment */
 .mud-table-cell .mud-icon {
     vertical-align: middle;
