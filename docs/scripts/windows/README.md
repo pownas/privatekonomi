@@ -1,21 +1,20 @@
 # Windows – lokal installation och start
 
-Installera från repositoryts rot i PowerShell:
+Från repositoryts rot i PowerShell, välj installation:
 
 ```powershell
-.\setup-windows.ps1
+.\setup-windows.ps1 install
 ```
 
-Startaren visar dokumentationen och implementationsskriptet `scripts\windows\install.ps1` och ber om godkännande innan installationen startar.
+Utan ett skriptnamn visas en lista med alla Windows-skript. Tryck Enter för att välja `install.ps1` som standard, eller skriv till exempel `start.ps1`. Startaren visar dokumentations- och skriptkatalogen och ber om bekräftelse innan vald åtgärd körs.
 
 För start och övriga Windows-kommandon:
 
 ```powershell
-Set-Location .\scripts\windows
-.\start.ps1
+.\setup-windows.ps1 start
 ```
 
 Starta utan hot reload med `-NoWatch`:
 
 ```powershell
-.\start.ps1 -NoWatch
+.\setup-windows.ps1 start -NoWatch

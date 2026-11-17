@@ -353,9 +353,8 @@ bash setup-codespaces.sh start
 
 **Windows (PowerShell):**
 ```powershell
-.\setup-windows.ps1
-Set-Location .\scripts\windows
-.\start.ps1
+.\setup-windows.ps1 install
+.\setup-windows.ps1 start
 ```
 
 ### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)

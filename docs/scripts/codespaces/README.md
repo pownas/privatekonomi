@@ -1,18 +1,17 @@
 # Linux och GitHub Codespaces
 
-Kör den bekräftelse-gated installeraren från repositoryts rot:
+Välj installation från repositoryts rot:
 
 ```bash
-bash setup-codespaces.sh
+bash setup-codespaces.sh install
 ```
 
-Startaren visar dokumentationen och implementationsskriptet `scripts/codespaces/install.sh` och frågar innan installationen startar.
+Utan ett skriptnamn visas tillgängliga Codespaces-skript; Enter väljer `install.sh` som standard. Startaren visar dokumentations- och skriptkatalogen och frågar innan vald åtgärd körs.
 
-Starta från Codespaces-skriptkatalogen:
+Starta via root-startaren:
 
 ```bash
-cd scripts/codespaces
-bash start.sh
+bash setup-codespaces.sh start
 ```
 
 AppHost startas i förgrunden. Avsluta med `Ctrl+C`. OCR-språkdata körs med `cd scripts/linux` och `bash setup-tesseract.sh`.

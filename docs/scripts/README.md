@@ -17,10 +17,10 @@ Starta appen med `bash setup-macos.sh start`. Utan ett skriptnamn visas valmenyn
 Kör från repositoryts rot i PowerShell:
 
 ```powershell
-.\setup-windows.ps1
+.\setup-windows.ps1 install
 ```
 
-För start och övriga Windows-kommandon, kör `Set-Location scripts\windows` och sedan `.\start.ps1`. Starta utan hot reload med `-NoWatch`. Se [Windows-instruktionerna](windows/README.md).
+Starta med `.\setup-windows.ps1 start`; starta utan hot reload med `.\setup-windows.ps1 start -NoWatch`. Se [Windows-instruktionerna](windows/README.md).
 
 ## Raspberry Pi OS
 

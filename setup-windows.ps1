@@ -36,7 +36,7 @@ function Resolve-SetupScript {
     return $availableScripts | Where-Object { $_.BaseName -ieq $Choice -or $_.Name -ieq $Choice } | Select-Object -First 1
 }
 
-if ($args -contains '-Help' -or $args -contains '--help' -or $args -contains '-?') {
+if ($args.Count -gt 0 -and $args[0] -in @('-Help', '--help', '-?')) {
     Show-SetupHelp
     exit 0
 }

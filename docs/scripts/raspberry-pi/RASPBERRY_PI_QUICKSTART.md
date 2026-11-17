@@ -8,8 +8,10 @@ Denna korta guide hjälper dig att snabbt komma igång med nätverksåtkomst til
 
 ```bash
 cd ~/Privatekonomi
-bash setup-raspberry-pi.sh
+bash setup-raspberry-pi.sh install
 ```
+
+Utan `install` visas skriptlistan; tryck Enter för att välja installation som standard. Du kan även välja andra åtgärder där, till exempel `start`, `update` eller `debug`.
 
 **Välj under installationen:**
 - ✅ Lagring: SQLite (rekommenderat)
@@ -24,8 +26,8 @@ bash setup-raspberry-pi.sh
 # Med systemd (om konfigurerat)
 sudo systemctl start privatekonomi
 
-# Eller manuellt
-cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
+# Eller manuellt via root-startaren
+bash setup-raspberry-pi.sh start
 ```
 
 ### 3. Hitta din IP-adress
@@ -58,7 +60,7 @@ http://192.168.1.100
 ### 5. Diagnostik (vid problem)
 
 ```bash
-cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh
+bash setup-raspberry-pi.sh debug
 ```
 
 ## ✅ Checklista
@@ -101,7 +103,7 @@ http://raspberrypi.local:5274
 sudo systemctl start privatekonomi
 
 # Eller
-cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
+bash setup-raspberry-pi.sh start
 ```
 
 ### Problem: Portar lyssnar på 127.0.0.1
@@ -114,7 +116,7 @@ ss -lntp | grep 5274
 Om du ser `127.0.0.1:5274`:
 ```bash
 # Kör om installation
-bash setup-raspberry-pi.sh
+bash setup-raspberry-pi.sh install
 ```
 
 ### Problem: Brandväggen blockerar
@@ -146,7 +148,7 @@ sudo ufw reload
 # Logga in på router och skapa DHCP-reservation för Pi
 
 # 2. Installera med Nginx och SSL
-bash setup-raspberry-pi.sh
+bash setup-raspberry-pi.sh install
 # Välj Nginx: Ja
 # Välj SSL: Self-signed
 

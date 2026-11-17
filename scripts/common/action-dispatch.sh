@@ -49,7 +49,6 @@ dispatch_shell_action() {
     local action_name=""
     local answer=""
     local script_path
-    local index=1
     shift 3
 
     if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
