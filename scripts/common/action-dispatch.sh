@@ -4,7 +4,7 @@ list_shell_actions() {
 
     for script_path in "$scripts_dir"/*.sh; do
         [[ -f "$script_path" ]] || continue
-        printf '  %-24s %s\n' "$(basename "$script_path")" "$script_path"
+        printf '  %s\n' "$(basename "$script_path")"
     done
 }
 
@@ -72,22 +72,29 @@ dispatch_shell_action() {
             return 2
         fi
     else
-        printf 'Välj åtgärd för %s:\n' "$platform_name"
-        for script_path in "$scripts_dir"/*.sh; do
-            [[ -f "$script_path" ]] || continue
-            printf '  %d) %s\n' "$index" "$(basename "$script_path")"
-            index=$((index + 1))
-        done
-        printf '  q) Avbryt\n'
+        printf 'Tillgängliga skript för %s:\n' "$platform_name"
+        list_shell_actions "$scripts_dir"
 
         if [[ ! -r /dev/tty ]]; then
             printf '[ERROR] Välj ett skript direkt eller kör startaren i en interaktiv terminal.\n' >&2
             return 2
         fi
-        printf 'Ange nummer eller skriptnamn: ' >/dev/tty
+        if resolve_shell_action "$scripts_dir" "install" >/dev/null; then
+            action_choice="install"
+        else
+            action_choice=""
+        fi
+        if [[ -n "$action_choice" ]]; then
+            printf 'Välj skript [install.sh] (eller q för att avbryta): ' >/dev/tty
+        else
+            printf 'Välj skript (eller q för att avbryta): ' >/dev/tty
+        fi
         if ! IFS= read -r action_choice </dev/tty; then
             printf '[INFO] Ingen åtgärd valdes.\n'
             return 0
+        fi
+        if [[ -z "$action_choice" ]]; then
+            action_choice="install"
         fi
         case "$action_choice" in
             q|Q) printf '[INFO] Avbrutet.\n'; return 0 ;;

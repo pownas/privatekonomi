@@ -242,9 +242,8 @@ Installations-, start- och felsökningsinstruktioner per plattform finns i [doku
 På Apple Silicon (M-serien, inklusive M2) eller Intel:
 
 ```bash
-bash setup-macos.sh
-cd scripts/macos
-bash start.sh
+bash setup-macos.sh install
+bash setup-macos.sh start
 ```
 
 Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer och felsökning.
@@ -256,22 +255,18 @@ Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
 ```bash
-# Hämta repot och starta den enda Raspberry Pi-startaren
+# Hämta repot och välj Raspberry Pi-skript i startaren
 cd ~
 git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
 cd Privatekonomi-setup
-bash setup-raspberry-pi.sh
-
-# Starta från Raspberry Pi-skriptkatalogen efter installation
-cd ~/privatekonomi/scripts/raspberry-pi
-bash start.sh
+bash setup-raspberry-pi.sh install
+bash setup-raspberry-pi.sh start
 ```
 
 **Uppdatera befintlig installation:**
 
 ```bash
-cd ~/privatekonomi/scripts/raspberry-pi
-bash update.sh
+bash setup-raspberry-pi.sh update
 ```
 
 **Installationsskriptet hanterar automatiskt:**
@@ -290,14 +285,15 @@ bash update.sh
 
 **Kommandoradsalternativ:**
 ```bash
-bash setup-raspberry-pi.sh --help              # Visa hjälp
-bash setup-raspberry-pi.sh --skip-interactive  # Hoppa över installerarens egna frågor efter root-bekräftelsen
-bash setup-raspberry-pi.sh --branch feature/pi # Installera från en vald gren
-bash setup-raspberry-pi.sh --no-service        # Hoppa över systemd-tjänst
-bash setup-raspberry-pi.sh --no-publish        # Hoppa över publicering (använd dotnet run)
-bash setup-raspberry-pi.sh --no-nginx          # Hoppa över Nginx reverse proxy
-bash setup-raspberry-pi.sh --no-ssl            # Hoppa över SSL/HTTPS
-bash setup-raspberry-pi.sh --configure-ssl     # Konfigurera endast SSL
+bash setup-raspberry-pi.sh --help                   # Visa tillgängliga skript
+bash setup-raspberry-pi.sh install --help           # Visa installerarens alternativ
+bash setup-raspberry-pi.sh install --skip-interactive # Hoppa över installerarens egna frågor
+bash setup-raspberry-pi.sh install --branch feature/pi # Installera från en vald gren
+bash setup-raspberry-pi.sh install --no-service     # Hoppa över systemd-tjänst
+bash setup-raspberry-pi.sh install --no-publish     # Hoppa över publicering (använd dotnet run)
+bash setup-raspberry-pi.sh install --no-nginx       # Hoppa över Nginx reverse proxy
+bash setup-raspberry-pi.sh install --no-ssl         # Hoppa över SSL/HTTPS
+bash setup-raspberry-pi.sh install --configure-ssl  # Konfigurera endast SSL
 ```
 
 När skriptet körs interaktivt utan `--branch` kan du välja bland repots grenar; standardgrenen är `main`.
@@ -347,13 +343,12 @@ git clone https://github.com/pownas/Privatekonomi.git
 cd Privatekonomi
 ```
 
-2. Kör startskriptet:
+2. Installera och starta via rootens startare:
 
 **Linux/Codespaces:**
 ```bash
-bash setup-codespaces.sh
-cd scripts/codespaces
-bash start.sh
+bash setup-codespaces.sh install
+bash setup-codespaces.sh start
 ```
 
 **Windows (PowerShell):**
