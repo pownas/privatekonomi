@@ -437,7 +437,7 @@ sudo reboot
 - **Nginx & SSL**: [RASPBERRY_PI_NGINX_SSL.md](RASPBERRY_PI_NGINX_SSL.md)
 - **Felsökning Nätverk**: [RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)
 - **Testa från Olika Enheter**: [RASPBERRY_PI_DEVICE_TESTING.md](RASPBERRY_PI_DEVICE_TESTING.md)
-- **PWA-guide**: [PWA_GUIDE.md](PWA_GUIDE.md) (om tillgänglig)
+- **PWA-guide**: [PWA_GUIDE.md](../../PWA_GUIDE.md) (om tillgänglig)
 
 ## 🔧 Felsökning
 

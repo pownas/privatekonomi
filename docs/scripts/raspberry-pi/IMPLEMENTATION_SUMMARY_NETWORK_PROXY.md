@@ -188,7 +188,7 @@ curl http://192.168.1.100:5274
 **Uppdaterade dokument:**
 - [RASPBERRY_PI_GUIDE.md](RASPBERRY_PI_GUIDE.md) - Förbättrad sektion "Åtkomst från Andra Enheter"
 - [RASPBERRY_PI_NETWORK_ACCESS.md](RASPBERRY_PI_NETWORK_ACCESS.md) - Länkar till nya guider
-- [README.md](README.md) - Uppdaterade länkar med snabbstart som huvudsaklig startpunkt
+- [README.md](../../../README.md) - Uppdaterade länkar med snabbstart som huvudsaklig startpunkt
 
 **Förbättrade verktyg:**
 - `raspberry-pi-debug.sh` - Utökad från 8 till 11 kontroller

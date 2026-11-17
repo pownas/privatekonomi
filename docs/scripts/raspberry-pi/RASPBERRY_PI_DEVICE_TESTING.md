@@ -420,7 +420,7 @@ ping raspberrypi.local
 
 **Åtkomst:**
 - Desktop: `http://privatekonomi` (via router DNS)
-- Mobil: PWA installerad på hemskärm
+- Mobil: PWA installerad på hemskärmen
 - Alla enheter: < 2 sekunder laddningstid
 
 **Resultat:** ✅ Perfekt!
@@ -472,4 +472,4 @@ Och skapa en GitHub Issue med resultatfilen.
 - [Network Access Guide](RASPBERRY_PI_NETWORK_ACCESS.md)
 - [Network Troubleshooting](RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)
 - [Nginx & SSL Guide](RASPBERRY_PI_NGINX_SSL.md)
-- [PWA Guide](PWA_GUIDE.md) (om tillgänglig)
+- [PWA Guide](../../PWA_GUIDE.md)

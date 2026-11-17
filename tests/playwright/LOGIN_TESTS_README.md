@@ -190,7 +190,7 @@ These tests can be integrated into CI/CD pipelines to prevent regression:
 
 - Issue #369: Login-sidan kraschar applikationen på Raspberry Pi i produktion
 - `docs/BUG_FIXES.md` - Detailed explanation of the fix
-- `docs/RASPBERRY_PI_FELSOKNING.md` - Raspberry Pi troubleshooting guide
+- `docs/scripts/raspberry-pi/RASPBERRY_PI_FELSOKNING.md` - Raspberry Pi troubleshooting guide
 
 ## Summary
 

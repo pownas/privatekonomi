@@ -1,6 +1,6 @@
 # Raspberry Pi felsokning for Privatekonomi
 
-Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Privatekonomi nar Aspire-dashboarden, webbappen eller API:t inte svarar som vantat. Guiden kompletterar `doc/RASPBERRY_PI_forsta_installationen.md` och fokuserar pa port-explicita problem dar tjansterna inte lyssnar pa ratt adresser.
+Detta dokument beskriver hur du felsoker en Raspberry Pi-installation av Privatekonomi nar Aspire-dashboarden, webbappen eller API:t inte svarar som vantat. Guiden kompletterar `docs/scripts/raspberry-pi/RASPBERRY_PI_första_installationen.md` och fokuserar pa port-explicita problem dar tjansterna inte lyssnar pa ratt adresser.
 
 ## Snabb checklista
 
@@ -80,6 +80,18 @@ sudo journalctl -u privatekonomi-api -n 200 --no-pager
 Sok efter `ERR`, `FTL` eller `Exception`. Vid ett API-fel kan `traceId` i svaret anvandas for att hitta motsvarande post i loggen. Om loggarna ska ligga pa en annan skrivbar plats kan `PRIVATEKONOMI_LOG_DIRECTORY` anges for Web- och API-tjansterna.
 
 En inloggad systemadministrator kan aven lasa loggarna pa sidan **Applikationsloggar** (`/admin/logs`). Sidan visar de senaste 2 000 raderna och tillater radering av aldre loggfiler efter en bekraftelse. Aktiva loggfiler kan inte raderas. Loggsidan kraver bade inloggning och systemadministratorbehorighet.
+
+### Installationsskriptet avbryts under bygget
+
+Installationsskriptet sparar nu all terminalutdata i `~/privatekonomi-installer-logs/raspberry-pi-install-<tid>.log` och skriver ut vilket steg och vilken exitkod som misslyckades. Kod 137 betyder ofta att Linux avslutade kompilatorn pa grund av minnesbrist (OOM). Kontrollera da minne, swap och kernel-loggen:
+
+```bash
+free -h
+swapon --show
+sudo journalctl -k -b --no-pager | grep -Ei 'oom|out of memory|killed process'
+```
+
+Pa en Pi med 4 GB RAM kan en hel .NET-losning krava mer minne an vad som finns tillgangligt, sarskilt om flera projekt byggs parallellt. Skriptet begransar darfor MSBuild till ett projekt i taget. Swap-optimeringen erbjuds fore bygget; svara `y` for att konfigurera 2 GB swap om minnet ar begransat. Undvik `--skip-interactive` om du vill fa swap-fragan.
 
 ### Brandvagg/UFW blockerar trafik
 
@@ -187,7 +199,7 @@ Se till att loggar visar att Web/API binders till 0.0.0.0:5274/5277.
 
 * [Microsoft: Deploy .NET IoT apps to Linux-devices](https://learn.microsoft.com/en-us/dotnet/iot/deployment)
 * [Microsoft: Debugging .NET IoT apps](https://learn.microsoft.com/en-us/dotnet/iot/debugging?tabs=self-contained&pivots=vscode)
-* `docs/RASPBERRY_PI_forsta_installationen.md` - ursprunglig installationsguide.
+* `docs/scripts/raspberry-pi/RASPBERRY_PI_första_installationen.md` - ursprunglig installationsguide.
 * `docs/ASPIRE_GUIDE.md` - detaljer om Aspire-orchestrering.
 
 ## Tipssammanfattning

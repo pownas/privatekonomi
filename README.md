@@ -107,7 +107,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - **Export per år**: Exportera ekonomisk data uppdelat på år i JSON eller CSV format
   - Import med merge- eller ersättningsläge
   - Webbaserat gränssnitt för datahantering
-  - Perfekt för Raspberry Pi-installationer - se [Raspberry Pi guide](docs/RASPBERRY_PI_GUIDE.md)
+  - Perfekt för Raspberry Pi-installationer - se [Raspberry Pi guide](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)
 - **CSV-import**: 
   - Import av transaktioner från ICA-banken och Swedbank
   - Import av investeringar från Avanza Bank med dubbletthantering
@@ -235,15 +235,28 @@ Se [ASPIRE_GUIDE.md](docs/ASPIRE_GUIDE.md) för mer information.
 
 ### Installation och körning
 
+Installations-, start- och felsökningsinstruktioner per plattform finns i [dokumentationen för installationsskripten](docs/scripts/README.md). Källskripten finns i [`scripts/`](scripts/README.md).
+
+#### 🍎 macOS (lokal utveckling)
+
+På Apple Silicon (M-serien, inklusive M2) eller Intel:
+
+```bash
+bash scripts/macos/install.sh
+bash scripts/macos/start.sh
+```
+
+Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer och felsökning.
+
 #### 🍓 Raspberry Pi Installation (Automatisk)
 
-> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
+> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
 
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
 ```bash
 # Automatisk installation på Raspberry Pi
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
+curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/scripts/raspberry-pi/install.sh | bash
 
 # Efter installation
 cd ~/Privatekonomi
@@ -292,15 +305,14 @@ På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift*
 - **Let's Encrypt DNS-01**: Valbart Cloudflare DNS-01-flöde för subdomäner utan att exponera port 80
 
 Se följande guider för Raspberry Pi:
-- **[RASPBERRY_PI_QUICKSTART.md](docs/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!
-- **[RASPBERRY_PI_NGINX_SSL.md](docs/RASPBERRY_PI_NGINX_SSL.md)**: HTTPS, automatisk certifikatförnyelse och klienternas certifikatförtroende.
-- **[RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)**: Detaljerad installationsguide
-- **[RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](docs/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)**: Felsökning nätverksproblem
-- **[RASPBERRY_PI_DEVICE_TESTING.md](docs/RASPBERRY_PI_DEVICE_TESTING.md)**: Testa från olika enheter (mobil, desktop, etc.)
-- **[RASPBERRY_PI_NETWORK_ACCESS.md](docs/RASPBERRY_PI_NETWORK_ACCESS.md)**: Nätverkskonfiguration
-- **[RASPBERRY_PI_NGINX_SSL.md](docs/RASPBERRY_PI_NGINX_SSL.md)**: Nginx reverse proxy och SSL
-- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/RASPBERRY_PI_UPDATE_GUIDE.md)**: Uppdatera befintlig installation
-- **[RASPBERRY_PI_INSTALL_TEST.md](docs/RASPBERRY_PI_INSTALL_TEST.md)**: Testguide för installation
+- **[RASPBERRY_PI_QUICKSTART.md](docs/scripts/raspberry-pi/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!
+- **[RASPBERRY_PI_NGINX_SSL.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NGINX_SSL.md)**: HTTPS, automatisk certifikatförnyelse och klienternas certifikatförtroende.
+- **[RASPBERRY_PI_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)**: Detaljerad installationsguide
+- **[RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)**: Felsökning nätverksproblem
+- **[RASPBERRY_PI_DEVICE_TESTING.md](docs/scripts/raspberry-pi/RASPBERRY_PI_DEVICE_TESTING.md)**: Testa från olika enheter (mobil, desktop, etc.)
+- **[RASPBERRY_PI_NETWORK_ACCESS.md](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_ACCESS.md)**: Nätverkskonfiguration
+- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_UPDATE_GUIDE.md)**: Uppdatera befintlig installation
+- **[RASPBERRY_PI_INSTALL_TEST.md](docs/scripts/raspberry-pi/RASPBERRY_PI_INSTALL_TEST.md)**: Testguide för installation
 
 ### Tilldela systemadministratörer (`IsSystemAdmin`)
 
@@ -333,7 +345,7 @@ Systemadministratörer får åtkomst till bland annat `/admin/metrics` och admin
 
 Upprepa samma procedur för ytterligare administratörer. Återkalla behörigheten genom att sätta `IsSystemAdmin` till `0` i databasen respektive `false` i JSON. Omstarten stänger även befintliga Blazor-sessioner. Vanlig initiering och nya releaser ändrar inte befintliga kontons administratörsflagga; säkerhetskopiera och behåll därför samma beständiga datalager vid uppgraderingar.
 
-#### Snabbstart med startskript (Enklast för Codespaces)
+#### Snabbstart för Linux och GitHub Codespaces
 
 1. Klona repositoriet:
 ```bash
@@ -343,19 +355,17 @@ cd Privatekonomi
 
 2. Kör startskriptet:
 
-**Linux/macOS/Codespaces:**
+**Linux/Codespaces:**
 ```bash
 ./app-start.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\app-start.ps1
+.\local-app-start.ps1
 ```
 
-Skriptet säkerställer att .NET 11 finns installerat och startar Aspire Dashboard som visar alla tjänster, logs, traces och metrics.
-
-#### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
+### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
 
 .NET Aspire förenklar hanteringen av alla tjänster och ger inbyggd observerbarhet.
 
@@ -682,8 +692,8 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 ### Användarguider
 
 - **[USER_AUTHENTICATION.md](docs/USER_AUTHENTICATION.md)**: Guide för användarregistrering, inloggning och datahantering
-- **[RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)**: ⭐ Komplett guide för installation på Raspberry Pi med lokal datalagring
-- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/RASPBERRY_PI_UPDATE_GUIDE.md)**: ⭐ NYTT! Guide för uppdatering av befintlig Raspberry Pi-installation
+- **[RASPBERRY_PI_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)**: ⭐ Komplett guide för installation på Raspberry Pi med lokal datalagring
+- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_UPDATE_GUIDE.md)**: ⭐ NYTT! Guide för uppdatering av befintlig Raspberry Pi-installation
 - **[STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md)**: Guide för olika lagringsalternativ och konfiguration
 - **[YEAR_EXPORT_GUIDE.md](docs/YEAR_EXPORT_GUIDE.md)**: Guide för export av ekonomisk data per år
 - **[CSV_IMPORT_GUIDE.md](docs/CSV_IMPORT_GUIDE.md)**: Guide för import av transaktioner från ICA-banken och Swedbank

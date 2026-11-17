@@ -493,7 +493,7 @@ echo "Backup completed: $DATE"
 ### Dokumentation
 
 - [README](../README.md)
-- [Raspberry Pi Guide](./RASPBERRY_PI_GUIDE.md)
+- [Raspberry Pi Guide](./scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)
 - [Storage Guide](./STORAGE_GUIDE.md)
 - [Developer Quickstart](./DEVELOPER_QUICKSTART.md)
 

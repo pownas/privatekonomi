@@ -253,9 +253,9 @@ bash -n raspberry-pi-install.sh
 
 Uppdaterad dokumentation:
 - ✅ `README.md` - Kort Raspberry Pi-sektion
-- ✅ `docs/RASPBERRY_PI_första_installationen.md` - Komplett guide
-- ✅ `docs/RASPBERRY_PI_INSTALL_TEST.md` - Testguide
-- ✅ `docs/RASPBERRY_PI_GUIDE.md` - Detaljerad manuell installation
+- ✅ `docs/scripts/raspberry-pi/RASPBERRY_PI_första_installationen.md` - Komplett guide
+- ✅ `docs/scripts/raspberry-pi/RASPBERRY_PI_INSTALL_TEST.md` - Testguide
+- ✅ `docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md` - Detaljerad manuell installation
 
 ## Framtida förbättringar
 

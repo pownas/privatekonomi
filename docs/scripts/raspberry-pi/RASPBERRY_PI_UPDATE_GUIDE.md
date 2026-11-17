@@ -507,7 +507,7 @@ Om du stöter på problem efter uppdatering:
 - **Första installation**: [RASPBERRY_PI_första_installationen.md](RASPBERRY_PI_första_installationen.md)
 - **Nginx & SSL**: [RASPBERRY_PI_NGINX_SSL.md](RASPBERRY_PI_NGINX_SSL.md)
 - **Testguide**: [RASPBERRY_PI_INSTALL_TEST.md](RASPBERRY_PI_INSTALL_TEST.md)
-- **Backup & Återställning**: [STORAGE_GUIDE.md](STORAGE_GUIDE.md)
+- **Backup & Återställning**: [STORAGE_GUIDE.md](../../STORAGE_GUIDE.md)
 
 ## ✅ Uppdateringschecklista
 

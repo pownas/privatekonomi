@@ -367,7 +367,7 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 # Uppdatera Nginx-konfiguration
 sudo nano /etc/nginx/sites-available/privatekonomi
 
-# Lägg till SSL-konfiguration (se docs/RASPBERRY_PI_NGINX_SSL.md)
+# Lägg till SSL-konfiguration (se docs/scripts/raspberry-pi/RASPBERRY_PI_NGINX_SSL.md)
 
 # Testa och ladda om
 sudo nginx -t

@@ -40,7 +40,7 @@ Uppdaterad ExportController med nya endpoints:
 ### 4. Dokumentation
 
 #### Raspberry Pi Guide
-- **Fil:** `docs/RASPBERRY_PI_GUIDE.md`
+- **Fil:** `docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md`
 - **Omfattning:** 500+ rader
 - **Innehåll:**
   - Hårdvarukrav och rekommendationer

@@ -131,7 +131,7 @@ SKIP_SSL=true        # Hoppa över SSL (kräver manuell input)
 
 ## Nya filer
 
-### 1. `/workspaces/Privatekonomi/docs/RASPBERRY_PI_NGINX_SSL.md`
+### 1. `/workspaces/Privatekonomi/docs/scripts/raspberry-pi/RASPBERRY_PI_NGINX_SSL.md`
 
 **Innehåll:**
 - Komplett guide för Nginx och SSL
@@ -176,7 +176,7 @@ verify_installation
 show_usage_info
 ```
 
-### 2. `/workspaces/Privatekonomi/docs/RASPBERRY_PI_första_installationen.md`
+### 2. `/workspaces/Privatekonomi/docs/scripts/raspberry-pi/RASPBERRY_PI_första_installationen.md`
 
 **Ändringar:**
 - Uppdaterad checklista med nya funktioner (publish, Nginx, SSL)
