@@ -361,19 +361,11 @@ cd ~/privatekonomi/src/Privatekonomi.AppHost
 ASPNETCORE_ENVIRONMENT=Production dotnet run
 ```
 
-### Databas-migrering
+### Databasschema vid uppgradering
 
-Om uppdateringen inkluderar databasändringar:
+Raspberry Pi-installern kör inte `dotnet ef database update`; den bygger och publicerar programmet. Vid start säkerställer Web och API databasen och kompletterar saknade tabeller från den aktuella EF-modellen. Detta behövs eftersom befintliga installationer skapades med `EnsureCreated`, som inte lägger till nya tabeller i en redan existerande databas.
 
-```bash
-cd ~/privatekonomi/src/Privatekonomi.Core
-
-# Kontrollera pending migrations
-dotnet ef migrations list
-
-# Applicera migrations
-dotnet ef database update
-```
+Kör inte `dotnet ef database update` manuellt mot en befintlig produktionsdatabas utan att först granska migrationerna och ta en säkerhetskopia. Den nuvarande migrationshistoriken saknar en fullständig initial migration och förutsätter att flera tabeller redan finns; kommandot är därför inte ett säkert generellt uppgraderingssteg för dessa installationer.
 
 ### Portar lyssnar inte
 

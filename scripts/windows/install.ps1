@@ -362,10 +362,9 @@ function Show-UsageInfo {
     Write-Host "    .\start.ps1"
     Write-Host ""
     Write-Host "Available commands:" -ForegroundColor Blue
-    Write-Host "  Database Operations:" -ForegroundColor Yellow
-    Write-Host "    cd src\Privatekonomi.Core"
-    Write-Host "    dotnet ef migrations add <MigrationName>"
-    Write-Host "    dotnet ef database update"
+    Write-Host "  Database Schema:" -ForegroundColor Yellow
+    Write-Host "    Schema is initialized by the application at startup."
+    Write-Host "    Do not run 'dotnet ef database update' until a complete baseline migration is added."
     Write-Host ""
     Write-Host "  Build and Test:" -ForegroundColor Yellow
     Write-Host "    dotnet build Privatekonomi.slnx"
