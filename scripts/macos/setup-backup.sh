@@ -8,6 +8,7 @@ AGENT_DIR="$HOME/Library/LaunchAgents"
 PLIST="$AGENT_DIR/com.privatekonomi.backup.plist"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 LABEL="com.privatekonomi.backup"
+PLUTIL_COMMAND="${PLUTIL_COMMAND:-/usr/bin/plutil}"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
     printf '[ERROR] Schemaläggning av backup är endast tillgänglig på macOS.\n' >&2
@@ -79,7 +80,7 @@ cat > "$temporary_plist" <<EOF
 </plist>
 EOF
 
-/usr/bin/plutil -lint "$temporary_plist" >/dev/null
+"$PLUTIL_COMMAND" -lint "$temporary_plist" >/dev/null
 launchctl bootout "gui/$uid" "$PLIST" >/dev/null 2>&1 || true
 mv -f "$temporary_plist" "$PLIST"
 launchctl bootstrap "gui/$uid" "$PLIST"

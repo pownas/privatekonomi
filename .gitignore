@@ -88,6 +88,7 @@ ScaffoldingReadMe.txt
 appsettings.local.json
 **/appsettings.local.json
 **/appsettings.Production.json
+**/appsettings.Production.json.tmp.*
 
 # StyleCop
 StyleCopReport.xml
