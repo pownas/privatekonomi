@@ -14,14 +14,13 @@ Se [macOS-installationsguiden](macos/installation.md) för förutsättningar, lo
 
 ## Windows
 
-Kör från repositoryts rot i PowerShell:
+Installera från repositoryts rot i PowerShell:
 
 ```powershell
-.\scripts\windows\install.ps1
-.\scripts\windows\start.ps1
+.\local-app-install.ps1
 ```
 
-Starta utan `dotnet watch` med `-NoWatch`. Se [Windows-instruktionerna](windows/README.md).
+För start och övriga Windows-kommandon, gå till `scripts\windows` med `Set-Location scripts\windows` och kör `.\start.ps1`. Starta utan `dotnet watch` med `-NoWatch`. Se [Windows-instruktionerna](windows/README.md).
 
 ## Raspberry Pi OS
 

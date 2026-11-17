@@ -1,16 +1,21 @@
 # Linux och GitHub Codespaces
 
-De befintliga rootkommandona `./app-install.sh` och `./app-start.sh` finns kvar för bakåtkompatibilitet. De vidarebefordrar till `scripts/codespaces/`.
+`./app-install.sh` finns kvar som enda root-installerare för Linux/Codespaces och vidarebefordrar till `scripts/codespaces/`.
 
-Från repositoryts rot:
+Installera från repositoryts rot:
 
 ```bash
 bash ./app-install.sh
-bash ./app-start.sh
+```
+
+Starta från Codespaces-skriptkatalogen:
+
+```bash
+cd scripts/codespaces
+bash start.sh
 ```
 
 AppHost startas i förgrunden. Avsluta med `Ctrl+C`. OCR-språkdata kan hämtas separat med:
 
 ```bash
 bash scripts/linux/setup-tesseract.sh
-```

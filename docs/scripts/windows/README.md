@@ -1,16 +1,22 @@
 # Windows – lokal installation och start
 
-Kör PowerShell från repositoryts rot:
+Installera från repositoryts rot i PowerShell:
 
 ```powershell
-.\scripts\windows\install.ps1
-.\scripts\windows\start.ps1
+.\local-app-install.ps1
+```
+
+För start och övriga Windows-kommandon:
+
+```powershell
+Set-Location .\scripts\windows
+.\start.ps1
 ```
 
 Starta utan hot reload med `-NoWatch`:
 
 ```powershell
-.\scripts\windows\start.ps1 -NoWatch
+.\start.ps1 -NoWatch
 ```
 
-De äldre kommandona `local-app-install.ps1` och `local-app-start.ps1` finns kvar som kompatibilitetsstartare i repositoryts rot.
+Den äldre root-sökvägen `local-app-install.ps1` finns kvar som kompatibilitetsstartare.

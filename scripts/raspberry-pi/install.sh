@@ -1856,7 +1856,7 @@ validate_network_config() {
         log_success "Nätverkskonfiguration är korrekt"
     else
         log_warning "Vissa nätverksinställningar kan behöva justeras"
-        log_info "Kör './raspberry-pi-debug.sh' efter första starten för fullständig diagnos"
+        log_info "Kör 'cd \"$INSTALL_DIR/scripts/raspberry-pi\" && bash debug.sh' efter första starten för fullständig diagnos"
     fi
 }
 

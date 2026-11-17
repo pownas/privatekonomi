@@ -16,7 +16,8 @@ Homebrew krävs inte. Installeraren skapar en lokal byggmiljö och försöker ä
 Kör från repositoryts rot:
 
 ```bash
-bash scripts/macos/install.sh
+cd scripts/macos
+bash install.sh
 ```
 
 Skriptet kontrollerar macOS och processorns arkitektur, installerar .NET 11 SDK och Aspire CLI vid behov, återställer NuGet-paket, skapar ett betrott HTTPS-utvecklarcertifikat och bygger lösningen. Certifikatet kan utlösa en bekräftelse från macOS Keychain. Installationsloggar sparas i `~/Library/Logs/Privatekonomi/`.
@@ -26,7 +27,8 @@ Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-pr
 ## Starta
 
 ```bash
-bash scripts/macos/start.sh
+cd scripts/macos
+bash start.sh
 ```
 
 Aspire körs i förgrunden och visar Dashboard samt tjänsternas adresser. Avsluta med `Ctrl+C`. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.

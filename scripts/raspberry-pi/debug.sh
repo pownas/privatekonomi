@@ -30,7 +30,7 @@ if pgrep -f "dotnet" > /dev/null; then
     ps aux | grep -E "[d]otnet" | head -5
 else
     echo -e "${RED}✗ Inga .NET-processer hittades${NC}"
-    echo -e "${YELLOW}Starta applikationen med: ./raspberry-pi-start.sh${NC}"
+    echo -e "${YELLOW}Gå till ~/privatekonomi/scripts/raspberry-pi och kör: bash start.sh${NC}"
 fi
 echo ""
 
@@ -245,7 +245,7 @@ echo ""
 echo -e "${YELLOW}Vanliga problem och lösningar:${NC}"
 echo ""
 echo "1. Om tjänster inte körs:"
-echo "   ./raspberry-pi-start.sh"
+echo "   cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh"
 echo ""
 echo "2. Om portar lyssnar på 127.0.0.1 istället för 0.0.0.0:"
 echo "   - Kontrollera att PRIVATEKONOMI_RASPBERRY_PI=true är satt"

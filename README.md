@@ -21,7 +21,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - Se [Onboarding guide](docs/ONBOARDING_GUIDE.md)
 - **Användarautentisering**: Komplett användarsystem med registrering, inloggning och dataisolering per användare
 - **Dashboard**: Översikt över totala inkomster, utgifter och nettoresultat
-- **Anpassad Dashboard med Widget-system**: ⭐ NYT!
+- **Anpassd Dashboard med Widget-system**: ⭐ NYT!
   - Skapa personliga dashboard-layouter med anpassningsbara widgets
   - 6 olika widget-typer: Nettoförmögenhet, Kassaflöde, Sparmål, Budget, Transaktioner, Snabbåtgärder
   - Flera layouter för olika användningsområden (Hem, Investeringar, Budget)
@@ -242,8 +242,9 @@ Installations-, start- och felsökningsinstruktioner per plattform finns i [doku
 På Apple Silicon (M-serien, inklusive M2) eller Intel:
 
 ```bash
-bash scripts/macos/install.sh
-bash scripts/macos/start.sh
+cd scripts/macos
+bash install.sh
+bash start.sh
 ```
 
 Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer och felsökning.
@@ -255,18 +256,19 @@ Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
 ```bash
-# Automatisk installation på Raspberry Pi
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/scripts/raspberry-pi/install.sh | bash
+# Installera via den enda root-startaren
+curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
 
-# Efter installation
-cd ~/Privatekonomi
-./raspberry-pi-start.sh
+# Starta från Raspberry Pi-skriptkatalogen
+cd ~/privatekonomi/scripts/raspberry-pi
+bash start.sh
 ```
 
 **Uppdatera befintlig installation:**
+
 ```bash
-cd ~/Privatekonomi
-./raspberry-pi-update.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash update.sh
 ```
 
 **Installationsskriptet hanterar automatiskt:**
@@ -357,12 +359,16 @@ cd Privatekonomi
 
 **Linux/Codespaces:**
 ```bash
-bash ./app-start.sh
+bash ./app-install.sh
+cd scripts/codespaces
+bash start.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\local-app-start.ps1
+.\local-app-install.ps1
+Set-Location .\scripts\windows
+.\start.ps1
 ```
 
 ### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
@@ -428,7 +434,7 @@ API Swagger-dokumentation finns på: `http://localhost:5000/swagger`
 
 #### Lokal konfiguration (appsettings.local.json & User Secrets)
 
-För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställningar i `appsettings.local.json` och känsliga värden i **User Secrets**. Dessa filer laddas automatiskt när miljön heter `Local` (vilket `local-app-start.ps1` sätter åt dig).
+För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställningar i `appsettings.local.json` och känsliga värden i **User Secrets**. Dessa filer laddas automatiskt när miljön heter `Local` (vilket `scripts/windows/start.ps1` sätter åt dig).
 
 1. **Skapa lokala konfigurationsfiler** (lagras utanför Git):
   - `src/Privatekonomi.Web/appsettings.local.json`
@@ -465,7 +471,8 @@ För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställ
 3. **Starta applikationen**:
   ```powershell
   cd ../../
-  .\local-app-start.ps1
+  Set-Location .\scripts\windows
+  .\start.ps1
   ```
 
   Skriptet sätter `ASPNETCORE_ENVIRONMENT=Development` och `PRIVATEKONOMI_ENVIRONMENT=Local`, vilket gör att både standardinställningar och dina lokala overrides (appsettings + User Secrets) läses in samtidigt. All annan utveckling (t.ex. i GitHub Codespaces) använder fortsatt miljön `Development`.
