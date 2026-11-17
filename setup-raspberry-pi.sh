@@ -3,31 +3,22 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 DOC_PATH="docs/scripts/raspberry-pi/RASPBERRY_PI_QUICKSTART.md"
-INSTALLER_PATH="scripts/raspberry-pi/install.sh"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts/raspberry-pi"
+ACTION_HELPER="$SCRIPT_DIR/scripts/common/action-dispatch.sh"
 
-if [[ ! -f "$SCRIPT_DIR/$DOC_PATH" || ! -f "$SCRIPT_DIR/$INSTALLER_PATH" ]]; then
-    printf '[ERROR] Hittar inte Raspberry Pi-dokumentationen eller installeraren. Klona hela repositoryt och kör skriptet från dess rot.\n' >&2
+if [[ ! -f "$SCRIPT_DIR/$DOC_PATH" || ! -d "$SCRIPTS_DIR" || ! -f "$ACTION_HELPER" ]]; then
+    printf '[ERROR] Hittar inte Raspberry Pi-dokumentationen eller skripten. Klona hela repositoryt och kör skriptet från dess rot.\n' >&2
     exit 1
 fi
 
 printf '[INFO] Dokumentation: %s\n' "$SCRIPT_DIR/$DOC_PATH"
-printf '[INFO] Installerare: %s\n' "$SCRIPT_DIR/$INSTALLER_PATH"
-printf '[INFO] Installationen kan ändra systempaket, tjänster och nätverksinställningar.\n'
+printf '[INFO] Skriptkatalog: %s\n' "$SCRIPTS_DIR"
 
+source "$ACTION_HELPER"
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    printf 'Användning: bash setup-raspberry-pi.sh [installerarflaggor]\n'
-    exec bash "$SCRIPT_DIR/$INSTALLER_PATH" "$@"
+    show_shell_action_help "$SCRIPTS_DIR" "$(basename "$0")"
+    printf 'För installeralternativ: bash setup-raspberry-pi.sh install --help\n'
+    exit 0
 fi
 
-if [[ ! -r /dev/tty ]]; then
-    printf '[ERROR] Kör setup-raspberry-pi.sh i en interaktiv terminal för att godkänna installationen.\n' >&2
-    exit 2
-fi
-printf 'Vill du fortsätta med Raspberry Pi-installationen? (y/n): '
-IFS= read -r answer </dev/tty
-case "$answer" in
-    [jJ]|[jJ][aA]|[yY]|[yY][eE][sS]) ;;
-    *) printf '[INFO] Installationen avbröts.\n'; exit 0 ;;
-esac
-
-exec bash "$SCRIPT_DIR/$INSTALLER_PATH" "$@"
+dispatch_shell_action "$SCRIPTS_DIR" "Raspberry Pi" "$(basename "$0")" "$@"
