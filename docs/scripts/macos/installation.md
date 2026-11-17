@@ -21,7 +21,7 @@ bash setup-macos.sh install
 
 Utan ett skriptnamn visas en lista över macOS-skripten. Tryck Enter för att välja `install.sh` som standard, eller skriv `start.sh` för att starta appen. Startaren visar dokumentations- och skriptkatalogen och kräver bekräftelse innan vald åtgärd körs.
 
-Skriptet kontrollerar macOS och processorns arkitektur, installerar .NET 11 SDK och Aspire CLI vid behov, återställer NuGet-paket, skapar ett betrott HTTPS-utvecklarcertifikat och bygger lösningen. Certifikatet kan utlösa en bekräftelse från macOS Keychain. Installationsloggar sparas i `~/Library/Logs/Privatekonomi/`.
+Skriptet kontrollerar macOS och processorns arkitektur, hittar .NET 11 SDK från både den aktuella `PATH`-sökvägen och vanliga macOS-installationsplatser, och installerar SDK:t om det saknas. Det installerar även Aspire CLI vid behov, återställer NuGet-paket, skapar ett betrott HTTPS-utvecklarcertifikat och bygger lösningen. Certifikatet kan utlösa en bekräftelse från macOS Keychain. Installationsloggar sparas i `~/Library/Logs/Privatekonomi/`.
 
 Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-profilen. Öppna en ny terminal om kommandona inte hittas efter installationen.
 
@@ -31,9 +31,11 @@ Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-pr
 bash setup-macos.sh start
 ```
 
-Aspire körs i förgrunden och visar Dashboard samt tjänsternas adresser. Avsluta med `Ctrl+C`. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
+Aspire körs i förgrunden och visar Dashboard samt tjänsternas adresser. Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Startskriptet använder dessa fasta portar och binder appen till nätverksgränssnitten, så andra enheter i hemnätverket kan öppna `http://<Macens-IP-adress>:5274`. IP-adressen visas vid start när den kan identifieras. Avsluta med `Ctrl+C`. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
 
 Som standard används `Development`, `Local` och SQLite enligt projektets utvecklingskonfiguration. Du kan ange miljövariabler före start om du vill ändra detta. Starta inte en andra instans om samma portar redan används; Aspire visar då vilket resurs- eller portfel som uppstod.
+
+LAN-åtkomst är avsedd för ett betrott hemnätverk. macOS-brandväggen kan behöva tillåta inkommande anslutningar. LAN-adressen använder HTTP; öppna inte portar mot internet. Aspire Dashboard exponeras inte på LAN.
 
 ## Felsökning
 

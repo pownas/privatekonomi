@@ -2,6 +2,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // Raspberry Pi configuration - listen on all network interfaces
 var isRaspberryPi = Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true";
+var isLanAccessEnabled = Environment.GetEnvironmentVariable("PRIVATEKONOMI_LAN_ACCESS") == "true";
+var exposeServiceEndpoints = isRaspberryPi || isLanAccessEnabled;
 
 // Configure Aspire Dashboard to listen on all network interfaces when on Raspberry Pi
 if (isRaspberryPi)
@@ -31,12 +33,13 @@ var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
+    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
-if (isRaspberryPi)
+if (exposeServiceEndpoints)
 {
-    // On Raspberry Pi, explicitly set the HTTP endpoint port and pass the flag
-    // The actual binding to 0.0.0.0 is handled by Program.cs based on this flag
+    // Explicitly set the HTTP endpoint port when exposing services on the LAN.
+    // The service binds to 0.0.0.0 based on the environment flag.
     apiBuilder = apiBuilder
         .WithHttpEndpoint(port: 5277, name: "http")
         .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
@@ -51,12 +54,13 @@ var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
+    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
-if (isRaspberryPi)
+if (exposeServiceEndpoints)
 {
-    // On Raspberry Pi, explicitly set the HTTP endpoint port and pass the flag
-    // The actual binding to 0.0.0.0 is handled by Program.cs based on this flag
+    // Explicitly set the HTTP endpoint port when exposing services on the LAN.
+    // The service binds to 0.0.0.0 based on the environment flag.
     webBuilder = webBuilder
         .WithHttpEndpoint(port: 5274, name: "http")
         .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");

@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/dotnet.sh"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/install-$(date '+%Y%m%d-%H%M%S').log"
@@ -25,7 +26,9 @@ on_error() {
 trap 'on_error "$?"' ERR
 
 add_dotnet_to_path() {
-    export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    if ! macos_use_dotnet_11; then
+        export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    fi
     local profile
     case "${SHELL##*/}" in
         zsh) profile="$HOME/.zprofile" ;;
@@ -41,13 +44,13 @@ add_dotnet_to_path() {
 }
 
 has_dotnet_11() {
-    command -v dotnet >/dev/null 2>&1 && dotnet --list-sdks | awk '$1 ~ /^11\./ { found=1 } END { exit !found }'
+    macos_use_dotnet_11
 }
 
 install_dotnet_11() {
     CURRENT_STEP="installation av .NET 11 SDK"
-    add_dotnet_to_path
     if has_dotnet_11; then
+        add_dotnet_to_path
         log_info ".NET 11 SDK finns redan: $(dotnet --list-sdks | awk '$1 ~ /^11\./ { print $1; exit }')"
         return
     fi
