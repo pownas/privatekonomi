@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -413,7 +414,7 @@ public class BudgetSuggestionServiceTests : IDisposable
         Assert.IsTrue(models.Any(m => m.Model == BudgetDistributionModel.SwedishSingle));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BudgetDistributionModel.FiftyThirtyTwenty)]
     [DataRow(BudgetDistributionModel.SwedishFamily)]
     [DataRow(BudgetDistributionModel.SwedishSingle)]
@@ -428,7 +429,7 @@ public class BudgetSuggestionServiceTests : IDisposable
         Assert.IsFalse(string.IsNullOrEmpty(description));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(20000)]
     [DataRow(30000)]
     [DataRow(40000)]

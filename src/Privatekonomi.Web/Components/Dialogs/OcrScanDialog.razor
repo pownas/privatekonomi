@@ -224,7 +224,6 @@
         }
 
         _processing = true;
-        StateHasChanged();
 
         try
         {
@@ -258,7 +257,6 @@
         finally
         {
             _processing = false;
-            StateHasChanged();
         }
     }
 

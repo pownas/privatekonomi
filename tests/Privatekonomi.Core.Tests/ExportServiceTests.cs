@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
+
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 

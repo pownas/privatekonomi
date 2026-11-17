@@ -1,8 +1,8 @@
-﻿using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -277,7 +277,7 @@ Kontant
         Assert.AreEqual("Kontant", result.PaymentMethod);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Totalt: 100,00 kr", 100.00)]
     [DataRow("Total: 150,50", 150.50)]
     [DataRow("Summa: 75,25 kr", 75.25)]
@@ -298,7 +298,7 @@ Test Store
         Assert.AreEqual((decimal)expectedAmount, result.TotalAmount);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2024-01-15", 2024, 1, 15)]
     [DataRow("15/01/2024", 2024, 1, 15)]
     [DataRow("15.01.2024", 2024, 1, 15)]

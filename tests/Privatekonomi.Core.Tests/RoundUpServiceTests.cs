@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -85,7 +86,7 @@ public class RoundUpServiceTests : IDisposable
         Assert.AreEqual(5M, settings.RoundUpAmount);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(127, 10, 3)]      // 127 -> 130 (3 kr saved)
     [DataRow(245, 10, 5)]      // 245 -> 250 (5 kr saved)
     [DataRow(587, 10, 3)]      // 587 -> 590 (3 kr saved)

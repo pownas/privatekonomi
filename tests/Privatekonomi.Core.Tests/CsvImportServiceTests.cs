@@ -1,6 +1,6 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
@@ -145,7 +145,7 @@ public class CsvImportServiceTests : IDisposable
     [TestMethod]
     public async Task PreviewCsvAsyncVeryOldDateEmitsOldDateWarning()
     {
-        var oldDate = DateTime.Now.AddYears(-11).ToString("yyyy-MM-dd");
+        var oldDate = DateTime.Now.AddYears(-11).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var csv = $"""
             Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
             1,84525,1234567891,e-sparkonto,SEK,{oldDate},{oldDate},{oldDate},REF,Gammal transaktion,-100.00,900.00

@@ -1,6 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+﻿using Moq;
+
 using Microsoft.EntityFrameworkCore;
+
 using Privatekonomi.Core.Services;
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Data;

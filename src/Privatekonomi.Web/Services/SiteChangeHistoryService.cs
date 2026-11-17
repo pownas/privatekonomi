@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Privatekonomi.Web.Services;
@@ -23,9 +23,6 @@ public sealed record SiteChangeHistory(
 public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiUpdateService updates)
 {
     private const int DefaultCommitCount = 10;
-    private const string RepositoryCommitsUrl = "repos/pownas/Privatekonomi/commits?sha=main&per_page={0}";
-    private const string RepositoryBranchesUrl = "repos/pownas/Privatekonomi/branches?per_page=100&page={0}";
-
     public async Task<SiteChangeHistory> GetRecentChangesAsync(int count = DefaultCommitCount, CancellationToken cancellationToken = default)
     {
         var installedCommit = updates.GetStatus().InstalledCommit;
@@ -34,7 +31,7 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
         {
             using var client = httpClients.CreateClient("pi-update");
             var result = await client.GetFromJsonAsync<List<GitHubCommitDto>>(
-                string.Format(System.Globalization.CultureInfo.InvariantCulture, RepositoryCommitsUrl, Math.Clamp(count, 1, 10)),
+                string.Create(CultureInfo.InvariantCulture, $"repos/pownas/Privatekonomi/commits?sha=main&per_page={Math.Clamp(count, 1, 10)}"),
                 cancellationToken);
 
             var commits = (result ?? [])
@@ -73,7 +70,7 @@ public sealed class SiteChangeHistoryService(IHttpClientFactory httpClients, PiU
             for (var page = 1; ; page++)
             {
                 var result = await client.GetFromJsonAsync<List<GitHubBranchDto>>(
-                    string.Format(System.Globalization.CultureInfo.InvariantCulture, RepositoryBranchesUrl, page),
+                    string.Create(CultureInfo.InvariantCulture, $"repos/pownas/Privatekonomi/branches?per_page=100&page={page}"),
                     cancellationToken);
                 var pageBranches = (result ?? [])
                     .Select(branch => branch.Name)

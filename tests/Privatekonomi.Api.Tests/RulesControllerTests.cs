@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Privatekonomi.Api.Tests.Infrastructure;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Api.Tests;
 

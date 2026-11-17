@@ -1,5 +1,7 @@
-﻿@inject IJSRuntime JSRuntime
+﻿@using System.Globalization
+@inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
+@inject ILogger<InstallPwaPrompt> Logger
 @implements IAsyncDisposable
 
 @if (ShowInstallPrompt && !IsRunningAsPWA)
@@ -118,11 +120,19 @@
         }
     }
 
-    private void Dismiss()
+    private async Task Dismiss()
     {
         ShowInstallPrompt = false;
         // Store dismissal in localStorage to not show again for a while
-        JSRuntime.InvokeVoidAsync("localStorage.setItem", "pwa-install-dismissed", DateTime.UtcNow.ToString("O"));
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "pwa-install-dismissed", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        }
+        catch (JSException ex)
+        {
+            Logger.LogWarning(ex, "Could not save the PWA prompt dismissal in browser storage.");
+            Snackbar.Add("Valet att dölja installationsfrågan kunde inte sparas.", Severity.Warning);
+        }
     }
 
     public async ValueTask DisposeAsync()

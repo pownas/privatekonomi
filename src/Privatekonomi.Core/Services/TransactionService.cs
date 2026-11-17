@@ -63,15 +63,8 @@ public class TransactionService : ITransactionService
         int page,
         int perPage)
     {
-        if (page < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(page));
-        }
-
-        if (perPage <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(perPage));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(perPage);
 
         var offset = ((long)page - 1) * perPage;
         if (offset > int.MaxValue)

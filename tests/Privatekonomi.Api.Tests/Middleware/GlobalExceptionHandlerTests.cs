@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Privatekonomi.Api.Middleware;
 
 namespace Privatekonomi.Api.Tests.Middleware;
@@ -11,7 +12,7 @@ namespace Privatekonomi.Api.Tests.Middleware;
 public sealed class GlobalExceptionHandlerTests
 {
     [TestMethod]
-    public async Task TryHandleAsync_InternalServerError_HidesDetailsAndReturnsTraceId()
+    public async Task TryHandleAsyncHidesInternalServerErrorDetailsAndReturnsTraceId()
     {
         using var activity = new Activity("exception-test");
         activity.Start();
@@ -22,7 +23,7 @@ public sealed class GlobalExceptionHandlerTests
 
         var handled = await handler.TryHandleAsync(
             context,
-            new Exception("private database details"),
+            new IOException("private database details"),
             CancellationToken.None);
 
         Assert.IsTrue(handled);

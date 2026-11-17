@@ -301,7 +301,6 @@ else
         finally
         {
             _loading = false;
-            StateHasChanged();
         }
     }
 
@@ -351,7 +350,6 @@ else
             _formSalaryPeriod = DateTime.Now;
             _editingSalary = null;
         }
-        StateHasChanged();
     }
 
     private void EditSalary(Core.Models.SalaryHistory salary)
@@ -433,6 +431,5 @@ else
         _editingSalary = null;
         _formSalary = new Core.Models.SalaryHistory();
         _formSalaryPeriod = null;
-        StateHasChanged();
     }
 }

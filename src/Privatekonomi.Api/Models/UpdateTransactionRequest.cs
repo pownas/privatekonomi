@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using Privatekonomi.Core.Models;
 using System.Text.Json.Serialization;
+
 using Privatekonomi.Core.Serialization;
 
 namespace Privatekonomi.Api.Models;

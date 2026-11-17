@@ -17,6 +17,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject PiUpdateService PiUpdates
+@inject ILogger<MainLayout> Logger
 @implements IDisposable
 
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
@@ -181,7 +182,6 @@
         }
 
         _isSaving = true;
-        StateHasChanged();
 
         try
         {
@@ -206,7 +206,6 @@
         finally
         {
             _isSaving = false;
-            StateHasChanged();
         }
     }
 
@@ -318,29 +317,29 @@
     
     private async Task ToggleViewDensity()
     {
-        var isSmallScreen = await JSRuntime.InvokeAsync<bool>("viewDensityManager.isSmallScreen");
-        if (isSmallScreen)
-        {
-            if (_isCompactView)
-            {
-                _isCompactView = false;
-                ViewDensityService.ViewDensity = ViewDensity.Spacious;
-                await JSRuntime.InvokeVoidAsync("viewDensityManager.setViewDensity", false);
-            }
-
-            return;
-        }
-
-        _isCompactView = !_isCompactView;
-        ViewDensityService.ViewDensity = _isCompactView ? ViewDensity.Compact : ViewDensity.Spacious;
-        
         try
         {
+            var isSmallScreen = await JSRuntime.InvokeAsync<bool>("viewDensityManager.isSmallScreen");
+            if (isSmallScreen)
+            {
+                if (_isCompactView)
+                {
+                    _isCompactView = false;
+                    ViewDensityService.ViewDensity = ViewDensity.Spacious;
+                    await JSRuntime.InvokeVoidAsync("viewDensityManager.setViewDensity", false);
+                }
+
+                return;
+            }
+
+            _isCompactView = !_isCompactView;
+            ViewDensityService.ViewDensity = _isCompactView ? ViewDensity.Compact : ViewDensity.Spacious;
             await JSRuntime.InvokeVoidAsync("viewDensityManager.setViewDensity", _isCompactView);
         }
-        catch
+        catch (JSException ex)
         {
-            // Ignore JS interop errors
+            Logger.LogWarning(ex, "Could not update the browser view density.");
+            Snackbar.Add("Vyn kunde inte uppdateras i webbläsaren.", Severity.Warning);
         }
     }
     

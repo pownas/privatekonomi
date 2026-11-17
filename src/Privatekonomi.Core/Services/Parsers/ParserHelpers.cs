@@ -9,5 +9,5 @@ internal static class ParserHelpers
     /// Truncates a string to at most <paramref name="max"/> characters, appending "…" if truncated.
     /// </summary>
     internal static string Truncate(string s, int max = 200) =>
-        s.Length <= max ? s : s.Substring(0, max) + "…";
+        s.Length <= max ? s : string.Concat(s.AsSpan(0, max), "…");
 }

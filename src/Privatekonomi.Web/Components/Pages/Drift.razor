@@ -13,6 +13,8 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ILogger<Drift> Logger
+@inject ISnackbar Snackbar
 
 <PageTitle>Drift</PageTitle>
 
@@ -251,7 +253,16 @@
         if (!firstRender)
             return;
 
-        _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Drift.razor.js");
+        try
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Drift.razor.js");
+        }
+        catch (JSException ex)
+        {
+            Logger.LogError(ex, "Could not load the drift page JavaScript module.");
+            Snackbar.Add("Driftåtgärder kunde inte initieras i webbläsaren.", Severity.Error);
+        }
+
         _pollCancellation = new CancellationTokenSource();
         _pollTask = PollStatusAsync(_pollCancellation.Token);
     }
@@ -337,10 +348,22 @@
     private async Task SubmitActionAsync(string formId)
     {
         if (_module is null)
+        {
+            Snackbar.Add("Driftåtgärden kunde inte startas eftersom webbläsarmodulen saknas.", Severity.Error);
             return;
+        }
 
         _isBusy = true;
-        await _module.InvokeVoidAsync("submitForm", formId);
+        try
+        {
+            await _module.InvokeVoidAsync("submitForm", formId);
+        }
+        catch (JSException ex)
+        {
+            Logger.LogError(ex, "Could not submit drift action form {FormId}.", formId);
+            Snackbar.Add("Driftåtgärden kunde inte skickas från webbläsaren.", Severity.Error);
+            _isBusy = false;
+        }
     }
 
     private static string FormatCommit(string? sha) =>

@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Api.Middleware;

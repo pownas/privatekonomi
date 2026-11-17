@@ -105,7 +105,6 @@
         try
         {
             _step = 2;
-            StateHasChanged();
 
             // First check if this bank has API support
             var availableBanksResponse = await Http.GetFromJsonAsync<List<string>>("api/bankconnections/available-banks");

@@ -1,6 +1,6 @@
 using System.Text;
+
 using Privatekonomi.Core.Services.Parsers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 

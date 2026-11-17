@@ -13,7 +13,7 @@ public class IcaBankenParser : ICsvParser
         var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length < 2) return false;
 
-        var header = lines[0].ToLower();
+        var header = lines[0].ToLowerInvariant();
         // Accept both 'beskrivning' and 'text' as description column
         return header.Contains("datum") && header.Contains("belopp") && (header.Contains("beskrivning") || header.Contains("text"));
     }

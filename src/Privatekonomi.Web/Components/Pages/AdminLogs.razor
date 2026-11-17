@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Privatekonomi.Web.Services
 @inject IApplicationLogReader LogReader
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IAuthorizationService AuthorizationService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -151,6 +150,7 @@
     private bool _loading = true;
     private bool _working;
     private bool _isAuthorized;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -285,7 +285,7 @@
 
     private async Task<bool> EnsureAuthorizedAsync()
     {
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authenticationState = await AuthenticationStateTask;
         _isAuthorized = authenticationState.User.Identity?.IsAuthenticated == true
             && (await AuthorizationService.AuthorizeAsync(authenticationState.User, resource: null, policyName: AdminPolicy)).Succeeded;
 

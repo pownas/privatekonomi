@@ -307,7 +307,6 @@
             return;
 
         _exportingYear = true;
-        StateHasChanged();
 
         try
         {
@@ -325,7 +324,6 @@
         finally
         {
             _exportingYear = false;
-            StateHasChanged();
         }
     }
 
@@ -335,7 +333,6 @@
             return;
 
         _exportingYear = true;
-        StateHasChanged();
 
         try
         {
@@ -353,14 +350,12 @@
         finally
         {
             _exportingYear = false;
-            StateHasChanged();
         }
     }
 
     private async Task ExportFullBackup()
     {
         _exporting = true;
-        StateHasChanged();
 
         try
         {
@@ -393,14 +388,12 @@
         finally
         {
             _exporting = false;
-            StateHasChanged();
         }
     }
 
     private void OnImportFileSelected(IBrowserFile file)
     {
         _importFile = file;
-        StateHasChanged();
     }
 
     private async Task ImportBackup()
@@ -409,7 +402,6 @@
             return;
 
         _importing = true;
-        StateHasChanged();
 
         try
         {
@@ -462,14 +454,12 @@
         finally
         {
             _importing = false;
-            StateHasChanged();
         }
     }
 
     private async Task ManualSave()
     {
         _saving = true;
-        StateHasChanged();
 
         try
         {
@@ -494,7 +484,6 @@
         finally
         {
             _saving = false;
-            StateHasChanged();
         }
     }
 

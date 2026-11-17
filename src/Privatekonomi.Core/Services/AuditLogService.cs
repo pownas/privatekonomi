@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
-using System.Text.Json;
 
 namespace Privatekonomi.Core.Services;
 

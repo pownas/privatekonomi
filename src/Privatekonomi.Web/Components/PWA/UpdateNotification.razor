@@ -57,7 +57,15 @@
     private async Task ApplyUpdate()
     {
         ShowUpdateNotification = false;
-        await JSRuntime.InvokeVoidAsync("pwaManager.applyUpdate");
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("pwaManager.applyUpdate");
+        }
+        catch (JSException ex)
+        {
+            _logger.LogError(ex, "Could not apply the available PWA update.");
+            ShowUpdateNotification = true;
+        }
     }
 
     public async ValueTask DisposeAsync()

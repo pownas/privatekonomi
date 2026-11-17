@@ -1,9 +1,10 @@
 ﻿using System.Text;
+
 using Microsoft.EntityFrameworkCore;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Core.Services.Parsers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 

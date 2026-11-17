@@ -5,7 +5,6 @@
 @inject IHouseholdService HouseholdService
 @inject IBudgetService BudgetService
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Delad Ekonomi - @(household?.Name ?? "Hushåll")</PageTitle>
 
@@ -300,9 +299,11 @@ else
 
     private List<BreadcrumbItem> breadcrumbs = new();
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateTask;
         _userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         
         await LoadData();

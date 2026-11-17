@@ -5,7 +5,6 @@
 @using Microsoft.AspNetCore.Identity
 @using Privatekonomi.Core.Models
 @inject UserManager<ApplicationUser> UserManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Hantera passkeys</PageTitle>
 
@@ -82,6 +81,7 @@
     private IList<UserPasskeyInfo> _passkeys = [];
     private bool _isLoading = true;
     private bool _supportsPasskeys;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     private static string ToBase64Url(byte[] value) =>
         Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
@@ -91,7 +91,7 @@
         _supportsPasskeys = UserManager.SupportsUserPasskey;
         if (_supportsPasskeys)
         {
-            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var authenticationState = await AuthenticationStateTask;
             var user = await UserManager.GetUserAsync(authenticationState.User);
             if (user is not null)
             {

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+
 using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services;

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+
 using Moq;
+
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests.Services;
 

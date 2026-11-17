@@ -1,6 +1,7 @@
 ﻿using System.Text;
+
 using Privatekonomi.Core.Data;
-using Privatekonomi.Core.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable CA1305 // Specify IFormatProvider

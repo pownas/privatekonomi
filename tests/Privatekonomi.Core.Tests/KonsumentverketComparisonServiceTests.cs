@@ -1,4 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Privatekonomi.Core.Services;
 using Privatekonomi.Core.Models;
 
@@ -233,7 +232,7 @@ public class KonsumentverketComparisonServiceTests
         Assert.IsTrue(foodComparison.DifferencePercentage < 0);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0, IndividualAgeGroup.ZeroYears)]
     [DataRow(1, IndividualAgeGroup.OneToThreeYears)]
     [DataRow(3, IndividualAgeGroup.OneToThreeYears)]
@@ -257,7 +256,7 @@ public class KonsumentverketComparisonServiceTests
         Assert.AreEqual(expectedGroup, ageGroup);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0, AgeGroup.SixToElevenMonths)]
     [DataRow(1, AgeGroup.OneYear)]
     [DataRow(3, AgeGroup.TwoToFiveYears)]

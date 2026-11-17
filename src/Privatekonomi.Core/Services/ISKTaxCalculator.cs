@@ -1,5 +1,5 @@
 ﻿using Privatekonomi.Core.Data;
-using Privatekonomi.Core.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Privatekonomi.Core.Services;

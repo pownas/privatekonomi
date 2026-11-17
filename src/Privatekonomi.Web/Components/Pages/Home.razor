@@ -15,7 +15,6 @@
 @inject IJSRuntime JSRuntime
 @inject IOnboardingService OnboardingService
 @inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @implements IDisposable
 
 <PageTitle>Dashboard - Privatekonomi</PageTitle>
@@ -595,10 +594,12 @@ else
     private List<ChartSeries<double>> _netWorthSeries = new();
     private string[] _netWorthLabels = Array.Empty<string>();
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         // Check if user has completed onboarding
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateTask;
         var user = authState.User;
         
         if (user.Identity?.IsAuthenticated ?? false)

@@ -8,7 +8,6 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Gemensamma Sparmål - Privatekonomi</PageTitle>
 
@@ -213,6 +212,8 @@ else
     private bool _loading = true;
     private bool _isUnauthorized;
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
@@ -225,7 +226,7 @@ else
 
         try
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var authState = await AuthenticationStateTask;
             var user = authState.User;
 
             if (user?.Identity is null || !user.Identity.IsAuthenticated)

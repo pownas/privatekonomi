@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
+
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 

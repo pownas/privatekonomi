@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Privatekonomi.Core.Models;
+
 using Privatekonomi.Core.Services;
 
 namespace Privatekonomi.Api.Controllers;

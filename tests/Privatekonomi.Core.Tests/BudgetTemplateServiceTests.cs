@@ -1,6 +1,5 @@
 ﻿using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -154,7 +153,7 @@ public class BudgetTemplateServiceTests
         Assert.AreEqual(6000m, sparande);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(20000)]
     [DataRow(30000)]
     [DataRow(40000)]

@@ -125,7 +125,7 @@ else if (_currentStep == ImportStep.FileSelection)
         
         <MudFileUpload T="IBrowserFile" @ref="_fileUpload" FilesChanged="OnFileSelected" Accept="@GetAcceptedFileTypes()">
             <CustomContent>
-                <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;" @onclick="@(() => _fileUpload.OpenFilePickerAsync())">
+                <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;" @onclick="OpenFilePickerAsync">
                     <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Class="mb-2" />
                     <MudText Typo="Typo.h6">Dra och släpp @GetFileTypeDescription() här</MudText>
                     <MudText Typo="Typo.body2" Class="mt-2">eller</MudText>
@@ -410,6 +410,17 @@ else if (_currentStep == ImportStep.Complete)
     private string _selectedBankName = "";
     private bool _importing = false;
     private CsvImportResult? _investmentImportResult;
+
+    private async Task OpenFilePickerAsync()
+    {
+        if (_fileUpload is null)
+        {
+            Snackbar.Add("Filväljaren är inte tillgänglig. Ladda om sidan och försök igen.", Severity.Error);
+            return;
+        }
+
+        await _fileUpload.OpenFilePickerAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {

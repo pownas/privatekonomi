@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
-using System.Globalization;
 
 namespace Privatekonomi.Core.Services;
 

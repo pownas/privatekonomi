@@ -432,7 +432,6 @@ else if (!_loading && !_selectedDate.HasValue)
         }
 
         _loading = true;
-        StateHasChanged();
 
         try
         {
@@ -446,7 +445,6 @@ else if (!_loading && !_selectedDate.HasValue)
         finally
         {
             _loading = false;
-            StateHasChanged();
         }
     }
 

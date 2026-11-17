@@ -1,5 +1,4 @@
 using Privatekonomi.Core.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 

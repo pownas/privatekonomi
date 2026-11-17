@@ -9,7 +9,6 @@
 @inject ITransactionService TransactionService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Kvitton - Privatekonomi</PageTitle>
 
@@ -333,9 +332,11 @@ else
     private IBrowserFile? _selectedReceiptImage = null;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateTask;
         _userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         
         await LoadData();

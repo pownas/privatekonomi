@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services;
-using System.Security.Claims;
 
 namespace Privatekonomi.Api.Controllers;
 

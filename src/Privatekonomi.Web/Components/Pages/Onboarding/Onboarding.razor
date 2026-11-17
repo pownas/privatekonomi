@@ -3,7 +3,6 @@
 @rendermode InteractiveServer
 @inject IOnboardingService OnboardingService
 @inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ISnackbar Snackbar
 
 <PageTitle>Välkommen - Privatekonomi</PageTitle>
@@ -44,9 +43,11 @@
     private int _currentStep = 0;
     private string? _userId;
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateTask;
         var user = authState.User;
         
         if (!user.Identity?.IsAuthenticated ?? true)
@@ -79,7 +80,6 @@
     {
         _currentStep++;
         Navigation.NavigateTo($"/onboarding/{_currentStep}");
-        StateHasChanged();
     }
 
     private async Task CompleteOnboarding()

@@ -1,8 +1,10 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
+
 using Microsoft.Extensions.Configuration;
+
 using Moq;
+
 using Privatekonomi.Web.Services;
 
 namespace Privatekonomi.Core.Tests;

@@ -25,22 +25,22 @@ public class OfxParser : ICsvParser
 
     public string BankName => "OFX (Allmän)";
 
-    public bool CanParse(string content)
+    public bool CanParse(string csvContent)
     {
         // OFX files typically start with OFXHEADER or <?OFX or <OFX>
-        return content.Contains("OFXHEADER:") || 
-               content.Contains("<OFX>") || 
-               content.Contains("<?OFX");
+        return csvContent.Contains("OFXHEADER:") ||
+               csvContent.Contains("<OFX>") ||
+               csvContent.Contains("<?OFX");
     }
 
-    public async Task<ParseResult> ParseAsync(Stream stream)
+    public async Task<ParseResult> ParseAsync(Stream csvStream)
     {
         var transactions = new List<Transaction>();
         var warnings = new List<ParseWarning>();
 
         string content;
         // Try reading as UTF-8 first with BOM detection
-        using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
+        using (var reader = new StreamReader(csvStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
         {
             content = await reader.ReadToEndAsync();
         }
@@ -50,8 +50,8 @@ public class OfxParser : ICsvParser
         {
             try
             {
-                stream.Position = 0;
-                using var reader1252 = new StreamReader(stream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                csvStream.Position = 0;
+                using var reader1252 = new StreamReader(csvStream, Encoding.GetEncoding("Windows-1252"), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
                 content = await reader1252.ReadToEndAsync();
             }
             catch
@@ -190,7 +190,7 @@ public class OfxParser : ICsvParser
         var description = BuildDescription(name, memo);
         
         // Determine if income based on amount sign and transaction type
-        var trnType = trnTypeElement?.Value?.Trim().ToUpper() ?? string.Empty;
+        var trnType = trnTypeElement?.Value?.Trim().ToUpperInvariant() ?? string.Empty;
         var isIncome = DetermineIsIncome(amount, trnType);
         
         return CreateTransaction(date, Math.Abs(amount), isIncome, description);
@@ -226,7 +226,7 @@ public class OfxParser : ICsvParser
             if (string.IsNullOrEmpty(trimmed)) continue;
             
             // Check if it's a closing tag
-            if (trimmed.StartsWith("</"))
+            if (trimmed.StartsWith("</", StringComparison.Ordinal))
             {
                 result.AppendLine(trimmed);
                 if (tagStack.Count > 0)
@@ -246,17 +246,17 @@ public class OfxParser : ICsvParser
                 if (!string.IsNullOrEmpty(value))
                 {
                     // Self-closing tag with value
-                    result.AppendLine($"<{tagName}>{value}</{tagName}>");
+                    result.AppendLine(CultureInfo.InvariantCulture, $"<{tagName}>{value}</{tagName}>");
                 }
                 else if (SelfClosingTags.Contains(tagName))
                 {
                     // Known data tag without value - add empty closing tag
-                    result.AppendLine($"<{tagName}></{tagName}>");
+                    result.AppendLine(CultureInfo.InvariantCulture, $"<{tagName}></{tagName}>");
                 }
                 else
                 {
                     // Container tag
-                    result.AppendLine($"<{tagName}>");
+                    result.AppendLine(CultureInfo.InvariantCulture, $"<{tagName}>");
                     tagStack.Push(tagName);
                 }
             }
@@ -269,7 +269,7 @@ public class OfxParser : ICsvParser
         // Close any remaining open tags
         while (tagStack.Count > 0)
         {
-            result.AppendLine($"</{tagStack.Pop()}>");
+            result.AppendLine(CultureInfo.InvariantCulture, $"</{tagStack.Pop()}>");
         }
         
         return result.ToString();
@@ -375,7 +375,7 @@ public class OfxParser : ICsvParser
         }
         
         var description = BuildDescription(name ?? string.Empty, memo ?? string.Empty);
-        var isIncome = DetermineIsIncome(parsedAmount, trnType?.ToUpper() ?? string.Empty);
+        var isIncome = DetermineIsIncome(parsedAmount, trnType?.ToUpperInvariant() ?? string.Empty);
         
         return CreateTransaction(parsedDate, Math.Abs(parsedAmount), isIncome, description);
     }

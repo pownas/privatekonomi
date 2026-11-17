@@ -24,7 +24,8 @@ public sealed class SmtpEmailSender(
     private async Task SendAsync(string email, string subject, string message, string? link)
     {
         var options = settings.Value;
-        if (!options.IsConfigured)
+        var smtpHost = options.SmtpHost;
+        if (string.IsNullOrWhiteSpace(smtpHost))
         {
             logger.LogWarning("Email delivery is unavailable because SMTP is not configured.");
             throw new InvalidOperationException("E-postleverans är inte konfigurerad.");
@@ -41,10 +42,13 @@ public sealed class SmtpEmailSender(
         emailMessage.Body = new BodyBuilder { HtmlBody = body, TextBody = $"{message}{(link is null ? string.Empty : $"\n\n{link}")}" }.ToMessageBody();
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(options.SmtpHost, options.SmtpPort, SecureSocketOptions.StartTls);
-        if (!string.IsNullOrWhiteSpace(options.SmtpUser))
+        await client.ConnectAsync(smtpHost, options.SmtpPort, SecureSocketOptions.StartTls);
+        var smtpUser = options.SmtpUser;
+        if (!string.IsNullOrWhiteSpace(smtpUser))
         {
-            await client.AuthenticateAsync(options.SmtpUser, options.SmtpPassword);
+            var smtpPassword = options.SmtpPassword
+                ?? throw new InvalidOperationException("SMTP-lösenord saknas trots att ett användarnamn har angetts.");
+            await client.AuthenticateAsync(smtpUser, smtpPassword);
         }
 
         await client.SendAsync(FormatOptions.Default, new MailKit.SendRequest(emailMessage));

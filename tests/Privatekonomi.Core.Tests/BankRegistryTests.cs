@@ -1,5 +1,4 @@
 using Privatekonomi.Core.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Privatekonomi.Core.Tests;
 
@@ -37,7 +36,7 @@ public class BankRegistryTests
         }
     }
     
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Handelsbanken", "#003781")]
     [DataRow("ICA-banken", "#E3000F")]
     [DataRow("Nordea", "#0000A0")]
@@ -81,7 +80,7 @@ public class BankRegistryTests
         Assert.IsNull(bank);
     }
     
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Handelsbanken", "#003781")]
     [DataRow("SEB", "#60CD18")]
     [DataRow(null, null)]
