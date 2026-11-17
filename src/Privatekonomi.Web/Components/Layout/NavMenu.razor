@@ -27,6 +27,10 @@
                     OnClick="@(() => TrackNavigation("/admin/site-changes", "Drift och uppdateringar"))">
             Drift och uppdateringar
         </MudNavLink>
+        <MudNavLink Href="/admin/logs" Icon="@Icons.Material.Filled.Article"
+                    OnClick="@(() => TrackNavigation("/admin/logs", "Applikationsloggar"))">
+            Applikationsloggar
+        </MudNavLink>
     }
 
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">

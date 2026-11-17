@@ -79,6 +79,8 @@ sudo journalctl -u privatekonomi-api -n 200 --no-pager
 
 Sok efter `ERR`, `FTL` eller `Exception`. Vid ett API-fel kan `traceId` i svaret anvandas for att hitta motsvarande post i loggen. Om loggarna ska ligga pa en annan skrivbar plats kan `PRIVATEKONOMI_LOG_DIRECTORY` anges for Web- och API-tjansterna.
 
+En inloggad systemadministrator kan aven lasa loggarna pa sidan **Applikationsloggar** (`/admin/logs`). Sidan visar de senaste 2 000 raderna och tillater radering av aldre loggfiler efter en bekraftelse. Aktiva loggfiler kan inte raderas. Loggsidan kraver bade inloggning och systemadministratorbehorighet.
+
 ### Brandvagg/UFW blockerar trafik
 
 * Kontrollera status:

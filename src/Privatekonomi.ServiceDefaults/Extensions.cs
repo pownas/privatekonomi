@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
+using Privatekonomi.ServiceDefaults;
 using Serilog;
 using Serilog.Events;
 using OpenTelemetry;
@@ -22,12 +23,7 @@ public static class Extensions
         this IHostApplicationBuilder builder,
         string applicationName)
     {
-        var configuredLogDirectory = builder.Configuration["PRIVATEKONOMI_LOG_DIRECTORY"];
-        var logDirectory = string.IsNullOrWhiteSpace(configuredLogDirectory)
-            ? Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "logs"))
-            : Path.GetFullPath(Path.IsPathRooted(configuredLogDirectory)
-                ? configuredLogDirectory
-                : Path.Combine(builder.Environment.ContentRootPath, configuredLogDirectory));
+        var logDirectory = ApplicationLogDirectory.Resolve(builder.Configuration, builder.Environment);
 
         Directory.CreateDirectory(logDirectory);
         if (OperatingSystem.IsLinux())

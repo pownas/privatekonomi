@@ -1,0 +1,327 @@
+@page "/admin/logs"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Privatekonomi.Web.Services
+@inject IApplicationLogReader LogReader
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@attribute [Authorize(Policy = "PiUpdateAdmin")]
+
+<PageTitle>Applikationsloggar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (!_isAuthorized)
+    {
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <MudText Typo="Typo.h6">Åtkomst nekad</MudText>
+            <MudText>Du måste vara inloggad och ha systemadministratörsbehörighet för att läsa eller radera loggar.</MudText>
+        </MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.h4" Class="mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-2" />
+            Applikationsloggar
+        </MudText>
+
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            Loggar kan innehålla känsliga uppgifter och detaljer från undantag. Granska innehållet innan du delar det.
+        </MudAlert>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+        }
+
+        <MudPaper Class="pa-4 mb-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                <MudText Typo="Typo.h6">Loggfiler</MudText>
+                <MudSpacer />
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="RefreshLogsAsync" Disabled="@_working">
+                    Uppdatera
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.SelectAll"
+                           OnClick="SelectDeletableLogs" Disabled="@(!_logFiles.Any(file => !file.IsCurrent) || _working)">
+                    Markera gamla
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="ClearSelection" Disabled="@(_selectedFileNames.Count == 0 || _working)">
+                    Avmarkera
+                </MudButton>
+                <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete"
+                           OnClick="DeleteSelectedLogsAsync" Disabled="@(_selectedFileNames.Count == 0 || _working)">
+                    Radera valda (@_selectedFileNames.Count)
+                </MudButton>
+            </MudStack>
+
+            @if (_logFiles.Count == 0)
+            {
+                <MudText>Inga applikationsloggar hittades.</MudText>
+            }
+            else
+            {
+                <MudTable Items="_logFiles" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                    <HeaderContent>
+                        <MudTh>Välj</MudTh>
+                        <MudTh>Applikation</MudTh>
+                        <MudTh>Fil</MudTh>
+                        <MudTh>Senast ändrad (UTC)</MudTh>
+                        <MudTh>Storlek</MudTh>
+                        <MudTh>Status</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="file">
+                        <MudTd>
+                            <MudCheckBox T="bool" Value="@_selectedFileNames.Contains(file.FileName)"
+                                         ValueChanged="@(selected => SetSelected(file, selected))"
+                                         Disabled="@(file.IsCurrent || _working)" />
+                        </MudTd>
+                        <MudTd DataLabel="Applikation">@file.Application</MudTd>
+                        <MudTd DataLabel="Fil">@file.FileName</MudTd>
+                        <MudTd DataLabel="Senast ändrad (UTC)">@file.LastModifiedUtc.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+                        <MudTd DataLabel="Storlek">@FormatSize(file.SizeBytes)</MudTd>
+                        <MudTd DataLabel="Status">
+                            @if (file.IsCurrent)
+                            {
+                                <MudChip T="string" Color="Color.Info" Size="Size.Small">Aktiv – kan inte raderas</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Default" Size="Size.Small">Arkiverad</MudChip>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+
+        <MudPaper Class="pa-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                <MudSelect T="string" Label="Visa loggfil" Variant="Variant.Outlined" Dense="true"
+                           @bind-Value="_selectedLogFile" Disabled="@(_logFiles.Count == 0 || _working)" Style="min-width: 280px;">
+                    @foreach (var file in _logFiles)
+                    {
+                        <MudSelectItem T="string" Value="@file.FileName">@file.Application – @file.FileName</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Visibility"
+                           OnClick="ReadSelectedLogAsync" Disabled="@(_selectedLogFile is null || _working)">
+                    Läs senaste 2 000 raderna
+                </MudButton>
+            </MudStack>
+
+            @if (_logLines.Count > 0)
+            {
+                <pre class="application-log-content">@string.Join(Environment.NewLine, _logLines)</pre>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2">Välj en loggfil och läs den för att visa de senaste raderna.</MudText>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+<style>
+    .application-log-content {
+        max-height: 65vh;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        background: var(--mud-palette-background-grey);
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: var(--mud-typography-default-family);
+        font-size: 0.8rem;
+    }
+</style>
+
+@code {
+    private const string AdminPolicy = "PiUpdateAdmin";
+    private List<ApplicationLogFile> _logFiles = [];
+    private HashSet<string> _selectedFileNames = new(StringComparer.Ordinal);
+    private IReadOnlyList<string> _logLines = [];
+    private string? _selectedLogFile;
+    private string? _errorMessage;
+    private bool _loading = true;
+    private bool _working;
+    private bool _isAuthorized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshLogsAsync();
+    }
+
+    private async Task RefreshLogsAsync()
+    {
+        _loading = true;
+        _errorMessage = null;
+
+        try
+        {
+            if (!await EnsureAuthorizedAsync())
+                return;
+
+            _logFiles = LogReader.GetFiles().ToList();
+            var availableNames = _logFiles.Select(file => file.FileName).ToHashSet(StringComparer.Ordinal);
+            _selectedFileNames.RemoveWhere(fileName => !availableNames.Contains(fileName));
+
+            if (_selectedLogFile is not null && !availableNames.Contains(_selectedLogFile))
+            {
+                _selectedLogFile = null;
+                _logLines = [];
+            }
+
+            if (_selectedLogFile is null)
+                _selectedLogFile = _logFiles.FirstOrDefault()?.FileName;
+        }
+        catch (IOException ex)
+        {
+            _errorMessage = $"Loggfilerna kunde inte läsas: {ex.Message}";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _errorMessage = $"Åtkomst till loggfilerna nekades: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ReadSelectedLogAsync()
+    {
+        if (!await EnsureAuthorizedAsync() || _selectedLogFile is null)
+            return;
+
+        _working = true;
+        _errorMessage = null;
+        try
+        {
+            _logLines = await LogReader.ReadLastLinesAsync(_selectedLogFile, ApplicationLogReader.MaximumLineCount);
+        }
+        catch (IOException ex)
+        {
+            _errorMessage = $"Loggfilen kunde inte läsas: {ex.Message}";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _errorMessage = $"Åtkomst till loggfilen nekades: {ex.Message}";
+        }
+        catch (ArgumentException ex)
+        {
+            _errorMessage = $"Loggfilen kunde inte läsas: {ex.Message}";
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private async Task DeleteSelectedLogsAsync()
+    {
+        if (!await EnsureAuthorizedAsync())
+            return;
+
+        var fileNames = _selectedFileNames.ToArray();
+        if (fileNames.Length == 0)
+            return;
+
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Bekräfta borttagning",
+            $"Vill du permanent radera {fileNames.Length} loggfil(er)? Åtgärden kan inte ångras. De aktiva loggfilerna skyddas.",
+            yesText: "Radera",
+            cancelText: "Avbryt");
+        if (confirmed != true || !await EnsureAuthorizedAsync())
+            return;
+
+        _working = true;
+        _errorMessage = null;
+        try
+        {
+            var deletedFiles = LogReader.DeleteFiles(fileNames);
+            _selectedFileNames.Clear();
+            if (_selectedLogFile is not null && deletedFiles.Contains(_selectedLogFile, StringComparer.Ordinal))
+            {
+                _selectedLogFile = null;
+                _logLines = [];
+            }
+
+            Snackbar.Add($"{deletedFiles.Count} loggfil(er) raderades.", Severity.Success);
+        }
+        catch (IOException ex)
+        {
+            _errorMessage = $"En eller flera loggfiler kunde inte raderas: {ex.Message}";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _errorMessage = $"Åtkomst till loggfilerna nekades: {ex.Message}";
+        }
+        catch (ArgumentException ex)
+        {
+            _errorMessage = $"Loggfilerna kunde inte raderas: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _working = false;
+        }
+
+        var deletionError = _errorMessage;
+        await RefreshLogsAsync();
+        if (deletionError is not null)
+            _errorMessage = string.IsNullOrWhiteSpace(_errorMessage)
+                ? deletionError
+                : $"{deletionError} {_errorMessage}";
+    }
+
+    private async Task<bool> EnsureAuthorizedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _isAuthorized = authenticationState.User.Identity?.IsAuthenticated == true
+            && (await AuthorizationService.AuthorizeAsync(authenticationState.User, resource: null, policyName: AdminPolicy)).Succeeded;
+
+        if (!_isAuthorized)
+        {
+            _logFiles.Clear();
+            _selectedFileNames.Clear();
+            _logLines = [];
+            _selectedLogFile = null;
+        }
+
+        return _isAuthorized;
+    }
+
+    private void SelectDeletableLogs()
+    {
+        _selectedFileNames = _logFiles
+            .Where(file => !file.IsCurrent)
+            .Select(file => file.FileName)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    private void ClearSelection() => _selectedFileNames.Clear();
+
+    private void SetSelected(ApplicationLogFile file, bool selected)
+    {
+        if (file.IsCurrent)
+            return;
+
+        if (selected)
+            _selectedFileNames.Add(file.FileName);
+        else
+            _selectedFileNames.Remove(file.FileName);
+    }
+
+    private static string FormatSize(long sizeBytes) => sizeBytes < 1024 * 1024
+        ? $"{sizeBytes / 1024.0:N0} KB"
+        : $"{sizeBytes / (1024.0 * 1024):N1} MB";
+}
