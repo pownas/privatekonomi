@@ -1,4 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
+const int webPort = 5274;
+const int apiPort = 5277;
 
 // Raspberry Pi configuration - listen on all network interfaces
 var isRaspberryPi = Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true";
@@ -33,7 +35,7 @@ var configureSelectedStorage = Environment.GetEnvironmentVariable("PRIVATEKONOMI
 var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
 // Add the API project
-var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
+var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api", "http")
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
@@ -53,9 +55,10 @@ if (configureSelectedStorage && configuredStorageProvider is not null)
 
 if (exposeServiceEndpoints)
 {
-    // Explicitly set the HTTP endpoint port when exposing services on the LAN.
-    // The service binds to 0.0.0.0 based on the environment flag.
-    apiBuilder = apiBuilder.WithHttpEndpoint(port: 5277, name: "http");
+    // Keep the advertised endpoint and the service listener on the same fixed port.
+    apiBuilder = apiBuilder
+        .WithHttpEndpoint(port: apiPort, name: "http")
+        .WithEnvironment("PORT", apiPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
 }
 if (isRaspberryPi)
 {
@@ -65,7 +68,7 @@ if (isRaspberryPi)
 var api = apiBuilder;
 
 // Add the Web project and reference the API
-var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web")
+var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web", "http")
     .WithReference(api)
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
@@ -86,9 +89,10 @@ if (configureSelectedStorage && configuredStorageProvider is not null)
 
 if (exposeServiceEndpoints)
 {
-    // Explicitly set the HTTP endpoint port when exposing services on the LAN.
-    // The service binds to 0.0.0.0 based on the environment flag.
-    webBuilder = webBuilder.WithHttpEndpoint(port: 5274, name: "http");
+    // Keep the advertised endpoint and the service listener on the same fixed port.
+    webBuilder = webBuilder
+        .WithHttpEndpoint(port: webPort, name: "http")
+        .WithEnvironment("PORT", webPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
 }
 if (isRaspberryPi)
 {

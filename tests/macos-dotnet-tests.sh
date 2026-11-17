@@ -97,6 +97,11 @@ grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Web/appsettings.
 grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5274"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5277"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
+apphost="$repo/src/Privatekonomi.AppHost/Program.cs"
+grep -Fq 'AddProject<Projects.Privatekonomi_Api>("api", "http")' "$apphost"
+grep -Fq 'AddProject<Projects.Privatekonomi_Web>("web", "http")' "$apphost"
+grep -Fq '.WithEnvironment("PORT", apiPort.ToString' "$apphost"
+grep -Fq '.WithEnvironment("PORT", webPort.ToString' "$apphost"
 
 output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile /bin/bash "$repo/scripts/macos/start.sh")"
 [[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile"* ]]
