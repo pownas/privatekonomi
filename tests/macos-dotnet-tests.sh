@@ -54,8 +54,8 @@ printf '192.168.1.23\n'
 EOF
 cat > "$temp/bin/aspire" <<'EOF'
 #!/bin/bash
-printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nPRIVATEKONOMI_STORAGE_PROVIDER=%s\nStorage__Provider=%s\nStorage__ConnectionString=%s\nPRIVATEKONOMI_STORAGE_CONNECTION_STRING=%s\nARGS=%s\n' \
-    "$PRIVATEKONOMI_LAN_ACCESS" "$PRIVATEKONOMI_STORAGE_PROVIDER" \
+printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nPRIVATEKONOMI_MACOS_STORAGE_CONFIG=%s\nPRIVATEKONOMI_STORAGE_PROVIDER=%s\nStorage__Provider=%s\nStorage__ConnectionString=%s\nPRIVATEKONOMI_STORAGE_CONNECTION_STRING=%s\nARGS=%s\n' \
+    "$PRIVATEKONOMI_LAN_ACCESS" "$PRIVATEKONOMI_MACOS_STORAGE_CONFIG" "$PRIVATEKONOMI_STORAGE_PROVIDER" \
     "$Storage__Provider" "$Storage__ConnectionString" "$PRIVATEKONOMI_STORAGE_CONNECTION_STRING" "$*"
 EOF
 chmod +x "$temp/bin/uname" "$temp/bin/route" "$temp/bin/ipconfig" "$temp/bin/aspire"
@@ -68,6 +68,7 @@ output="$(PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite /bin/bash "$repo/scripts/macos/s
 [[ "$output" == *"Web: http://localhost:5274"* ]]
 [[ "$output" == *"http://192.168.1.23:5274"* ]]
 [[ "$output" == *"PRIVATEKONOMI_LAN_ACCESS=true"* ]]
+[[ "$output" == *"PRIVATEKONOMI_MACOS_STORAGE_CONFIG=true"* ]]
 [[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite"* ]]
 [[ "$output" == *"Storage__Provider=Sqlite"* ]]
 [[ "$output" == *"privatekonomi.db"* ]]

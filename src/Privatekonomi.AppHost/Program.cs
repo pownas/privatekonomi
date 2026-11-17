@@ -28,6 +28,7 @@ var privatekonomiEnvironment = Environment.GetEnvironmentVariable("PRIVATEKONOMI
 var configuredStorageProvider = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_PROVIDER");
 var storageProvider = configuredStorageProvider ?? "Unknown";
 var storageConnectionString = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_CONNECTION_STRING");
+var configureSelectedStorage = Environment.GetEnvironmentVariable("PRIVATEKONOMI_MACOS_STORAGE_CONFIG") == "true";
 // JSON persistence is process-local, so keep it in Web and leave API on its in-memory default.
 var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
@@ -39,7 +40,7 @@ var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
-if (configuredStorageProvider is not null)
+if (configureSelectedStorage && configuredStorageProvider is not null)
 {
     apiBuilder = apiBuilder
         .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
@@ -72,7 +73,7 @@ var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web")
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
-if (configuredStorageProvider is not null)
+if (configureSelectedStorage && configuredStorageProvider is not null)
 {
     webBuilder = webBuilder
         .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
