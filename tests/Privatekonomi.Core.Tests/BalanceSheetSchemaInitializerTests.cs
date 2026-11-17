@@ -82,9 +82,22 @@ public class BalanceSheetSchemaInitializerTests
             ExchangeRate = 11.25m,
             CreatedAt = DateTime.UtcNow
         });
+        context.Transactions.Add(new Transaction
+        {
+            Description = "Existing transaction",
+            Date = DateTime.UtcNow.Date,
+            Amount = 10m,
+            AccountNumber = "123456",
+            ClearingNumber = "9876"
+        });
         await context.SaveChangesAsync();
 
-        await context.Database.ExecuteSqlRawAsync("ALTER TABLE CurrencyAccounts DROP COLUMN AccountNumber");
+        await context.Database.ExecuteSqlRawAsync("""
+            ALTER TABLE CurrencyAccounts DROP COLUMN AccountNumber;
+            ALTER TABLE Transactions DROP COLUMN AccountNumber;
+            ALTER TABLE Transactions DROP COLUMN ClearingNumber;
+            """);
+        context.ChangeTracker.Clear();
 
         await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
 
@@ -92,13 +105,22 @@ public class BalanceSheetSchemaInitializerTests
         Assert.AreEqual("EUR", account.Currency);
         Assert.AreEqual(100m, account.Balance);
         Assert.IsNull(account.AccountNumber);
+        var transaction = await context.Transactions.SingleAsync();
+        Assert.AreEqual("Existing transaction", transaction.Description);
+        Assert.IsNull(transaction.AccountNumber);
+        Assert.IsNull(transaction.ClearingNumber);
 
         account.AccountNumber = "1921";
+        transaction.AccountNumber = "123456";
+        transaction.ClearingNumber = "9876";
         await context.SaveChangesAsync();
         await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
         context.ChangeTracker.Clear();
 
         Assert.AreEqual("1921", (await context.CurrencyAccounts.SingleAsync()).AccountNumber);
+        transaction = await context.Transactions.SingleAsync();
+        Assert.AreEqual("123456", transaction.AccountNumber);
+        Assert.AreEqual("9876", transaction.ClearingNumber);
     }
 
     [TestMethod]
