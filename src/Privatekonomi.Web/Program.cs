@@ -294,7 +294,9 @@ try
         
         var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        
+
+        using var initializationLock = SqliteInitializationLock.Acquire(context);
+
         // For SQLite and SqlServer, ensure database is created
         if (storageSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase) ||
             storageSettings.Provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))

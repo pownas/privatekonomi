@@ -115,7 +115,9 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     var storageSettings = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<StorageSettings>>().Value;
     var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
-    
+
+    using var initializationLock = SqliteInitializationLock.Acquire(context);
+
     // For SQLite, ensure database is created
     if (storageSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
     {
