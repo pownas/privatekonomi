@@ -56,7 +56,6 @@ Följande Microsoft-paket har uppgraderats från 9.0.x till 10.0.0:
 - Microsoft.Extensions.Configuration.Binder
 - Microsoft.Extensions.Configuration.Json
 - Microsoft.Extensions.DependencyInjection
-- Microsoft.Extensions.Hosting.Abstractions
 - Microsoft.Extensions.Http
 - Microsoft.Extensions.Http.Resilience (8.10.0 → 10.0.0)
 - Microsoft.Extensions.Options.ConfigurationExtensions
