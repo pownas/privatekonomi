@@ -119,13 +119,13 @@ To verify the fix on an actual Raspberry Pi in production:
 
 1. **Deploy to Raspberry Pi:**
    ```bash
-   cd ~/Privatekonomi
-   ./raspberry-pi-update.sh
+   cd ~/privatekonomi/scripts/raspberry-pi
+   bash update.sh
    ```
 
 2. **Start the application:**
    ```bash
-   ./raspberry-pi-start.sh
+   bash start.sh
    ```
 
 3. **Access the login page:**
@@ -190,7 +190,7 @@ These tests can be integrated into CI/CD pipelines to prevent regression:
 
 - Issue #369: Login-sidan kraschar applikationen på Raspberry Pi i produktion
 - `docs/BUG_FIXES.md` - Detailed explanation of the fix
-- `docs/RASPBERRY_PI_FELSOKNING.md` - Raspberry Pi troubleshooting guide
+- `docs/scripts/raspberry-pi/RASPBERRY_PI_FELSOKNING.md` - Raspberry Pi troubleshooting guide
 
 ## Summary
 

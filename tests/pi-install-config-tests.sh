@@ -7,7 +7,10 @@ trap 'rm -rf -- "$temp"' EXIT
 
 export HOME="$temp/home"
 mkdir -p "$HOME" "$temp/bin"
-source <(sed '1s/^\xEF\xBB\xBF//; /^# Main execution$/,$d' "$repo/raspberry-pi-install.sh")
+source <(tr -d '\r' < "$repo/scripts/raspberry-pi/install.sh" | sed '1s/^\xEF\xBB\xBF//; /^# Main execution$/,$d')
+
+[ "$DOTNET_CLI_USE_MSBUILD_SERVER" = false ]
+[ "$MSBUILDDISABLENODEREUSE" = 1 ]
 
 INSTALL_DIR="$HOME/privatekonomi"
 DATA_DIR="$HOME/privatekonomi-data"
@@ -16,6 +19,11 @@ mkdir -p "$INSTALL_DIR/src/Privatekonomi.Web" "$INSTALL_DIR/src/Privatekonomi.Ap
 
 cat > "$temp/bin/dotnet" <<'EOF'
 #!/usr/bin/env bash
+if [ "${1:-}" = "build" ]; then
+    printf '%s\n' "$@" > "${DOTNET_ARGS_FILE:-/dev/null}"
+    printf 'simulated dotnet build diagnostic\n' >&2
+    exit "${DOTNET_BUILD_EXIT_CODE:-0}"
+fi
 while [ "$#" -gt 0 ]; do
     if [ "$1" = "-o" ]; then
         output="$2"
@@ -51,4 +59,28 @@ printf '2\n' | configure_storage >/dev/null
 
 grep -Fq '"Provider": "JsonFile"' "$INSTALL_DIR/publish/Web/appsettings.Production.json"
 grep -Fq '"Provider": "JsonFile"' "$INSTALL_DIR/publish/Api/appsettings.Production.json"
+
+INSTALLER_LOG_FILE="$temp/installer.log"
+if DOTNET_BUILD_EXIT_CODE=23 DOTNET_ARGS_FILE="$temp/dotnet-args" run_dotnet_build "$INSTALL_DIR/Privatekonomi.slnx" "Testbygge" > "$temp/build-output" 2>&1; then
+    echo "Expected dotnet build failure was reported as success."
+    exit 1
+else
+    build_status=$?
+fi
+[ "$build_status" -eq 23 ]
+grep -Fq 'exitkod 23' "$temp/build-output"
+grep -Fq 'Full byggutdata:' "$temp/build-output"
+grep -Fq 'simulated dotnet build diagnostic' "$temp/installer-build.log"
+grep -Fq -- '--maxcpucount:1' "$temp/dotnet-args"
+grep -Fq -- '--no-restore' "$temp/dotnet-args"
+grep -Fq -- '-p:UseSharedCompilation=false' "$temp/dotnet-args"
+
+if DOTNET_BUILD_EXIT_CODE=137 run_dotnet_build "$INSTALL_DIR/Privatekonomi.slnx" "OOM-test" > "$temp/oom-output" 2>&1; then
+    echo "Expected OOM-like build failure was reported as success."
+    exit 1
+else
+    build_status=$?
+fi
+[ "$build_status" -eq 137 ]
+grep -Fq 'OOM/minnesbrist' "$temp/oom-output"
 echo "Raspberry Pi production settings are published and refreshed."

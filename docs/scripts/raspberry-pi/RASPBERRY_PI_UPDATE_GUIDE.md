@@ -1,0 +1,541 @@
+# Uppdateringsguide för Raspberry Pi
+
+Denna guide beskriver hur du uppdaterar din befintliga Privatekonomi-installation på Raspberry Pi till den senaste versionen.
+
+## Uppdatera från webbgränssnittet (valfritt)
+
+Detta flöde kräver en **64-bitars Raspberry Pi** med publicerade `privatekonomi-web` och
+`privatekonomi-api` systemd-tjänster från installationsskriptet. Det är avstängt som
+standard och stöds inte för Aspire, `dotnet run`, äldre enskilda systemd-tjänster eller
+andra maskiner. Installera först som vanligt, och aktivera sedan en gång på Pi:n:
+
+```bash
+cd ~/privatekonomi/scripts/raspberry-pi
+sudo bash enable-web-update.sh
+```
+
+Installationskontot behöver .NET 11 SDK och åtkomst till GitHub/NuGet. Installationen
+lägger en root-ägd worker i `/usr/local/bin/privatekonomi-web-update`, en systemd
+`.path`/`.service` och en begränsad sudoers-regel för att starta/stoppa **endast**
+appens två tjänster. Webbappen kör inga skal- eller sudo-kommandon: den kan endast
+skapa en begäran i `~/privatekonomi-update/`. Uppdatera den installerade workern
+genom att köra aktiveringsskriptet igen efter ändringar i uppdateringsskriptet.
+Om du har en annan tjänstlayout, fortsätt använda den manuella uppdateringen.
+
+Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna **Drift** i menyn.
+Sidan visar appens körmiljö, drifttid, installerad commit och senaste commit på main.
+Du kan starta en separat omstart av Web och API utan att bygga om, eller installera
+uppdateringen. Båda åtgärderna använder samma begränsade systemd-worker och hälsokontroll.
+Drift-sidan söker efter ändringar på `main` när den öppnas. Välj **Sök efter uppdateringar**
+för en ny kontroll. När en nyare version finns visas commit-meddelanden och en länk till
+hela jämförelsen på GitHub innan installationen startas. Sidan visar commit från den faktiskt publicerade
+Web-katalogen (installerad version före aktivering eller efter manuell publicering
+visas när den har en `.privatekonomi-commit`-fil), senaste commit på GitHubs `main` när nätet fungerar,
+status och de sista 8 KiB från uppdateringsloggen. Starta uppdateringen med knappen.
+Begäran kräver inloggning, systemadministratörsbehörighet och CSRF-token. En andra
+begäran under pågående uppdatering avvisas. Ladda om sidan för aktuell status; när
+webbtjänsten stoppas bryts anslutningen och du kan behöva logga in igen.
+
+Workern hämtar **enbart** `main` via HTTPS från
+`https://github.com/pownas/Privatekonomi.git`, publicerar i en separat temporär
+katalog och stoppar därefter tjänsterna. Den kopierar `~/privatekonomi-data`
+efter stopp, sparar gamla publicerade binärer i
+`~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/` och bevarar befintliga
+`appsettings.Production.json`. Innan filerna byts skriver den en återställningsjournal.
+Vid fel återställs båda katalogerna från en komplett backup; efter strömavbrott
+återupptar systemd-path-tjänsten återställningen innan en ny uppdatering kan köras.
+Den kontrollerar både systemd-status **och** lokala Web- och API-svar på
+`/internal/health` (bara tillgängliga från loopback) inom en minut innan den
+rapporterar `succeeded`. Endast den publicerade Web-katalogens versionsfil används
+som installerad commit; det undviker felaktig version efter manuell uppdatering
+eller återställning. Äldre installationer utan versionsfil visar »Okänd« tills de
+publiceras igen. Projektets byggfiler på `main` körs av .NET SDK under
+installationskontot: ge inte det kontot andra privilegier och granska kod som slås
+ihop till `main`.
+
+### Fel och återställning
+
+Läs loggen på sidan eller lokalt i `~/privatekonomi-update/log` och kontrollera
+`journalctl -u privatekonomi-update.service -n 100` och
+`systemctl status privatekonomi-web privatekonomi-api`. Om tjänsten inte startar
+efter automatisk återställning, välj senaste `web-update-*`-katalog och återställ
+de tidigare publicerade filerna:
+
+```bash
+sudo systemctl stop privatekonomi-web privatekonomi-api
+mv ~/privatekonomi/publish/Web ~/privatekonomi/publish/Web.failed
+mv ~/privatekonomi/publish/Api ~/privatekonomi/publish/Api.failed
+cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/Web ~/privatekonomi/publish/Web
+cp -a ~/privatekonomi-backups/web-update-YYYYMMDD_HHMMSS-PID/Api ~/privatekonomi/publish/Api
+sudo systemctl start privatekonomi-api privatekonomi-web
+```
+
+Om en databas-migrering inte är bakåtkompatibel, återställ även `data` från **samma**
+backup innan tjänsterna startas (detta skriver över ändringar gjorda efter backupen).
+Kontrollera diskutrymme och NuGet/GitHub-anslutning före ett nytt försök. Efter
+strömavbrott: kontrollera först `systemctl status privatekonomi-update.service` och
+`~/privatekonomi-update/log`. Om återställningen fortfarande misslyckas är begäran
+spärrad; åtgärda felet och återställ manuellt från samma backup. Ta först därefter
+bort `~/privatekonomi-update/transaction`, `backup-ready` och `request`. Starta aldrig
+en andra uppdatering medan tjänsten körs. Inaktivera funktionen med
+`sudo systemctl disable --now privatekonomi-update.path` och ta bort
+`/etc/systemd/system/privatekonomi-web.service.d/pi-update.conf` (kör därefter
+`sudo systemctl daemon-reload` och starta om webbtjänsten).
+
+## 🚀 Snabbstart - Automatisk uppdatering
+
+**Enklaste sättet:** Använd det automatiserade uppdateringsskriptet:
+
+```bash
+cd ~/privatekonomi/scripts/raspberry-pi
+bash update.sh
+```
+
+Uppdateringsskriptet hanterar automatiskt:
+- ✅ Hämtar senaste ändringar från GitHub
+- ✅ Stoppar körande tjänster
+- ✅ Skapar backup av databas och konfiguration
+- ✅ Återställer NuGet-paket
+- ✅ Bygger uppdaterad applikation
+- ✅ Publicerar nya ARM64-binärer (valfritt)
+- ✅ Uppdaterar systemd-tjänst om nödvändigt
+- ✅ Startar om tjänster
+- ✅ Verifierar att uppdateringen lyckades
+
+### Kommandoradsalternativ
+
+```bash
+# Full uppdatering (rekommenderat)
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
+
+# Uppdatera utan att publicera om (snabbare)
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish
+
+# Visa hjälp
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --help
+```
+
+## 📋 Vad händer under uppdateringen?
+
+### 1. Kontroll av installation
+Skriptet verifierar att Privatekonomi är installerat i rätt katalog.
+
+### 2. Uppdatera repository
+- Hämtar senaste ändringar från GitHub
+- Visar vad som har ändrats
+- Frågar om bekräftelse innan uppdatering
+- Sparar eventuella lokala ändringar automatiskt
+
+### 3. Stoppa tjänster
+- Stoppar systemd-tjänst (om installerad)
+- Avslutar eventuella körande Privatekonomi-processer
+
+### 4. Backup
+Automatisk backup skapas efter att koden hämtats och tjänsterna stoppats:
+- **SQLite-databas**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS.db`
+- **JSON-filer**: `~/privatekonomi-backups/pre_update_YYYYMMDD_HHMMSS_json.tar.gz`
+- **Konfigurationsfiler**: `~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/`
+
+### 5. Bygga applikation
+- Återställer NuGet-paket
+- Rensar tidigare byggen
+- Bygger hela lösningen i Release-läge
+
+### 6. Publicera (valfritt)
+- Skapar backup av gammal publicerad version
+- Publicerar nya ARM64-optimerade binärer
+- Kopierar konfigurationsfiler
+
+### 7. Uppdatera systemd-tjänst
+- Kontrollerar om tjänsten behöver uppdateras
+- Uppdaterar till publicerade binärer om tillgängligt
+
+### 8. Starta om tjänster
+- Laddar om systemd-konfiguration
+- Startar applikationen
+- Verifierar att tjänsten körs
+
+### 9. Verifiering
+- Kontrollerar .NET SDK
+- Verifierar nuvarande version
+- Kontrollerar att portar lyssnar
+
+## 📦 Manuell uppdatering
+
+Om du föredrar att uppdatera manuellt:
+
+### 1. Stoppa applikationen
+
+**Med systemd:**
+```bash
+sudo systemctl stop privatekonomi
+```
+
+**Manuellt startad:**
+```bash
+# Tryck Ctrl+C i terminalen där appen körs
+# Eller:
+pkill -f "Privatekonomi"
+```
+
+### 2. Backup av data (rekommenderat)
+
+**SQLite:**
+```bash
+mkdir -p ~/privatekonomi-backups
+cp ~/privatekonomi-data/privatekonomi.db ~/privatekonomi-backups/backup_$(date +%Y%m%d_%H%M%S).db
+```
+
+**JsonFile:**
+```bash
+mkdir -p ~/privatekonomi-backups
+tar -czf ~/privatekonomi-backups/backup_$(date +%Y%m%d_%H%M%S).tar.gz -C ~/privatekonomi-data .
+```
+
+### 3. Uppdatera kod
+
+```bash
+cd ~/privatekonomi
+
+# Spara eventuella lokala ändringar
+git stash
+
+# Hämta senaste version
+git pull origin main
+
+# Återställ lokala ändringar om du har några
+git stash pop  # Endast om du gjorde git stash
+```
+
+### 4. Bygga applikation
+
+```bash
+cd ~/privatekonomi
+
+# Återställ paket
+dotnet restore
+
+# Rensa gamla byggen
+dotnet clean --configuration Release
+
+# Bygg nya versionen
+dotnet build --configuration Release
+```
+
+### 5. Publicera om (valfritt, för bättre prestanda)
+
+```bash
+cd ~/privatekonomi
+
+# Backup gammal publicerad version
+mv publish publish.backup.$(date +%Y%m%d_%H%M%S)
+
+# Publicera AppHost
+dotnet publish src/Privatekonomi.AppHost/Privatekonomi.AppHost.csproj \
+    --runtime linux-arm64 \
+    --self-contained \
+    --configuration Release \
+    -o publish/AppHost
+
+# Publicera Web
+dotnet publish src/Privatekonomi.Web/Privatekonomi.Web.csproj \
+    --runtime linux-arm64 \
+    --self-contained \
+    --configuration Release \
+    -o publish/Web
+
+# Publicera API
+dotnet publish src/Privatekonomi.Api/Privatekonomi.Api.csproj \
+    --runtime linux-arm64 \
+    --self-contained \
+    --configuration Release \
+    -o publish/Api
+
+# Kopiera konfigurationsfiler
+cp src/Privatekonomi.AppHost/appsettings.Production.json publish/AppHost/
+cp src/Privatekonomi.Web/appsettings.Production.json publish/Web/
+cp src/Privatekonomi.Api/appsettings.Production.json publish/Api/
+```
+
+### 6. Starta applikationen
+
+**Med systemd:**
+```bash
+sudo systemctl daemon-reload  # Om du ändrat service-filen
+sudo systemctl start privatekonomi
+sudo systemctl status privatekonomi
+```
+
+**Manuellt:**
+```bash
+cd ~/privatekonomi
+cd ~/privatekonomi/scripts/raspberry-pi && bash start.sh
+```
+
+## 🔍 Kontrollera version
+
+För att se vilken version du kör:
+
+```bash
+cd ~/privatekonomi
+git log -1 --oneline
+git rev-parse --short HEAD
+```
+
+För att se vad som är nytt:
+
+```bash
+cd ~/privatekonomi
+git log --oneline --decorate -10
+```
+
+## 🆕 Uppdateringsfrekvens
+
+### Rekommenderad frekvens
+- **Säkerhetsuppdateringar**: Installera omedelbart
+- **Nya funktioner**: Var 1-2 månad
+- **Buggfixar**: Enligt behov
+
+### Hålla dig informerad
+1. Följ repository på GitHub: https://github.com/pownas/Privatekonomi
+2. Prenumerera på "Releases" för notifikationer
+3. Läs GitHub Releases för ändringshistorik
+
+## ⚙️ Uppdatera konfiguration
+
+Om nya konfigurationsalternativ har lagts till:
+
+### 1. Kontrollera exempel-filer
+
+```bash
+cd ~/privatekonomi
+ls -la *.example.json
+```
+
+### 2. Jämför med din konfiguration
+
+```bash
+# För Web
+diff src/Privatekonomi.Web/appsettings.Production.json appsettings.RaspberryPi.example.json
+
+# För API
+diff src/Privatekonomi.Api/appsettings.Production.json appsettings.RaspberryPi.example.json
+```
+
+### 3. Uppdatera om nödvändigt
+
+Redigera dina `appsettings.Production.json`-filer med nya inställningar.
+
+## 🔧 Felsökning
+
+### Uppdateringen misslyckades
+
+**Problem: Git-konflikt**
+```bash
+cd ~/privatekonomi
+git status  # Se vilka filer som har konflikt
+git stash   # Spara dina ändringar
+git pull origin main  # Försök igen
+```
+
+**Problem: Build-fel**
+```bash
+# Rensa allt och börja om
+cd ~/privatekonomi
+dotnet clean
+rm -rf bin/ obj/
+dotnet restore
+dotnet build --configuration Release
+```
+
+**Problem: Tjänsten startar inte**
+```bash
+# Kontrollera loggar
+journalctl -u privatekonomi -n 50
+
+# Kontrollera service-fil
+sudo systemctl cat privatekonomi
+
+# Försök starta manuellt för att se fel
+cd ~/privatekonomi/src/Privatekonomi.AppHost
+ASPNETCORE_ENVIRONMENT=Production dotnet run
+```
+
+### Databasschema vid uppgradering
+
+Raspberry Pi-installern kör inte `dotnet ef database update`; den bygger och publicerar programmet. Vid start säkerställer Web och API databasen och kompletterar saknade tabeller från den aktuella EF-modellen. Detta behövs eftersom befintliga installationer skapades med `EnsureCreated`, som inte lägger till nya tabeller i en redan existerande databas.
+
+Kör inte `dotnet ef database update` manuellt mot en befintlig produktionsdatabas utan att först granska migrationerna och ta en säkerhetskopia. Den nuvarande migrationshistoriken saknar en fullständig initial migration och förutsätter att flera tabeller redan finns; kommandot är därför inte ett säkert generellt uppgraderingssteg för dessa installationer.
+
+### Portar lyssnar inte
+
+```bash
+# Kontrollera vilka portar som lyssnar
+ss -lntp | grep '17127\|5274\|5277'
+
+# Kontrollera om något annat använder portarna
+sudo lsof -i :17127
+sudo lsof -i :5274
+sudo lsof -i :5277
+
+# Starta om tjänsten
+sudo systemctl restart privatekonomi
+```
+
+### Återställa från backup
+
+**SQLite:**
+```bash
+# Stoppa applikationen
+sudo systemctl stop privatekonomi
+
+# Återställ databas
+cp ~/privatekonomi-backups/backup_YYYYMMDD_HHMMSS.db ~/privatekonomi-data/privatekonomi.db
+
+# Starta applikationen
+sudo systemctl start privatekonomi
+```
+
+**JsonFile:**
+```bash
+# Stoppa applikationen
+sudo systemctl stop privatekonomi
+
+# Återställ JSON-filer
+rm -rf ~/privatekonomi-data/*
+tar -xzf ~/privatekonomi-backups/backup_YYYYMMDD_HHMMSS.tar.gz -C ~/privatekonomi-data
+
+# Starta applikationen
+sudo systemctl start privatekonomi
+```
+
+**Konfiguration:**
+```bash
+# Återställ konfigurationsfiler
+cp -r ~/privatekonomi-backups/config_backup_YYYYMMDD_HHMMSS/home/*/Privatekonomi/src/*/appsettings.Production.json \
+      ~/privatekonomi/src/
+```
+
+## 🔄 Automatiska uppdateringar
+
+### Schemalagd uppdatering med cron
+
+**Varning:** Automatiska uppdateringar kan orsaka driftstopp. Använd med försiktighet.
+
+```bash
+# Öppna crontab
+crontab -e
+
+# Lägg till (uppdatera varje söndag kl 03:00)
+0 3 * * 0 cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish >> ~/privatekonomi-update.log 2>&1
+```
+
+**Rekommendation:** Använd `--no-publish` för automatiska uppdateringar för att minimera driftstopp.
+
+### E-postnotifikationer vid uppdatering
+
+```bash
+# Installera mailutils om det inte finns
+sudo apt install mailutils
+
+# Modifiera cron-jobb
+0 3 * * 0 cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh --no-publish 2>&1 | mail -s "Privatekonomi Update" din@email.com
+```
+
+## 📊 Efter uppdatering
+
+### Verifiera att allt fungerar
+
+1. **Öppna webbläsaren**
+   ```
+   http://[raspberry-pi-ip]:5274
+   ```
+
+2. **Kontrollera Dashboard**
+   - Logga in
+   - Verifiera att data finns kvar
+   - Kontrollera nya funktioner
+
+3. **Testa kritiska funktioner**
+   - Skapa transaktion
+   - Uppdatera budget
+   - Exportera data
+
+4. **Kontrollera prestanda**
+   ```bash
+   # Systemresurser
+   htop
+   
+   # Loggar för fel
+   journalctl -u privatekonomi -n 100 | grep -i "error\|exception"
+   ```
+
+### Rapportera problem
+
+Om du stöter på problem efter uppdatering:
+
+1. **Samla information**
+   ```bash
+   # Version
+   cd ~/privatekonomi && git rev-parse --short HEAD
+   
+   # Loggar
+   journalctl -u privatekonomi -n 100 > ~/privatekonomi-logs.txt
+   
+   # Systeminfo
+   uname -a > ~/system-info.txt
+   dotnet --info >> ~/system-info.txt
+   ```
+
+2. **Skapa GitHub Issue**
+   - Gå till: https://github.com/pownas/Privatekonomi/issues
+   - Beskriv problemet
+   - Bifoga loggfiler och systeminformation
+   - Inkludera steg för att återskapa problemet
+
+## 📚 Ytterligare resurser
+
+- **Installation**: [RASPBERRY_PI_GUIDE.md](RASPBERRY_PI_GUIDE.md)
+- **Första installation**: [RASPBERRY_PI_första_installationen.md](RASPBERRY_PI_första_installationen.md)
+- **Nginx & SSL**: [RASPBERRY_PI_NGINX_SSL.md](RASPBERRY_PI_NGINX_SSL.md)
+- **Testguide**: [RASPBERRY_PI_INSTALL_TEST.md](RASPBERRY_PI_INSTALL_TEST.md)
+- **Backup & Återställning**: [STORAGE_GUIDE.md](../../STORAGE_GUIDE.md)
+
+## ✅ Uppdateringschecklista
+
+Använd denna checklista för varje uppdatering:
+
+- [ ] Läs release notes/CHANGELOG
+- [ ] Backup av databas skapad
+- [ ] Backup av konfiguration skapad
+- [ ] Stoppa tjänster
+- [ ] Hämta senaste kod från GitHub
+- [ ] Återställ NuGet-paket
+- [ ] Bygg applikation
+- [ ] Publicera om (valfritt)
+- [ ] Applicera databas-migrationer (om nödvändigt)
+- [ ] Uppdatera konfiguration (om nödvändigt)
+- [ ] Starta tjänster
+- [ ] Verifiera att applikationen fungerar
+- [ ] Testa kritiska funktioner
+- [ ] Kontrollera loggar för fel
+- [ ] Dokumentera eventuella problem
+
+## 🎉 Sammanfattning
+
+Med det automatiska uppdateringsskriptet är det enkelt att hålla din Privatekonomi-installation uppdaterad:
+
+```bash
+cd ~/privatekonomi
+cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh
+```
+
+För manuell kontroll över processen, följ den manuella uppdateringsguiden ovan.
+
+**Viktigt att komma ihåg:**
+- ✅ Alltid skapa backup innan uppdatering
+- ✅ Läs release notes för viktiga ändringar
+- ✅ Testa applikationen efter uppdatering
+- ✅ Håll systemet uppdaterat för säkerhet och nya funktioner
+
+Lycka till med uppdateringen! 🚀

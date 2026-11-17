@@ -125,6 +125,8 @@ using (var scope = app.Services.CreateScope())
     {
         context.Database.EnsureCreated();
     }
+
+    await MissingTableSchemaInitializer.EnsureTablesAsync(context);
     
     await IdentitySchemaInitializer.EnsureColumnsAsync(context);
     await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);

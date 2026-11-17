@@ -15,7 +15,7 @@ setup_case() {
     printf 'old\n' > "$root/home/privatekonomi/publish/Api/Privatekonomi.Api"
     printf 'settings\n' > "$root/home/privatekonomi/publish/Web/appsettings.Production.json"
     printf 'customer-data\n' > "$root/home/privatekonomi-data/privatekonomi.db"
-    sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/raspberry-pi-web-update.sh" | tr -d '\r' > "$root/worker"
+    sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/scripts/raspberry-pi/web-update.sh" | tr -d '\r' > "$root/worker"
     cat > "$root/bin/git" <<'EOF'
 #!/usr/bin/env bash
     printf '%s\n' "$*" >> "$MOCK_ROOT/git-commands"

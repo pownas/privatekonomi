@@ -21,7 +21,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - Se [Onboarding guide](docs/ONBOARDING_GUIDE.md)
 - **Användarautentisering**: Komplett användarsystem med registrering, inloggning och dataisolering per användare
 - **Dashboard**: Översikt över totala inkomster, utgifter och nettoresultat
-- **Anpassad Dashboard med Widget-system**: ⭐ NYT!
+- **Anpassd Dashboard med Widget-system**: ⭐ NYT!
   - Skapa personliga dashboard-layouter med anpassningsbara widgets
   - 6 olika widget-typer: Nettoförmögenhet, Kassaflöde, Sparmål, Budget, Transaktioner, Snabbåtgärder
   - Flera layouter för olika användningsområden (Hem, Investeringar, Budget)
@@ -107,7 +107,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - **Export per år**: Exportera ekonomisk data uppdelat på år i JSON eller CSV format
   - Import med merge- eller ersättningsläge
   - Webbaserat gränssnitt för datahantering
-  - Perfekt för Raspberry Pi-installationer - se [Raspberry Pi guide](docs/RASPBERRY_PI_GUIDE.md)
+  - Perfekt för Raspberry Pi-installationer - se [Raspberry Pi guide](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)
 - **CSV-import**: 
   - Import av transaktioner från ICA-banken och Swedbank
   - Import av investeringar från Avanza Bank med dubbletthantering
@@ -235,25 +235,38 @@ Se [ASPIRE_GUIDE.md](docs/ASPIRE_GUIDE.md) för mer information.
 
 ### Installation och körning
 
+Installations-, start- och felsökningsinstruktioner per plattform finns i [dokumentationen för installationsskripten](docs/scripts/README.md). Källskripten finns i [`scripts/`](scripts/README.md).
+
+#### 🍎 macOS (lokal utveckling)
+
+På Apple Silicon (M-serien, inklusive M2) eller Intel:
+
+```bash
+bash setup-macos.sh install
+bash setup-macos.sh start
+```
+
+Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer och felsökning.
+
 #### 🍓 Raspberry Pi Installation (Automatisk)
 
-> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
+> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
 
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
 ```bash
-# Automatisk installation på Raspberry Pi
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
-
-# Efter installation
-cd ~/Privatekonomi
-./raspberry-pi-start.sh
+# Hämta repot och välj Raspberry Pi-skript i startaren
+cd ~
+git clone https://github.com/pownas/Privatekonomi.git Privatekonomi-setup
+cd Privatekonomi-setup
+bash setup-raspberry-pi.sh install
+bash setup-raspberry-pi.sh start
 ```
 
 **Uppdatera befintlig installation:**
+
 ```bash
-cd ~/Privatekonomi
-./raspberry-pi-update.sh
+bash setup-raspberry-pi.sh update
 ```
 
 **Installationsskriptet hanterar automatiskt:**
@@ -272,41 +285,30 @@ cd ~/Privatekonomi
 
 **Kommandoradsalternativ:**
 ```bash
-./raspberry-pi-install.sh --help              # Visa hjälp
-./raspberry-pi-install.sh --skip-interactive  # Automatisk installation
-./raspberry-pi-install.sh --branch feature/pi # Installera från en vald gren
-./raspberry-pi-install.sh --no-service        # Hoppa över systemd-tjänst
-./raspberry-pi-install.sh --no-publish        # Hoppa över publicering (använd dotnet run)
-./raspberry-pi-install.sh --no-nginx          # Hoppa över Nginx reverse proxy
-./raspberry-pi-install.sh --no-ssl            # Hoppa över SSL/HTTPS
-./raspberry-pi-install.sh --configure-ssl     # Konfigurera endast SSL
+bash setup-raspberry-pi.sh --help                   # Visa tillgängliga skript
+bash setup-raspberry-pi.sh install --help           # Visa installerarens alternativ
+bash setup-raspberry-pi.sh install --skip-interactive # Hoppa över installerarens egna frågor
+bash setup-raspberry-pi.sh install --branch feature/pi # Installera från en vald gren
+bash setup-raspberry-pi.sh install --no-service     # Hoppa över systemd-tjänst
+bash setup-raspberry-pi.sh install --no-publish     # Hoppa över publicering (använd dotnet run)
+bash setup-raspberry-pi.sh install --no-nginx       # Hoppa över Nginx reverse proxy
+bash setup-raspberry-pi.sh install --no-ssl         # Hoppa över SSL/HTTPS
+bash setup-raspberry-pi.sh install --configure-ssl  # Konfigurera endast SSL
 ```
 
 När skriptet körs interaktivt utan `--branch` kan du välja bland repots grenar; standardgrenen är `main`.
-På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med `sudo ./raspberry-pi-enable-web-update.sh`. Appen visar en tydlig varning när den kör en annan gren än `main`.
+På Raspberry Pi kan systemadministratörer även välja gren på sidan **Drift**. Aktivera webbåtgärderna en gång efter installation med:
 
-**Nya funktioner:**
-- **Self-contained publish**: Optimerade ARM64-binärer med snabbare uppstart och lägre resursanvändning
-- **Nginx reverse proxy**: Enkel HTTPS-åtkomst via port 80/443 för alla tjänster
-- **SSL/HTTPS**: Automatisk Let's Encrypt-konfiguration eller self-signed certifikat
-- **Let's Encrypt DNS-01**: Valbart Cloudflare DNS-01-flöde för subdomäner utan att exponera port 80
-
-Se följande guider för Raspberry Pi:
-- **[RASPBERRY_PI_QUICKSTART.md](docs/RASPBERRY_PI_QUICKSTART.md)**: ⭐ Snabbstart (5 minuter) - Börja här!
-- **[RASPBERRY_PI_NGINX_SSL.md](docs/RASPBERRY_PI_NGINX_SSL.md)**: HTTPS, automatisk certifikatförnyelse och klienternas certifikatförtroende.
-- **[RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)**: Detaljerad installationsguide
-- **[RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md](docs/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md)**: Felsökning nätverksproblem
-- **[RASPBERRY_PI_DEVICE_TESTING.md](docs/RASPBERRY_PI_DEVICE_TESTING.md)**: Testa från olika enheter (mobil, desktop, etc.)
-- **[RASPBERRY_PI_NETWORK_ACCESS.md](docs/RASPBERRY_PI_NETWORK_ACCESS.md)**: Nätverkskonfiguration
-- **[RASPBERRY_PI_NGINX_SSL.md](docs/RASPBERRY_PI_NGINX_SSL.md)**: Nginx reverse proxy och SSL
-- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/RASPBERRY_PI_UPDATE_GUIDE.md)**: Uppdatera befintlig installation
-- **[RASPBERRY_PI_INSTALL_TEST.md](docs/RASPBERRY_PI_INSTALL_TEST.md)**: Testguide för installation
+```bash
+cd ~/privatekonomi/scripts/raspberry-pi
+sudo bash enable-web-update.sh
+```
 
 ### Tilldela systemadministratörer (`IsSystemAdmin`)
 
 Systemadministratörer får åtkomst till bland annat `/admin/metrics` och administratörsåtgärder på sidan **Drift**. Behörigheten styrs av `ApplicationUser.IsSystemAdmin`, inte av hushållsroller eller en Identity-roll med namnet `Admin`.
 
-**Ingen användare blir automatiskt systemadministratör**, inte heller den första registrerade användaren eller demoanvändaren i Development. Detta förhindrar att den första som registrerar sig på en ny installation tar över administratörsåtkomsten. Det finns för närvarande inget gränssnitt, API eller `appsettings`-inställning för att tilldela nya systemadministratörer; en betrodd driftansvarig gör ändringen direkt i kontolagringen.
+**Ingen användare blir automatiskt systemadministratör**, inte heller den första registrerade användaren eller demoanvändaren in Development. Detta förhindrar att den första som registrerar sig på en ny installation tar över administratörsåtkomsten. Det finns för närvarande inget gränssnitt, API eller `appsettings`-inställning för att tilldela nya systemadministratörer; en betrodd driftansvarig gör ändringen direkt i kontolagringen.
 
 1. Registrera ett vanligt, personligt konto och verifiera vilket konto som ska få behörigheten. Använd aldrig det offentliga demokontot som produktionsadministratör.
 2. Stoppa **alla instanser av Web och API** som använder lagringen och ta en säkerhetskopia. På Raspberry Pi med systemd:
@@ -333,7 +335,7 @@ Systemadministratörer får åtkomst till bland annat `/admin/metrics` och admin
 
 Upprepa samma procedur för ytterligare administratörer. Återkalla behörigheten genom att sätta `IsSystemAdmin` till `0` i databasen respektive `false` i JSON. Omstarten stänger även befintliga Blazor-sessioner. Vanlig initiering och nya releaser ändrar inte befintliga kontons administratörsflagga; säkerhetskopiera och behåll därför samma beständiga datalager vid uppgraderingar.
 
-#### Snabbstart med startskript (Enklast för Codespaces)
+#### Snabbstart för Linux och GitHub Codespaces
 
 1. Klona repositoriet:
 ```bash
@@ -341,21 +343,21 @@ git clone https://github.com/pownas/Privatekonomi.git
 cd Privatekonomi
 ```
 
-2. Kör startskriptet:
+2. Installera och starta via rootens startare:
 
-**Linux/macOS/Codespaces:**
+**Linux/Codespaces:**
 ```bash
-./app-start.sh
+bash setup-codespaces.sh install
+bash setup-codespaces.sh start
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\app-start.ps1
+.\setup-windows.ps1 install
+.\setup-windows.ps1 start
 ```
 
-Skriptet säkerställer att .NET 11 finns installerat och startar Aspire Dashboard som visar alla tjänster, logs, traces och metrics.
-
-#### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
+### Alternativ 1: Kör med .NET Aspire Orchestrator (Manuellt)
 
 .NET Aspire förenklar hanteringen av alla tjänster och ger inbyggd observerbarhet.
 
@@ -418,7 +420,7 @@ API Swagger-dokumentation finns på: `http://localhost:5000/swagger`
 
 #### Lokal konfiguration (appsettings.local.json & User Secrets)
 
-För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställningar i `appsettings.local.json` och känsliga värden i **User Secrets**. Dessa filer laddas automatiskt när miljön heter `Local` (vilket `local-app-start.ps1` sätter åt dig).
+För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställningar i `appsettings.local.json` och känsliga värden i **User Secrets**. Dessa filer laddas automatiskt när miljön heter `Local` (vilket `scripts/windows/start.ps1` sätter åt dig).
 
 1. **Skapa lokala konfigurationsfiler** (lagras utanför Git):
   - `src/Privatekonomi.Web/appsettings.local.json`
@@ -455,7 +457,8 @@ För lokal utveckling rekommenderas att du lägger dina maskinspecifika inställ
 3. **Starta applikationen**:
   ```powershell
   cd ../../
-  .\local-app-start.ps1
+  Set-Location .\scripts\windows
+  .\start.ps1
   ```
 
   Skriptet sätter `ASPNETCORE_ENVIRONMENT=Development` och `PRIVATEKONOMI_ENVIRONMENT=Local`, vilket gör att både standardinställningar och dina lokala overrides (appsettings + User Secrets) läses in samtidigt. All annan utveckling (t.ex. i GitHub Codespaces) använder fortsatt miljön `Development`.
@@ -682,8 +685,8 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 ### Användarguider
 
 - **[USER_AUTHENTICATION.md](docs/USER_AUTHENTICATION.md)**: Guide för användarregistrering, inloggning och datahantering
-- **[RASPBERRY_PI_GUIDE.md](docs/RASPBERRY_PI_GUIDE.md)**: ⭐ Komplett guide för installation på Raspberry Pi med lokal datalagring
-- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/RASPBERRY_PI_UPDATE_GUIDE.md)**: ⭐ NYTT! Guide för uppdatering av befintlig Raspberry Pi-installation
+- **[RASPBERRY_PI_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md)**: ⭐ Komplett guide för installation på Raspberry Pi med lokal datalagring
+- **[RASPBERRY_PI_UPDATE_GUIDE.md](docs/scripts/raspberry-pi/RASPBERRY_PI_UPDATE_GUIDE.md)**: ⭐ NYTT! Guide för uppdatering av befintlig Raspberry Pi-installation
 - **[STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md)**: Guide för olika lagringsalternativ och konfiguration
 - **[YEAR_EXPORT_GUIDE.md](docs/YEAR_EXPORT_GUIDE.md)**: Guide för export av ekonomisk data per år
 - **[CSV_IMPORT_GUIDE.md](docs/CSV_IMPORT_GUIDE.md)**: Guide för import av transaktioner från ICA-banken och Swedbank
