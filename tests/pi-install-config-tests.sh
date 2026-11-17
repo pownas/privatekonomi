@@ -7,7 +7,7 @@ trap 'rm -rf -- "$temp"' EXIT
 
 export HOME="$temp/home"
 mkdir -p "$HOME" "$temp/bin"
-source <(sed '1s/^\xEF\xBB\xBF//; /^# Main execution$/,$d' "$repo/scripts/raspberry-pi/install.sh")
+source <(tr -d '\r' < "$repo/scripts/raspberry-pi/install.sh" | sed '1s/^\xEF\xBB\xBF//; /^# Main execution$/,$d')
 
 INSTALL_DIR="$HOME/privatekonomi"
 DATA_DIR="$HOME/privatekonomi-data"

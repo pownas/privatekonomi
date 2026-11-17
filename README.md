@@ -357,7 +357,7 @@ cd Privatekonomi
 
 **Linux/Codespaces:**
 ```bash
-./app-start.sh
+bash ./app-start.sh
 ```
 
 **Windows (PowerShell):**

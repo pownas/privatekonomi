@@ -41,4 +41,4 @@ printf '[INFO] Startar Privatekonomi med Aspire från %s\n' "$REPO_ROOT"
 printf '[INFO] ASPNETCORE_ENVIRONMENT=%s, DOTNET_ENVIRONMENT=%s, Storage=%s\n' \
     "$ASPNETCORE_ENVIRONMENT" "$DOTNET_ENVIRONMENT" "$PRIVATEKONOMI_STORAGE_PROVIDER"
 printf '[INFO] Appen körs i förgrunden. Avsluta med Ctrl+C.\n'
-exec aspire run "$@"
+exec aspire start "$@"

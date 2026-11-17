@@ -54,12 +54,16 @@ install_dotnet_11() {
 
     local installer
     installer="$(mktemp "${TMPDIR:-/tmp}/dotnet-install.XXXXXX")"
-    trap 'rm -f "$installer"' RETURN
     log_info "Hämtar Microsofts .NET-installationsskript."
-    curl --fail --location --silent --show-error https://dot.net/v1/dotnet-install.sh --output "$installer"
-    bash "$installer" --channel 11.0 --install-dir "$HOME/.dotnet"
+    if ! curl --fail --location --silent --show-error https://dot.net/v1/dotnet-install.sh --output "$installer"; then
+        rm -f "$installer"
+        return 1
+    fi
+    if ! bash "$installer" --channel 11.0 --install-dir "$HOME/.dotnet"; then
+        rm -f "$installer"
+        return 1
+    fi
     rm -f "$installer"
-    trap - RETURN
     add_dotnet_to_path
 
     if ! has_dotnet_11; then

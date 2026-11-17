@@ -5,8 +5,8 @@ De befintliga rootkommandona `./app-install.sh` och `./app-start.sh` finns kvar 
 Från repositoryts rot:
 
 ```bash
-./app-install.sh
-./app-start.sh
+bash ./app-install.sh
+bash ./app-start.sh
 ```
 
 AppHost startas i förgrunden. Avsluta med `Ctrl+C`. OCR-språkdata kan hämtas separat med:

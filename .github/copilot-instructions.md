@@ -74,7 +74,7 @@ dotnet run  # Swagger at http://localhost:5000/swagger
 ```
 
 **Helper scripts:**
-- `./app-start.sh` (Linux/Codespaces compatibility wrapper)
+- `bash app-start.sh` (Linux/Codespaces compatibility wrapper)
 - `bash scripts/macos/start.sh` (macOS)
 - `scripts/windows/start.ps1` (Windows PowerShell)
 

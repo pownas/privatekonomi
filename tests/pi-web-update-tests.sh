@@ -150,7 +150,7 @@ test ! -e "$root/home/privatekonomi-update/request-branch"
 setup_case restart_only
 touch "$root/home/privatekonomi-update/restart-request"
 run_worker
-test "$(cat "$root/home/privatekonomi/update/status")" = restarted
+test "$(cat "$root/home/privatekonomi-update/status")" = restarted
 test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = old
 test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = old
 test "$(grep -c 'stop privatekonomi-web.service' "$root/commands")" -eq 1
@@ -162,33 +162,33 @@ setup_case missing_installation
 rm -rf "$root/home/privatekonomi/.git"
 if run_worker; then exit 1; fi
 assert_old
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/request"
 
 setup_case publish_failure
 if FAIL_PUBLISH_API=1 run_worker; then exit 1; fi
 assert_old
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/request"
 test ! -s "$root/commands"
 
 setup_case restart_failure
 if FAIL_START=1 run_worker; then exit 1; fi
 assert_running_old
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 
 setup_case health_failure
 if FAIL_HEALTH=1 run_worker; then exit 1; fi
 assert_running_old
 test "$(grep -c 'stop privatekonomi-web.service' "$root/commands")" -eq 2
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 
 setup_case blocked_recovery
 if FAIL_HEALTH=1 FAIL_RESTORE=1 run_worker; then exit 1; fi
 test -e "$root/home/privatekonomi-update/request"
 test -e "$root/home/privatekonomi-update/transaction"
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 if FAIL_RESTORE=1 run_worker; then exit 1; fi
 test -e "$root/home/privatekonomi-update/transaction"
 run_worker && exit 1
@@ -202,7 +202,7 @@ test ! -e "$root/home/privatekonomi/publish/Api/Privatekonomi.Api" ||
     test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = new
 if run_worker; then exit 1; fi
 assert_running_old
-test "$(cat "$root/home/privatekonomi/update/status")" = failed
+test "$(cat "$root/home/privatekonomi-update/status")" = failed
 test ! -e "$root/home/privatekonomi-update/transaction"
 test ! -e "$root/home/privatekonomi-update/request"
 
