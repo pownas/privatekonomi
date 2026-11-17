@@ -115,6 +115,9 @@ main() {
     install_dotnet_11
     install_aspire_cli
 
+    CURRENT_STEP="produktionskonfiguration"
+    PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite bash "$SCRIPT_DIR/configure-production.sh"
+
     CURRENT_STEP="HTTPS-utvecklarcertifikat"
     if ! dotnet dev-certs https --check --quiet; then
         log_info "Skapar och litar på HTTPS-utvecklarcertifikatet (macOS kan visa en Keychain-bekräftelse)."
@@ -138,7 +141,8 @@ main() {
     log_success "Installationen är klar."
     log_info "Gå till macOS-skriptkatalogen med: cd \"$REPO_ROOT/scripts/macos\""
     log_info "Starta appen med: cd \"$REPO_ROOT/scripts/macos\" && bash start.sh"
-    log_info "Aspire Dashboard och appens adresser visas när startskriptet körs."
+    log_info "Aspire Dashboard och appens adresser visas när startskriptet körs. Där kan du välja SQLite eller JSON-filer."
+    log_info "En daglig backup schemaläggs när du startar appen första gången."
 }
 
 main "$@"

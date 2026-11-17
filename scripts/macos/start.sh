@@ -63,9 +63,9 @@ if ! select_storage_provider; then
 fi
 
 cd "$REPO_ROOT"
-export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Development}"
-export DOTNET_ENVIRONMENT="${DOTNET_ENVIRONMENT:-Development}"
-export PRIVATEKONOMI_ENVIRONMENT="${PRIVATEKONOMI_ENVIRONMENT:-Local}"
+export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
+export DOTNET_ENVIRONMENT="${DOTNET_ENVIRONMENT:-Production}"
+export PRIVATEKONOMI_ENVIRONMENT="${PRIVATEKONOMI_ENVIRONMENT:-Production}"
 export PRIVATEKONOMI_STORAGE_PROVIDER
 export PRIVATEKONOMI_LAN_ACCESS="${PRIVATEKONOMI_LAN_ACCESS:-true}"
 export PRIVATEKONOMI_MACOS_STORAGE_CONFIG=true
@@ -73,6 +73,11 @@ export ASPIRE_DASHBOARD_TELEMETRY_OPTOUT="${ASPIRE_DASHBOARD_TELEMETRY_OPTOUT:-t
 
 storage_directory="$HOME/Library/Application Support/Privatekonomi"
 mkdir -p "$storage_directory"
+provider_file="$storage_directory/storage-provider"
+temporary_provider_file="$provider_file.tmp.$$"
+printf '%s\n' "$PRIVATEKONOMI_STORAGE_PROVIDER" > "$temporary_provider_file"
+chmod 600 "$temporary_provider_file"
+mv -f -- "$temporary_provider_file" "$provider_file"
 case "$PRIVATEKONOMI_STORAGE_PROVIDER" in
     Sqlite)
         export PRIVATEKONOMI_STORAGE_CONNECTION_STRING="Data Source=$storage_directory/privatekonomi.db"
@@ -83,6 +88,16 @@ case "$PRIVATEKONOMI_STORAGE_PROVIDER" in
 esac
 export Storage__Provider="$PRIVATEKONOMI_STORAGE_PROVIDER"
 export Storage__ConnectionString="$PRIVATEKONOMI_STORAGE_CONNECTION_STRING"
+
+if ! bash "$SCRIPT_DIR/configure-production.sh" "$PRIVATEKONOMI_STORAGE_PROVIDER"; then
+    printf '[ERROR] Produktionskonfigurationen kunde inte skapas.\n' >&2
+    exit 1
+fi
+
+if ! bash "$SCRIPT_DIR/setup-backup.sh"; then
+    printf '[ERROR] Kunde inte installera eller aktivera den dagliga backupen.\n' >&2
+    exit 1
+fi
 
 default_interface="$(route -n get default 2>/dev/null | awk '$1 == "interface:" { print $2; exit }' || true)"
 lan_ip=""

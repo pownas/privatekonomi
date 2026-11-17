@@ -87,6 +87,7 @@ ScaffoldingReadMe.txt
 /src/Privatekonomi.Api/data/
 appsettings.local.json
 **/appsettings.local.json
+**/appsettings.Production.json
 
 # StyleCop
 StyleCopReport.xml

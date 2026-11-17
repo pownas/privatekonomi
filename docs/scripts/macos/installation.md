@@ -1,6 +1,6 @@
 # Privatekonomi på macOS
 
-Installationsflödet är avsett för lokal utveckling och körning via .NET Aspire på macOS. Det stöder både Apple Silicon (M-serien, inklusive M2) och Intel; på en M2 används .NETs ARM64-version. Det installerar inte appen som en bakgrundstjänst och ändrar inte systeminställningar utöver .NET-utvecklarcertifikatet och PATH i din shell-profil.
+Installationsflödet är avsett för lokal utveckling och körning via .NET Aspire på macOS. Det stöder både Apple Silicon (M-serien, inklusive M2) och Intel; på en M2 används .NETs ARM64-version. Appen körs i terminalen och installeras inte som bakgrundstjänst; en separat LaunchAgent schemalägger databasbackup.
 
 ## Förutsättningar
 
@@ -31,13 +31,15 @@ Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-pr
 bash setup-macos.sh start
 ```
 
-Startskriptet frågar vilken lagring som ska användas: SQLite (standard) eller JSON-filer. SQLite-databasen eller JSON-datafilerna sparas under `~/Library/Application Support/Privatekonomi/`. Aspire körs interaktivt i förgrunden så AppHost förblir ansluten till Dashboard; avsluta med `Ctrl+C`. Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Startskriptet använder dessa fasta portar och binder appen till nätverksgränssnitten, så andra enheter i hemnätverket kan öppna `http://<Macens-IP-adress>:5274`. IP-adressen visas vid start när den kan identifieras. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
+Startskriptet frågar vilken lagring som ska användas: SQLite (standard) eller JSON-filer. SQLite-databasen eller JSON-datafilerna sparas under `~/Library/Application Support/Privatekonomi/`. Vid start installeras och aktiveras en macOS LaunchAgent som försöker skapa en verifierad backup varje natt kl. 02:30. Aspire körs interaktivt i förgrunden så AppHost förblir ansluten till Dashboard; avsluta med `Ctrl+C`. Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Startskriptet använder dessa fasta portar och binder appen till nätverksgränssnitten, så andra enheter i hemnätverket kan öppna `http://<Macens-IP-adress>:5274`. IP-adressen visas vid start när den kan identifieras. Startskriptet avslutar inte andra .NET-processer och försöker inte frigöra portar genom att döda andra program.
 
 Som standard används `Development`, `Local` och SQLite enligt projektets utvecklingskonfiguration. Du kan ange miljövariabler före start om du vill ändra detta. Starta inte en andra instans om samma portar redan används; Aspire visar då vilket resurs- eller portfel som uppstod.
 
 LAN-åtkomst är avsedd för ett betrott hemnätverk. macOS-brandväggen kan behöva tillåta inkommande anslutningar. LAN-adressen använder HTTP; öppna inte portar mot internet. Aspire Dashboard exponeras inte på LAN.
 
-PostgreSQL är inte tillgängligt som val ännu eftersom projektet saknar PostgreSQL EF Core-provider och serverkonfiguration. Välj SQLite eller JSON-filer tills PostgreSQL-stöd har implementerats.
+Backuperna sparas separat i `~/Library/Application Support/Privatekonomi-Backups/`, och äldre backuper än 60 dagar tas bort efter att en ny backup verifierats. Loggar finns i `~/Library/Logs/Privatekonomi/backup.log` och `backup-error.log`. Du kan köra en backup manuellt med `bash "$HOME/Library/Application Support/Privatekonomi/backup.sh"`. LaunchAgent kräver att användaren är inloggad; om datorn sover kl. 02:30 kör macOS normalt den schemalagda uppgiften när den väcks. Backupen ligger på samma Mac och skyddar därför inte mot diskfel eller förlust av datorn; kopiera backupmappen till en separat disk eller säker molnlagring för sådant skydd.
+
+För återställning av SQLite: stoppa appen och ersätt `privatekonomi.db` med önskad fil från backupmappen. För JSON: stoppa appen, packa upp önskad `.tar.gz`-backup till `~/Library/Application Support/Privatekonomi/json/` och starta om. PostgreSQL är inte tillgängligt som val ännu eftersom projektet saknar PostgreSQL EF Core-provider och serverkonfiguration. Välj SQLite eller JSON-filer tills PostgreSQL-stöd har implementerats.
 
 ## Felsökning
 

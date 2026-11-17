@@ -12,6 +12,8 @@ ln -s "$(command -v awk)" "$temp/bin/awk"
 ln -s "$(command -v dirname)" "$temp/bin/dirname"
 ln -s "$(command -v grep)" "$temp/bin/grep"
 ln -s "$(command -v mkdir)" "$temp/bin/mkdir"
+ln -s "$(command -v chmod)" "$temp/bin/chmod"
+ln -s "$(command -v mv)" "$temp/bin/mv"
 
 cat > "$temp/bin/dotnet" <<'EOF'
 #!/bin/bash
@@ -58,7 +60,19 @@ printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nPRIVATEKONOMI_MACOS_STORAGE_CONFIG=%s\nPRIV
     "$PRIVATEKONOMI_LAN_ACCESS" "$PRIVATEKONOMI_MACOS_STORAGE_CONFIG" "$PRIVATEKONOMI_STORAGE_PROVIDER" \
     "$Storage__Provider" "$Storage__ConnectionString" "$PRIVATEKONOMI_STORAGE_CONNECTION_STRING" "$*"
 EOF
+cat > "$temp/bin/bash" <<'EOF'
+#!/bin/bash
+case "${1:-}" in
+    */scripts/macos/setup-backup.sh)
+        printf 'BACKUP_SETUP=installed\n'
+        ;;
+    *)
+        exec /bin/bash "$@"
+        ;;
+esac
+EOF
 chmod +x "$temp/bin/uname" "$temp/bin/route" "$temp/bin/ipconfig" "$temp/bin/aspire"
+chmod +x "$temp/bin/bash"
 
 PATH_SDKS=10.0.100 HOME_SDKS=11.0.100
 export PATH_SDKS HOME_SDKS
@@ -69,6 +83,7 @@ output="$(PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite /bin/bash "$repo/scripts/macos/s
 [[ "$output" == *"http://192.168.1.23:5274"* ]]
 [[ "$output" == *"PRIVATEKONOMI_LAN_ACCESS=true"* ]]
 [[ "$output" == *"PRIVATEKONOMI_MACOS_STORAGE_CONFIG=true"* ]]
+[[ "$output" == *"BACKUP_SETUP=installed"* ]]
 [[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite"* ]]
 [[ "$output" == *"Storage__Provider=Sqlite"* ]]
 [[ "$output" == *"privatekonomi.db"* ]]
