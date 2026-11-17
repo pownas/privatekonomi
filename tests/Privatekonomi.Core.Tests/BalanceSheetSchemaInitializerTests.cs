@@ -68,6 +68,40 @@ public class BalanceSheetSchemaInitializerTests
     }
 
     [TestMethod]
+    public async Task MissingCurrencyAccountNumberIsAddedWithoutLosingData()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>().UseSqlite(connection).Options;
+        await using var context = new PrivatekonomyContext(options);
+        await context.Database.EnsureCreatedAsync();
+        context.CurrencyAccounts.Add(new CurrencyAccount
+        {
+            Currency = "EUR",
+            Balance = 100m,
+            ExchangeRate = 11.25m,
+            CreatedAt = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        await context.Database.ExecuteSqlRawAsync("ALTER TABLE CurrencyAccounts DROP COLUMN AccountNumber");
+
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+
+        var account = await context.CurrencyAccounts.SingleAsync();
+        Assert.AreEqual("EUR", account.Currency);
+        Assert.AreEqual(100m, account.Balance);
+        Assert.IsNull(account.AccountNumber);
+
+        account.AccountNumber = "1921";
+        await context.SaveChangesAsync();
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+        context.ChangeTracker.Clear();
+
+        Assert.AreEqual("1921", (await context.CurrencyAccounts.SingleAsync()).AccountNumber);
+    }
+
+    [TestMethod]
     public async Task NewDatabaseAndNonRelationalProviderNeedNoUpgrade()
     {
         await using var context = new PrivatekonomyContext(new DbContextOptionsBuilder<PrivatekonomyContext>()

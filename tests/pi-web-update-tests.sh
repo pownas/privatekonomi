@@ -14,7 +14,7 @@ setup_case() {
     printf 'old\n' > "$root/home/privatekonomi/publish/Web/Privatekonomi.Web"
     printf 'old\n' > "$root/home/privatekonomi/publish/Api/Privatekonomi.Api"
     printf 'settings\n' > "$root/home/privatekonomi/publish/Web/appsettings.Production.json"
-    printf 'customer-data\n' > "$root/home/privatekonomi-data/data.db"
+    printf 'customer-data\n' > "$root/home/privatekonomi-data/privatekonomi.db"
     sed "s@/usr/bin/systemctl@$root/bin/systemctl@g" "$repo/raspberry-pi-web-update.sh" | tr -d '\r' > "$root/worker"
     cat > "$root/bin/git" <<'EOF'
 #!/usr/bin/env bash
@@ -114,7 +114,7 @@ run_worker() {
 assert_old() {
     test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = old
     test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = old
-    test "$(cat "$root/home/privatekonomi-data/data.db")" = customer-data
+    test "$(cat "$root/home/privatekonomi-data/privatekonomi.db")" = customer-data
 }
 
 assert_running_old() {
@@ -129,6 +129,10 @@ test "$(cat "$root/home/privatekonomi-update/status")" = succeeded
 test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = new
 test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = new
 test "$(cat "$root/home/privatekonomi/publish/Web/appsettings.Production.json")" = settings
+backup=$(find "$root/home/privatekonomi-backups" -maxdepth 1 -type d -name 'web-update-*' -print -quit)
+test "$(cat "$backup/data/privatekonomi.db")" = customer-data
+grep -Fq "SQLite-databasens säkerhetskopia verifierad." "$root/home/privatekonomi-update/log"
+grep -Fq "uppdateras säkert vid uppstart" "$root/home/privatekonomi-update/log"
 test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-commit")" = "$(printf '%040d' 1)"
 test "$(cat "$root/home/privatekonomi/publish/Web/.privatekonomi-branch")" = main
 test ! -e "$root/home/privatekonomi-update/request"
