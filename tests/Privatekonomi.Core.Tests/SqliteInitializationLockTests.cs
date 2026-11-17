@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 public sealed class SqliteInitializationLockTests
 {
     [TestMethod]
-    public async Task Acquire_SerializesInitializationForSharedDatabase()
+    public async Task AcquireSerializesInitializationForSharedDatabase()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"privatekonomi-lock-{Guid.NewGuid():N}");
         Directory.CreateDirectory(directory);
@@ -20,25 +20,25 @@ public sealed class SqliteInitializationLockTests
                 .Options;
             using var context = new PrivatekonomyContext(options);
             var firstLock = SqliteInitializationLock.Acquire(context);
-            var secondAcquired = false;
+            var secondStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var secondTask = Task.Run(() =>
             {
+                secondStarted.SetResult();
                 using var secondLock = SqliteInitializationLock.Acquire(context);
-                secondAcquired = true;
             });
 
             try
             {
+                await secondStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 await Task.Delay(250);
-                Assert.IsFalse(secondAcquired, "A second initializer acquired the lock before the first released it.");
+                Assert.IsFalse(secondTask.IsCompleted, "A second initializer acquired the lock before the first released it.");
             }
             finally
             {
                 firstLock.Dispose();
             }
-
             await secondTask.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.IsTrue(secondAcquired);
+            await secondTask.WaitAsync(TimeSpan.FromSeconds(5));
         }
         finally
         {
