@@ -83,7 +83,9 @@ En inloggad systemadministrator kan aven lasa loggarna pa sidan **Applikationslo
 
 ### Installationsskriptet avbryts under bygget
 
-Installationsskriptet sparar nu all terminalutdata i `~/privatekonomi-installer-logs/raspberry-pi-install-<tid>.log` och skriver ut vilket steg och vilken exitkod som misslyckades. Kod 137 betyder ofta att Linux avslutade kompilatorn pa grund av minnesbrist (OOM). Kontrollera da minne, swap och kernel-loggen:
+Installationsskriptet sparar terminalutdata i `~/privatekonomi-installer-logs/raspberry-pi-install-<tid>.log` och byggutdata separat i motsvarande `-build.log`. Vid byggfel visas sökvägen och de senaste 40 raderna direkt i terminalen. Skicka båda loggarna vid felsökning; byggloggen innehåller den fullständiga `dotnet build`-utskriften. Kod 137 betyder ofta att Linux avslutade kompilatorn pa grund av minnesbrist (OOM). Kontrollera da minne, swap och kernel-loggen:
+
+Meddelandet `MSBuild server unavailable ... Falling back to an in-process build` är i sig en varning om att .NET använder en reservväg, inte ett kompileringsfel. Installationsskriptet inaktiverar nu MSBuild-servern på Pi och återställer paketen separat före bygget, så meddelandet och den dubbla återställningen ska undvikas. Om bygget ändå misslyckas innehåller `-build.log` det faktiska felet.
 
 ```bash
 free -h

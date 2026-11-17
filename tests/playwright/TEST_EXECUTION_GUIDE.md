@@ -213,9 +213,9 @@ After verifying the tests pass locally, deploy to Raspberry Pi:
 git push origin copilot/fix-login-crash-on-raspberry-pi
 
 # On Raspberry Pi
-cd ~/Privatekonomi
-./raspberry-pi-update.sh
-./raspberry-pi-start.sh
+cd ~/privatekonomi/scripts/raspberry-pi
+bash update.sh
+bash start.sh
 ```
 
 Then test manually by navigating to:

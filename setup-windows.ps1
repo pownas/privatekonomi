@@ -18,7 +18,7 @@ if ($args -contains '-Help' -or $args -contains '--help' -or $args -contains '-?
     exit 0
 }
 
-$confirmation = Read-Host 'Vill du fortsätta med Windows-installationen? [j/N]'
+$confirmation = Read-Host 'Vill du fortsätta med Windows-installationen? (y/n)'
 if ($confirmation -notmatch '^(?i:j|ja|y|yes)$') {
     Write-Host 'Installationen avbröts.'
     exit 0

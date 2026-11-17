@@ -119,13 +119,13 @@ To verify the fix on an actual Raspberry Pi in production:
 
 1. **Deploy to Raspberry Pi:**
    ```bash
-   cd ~/Privatekonomi
-   ./raspberry-pi-update.sh
+   cd ~/privatekonomi/scripts/raspberry-pi
+   bash update.sh
    ```
 
 2. **Start the application:**
    ```bash
-   ./raspberry-pi-start.sh
+   bash start.sh
    ```
 
 3. **Access the login page:**

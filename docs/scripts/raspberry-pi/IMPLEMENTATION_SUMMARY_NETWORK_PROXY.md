@@ -18,8 +18,8 @@
 **Status:** Redan implementerat och förbättrat
 
 **Lösning:**
-- `raspberry-pi-install.sh` - Fullständigt automatiserat installationsskript
-- `raspberry-pi-start.sh` - Startar applikationen med rätt miljövariabler
+- `scripts/raspberry-pi/install.sh` - Installationsimplementation, startas via `setup-raspberry-pi.sh`
+- `scripts/raspberry-pi/start.sh` - Startar applikationen med rätt miljövariabler
 - `systemd` service-stöd för automatisk start vid omstart
 - Publicering av self-contained binärer för ARM64 (snabbare och mer stabilt)
 
@@ -45,14 +45,14 @@
 - Stöd för statisk IP eller DHCP-reservation
 
 **Förbättringar i denna PR:**
-- Förbättrat `raspberry-pi-debug.sh` med 11 diagnostikkontroller
+- Förbättrat `scripts/raspberry-pi/debug.sh` med 11 diagnostikkontroller
 - Kontrollerar att portar lyssnar på `0.0.0.0` (inte `127.0.0.1`)
 - Kontrollerar brandväggsinställningar automatiskt
 - Visar IP-adress och åtkomst-URL:er efter installation
 
 **Nya diagnostikverktyg:**
 ```bash
-./raspberry-pi-debug.sh  # Omfattande 11-punkters diagnostik
+cd ~/privatekonomi/scripts/raspberry-pi && bash debug.sh  # Omfattande 11-punkters diagnostik
 ```
 
 **Dokumentation:**
@@ -64,7 +64,7 @@
 **Status:** Redan implementerat och väldokumenterat
 
 **Befintlig implementation:**
-- Nginx reverse proxy automatisk installation via `raspberry-pi-install.sh`
+- Nginx reverse proxy installeras via `bash setup-raspberry-pi.sh`
 - Komplett Nginx-konfiguration för Privatekonomi
 - Proxy pass för Web (port 5274), API (port 5277) och Aspire Dashboard (port 17127)
 - SSL/HTTPS-stöd med både Let's Encrypt och self-signed certifikat
@@ -72,7 +72,7 @@
 - HTTP/2-stöd för bättre prestanda
 
 **Förbättringar i denna PR:**
-- `raspberry-pi-debug.sh` kontrollerar nu Nginx-status (check 9/11)
+- `scripts/raspberry-pi/debug.sh` kontrollerar nu Nginx-status (check 9/11)
 - Kontrollerar om Nginx körs och är konfigurerat
 - Kontrollerar om Privatekonomi-sajt är aktiverad
 - Testar HTTP och HTTPS proxy-åtkomst
@@ -191,14 +191,14 @@ curl http://192.168.1.100:5274
 - [README.md](../../../README.md) - Uppdaterade länkar med snabbstart som huvudsaklig startpunkt
 
 **Förbättrade verktyg:**
-- `raspberry-pi-debug.sh` - Utökad från 8 till 11 kontroller
-- `raspberry-pi-install.sh` - Ny nätverksvalidering efter installation
+- `scripts/raspberry-pi/debug.sh` - Utökad från 8 till 11 kontroller
+- `scripts/raspberry-pi/install.sh` - Ny nätverksvalidering efter installation
 
 ## Checklista: Alla Krav Uppfyllda
 
 - [x] **Felsök Raspberry Pi-installation**
   - Redan stabilt, förbättrat med nätverksvalidering
-  - `raspberry-pi-debug.sh` med 11 diagnostikkontroller
+  - `scripts/raspberry-pi/debug.sh` med 11 diagnostikkontroller
   - Omfattande felsökningsguide skapad
 
 - [x] **Kontrollera nätverksinställningar**
@@ -238,11 +238,11 @@ curl http://192.168.1.100:5274
 - ✅ **Testad på alla enheter:** Desktop, mobil, surfplatta
 
 **Användare kan nu:**
-1. Installera på 5 minuter med `./raspberry-pi-install.sh`
+1. Installera på 5 minuter med `bash setup-raspberry-pi.sh`
 2. Nå applikationen från alla sina enheter
 3. Använda Nginx proxy för enklare åtkomst (ingen port behövs)
 4. Aktivera HTTPS för säker åtkomst
-5. Diagnostisera problem själva med `./raspberry-pi-debug.sh`
+5. Diagnostisera problem själva från `~/privatekonomi/scripts/raspberry-pi` med `bash debug.sh`
 6. Följa omfattande guider för alla vanliga problem
 7. Installera som PWA på mobila enheter
 
@@ -296,9 +296,9 @@ Via HTTPS (om konfigurerat):
 ## Användartestning
 
 **Rekommenderad testsekvens:**
-1. Installera med `./raspberry-pi-install.sh`
-2. Starta med `./raspberry-pi-start.sh` eller `systemctl start privatekonomi`
-3. Kör `./raspberry-pi-debug.sh` - alla checks ska vara gröna ✅
+1. Installera med `bash setup-raspberry-pi.sh`
+2. Starta från `~/privatekonomi/scripts/raspberry-pi` med `bash start.sh` eller kör `systemctl start privatekonomi`
+3. Kör `bash debug.sh` från `~/privatekonomi/scripts/raspberry-pi` - alla checks ska vara gröna ✅
 4. Testa från desktop: `http://pi-ip:5274`
 5. Testa från mobil: Samma URL
 6. Installera som PWA på mobil

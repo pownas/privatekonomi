@@ -351,10 +351,10 @@ In Blazor Server with the `[SupplyParameterFromForm]` attribute:
 
 1. **Test on Raspberry Pi:**
    ```bash
-   cd ~/Privatekonomi
+   cd ~/privatekonomi/scripts/raspberry-pi
    export ASPNETCORE_ENVIRONMENT=Production
    export PRIVATEKONOMI_RASPBERRY_PI=true
-   ./raspberry-pi-start.sh
+   bash start.sh
    ```
 
 2. **Navigate to login page:**

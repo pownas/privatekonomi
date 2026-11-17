@@ -82,7 +82,9 @@ Raspberry Pi-installationsskriptet har utökats för att automatisera alla vikti
 
 ### Scenario 1: Full automatisk installation
 ```bash
-curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-pi-install.sh | bash
+git clone https://github.com/pownas/Privatekonomi.git privatekonomi-setup
+cd privatekonomi-setup
+bash setup-raspberry-pi.sh
 ```
 - Interaktiv installation
 - Användaren svarar på frågor om önskade funktioner
@@ -90,7 +92,7 @@ curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-
 
 ### Scenario 2: Snabb automatisk installation
 ```bash
-./raspberry-pi-install.sh --skip-interactive
+bash setup-raspberry-pi.sh --skip-interactive
 ```
 - Ingen interaktion krävs
 - Använder standardinställningar
@@ -98,7 +100,7 @@ curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-
 
 ### Scenario 3: Minimal installation
 ```bash
-./raspberry-pi-install.sh --no-service --no-firewall --no-backup --no-static-ip --no-swap
+bash setup-raspberry-pi.sh --no-service --no-firewall --no-backup --no-static-ip --no-swap
 ```
 - Endast grundläggande installation
 - Användaren konfigurerar allt manuellt efteråt
@@ -126,15 +128,14 @@ curl -sSL https://raw.githubusercontent.com/pownas/Privatekonomi/main/raspberry-
 
 ```
 $HOME/
-├── Privatekonomi/                    # Git repository
+├── privatekonomi/                     # Git repository
 │   ├── src/
 │   │   ├── Privatekonomi.Web/
 │   │   │   └── appsettings.Production.json  # Auto-genererad
 │   │   ├── Privatekonomi.Api/
 │   │   │   └── appsettings.Production.json  # Auto-genererad
 │   │   └── ...
-│   ├── raspberry-pi-start.sh        # Startskript
-│   └── raspberry-pi-install.sh      # Installationsskript
+│   └── scripts/raspberry-pi/          # Start-, uppdaterings- och installationsskript
 ├── privatekonomi-data/              # Datalagring
 │   ├── privatekonomi.db             # SQLite (om valt)
 │   └── *.json                       # JsonFile (om valt)
@@ -243,10 +244,10 @@ Skriptet har testats med:
 Testa själv:
 ```bash
 # Syntaxkontroll
-bash -n raspberry-pi-install.sh
+bash -n scripts/raspberry-pi/install.sh
 
 # Testrun (dry-run simulation)
-./raspberry-pi-install.sh --help
+bash setup-raspberry-pi.sh --help
 ```
 
 ## Dokumentation

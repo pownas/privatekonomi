@@ -28,7 +28,7 @@ Denna implementation lägger till professionella produktionsfunktioner för Rasp
 
 **Kommando:**
 ```bash
-./raspberry-pi-install.sh --no-publish  # Hoppa över publicering (använd dotnet run)
+bash setup-raspberry-pi.sh --no-publish  # Hoppa över publicering (använd dotnet run)
 ```
 
 ### 2. Nginx Reverse Proxy
@@ -57,7 +57,7 @@ Denna implementation lägger till professionella produktionsfunktioner för Rasp
 
 **Kommando:**
 ```bash
-./raspberry-pi-install.sh --no-nginx  # Hoppa över Nginx-installation
+bash setup-raspberry-pi.sh --no-nginx  # Hoppa över Nginx-installation
 ```
 
 ### 3. SSL/HTTPS-konfiguration
@@ -85,8 +85,8 @@ Denna implementation lägger till professionella produktionsfunktioner för Rasp
 
 **Kommando:**
 ```bash
-./raspberry-pi-install.sh --no-ssl            # Hoppa över SSL
-./raspberry-pi-install.sh --configure-ssl     # Konfigurera endast SSL
+bash setup-raspberry-pi.sh --no-ssl            # Hoppa över SSL
+bash setup-raspberry-pi.sh --configure-ssl     # Konfigurera endast SSL
 ```
 
 ### 4. Uppdaterad systemd-tjänst
@@ -144,7 +144,7 @@ SKIP_SSL=true        # Hoppa över SSL (kräver manuell input)
 
 ## Uppdaterade filer
 
-### 1. `/workspaces/Privatekonomi/raspberry-pi-install.sh`
+### 1. `scripts/raspberry-pi/install.sh` (startas via `setup-raspberry-pi.sh`)
 
 **Ändringar:**
 - Nya funktioner: `publish_application()`, `configure_nginx()`, `configure_ssl()`, `configure_letsencrypt()`, `configure_selfsigned()`
@@ -200,7 +200,7 @@ show_usage_info
 
 ```bash
 # Interaktiv installation
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 
 # Under installation:
 # - Välj SQLite storage
@@ -222,7 +222,7 @@ show_usage_info
 ### Scenario 2: Lokal utveckling med self-signed
 
 ```bash
-./raspberry-pi-install.sh
+bash setup-raspberry-pi.sh
 
 # Under installation:
 # - Välj JsonFile storage
@@ -240,7 +240,7 @@ show_usage_info
 ### Scenario 3: Snabb utveckling utan extras
 
 ```bash
-./raspberry-pi-install.sh --no-publish --no-nginx --no-ssl
+bash setup-raspberry-pi.sh --no-publish --no-nginx --no-ssl
 
 # Resultat:
 # - Bygger med "dotnet build" (inte publish)
@@ -254,7 +254,7 @@ show_usage_info
 
 ```bash
 # Om du redan kört installationen utan SSL
-./raspberry-pi-install.sh --configure-ssl
+bash setup-raspberry-pi.sh --configure-ssl
 
 # Välj Let's Encrypt eller Self-Signed
 ```
@@ -262,7 +262,7 @@ show_usage_info
 ### Scenario 5: Automatisk CI/CD-installation
 
 ```bash
-./raspberry-pi-install.sh --skip-interactive
+bash setup-raspberry-pi.sh --skip-interactive
 
 # Resultat:
 # - Publicerade ARM64-binärer
@@ -345,13 +345,13 @@ dotnet publish \
 
 ✅ **Bash-syntax:**
 ```bash
-bash -n raspberry-pi-install.sh
+bash -n scripts/raspberry-pi/install.sh
 # Output: (ingen output = OK)
 ```
 
 ✅ **Help-text:**
 ```bash
-./raspberry-pi-install.sh --help
+bash setup-raspberry-pi.sh --help
 # Visar alla nya alternativ (--no-publish, --no-nginx, --no-ssl, --configure-ssl)
 ```
 

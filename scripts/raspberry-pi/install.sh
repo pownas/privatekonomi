@@ -46,7 +46,12 @@ SOLUTION_FILE="Privatekonomi.slnx"
 APP_BRANCH=""
 SKIP_INTERACTIVE=false
 INSTALLER_LOG_FILE=""
+BUILD_LOG_FILE=""
 CURRENT_STEP="initialisering"
+
+# Avoid persistent MSBuild processes on memory-constrained Raspberry Pi devices.
+export DOTNET_CLI_USE_MSBUILD_SERVER=false
+export MSBUILDDISABLENODEREUSE=1
 
 # Logging functions
 log_info() {
@@ -90,31 +95,60 @@ handle_error() {
 
 initialize_installer_logging() {
     local log_dir="$HOME/privatekonomi-installer-logs"
-    mkdir -p "$log_dir"
+    if ! mkdir -p "$log_dir"; then
+        printf '[ERROR] Kunde inte skapa loggkatalogen: %s\n' "$log_dir" >&2
+        exit 1
+    fi
     INSTALLER_LOG_FILE="$log_dir/raspberry-pi-install-$(date '+%Y%m%d-%H%M%S').log"
+    BUILD_LOG_FILE="${INSTALLER_LOG_FILE%.log}-build.log"
+    if ! touch "$INSTALLER_LOG_FILE" "$BUILD_LOG_FILE"; then
+        printf '[ERROR] Kunde inte skapa installations- eller byggloggen i %s\n' "$log_dir" >&2
+        exit 1
+    fi
     exec > >(tee -a "$INSTALLER_LOG_FILE") 2>&1
     trap 'handle_error "$?"' ERR
     log_info "Installationslogg: $INSTALLER_LOG_FILE"
+    log_info "Separat bygglogg: $BUILD_LOG_FILE"
 }
 
 run_dotnet_build() {
     local target="$1"
     local stage="$2"
     local exit_code
+    local build_log_file="${BUILD_LOG_FILE:-}"
+
+    if [ -z "$build_log_file" ] && [ -n "$INSTALLER_LOG_FILE" ]; then
+        build_log_file="${INSTALLER_LOG_FILE%.log}-build.log"
+    fi
+    if [ -z "$build_log_file" ]; then
+        log_error "Byggloggen är inte konfigurerad; initiera installationsloggning före bygget."
+        return 1
+    fi
+    if ! touch "$build_log_file"; then
+        log_error "Kunde inte skriva bygglogg: $build_log_file"
+        return 1
+    fi
 
     CURRENT_STEP="$stage"
     log_info "$stage ($target)..."
+    log_info "Byggutdata sparas i: $build_log_file"
     if command -v free >/dev/null 2>&1; then
         log_info "Minnesstatus före bygget:"
         free -h || true
     fi
 
-    if dotnet build "$target" --configuration Release --verbosity minimal --nologo --maxcpucount:1 -p:UseSharedCompilation=false; then
+    printf '\n[%s] %s: dotnet build %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$stage" "$target" >> "$build_log_file"
+    if (set -o pipefail; dotnet build "$target" --configuration Release --verbosity minimal --nologo --no-restore --maxcpucount:1 -p:UseSharedCompilation=false 2>&1 | tee -a "$build_log_file"); then
         log_success "$stage slutfördes."
         return 0
     else
         exit_code=$?
         log_error "$stage misslyckades (dotnet build avslutades med exitkod $exit_code)."
+        log_error "Full byggutdata: $build_log_file"
+        log_info "Senaste 40 raderna av byggutdata:"
+        if ! tail -n 40 "$build_log_file"; then
+            log_error "Kunde inte läsa byggloggen: $build_log_file"
+        fi
         if [ "$exit_code" -eq 137 ]; then
             log_warning "Detta tyder ofta på OOM/minnesbrist. Kontrollera swap och kernel-loggen: sudo journalctl -k -b | grep -Ei 'oom|out of memory|killed process'"
         fi

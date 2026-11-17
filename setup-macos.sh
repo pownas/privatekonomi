@@ -27,7 +27,7 @@ if [[ ! -r /dev/tty ]]; then
     printf '[ERROR] Kör setup-macos.sh i en interaktiv terminal för att godkänna installationen.\n' >&2
     exit 2
 fi
-printf 'Vill du fortsätta med macOS-installationen? [j/N] '
+printf 'Vill du fortsätta med macOS-installationen? (y/n): '
 IFS= read -r answer </dev/tty
 case "$answer" in
     [jJ]|[jJ][aA]|[yY]|[yY][eE][sS]) ;;

@@ -218,7 +218,7 @@ Privatekonomi/
 │   ├── README.md                            (MODIFIED - added feature)
 │   ├── FUNKTIONSANALYS.md                   (MODIFIED - marked complete)
 │   └── SAKNADE_FUNKTIONER_SAMMANFATTNING.md (MODIFIED - marked complete)
-├── setup-tesseract.sh                       (NEW - setup script)
+├── scripts/linux/setup-tesseract.sh          (setup script)
 └── .gitignore                               (MODIFIED - excluded tessdata)
 ```
 

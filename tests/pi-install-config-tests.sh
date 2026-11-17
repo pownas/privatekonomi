@@ -9,6 +9,9 @@ export HOME="$temp/home"
 mkdir -p "$HOME" "$temp/bin"
 source <(tr -d '\r' < "$repo/scripts/raspberry-pi/install.sh" | sed '1s/^\xEF\xBB\xBF//; /^# Main execution$/,$d')
 
+[ "$DOTNET_CLI_USE_MSBUILD_SERVER" = false ]
+[ "$MSBUILDDISABLENODEREUSE" = 1 ]
+
 INSTALL_DIR="$HOME/privatekonomi"
 DATA_DIR="$HOME/privatekonomi-data"
 BACKUP_DIR="$HOME/privatekonomi-backups"
@@ -18,6 +21,7 @@ cat > "$temp/bin/dotnet" <<'EOF'
 #!/usr/bin/env bash
 if [ "${1:-}" = "build" ]; then
     printf '%s\n' "$@" > "${DOTNET_ARGS_FILE:-/dev/null}"
+    printf 'simulated dotnet build diagnostic\n' >&2
     exit "${DOTNET_BUILD_EXIT_CODE:-0}"
 fi
 while [ "$#" -gt 0 ]; do
@@ -65,7 +69,10 @@ else
 fi
 [ "$build_status" -eq 23 ]
 grep -Fq 'exitkod 23' "$temp/build-output"
+grep -Fq 'Full byggutdata:' "$temp/build-output"
+grep -Fq 'simulated dotnet build diagnostic' "$temp/installer-build.log"
 grep -Fq -- '--maxcpucount:1' "$temp/dotnet-args"
+grep -Fq -- '--no-restore' "$temp/dotnet-args"
 grep -Fq -- '-p:UseSharedCompilation=false' "$temp/dotnet-args"
 
 if DOTNET_BUILD_EXIT_CODE=137 run_dotnet_build "$INSTALL_DIR/Privatekonomi.slnx" "OOM-test" > "$temp/oom-output" 2>&1; then
