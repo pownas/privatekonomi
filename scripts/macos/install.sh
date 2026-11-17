@@ -132,7 +132,9 @@ main() {
         fi
     fi
 
-    log_success "Installationen är klar. Starta appen med: bash scripts/macos/start.sh"
+    log_success "Installationen är klar."
+    log_info "Gå till macOS-skriptkatalogen med: cd \"$REPO_ROOT/scripts/macos\""
+    log_info "Starta appen med: cd \"$REPO_ROOT/scripts/macos\" && bash start.sh"
     log_info "Aspire Dashboard och appens adresser visas när startskriptet körs."
 }
 

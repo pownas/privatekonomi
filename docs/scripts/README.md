@@ -8,7 +8,7 @@ För lokal utveckling på Apple Silicon (M-serien, inklusive M2) eller Intel:
 
 1. Klona repositoryt och gå till dess rot.
 2. Kör `bash scripts/macos/install.sh`.
-3. Starta med `bash scripts/macos/start.sh`.
+3. Gå till plattformskatalogen med `cd scripts/macos` och starta med `bash start.sh`.
 
 Se [macOS-installationsguiden](macos/installation.md) för förutsättningar, loggar och felsökning.
 
@@ -27,11 +27,11 @@ Starta utan `dotnet watch` med `-NoWatch`. Se [Windows-instruktionerna](windows/
 
 Installationsflöde, uppdatering, start och felsökning för Raspberry Pi finns i [Raspberry Pi-guiden](raspberry-pi/RASPBERRY_PI_QUICKSTART.md). Alla Raspberry Pi-dokument är samlade i [Raspberry Pi-dokumentationen](raspberry-pi/RASPBERRY_PI_GUIDE.md).
 
-Skriptens källfiler finns under `scripts/raspberry-pi/`. Rootkommandon som `./raspberry-pi-install.sh` behålls för bakåtkompatibilitet.
+Installera med den enda Raspberry Pi-installeraren i repositoryts rot: `bash ./raspberry-pi-install.sh`. För start, uppdatering och diagnostik går du till `~/privatekonomi/scripts/raspberry-pi` med `cd` och kör respektive skript därifrån.
 
 ## Linux och GitHub Codespaces
 
-`./app-install.sh` och `./app-start.sh` är kompatibilitetsstartare för Codespaces-/Linux-utvecklingsflödet. Se [Codespaces-instruktionerna](codespaces/README.md). OCR-språkdata kan hämtas med `bash scripts/linux/setup-tesseract.sh`.
+Installera i Linux/Codespaces med `bash ./app-install.sh`. För start, kör `cd scripts/codespaces` följt av `bash start.sh`. Se [Codespaces-instruktionerna](codespaces/README.md). OCR-språkdata kan hämtas med `bash scripts/linux/setup-tesseract.sh`.
 
 ## Skriptöversikt
 

@@ -109,7 +109,7 @@ run_dotnet_build() {
         free -h || true
     fi
 
-    if dotnet build "$target" --configuration Release --verbosity minimal --nologo --maxcpucount 1 -p:UseSharedCompilation=false; then
+    if dotnet build "$target" --configuration Release --verbosity minimal --nologo --maxcpucount:1 -p:UseSharedCompilation=false; then
         log_success "$stage slutfördes."
         return 0
     else
@@ -1872,8 +1872,8 @@ show_usage_info() {
     echo -e "${BLUE}Så här startar du applikationen:${NC}"
     echo -e ""
     echo -e "  ${YELLOW}Manuell start (rekommenderat för första gången):${NC}"
-    echo -e "    cd $INSTALL_DIR"
-    echo -e "    ./raspberry-pi-start.sh"
+    echo -e "    cd \"$INSTALL_DIR/scripts/raspberry-pi\""
+    echo -e "    bash start.sh"
     echo -e ""
     
     if systemctl is-enabled "privatekonomi-web" &>/dev/null; then
@@ -1932,7 +1932,8 @@ show_usage_info() {
         echo -e "  1. ${GREEN}Applikationen startar automatiskt vid omstart${NC}"
         echo -e "  2. Första manuella start: ${YELLOW}sudo systemctl start $SERVICE_NAME${NC}"
     else
-        echo -e "  1. Starta applikationen: ${YELLOW}cd $INSTALL_DIR && ./raspberry-pi-start.sh${NC}"
+        echo -e "  1. Gå till skriptkatalogen: ${YELLOW}cd \"$INSTALL_DIR/scripts/raspberry-pi\"${NC}"
+        echo -e "  2. Starta applikationen: ${YELLOW}bash start.sh${NC}"
     fi
     echo -e "  3. Öppna webbläsare på http://$pi_ip:$WEB_PORT"
     echo -e "  4. Skapa ditt första användarkonto"
@@ -1988,10 +1989,11 @@ main() {
     
     log_success "Installation slutförd framgångsrikt!"
     echo -e ""
-    echo -e "${GREEN}Starta applikationen med: ${YELLOW}cd $INSTALL_DIR && ./raspberry-pi-start.sh${NC}"
+    echo -e "${GREEN}Gå till skriptkatalogen med: ${YELLOW}cd \"$INSTALL_DIR/scripts/raspberry-pi\"${NC}"
+    echo -e "${GREEN}Starta applikationen med: ${YELLOW}bash start.sh${NC}"
     echo -e ""
     echo -e "${BLUE}Efter första starten, kör diagnostik:${NC}"
-    echo -e "${YELLOW}  ./raspberry-pi-debug.sh${NC}"
+    echo -e "${YELLOW}  cd \"$INSTALL_DIR/scripts/raspberry-pi\" && bash debug.sh${NC}"
     echo -e ""
     echo -e "${BLUE}Felsökningsguider:${NC}"
     echo -e "  docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_TROUBLESHOOTING.md"

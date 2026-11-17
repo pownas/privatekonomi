@@ -358,7 +358,8 @@ function Show-UsageInfo {
     
     Write-Host "Next Steps:" -ForegroundColor Blue
     Write-Host "  Start Application:" -ForegroundColor Yellow
-    Write-Host "    .\local-app-start.ps1"
+    Write-Host "    Set-Location .\scripts\windows"
+    Write-Host "    .\start.ps1"
     Write-Host ""
     Write-Host "Available commands:" -ForegroundColor Blue
     Write-Host "  Database Operations:" -ForegroundColor Yellow
@@ -383,9 +384,7 @@ function Show-UsageInfo {
     Write-Host "  • HTTPS development certificates (trusted)"
     Write-Host "Aspire hanteras via projektets NuGet-paket – ingen separat workload krävs." -ForegroundColor Blue
     Write-Host ""
-    Write-Host "Ready to start coding! Run " -NoNewline -ForegroundColor Green
-    Write-Host ".\local-app-start.ps1" -NoNewline -ForegroundColor Yellow
-    Write-Host " to launch the application! 🚀" -ForegroundColor Green
+    Write-Host "Navigate to .\scripts\windows and run .\start.ps1 to launch the application! 🚀" -ForegroundColor Green
 }
 
 # Main execution

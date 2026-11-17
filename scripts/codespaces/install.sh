@@ -213,7 +213,8 @@ show_usage_info() {
     
     echo -e "${BLUE}Next Steps:${NC}"
     echo -e "  ${YELLOW}Start Application:${NC}"
-    echo -e "    ./app-start.sh"
+    echo -e "    cd scripts/codespaces"
+    echo -e "    bash start.sh"
     echo -e ""
     echo -e "${BLUE}Available commands:${NC}"
     echo -e "  ${YELLOW}Database Operations:${NC}"
@@ -238,7 +239,7 @@ show_usage_info() {
     echo -e "  • HTTPS development certificates (trusted)"
     echo -e "${BLUE}Aspire hanteras via projektets NuGet-paket – ingen separat workload krävs längre.${NC}"
     echo -e ""
-    echo -e "${GREEN}Ready to start coding! Run ${YELLOW}./app-start.sh${GREEN} to launch the application! 🚀${NC}"
+    echo -e "${GREEN}Ready to start coding! Navigate to scripts/codespaces and run bash start.sh to launch the application! 🚀${NC}"
 }
 
 # Main execution

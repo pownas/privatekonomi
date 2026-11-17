@@ -65,7 +65,7 @@ else
 fi
 [ "$build_status" -eq 23 ]
 grep -Fq 'exitkod 23' "$temp/build-output"
-grep -Fq -- '--maxcpucount' "$temp/dotnet-args"
+grep -Fq -- '--maxcpucount:1' "$temp/dotnet-args"
 grep -Fq -- '-p:UseSharedCompilation=false' "$temp/dotnet-args"
 
 if DOTNET_BUILD_EXIT_CODE=137 run_dotnet_build "$INSTALL_DIR/Privatekonomi.slnx" "OOM-test" > "$temp/oom-output" 2>&1; then
