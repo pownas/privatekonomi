@@ -76,21 +76,24 @@ install_dotnet_11() {
     log_success ".NET 11 SDK är installerat."
 }
 
-install_aspire_cli() {
-    CURRENT_STEP="installation av Aspire CLI"
-    if command -v aspire >/dev/null 2>&1; then
-        log_info "Aspire CLI finns redan: $(aspire --version)"
-        return
+select_storage_provider() {
+    local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-Sqlite}"
+    if [[ -z "${PRIVATEKONOMI_STORAGE_PROVIDER:-}" && -t 0 ]]; then
+        printf 'Välj datalagring:\n'
+        printf '  1) SQLite (standard)\n'
+        printf '  2) JSON-filer\n'
+        read -r -p 'Val [1]: ' selection || selection=""
+        selection="${selection:-1}"
     fi
 
-    log_info "Installerar Aspire CLI som globalt .NET-verktyg."
-    dotnet tool install --global Aspire.Cli
-    add_dotnet_to_path
-    if ! command -v aspire >/dev/null 2>&1; then
-        log_error "Aspire CLI installerades inte i PATH. Öppna en ny terminal och kör skriptet igen."
-        return 1
-    fi
-    log_success "Aspire CLI är installerat."
+    case "$selection" in
+        1|[Ss][Qq][Ll][Ii][Tt][Ee]) printf 'Sqlite\n' ;;
+        2|[Jj][Ss][Oo][Nn][Ff][Ii][Ll][Ee]|[Jj][Ss][Oo][Nn]) printf 'JsonFile\n' ;;
+        *)
+            log_error "Okänt eller ej stödd lagringsprovider '$selection'. Välj SQLite eller JSON-filer."
+            return 1
+            ;;
+    esac
 }
 
 main() {
@@ -113,16 +116,6 @@ main() {
 
     cd "$REPO_ROOT"
     install_dotnet_11
-    install_aspire_cli
-
-    CURRENT_STEP="produktionskonfiguration"
-    PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite bash "$SCRIPT_DIR/configure-production.sh"
-
-    CURRENT_STEP="HTTPS-utvecklarcertifikat"
-    if ! dotnet dev-certs https --check --quiet; then
-        log_info "Skapar och litar på HTTPS-utvecklarcertifikatet (macOS kan visa en Keychain-bekräftelse)."
-        dotnet dev-certs https --trust
-    fi
 
     CURRENT_STEP="NuGet-återställning"
     dotnet restore Privatekonomi.slnx
@@ -138,11 +131,17 @@ main() {
         fi
     fi
 
+    CURRENT_STEP="publicering och starttjänster"
+    local storage_provider
+    storage_provider="$(select_storage_provider)"
+    bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
+    bash "$SCRIPT_DIR/setup-backup.sh"
+
     log_success "Installationen är klar."
     log_info "Gå till macOS-skriptkatalogen med: cd \"$REPO_ROOT/scripts/macos\""
     log_info "Starta appen med: cd \"$REPO_ROOT/scripts/macos\" && bash start.sh"
-    log_info "Aspire Dashboard och appens adresser visas när startskriptet körs. Där kan du välja SQLite eller JSON-filer."
-    log_info "En daglig backup schemaläggs när du startar appen första gången."
+    log_info "Web och API startar automatiskt när du loggar in och kan nås på Macens IP-adress."
+    log_info "Systemadministratörer kan uppdatera eller starta om appen via Drift-sidan i webbgränssnittet."
 }
 
 main "$@"

@@ -6,8 +6,8 @@ REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 source "$SCRIPT_DIR/dotnet.sh"
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    printf 'Användning: bash scripts/macos/start.sh [Aspire CLI-alternativ]\n'
-    printf 'Startar Privatekonomi via Aspire i förgrunden. Avsluta med Ctrl+C.\n'
+    printf 'Användning: bash scripts/macos/start.sh\n'
+    printf 'Startar eller startar om Web och API som inloggningstjänster på macOS.\n'
     exit 0
 fi
 
@@ -15,22 +15,22 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
     printf '[ERROR] Det här skriptet är endast avsett för macOS.\n' >&2
     exit 1
 fi
-if [[ ! -f "$REPO_ROOT/src/Privatekonomi.AppHost/Privatekonomi.AppHost.csproj" ]]; then
-    printf '[ERROR] Hittar inte Privatekonomi.AppHost.\n' >&2
+if [[ ! -f "$REPO_ROOT/src/Privatekonomi.Web/Privatekonomi.Web.csproj" ]]; then
+    printf '[ERROR] Hittar inte Privatekonomi.Web.\n' >&2
     exit 1
 fi
-if ! macos_use_dotnet_11; then
-    printf '[ERROR] .NET 11 SDK saknas. Kör först: bash scripts/macos/install.sh\n' >&2
-    exit 1
-fi
-if ! command -v aspire >/dev/null 2>&1; then
-    printf '[ERROR] Aspire CLI saknas. Kör först: bash scripts/macos/install.sh\n' >&2
+if ! macos_use_dotnet_11 || ! command -v launchctl >/dev/null 2>&1; then
+    printf '[ERROR] .NET 11 SDK och launchctl krävs. Kör först: bash scripts/macos/install.sh\n' >&2
     exit 1
 fi
 
 select_storage_provider() {
     local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-}"
+    local provider_file="$HOME/Library/Application Support/Privatekonomi/storage-provider"
 
+    if [[ -z "$selection" && -f "$provider_file" ]]; then
+        IFS= read -r selection < "$provider_file" || true
+    fi
     if [[ -z "$selection" && -t 0 ]]; then
         printf 'Välj datalagring:\n'
         printf '  1) SQLite (standard)\n'
@@ -41,12 +41,8 @@ select_storage_provider() {
     fi
 
     case "${selection:-Sqlite}" in
-        1|[Ss][Qq][Ll][Ii][Tt][Ee])
-            PRIVATEKONOMI_STORAGE_PROVIDER="Sqlite"
-            ;;
-        2|[Jj][Ss][Oo][Nn][Ff][Ii][Ll][Ee]|[Jj][Ss][Oo][Nn])
-            PRIVATEKONOMI_STORAGE_PROVIDER="JsonFile"
-            ;;
+        1|[Ss][Qq][Ll][Ii][Tt][Ee]) PRIVATEKONOMI_STORAGE_PROVIDER="Sqlite" ;;
+        2|[Jj][Ss][Oo][Nn][Ff][Ii][Ll][Ee]|[Jj][Ss][Oo][Nn]) PRIVATEKONOMI_STORAGE_PROVIDER="JsonFile" ;;
         3|[Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss]*|[Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss][Qq][Ll])
             printf '[ERROR] PostgreSQL kan inte väljas ännu: projektet saknar PostgreSQL EF Core-provider.\n' >&2
             return 1
@@ -63,39 +59,27 @@ if ! select_storage_provider; then
 fi
 
 cd "$REPO_ROOT"
-export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
-export DOTNET_ENVIRONMENT="${DOTNET_ENVIRONMENT:-Production}"
-export PRIVATEKONOMI_ENVIRONMENT="${PRIVATEKONOMI_ENVIRONMENT:-Production}"
 export PRIVATEKONOMI_STORAGE_PROVIDER
-export PRIVATEKONOMI_LAN_ACCESS="${PRIVATEKONOMI_LAN_ACCESS:-true}"
-export PRIVATEKONOMI_MACOS_STORAGE_CONFIG=true
-export ASPIRE_DASHBOARD_TELEMETRY_OPTOUT="${ASPIRE_DASHBOARD_TELEMETRY_OPTOUT:-true}"
-
+export PRIVATEKONOMI_CONFIG_ROOT="${PRIVATEKONOMI_CONFIG_ROOT:-$REPO_ROOT}"
 storage_directory="$HOME/Library/Application Support/Privatekonomi"
 mkdir -p "$storage_directory"
-provider_file="$storage_directory/storage-provider"
-temporary_provider_file="$provider_file.tmp.$$"
-printf '%s\n' "$PRIVATEKONOMI_STORAGE_PROVIDER" > "$temporary_provider_file"
-chmod 600 "$temporary_provider_file"
-mv -f -- "$temporary_provider_file" "$provider_file"
 case "$PRIVATEKONOMI_STORAGE_PROVIDER" in
-    Sqlite)
-        export PRIVATEKONOMI_STORAGE_CONNECTION_STRING="Data Source=$storage_directory/privatekonomi.db"
-        ;;
-    JsonFile)
-        export PRIVATEKONOMI_STORAGE_CONNECTION_STRING="$storage_directory/json"
-        ;;
+    Sqlite) export PRIVATEKONOMI_STORAGE_CONNECTION_STRING="Data Source=$storage_directory/privatekonomi.db" ;;
+    JsonFile) export PRIVATEKONOMI_STORAGE_CONNECTION_STRING="$storage_directory/json" ;;
 esac
 export Storage__Provider="$PRIVATEKONOMI_STORAGE_PROVIDER"
 export Storage__ConnectionString="$PRIVATEKONOMI_STORAGE_CONNECTION_STRING"
 
 if ! bash "$SCRIPT_DIR/configure-production.sh" "$PRIVATEKONOMI_STORAGE_PROVIDER"; then
-    printf '[ERROR] Produktionskonfigurationen kunde inte skapas.\n' >&2
+    printf '[ERROR] Produktionskonfigurationerna kunde inte skapas.\n' >&2
     exit 1
 fi
-
 if ! bash "$SCRIPT_DIR/setup-backup.sh"; then
     printf '[ERROR] Kunde inte installera eller aktivera den dagliga backupen.\n' >&2
+    exit 1
+fi
+if ! PRIVATEKONOMI_CONFIG_ROOT="$PRIVATEKONOMI_CONFIG_ROOT" bash "$SCRIPT_DIR/setup-services.sh" "$PRIVATEKONOMI_STORAGE_PROVIDER"; then
+    printf '[ERROR] Web/API-tjänsterna kunde inte startas. Läs loggarna under ~/Library/Logs/Privatekonomi/.\n' >&2
     exit 1
 fi
 
@@ -104,16 +88,12 @@ lan_ip=""
 if [[ -n "$default_interface" ]]; then
     lan_ip="$(ipconfig getifaddr "$default_interface" 2>/dev/null || true)"
 fi
-
-printf '[INFO] Startar Privatekonomi med Aspire från %s\n' "$REPO_ROOT"
-printf '[INFO] ASPNETCORE_ENVIRONMENT=%s, DOTNET_ENVIRONMENT=%s, Storage=%s\n' \
-    "$ASPNETCORE_ENVIRONMENT" "$DOTNET_ENVIRONMENT" "$PRIVATEKONOMI_STORAGE_PROVIDER"
-printf '[INFO] Data lagras under: %s\n' "$storage_directory"
+printf '[OK] Web och API har startats i bakgrunden och startar automatiskt när du loggar in på datorn.\n'
+printf '[INFO] Lagring: %s (%s)\n' "$PRIVATEKONOMI_STORAGE_PROVIDER" "$storage_directory"
 printf '[INFO] Web: http://localhost:5274 | API: http://localhost:5277\n'
 if [[ -n "$lan_ip" ]]; then
-    printf '[INFO] Från hemnätverket: http://%s:5274\n' "$lan_ip"
+    printf '[INFO] Hemnätverk: http://%s:5274\n' "$lan_ip"
 else
-    printf '[WARN] Kunde inte hitta datorns LAN-IP. Kör: ipconfig getifaddr %s\n' "${default_interface:-en0}"
+    printf '[WARN] Kunde inte hitta datorns LAN-IP. Kontrollera macOS nätverksinställningar.\n'
 fi
-printf '[INFO] Appen körs i förgrunden. Avsluta med Ctrl+C.\n'
-exec aspire run "$@"
+printf '[INFO] Loggar: %s\n' "$HOME/Library/Logs/Privatekonomi"

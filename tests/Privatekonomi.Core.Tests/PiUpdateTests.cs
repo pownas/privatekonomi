@@ -44,6 +44,16 @@ public class PiUpdateTests
     }
 
     [TestMethod]
+    public void RequestCanBeEnabledForMacOSWithoutEnablingOtherPlatforms()
+    {
+        using var fixture = new UpdateFixture();
+
+        Assert.IsTrue(fixture.Service(pi: false, macOS: true).IsAvailable);
+        Assert.IsFalse(fixture.Service(pi: false, macOS: true, macOSUpdateEnabled: false).IsAvailable);
+        Assert.IsFalse(fixture.Service(pi: false, macOS: false, macOSUpdateEnabled: true).IsAvailable);
+    }
+
+    [TestMethod]
     public async Task RequestIsExclusiveAndTracksStatusAfterRestart()
     {
         using var fixture = new UpdateFixture();
@@ -154,6 +164,8 @@ public class PiUpdateTests
             bool enabled = true,
             bool pi = true,
             bool marker = true,
+            bool macOS = false,
+            bool macOSUpdateEnabled = true,
             string? commitFile = null,
             string? branchFile = null)
         {
@@ -162,11 +174,12 @@ public class PiUpdateTests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["PiUpdate:Enabled"] = enabled.ToString(),
+                ["PiUpdate:MacOSEnabled"] = macOSUpdateEnabled.ToString(),
                 ["PiUpdate:StateDirectory"] = _directory,
                 ["PiUpdate:InstalledCommitFile"] = commitFile,
                 ["PiUpdate:InstalledBranchFile"] = branchFile
             }).Build();
-            return new PiUpdateService(config, () => pi);
+            return new PiUpdateService(config, () => pi, () => macOS);
         }
 
         public void Dispose() => Directory.Delete(_directory, recursive: true);

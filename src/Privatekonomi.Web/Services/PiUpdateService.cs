@@ -4,7 +4,10 @@ namespace Privatekonomi.Web.Services;
 
 public sealed record PiUpdateStatus(string State, string? InstalledCommit, string InstalledBranch, string Log);
 
-public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? isRaspberryPi = null)
+public sealed class PiUpdateService(
+    IConfiguration configuration,
+    Func<bool>? isRaspberryPi = null,
+    Func<bool>? isMacOS = null)
 {
     private readonly string? _directory = configuration["PiUpdate:StateDirectory"];
     private readonly string? _installedCommitFile = configuration["PiUpdate:InstalledCommitFile"];
@@ -14,10 +17,11 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
         Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true" &&
         File.Exists("/proc/device-tree/model") &&
         File.ReadAllText("/proc/device-tree/model").Contains("Raspberry Pi", StringComparison.Ordinal));
+    private readonly Func<bool> _isMacOS = isMacOS ?? OperatingSystem.IsMacOS;
 
     public bool IsAvailable =>
         configuration.GetValue<bool>("PiUpdate:Enabled") &&
-        _isRaspberryPi() &&
+        (_isRaspberryPi() || (_isMacOS() && configuration.GetValue<bool>("PiUpdate:MacOSEnabled"))) &&
         !string.IsNullOrWhiteSpace(_directory) &&
         File.Exists(Path.Combine(_directory, "enabled"));
 

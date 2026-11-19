@@ -56,17 +56,14 @@ cat > "$temp/bin/ipconfig" <<'EOF'
 #!/bin/bash
 printf '192.168.1.23\n'
 EOF
-cat > "$temp/bin/aspire" <<'EOF'
-#!/bin/bash
-printf 'PRIVATEKONOMI_LAN_ACCESS=%s\nPRIVATEKONOMI_MACOS_STORAGE_CONFIG=%s\nPRIVATEKONOMI_STORAGE_PROVIDER=%s\nStorage__Provider=%s\nStorage__ConnectionString=%s\nPRIVATEKONOMI_STORAGE_CONNECTION_STRING=%s\nARGS=%s\n' \
-    "$PRIVATEKONOMI_LAN_ACCESS" "$PRIVATEKONOMI_MACOS_STORAGE_CONFIG" "$PRIVATEKONOMI_STORAGE_PROVIDER" \
-    "$Storage__Provider" "$Storage__ConnectionString" "$PRIVATEKONOMI_STORAGE_CONNECTION_STRING" "$*"
-EOF
 cat > "$temp/bin/bash" <<'EOF'
 #!/bin/bash
 case "${1:-}" in
     */scripts/macos/setup-backup.sh)
         printf 'BACKUP_SETUP=installed\n'
+        ;;
+    */scripts/macos/setup-services.sh)
+        printf 'SERVICES_SETUP=installed provider=%s\n' "${2:-}"
         ;;
     */scripts/macos/configure-production.sh)
         exec /bin/bash "$@"
@@ -76,39 +73,34 @@ case "${1:-}" in
         ;;
 esac
 EOF
-chmod +x "$temp/bin/uname" "$temp/bin/route" "$temp/bin/ipconfig" "$temp/bin/aspire"
+cat > "$temp/bin/launchctl" <<'EOF'
+#!/bin/bash
+exit 0
+EOF
+chmod +x "$temp/bin/uname" "$temp/bin/route" "$temp/bin/ipconfig" "$temp/bin/launchctl"
 chmod +x "$temp/bin/bash"
 
 PATH_SDKS=10.0.100 HOME_SDKS=11.0.100
 export PATH_SDKS HOME_SDKS
 PATH="$temp/bin"
 export PATH
-output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite /bin/bash "$repo/scripts/macos/start.sh" --test-option)"
+output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite /bin/bash "$repo/scripts/macos/start.sh")"
 [[ "$output" == *"Web: http://localhost:5274"* ]]
 [[ "$output" == *"http://192.168.1.23:5274"* ]]
-[[ "$output" == *"PRIVATEKONOMI_LAN_ACCESS=true"* ]]
-[[ "$output" == *"PRIVATEKONOMI_MACOS_STORAGE_CONFIG=true"* ]]
 [[ "$output" == *"BACKUP_SETUP=installed"* ]]
-[[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite"* ]]
-[[ "$output" == *"Storage__Provider=Sqlite"* ]]
-[[ "$output" == *"privatekonomi.db"* ]]
-[[ "$output" == *"ARGS=run --test-option"* ]]
+[[ "$output" == *"SERVICES_SETUP=installed provider=Sqlite"* ]]
+[[ "$output" == *"startar automatiskt när du loggar in"* ]]
 grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
+grep -Fq 'privatekonomi.db' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5274"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5277"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
-apphost="$repo/src/Privatekonomi.AppHost/Program.cs"
-grep -Fq 'AddProject<Projects.Privatekonomi_Api>("api", "http")' "$apphost"
-grep -Fq 'AddProject<Projects.Privatekonomi_Web>("web", "http")' "$apphost"
-grep -Fq '.WithEnvironment("PORT", apiPort.ToString' "$apphost"
-grep -Fq '.WithEnvironment("PORT", webPort.ToString' "$apphost"
-
 output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile /bin/bash "$repo/scripts/macos/start.sh")"
-[[ "$output" == *"PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile"* ]]
-[[ "$output" == *"Storage__Provider=JsonFile"* ]]
-[[ "$output" == *"Application Support/Privatekonomi/json"* ]]
+[[ "$output" == *"Lagring: JsonFile"* ]]
+[[ "$output" == *"SERVICES_SETUP=installed provider=JsonFile"* ]]
 grep -Fq '"Provider": "JsonFile"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Provider": "InMemory"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
+grep -Fq 'Application Support/Privatekonomi/json' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 
 if PRIVATEKONOMI_STORAGE_PROVIDER=PostgreSQL /bin/bash "$repo/scripts/macos/start.sh" >"$temp/postgres-output" 2>&1; then
     echo "Expected unsupported PostgreSQL selection to fail."
@@ -116,4 +108,4 @@ if PRIVATEKONOMI_STORAGE_PROVIDER=PostgreSQL /bin/bash "$repo/scripts/macos/star
 fi
 grep -Fq 'saknar PostgreSQL EF Core-provider' "$temp/postgres-output"
 
-echo "macOS startup selects .NET 11, runs Aspire attached, and configures supported storage providers."
+echo "macOS startup selects .NET 11, configures persistent storage, and starts launchd services."
