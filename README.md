@@ -235,7 +235,7 @@ Se [ASPIRE_GUIDE.md](docs/ASPIRE_GUIDE.md) för mer information.
 
 ### Installation och körning
 
-Installations-, start- och felsökningsinstruktioner per plattform finns i [dokumentationen för installationsskripten](docs/scripts/README.md). Källskripten finns i [`scripts/`](scripts/README.md).
+Installations-, start- och felsökningsinstruktioner per plattform finns i [dokumentationen för installationsskripten](docs/scripts/README.md). För en steg-för-steg-guide om familjekonton, säker delning på hemnätverket, backup och systemadministratörsbehörighet, se [Kom igång och dela Privatekonomi hemma](docs/FAMILY_HOME_SETUP.md). Källskripten finns i [`scripts/`](scripts/README.md).
 
 #### 🍎 macOS (lokal utveckling)
 

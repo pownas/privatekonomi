@@ -2,6 +2,8 @@
 
 Denna korta guide hjälper dig att snabbt komma igång med nätverksåtkomst till Privatekonomi på din Raspberry Pi.
 
+För en fullständig guide om första ägarkontot, separata familjekonton, säker delning, backup och SQLite-systemadministratör, se [Kom igång och dela Privatekonomi hemma](../../FAMILY_HOME_SETUP.md).
+
 ## 🚀 Snabbstart (5 minuter)
 
 ### 1. Installation

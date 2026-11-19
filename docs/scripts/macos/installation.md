@@ -11,6 +11,8 @@ Installationsflödet är avsett för en privat macOS-installation på Apple Sili
 
 Homebrew krävs inte. Installeraren skapar en lokal byggmiljö och försöker även hämta svensk och engelsk OCR-språkdata. Om OCR-datan inte kan hämtas kan appen ändå starta, men kvitto-OCR är då inte tillgänglig.
 
+För en steg-för-steg-guide om familjekonton, säker delning på hemnätverket, backup och systemadministratörsbehörighet, se [Kom igång och dela Privatekonomi hemma](../../FAMILY_HOME_SETUP.md).
+
 ## Installera
 
 Kör från repositoryts rot:
