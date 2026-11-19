@@ -173,9 +173,23 @@
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Info">
-                        Omstart och installation via sidan är aktiverade för en konfigurerad 64-bitars Raspberry Pi-installation. Den här servern stöder inte åtgärderna.
-                    </MudAlert>
+                    @if (Updates.IsRaspberryPi)
+                    {
+                        <MudAlert Severity="Severity.Warning">
+                            Webbuppdatering är inte aktiverad på den här Raspberry Pi-installationen.
+                            Kör en gång i terminalen:
+                            <pre><code>cd ~/privatekonomi/scripts/raspberry-pi &amp;&amp; sudo bash enable-web-update.sh</code></pre>
+                            Ladda sedan om sidan. Aktiveringen kräver separata Web- och API-systemd-tjänster
+                            med publicerade ARM64-versioner.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Omstart och installation via sidan kräver en konfigurerad 64-bitars Raspberry Pi-installation
+                            med publicerade Web- och API-systemd-tjänster.
+                        </MudAlert>
+                    }
                 }
             </MudCardContent>
         </MudCard>

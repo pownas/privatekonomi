@@ -15,9 +15,11 @@ public sealed class PiUpdateService(IConfiguration configuration, Func<bool>? is
         File.Exists("/proc/device-tree/model") &&
         File.ReadAllText("/proc/device-tree/model").Contains("Raspberry Pi", StringComparison.Ordinal));
 
+    public bool IsRaspberryPi => _isRaspberryPi();
+
     public bool IsAvailable =>
         configuration.GetValue<bool>("PiUpdate:Enabled") &&
-        _isRaspberryPi() &&
+        IsRaspberryPi &&
         !string.IsNullOrWhiteSpace(_directory) &&
         File.Exists(Path.Combine(_directory, "enabled"));
 

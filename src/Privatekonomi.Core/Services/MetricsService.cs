@@ -292,7 +292,7 @@ public class MetricsService : IMetricsService
         
         var errorLogs = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.Contains("Error", StringComparison.OrdinalIgnoreCase))
+                       a.Action.ToLower().Contains("error"))
             .CountAsync();
 
         return new PerformanceMetrics
@@ -310,7 +310,7 @@ public class MetricsService : IMetricsService
         var errorLogs = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       a.Action.Contains("Error", StringComparison.OrdinalIgnoreCase))
+                       a.Action.ToLower().Contains("error"))
             .CountAsync();
 
         return new PerformanceMetrics
@@ -339,13 +339,13 @@ public class MetricsService : IMetricsService
         // Failed login attempts - would need audit logging of login attempts
         var totalLoginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       (a.Action.Contains("Login", StringComparison.OrdinalIgnoreCase) ||
-                        a.Action.Contains("SignIn", StringComparison.OrdinalIgnoreCase)))
+                       (a.Action.ToLower().Contains("login") ||
+                        a.Action.ToLower().Contains("signin")))
             .CountAsync();
 
         var failedLoginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.Contains("Failed Login", StringComparison.OrdinalIgnoreCase))
+                       a.Action.ToLower().Contains("failed login"))
             .CountAsync();
 
         var failedLoginPercent = totalLoginAttempts > 0 
@@ -355,7 +355,7 @@ public class MetricsService : IMetricsService
         // Security incidents
         var securityIncidents = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.Contains("Security", StringComparison.OrdinalIgnoreCase))
+                       a.Action.ToLower().Contains("security"))
             .CountAsync();
 
         return new SecurityMetrics
@@ -377,14 +377,14 @@ public class MetricsService : IMetricsService
         var loginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       (a.Action.Contains("Login", StringComparison.OrdinalIgnoreCase) ||
-                        a.Action.Contains("SignIn", StringComparison.OrdinalIgnoreCase)))
+                       (a.Action.ToLower().Contains("login") ||
+                        a.Action.ToLower().Contains("signin")))
             .CountAsync();
 
         var failedLogins = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       a.Action.Contains("Failed Login", StringComparison.OrdinalIgnoreCase))
+                       a.Action.ToLower().Contains("failed login"))
             .CountAsync();
 
         return new SecurityMetrics
