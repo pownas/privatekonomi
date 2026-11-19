@@ -120,6 +120,8 @@ dotnet --version
 
 ## Installation av Privatekonomi
 
+När du använder det automatiska installationsskriptet visas återställning, bygge och publicering som separata steg. Utdata visas löpande, och om ett steg är tyst visas en statusrad var 15:e sekund. Installations- och byggloggar sparas i `~/privatekonomi-installer-logs/`.
+
 ### 1. Klona repositoriet
 
 ```bash
