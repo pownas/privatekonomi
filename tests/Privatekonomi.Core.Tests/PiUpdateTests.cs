@@ -38,6 +38,8 @@ public class PiUpdateTests
     public void RequestIsUnavailableWithoutOptInOrPi()
     {
         using var fixture = new UpdateFixture();
+        Assert.IsTrue(fixture.Service().IsRaspberryPi);
+        Assert.IsFalse(fixture.Service(pi: false).IsRaspberryPi);
         Assert.IsFalse(fixture.Service(enabled: false).TryRequest());
         Assert.IsFalse(fixture.Service(pi: false).TryRequest());
         Assert.IsFalse(fixture.Service(marker: false).TryRequest());
