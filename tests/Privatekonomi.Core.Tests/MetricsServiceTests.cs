@@ -2,6 +2,7 @@ using Moq;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
@@ -303,5 +304,40 @@ public class MetricsServiceTests
         Assert.IsTrue(result.PerformanceMetrics.AveragePageLoadTime > 0);
         Assert.IsTrue(result.PerformanceMetrics.LighthouseScore >= 0);
         Assert.IsTrue(result.PerformanceMetrics.CrashRate >= 0);
+    }
+
+    [TestMethod]
+    public async Task MetricsServiceQueriesAuditLogsWithSqlite()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+            .UseSqlite(connection)
+            .Options;
+        await using var context = new PrivatekonomyContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        var now = DateTime.UtcNow;
+        context.AuditLogs.AddRange(
+            new AuditLog { Action = "service error", CreatedAt = now },
+            new AuditLog { Action = "login completed", CreatedAt = now },
+            new AuditLog { Action = "signin completed", CreatedAt = now },
+            new AuditLog { Action = "FAILED LOGIN attempt", CreatedAt = now },
+            new AuditLog { Action = "SECURITY alert", CreatedAt = now });
+        await context.SaveChangesAsync();
+
+        var service = new MetricsService(context, _mockLogger.Object);
+        var currentMetrics = await service.GetCurrentMetricsAsync();
+        var periodMetrics = await service.GetMetricsForPeriodAsync(
+            new DateTime(now.Year, now.Month, 1),
+            now);
+
+        Assert.AreEqual(1, currentMetrics.PerformanceMetrics.ErrorCount);
+        Assert.AreEqual(3, currentMetrics.SecurityMetrics.TotalLoginAttempts);
+        Assert.AreEqual(1, currentMetrics.SecurityMetrics.FailedLoginAttempts);
+        Assert.AreEqual(1, currentMetrics.SecurityMetrics.SecurityIncidentsCount);
+        Assert.AreEqual(1, periodMetrics.PerformanceMetrics.ErrorCount);
+        Assert.AreEqual(3, periodMetrics.SecurityMetrics.TotalLoginAttempts);
+        Assert.AreEqual(1, periodMetrics.SecurityMetrics.FailedLoginAttempts);
     }
 }
