@@ -67,6 +67,7 @@ support="$HOME/Library/Application Support/Privatekonomi"
 [[ -f "$support/current/Web/appsettings.Production.json" ]]
 [[ -x "$support/update-worker.sh" ]]
 [[ -f "$support/update/enabled" ]]
+[[ ! -e "$support/update/setup-lock" ]]
 [[ "$(cat "$support/storage-provider")" == "Sqlite" ]]
 grep -Fq 'http://0.0.0.0:5274' "$support/current/Web/appsettings.Production.json"
 grep -Fq 'http://0.0.0.0:5277' "$support/current/Api/appsettings.Production.json"
@@ -76,6 +77,7 @@ grep -Fq '<key>StartInterval</key><integer>20</integer>' "$HOME/Library/LaunchAg
 grep -Fq 'PiUpdate__MacOSEnabled' "$HOME/Library/LaunchAgents/com.privatekonomi.web.plist"
 grep -Fq 'PRIVATEKONOMI_SOURCE_REPOSITORY' "$HOME/Library/LaunchAgents/com.privatekonomi.update.plist"
 grep -Fq 'bootstrap gui/' "$LAUNCHCTL_LOG"
+grep -Fq "<string>$temp/bin/dotnet</string>" "$HOME/Library/LaunchAgents/com.privatekonomi.web.plist"
 
 bash "$repo/scripts/macos/setup-services.sh" JsonFile
 [[ "$(cat "$support/storage-provider")" == "JsonFile" ]]

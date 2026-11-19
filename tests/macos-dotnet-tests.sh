@@ -63,6 +63,9 @@ case "${1:-}" in
         printf 'BACKUP_SETUP=installed\n'
         ;;
     */scripts/macos/setup-services.sh)
+        script_dir="${1%/*}"
+        PRIVATEKONOMI_CONFIG_ROOT="${PRIVATEKONOMI_CONFIG_ROOT:-}" \
+            /bin/bash "$script_dir/configure-production.sh" "${2:-}"
         printf 'SERVICES_SETUP=installed provider=%s\n' "${2:-}"
         ;;
     */scripts/macos/configure-production.sh)

@@ -23,8 +23,12 @@ RELEASE_DIR="$APP_SUPPORT_DIR/releases"
 CURRENT_DIR="$APP_SUPPORT_DIR/current"
 STATE_DIR="$APP_SUPPORT_DIR/update"
 DOTNET_PATH="$(command -v dotnet)"
+if [[ "$DOTNET_PATH" != /* ]]; then
+    DOTNET_PATH="$(cd -- "$(dirname -- "$DOTNET_PATH")" && pwd -P)/$(basename -- "$DOTNET_PATH")"
+fi
 PROVIDER="${1:-}"
 PLUTIL_COMMAND="${PLUTIL_COMMAND:-/usr/bin/plutil}"
+staging=""
 
 if [[ -z "$PROVIDER" && -f "$APP_SUPPORT_DIR/storage-provider" ]]; then
     IFS= read -r PROVIDER < "$APP_SUPPORT_DIR/storage-provider" || true
@@ -47,6 +51,7 @@ if ! mkdir "$SETUP_LOCK" 2>/dev/null; then
 fi
 printf '%s\n' "$$" > "$SETUP_LOCK/pid"
 cleanup_setup_lock() {
+    [[ -z "$staging" ]] || rm -rf -- "$staging"
     rm -f "$SETUP_LOCK/pid"
     rmdir "$SETUP_LOCK" 2>/dev/null || true
 }
@@ -70,13 +75,16 @@ if [[ -f "$STATE_DIR/worker-lock/pid" ]]; then
 fi
 PRIVATEKONOMI_CONFIG_ROOT="$CONFIG_ROOT" bash "$SCRIPT_DIR/configure-production.sh" "$PROVIDER"
 
-if [[ ! -d "$CURRENT_DIR/Web" || ! -d "$CURRENT_DIR/Api" ]]; then
+release_is_complete() {
+    [[ -f "$1/Web/Privatekonomi.Web.dll" && -f "$1/Api/Privatekonomi.Api.dll" ]]
+}
+
+if ! release_is_complete "$CURRENT_DIR"; then
     commit="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || printf 'local')"
     initial_release="$RELEASE_DIR/$commit"
-    if [[ ! -d "$initial_release/Web" || ! -d "$initial_release/Api" ]]; then
+    if ! release_is_complete "$initial_release"; then
         rm -rf -- "$initial_release"
         staging="$(mktemp -d "$RELEASE_DIR/.initial.XXXXXXXX")"
-        trap 'rm -rf -- "${staging:-}"' EXIT
         dotnet publish "$REPO_ROOT/src/Privatekonomi.Web/Privatekonomi.Web.csproj" \
             --configuration Release --output "$staging/Web" /p:PublishTrimmed=false /p:PublishSingleFile=false
         dotnet publish "$REPO_ROOT/src/Privatekonomi.Api/Privatekonomi.Api.csproj" \
@@ -110,7 +118,11 @@ if [[ ! -s "$current_branch_file" ]]; then
     git -C "$REPO_ROOT" branch --show-current > "$current_branch_file" 2>/dev/null || printf 'main\n' > "$current_branch_file"
 fi
 touch "$STATE_DIR/enabled"
-cp "$SCRIPT_DIR/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
+if [[ -f "$CURRENT_DIR/update-worker.sh" ]]; then
+    cp "$CURRENT_DIR/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
+else
+    cp "$SCRIPT_DIR/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
+fi
 chmod 700 "$APP_SUPPORT_DIR/update-worker.sh"
 
 escape_xml() {
@@ -128,7 +140,7 @@ if [[ -n "${DOTNET_ROOT:-}" ]]; then
 fi
 
 write_service_agent() {
-    local name="$1" port="$2" project="$3" extra_config="${4:-}"
+    local name="$1" port="$2" project="$3"
     local label="com.privatekonomi.$name"
     local plist="$AGENT_DIR/$label.plist"
     local temporary="$plist.tmp.$$"
@@ -165,7 +177,6 @@ write_service_agent() {
         <key>PiUpdate__StateDirectory</key><string>$(escape_xml "$STATE_DIR")</string>
         <key>PiUpdate__InstalledCommitFile</key><string>$(escape_xml "$current_commit_file")</string>
         <key>PiUpdate__InstalledBranchFile</key><string>$(escape_xml "$current_branch_file")</string>
-        $extra_config
     </dict>
 </dict>
 </plist>
@@ -229,7 +240,11 @@ wait_for_service() {
     printf '[ERROR] %s svarar inte på %s. Se %s/%s-error.log.\n' "$name" "$url" "$LOG_DIR" "$name" >&2
     return 1
 }
-wait_for_service api http://127.0.0.1:5277/internal/health
-wait_for_service web http://127.0.0.1:5274/internal/health
+if ! wait_for_service api http://127.0.0.1:5277/internal/health ||
+   ! wait_for_service web http://127.0.0.1:5274/internal/health; then
+    launchctl bootout "gui/$(id -u)/com.privatekonomi.web" >/dev/null 2>&1 || true
+    launchctl bootout "gui/$(id -u)/com.privatekonomi.api" >/dev/null 2>&1 || true
+    exit 1
+fi
 printf '[OK] Web och API startar automatiskt vid inloggning och lyssnar på hemnätverket.\n'
 printf '[INFO] Publicerad version: %s\n' "$(cat "$current_commit_file")"

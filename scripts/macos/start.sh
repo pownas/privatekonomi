@@ -70,10 +70,6 @@ esac
 export Storage__Provider="$PRIVATEKONOMI_STORAGE_PROVIDER"
 export Storage__ConnectionString="$PRIVATEKONOMI_STORAGE_CONNECTION_STRING"
 
-if ! bash "$SCRIPT_DIR/configure-production.sh" "$PRIVATEKONOMI_STORAGE_PROVIDER"; then
-    printf '[ERROR] Produktionskonfigurationerna kunde inte skapas.\n' >&2
-    exit 1
-fi
 if ! bash "$SCRIPT_DIR/setup-backup.sh"; then
     printf '[ERROR] Kunde inte installera eller aktivera den dagliga backupen.\n' >&2
     exit 1

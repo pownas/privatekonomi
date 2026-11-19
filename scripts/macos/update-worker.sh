@@ -57,7 +57,10 @@ recover_transaction() {
     [[ -f "$state/transaction" ]] || return 0
     local old_release
     IFS= read -r old_release < "$state/transaction" || true
-    if [[ -z "$old_release" || "$old_release" != "$releases/"* || ! -d "$old_release/Web" || ! -d "$old_release/Api" ]]; then
+    if [[ -z "$old_release" ||
+          "$old_release" != "$releases/"* ||
+          ! -f "$old_release/Web/Privatekonomi.Web.dll" ||
+          ! -f "$old_release/Api/Privatekonomi.Api.dll" ]]; then
         echo "Uppdateringens återställningsjournal är ogiltig; manuell åtgärd krävs." >&2
         return 1
     fi
@@ -108,7 +111,6 @@ if ! mkdir "$worker_lock" 2>/dev/null; then
     if [[ "$lock_pid" =~ ^[0-9]+$ ]] && kill -0 "$lock_pid" 2>/dev/null; then
         exit 1
     fi
-    rm -f "$worker_lock/pid"
     rm -f "$worker_lock/pid"
     rmdir "$worker_lock" 2>/dev/null || exit 1
     mkdir "$worker_lock"
