@@ -21,7 +21,7 @@ bash setup-macos.sh install
 
 Utan ett skriptnamn visas en lista över macOS-skripten. Tryck Enter för att välja `install.sh` som standard, eller skriv `start.sh` för att starta appen. Startaren visar dokumentations- och skriptkatalogen och kräver bekräftelse innan vald åtgärd körs.
 
-Skriptet kontrollerar macOS och processorns arkitektur, hittar .NET 11 SDK från både den aktuella `PATH`-sökvägen och vanliga macOS-installationsplatser, och installerar SDK:t om det saknas. Därefter återställs NuGet-paket, lösningen byggs, Web/API publiceras och bakgrundstjänsterna aktiveras. Installationsloggar sparas i `~/Library/Logs/Privatekonomi/`.
+Skriptet kontrollerar macOS och processorns arkitektur, hittar .NET 11 SDK från både den aktuella `PATH`-sökvägen och vanliga macOS-installationsplatser, och installerar SDK:t om det saknas. Därefter återställs NuGet-paket, lösningen byggs, Web/API publiceras och bakgrundstjänsterna aktiveras. Installationsskriptet visar vilken fas som körs, skriver byggutdata löpande och visar en statusrad var 15:e sekund vid tysta långkörande kommandon. Installations- och byggloggar sparas separat i `~/Library/Logs/Privatekonomi/`.
 
 Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-profilen. Öppna en ny terminal om kommandona inte hittas efter installationen.
 

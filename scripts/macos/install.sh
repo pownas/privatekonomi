@@ -4,9 +4,13 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 source "$SCRIPT_DIR/dotnet.sh"
+source "$SCRIPT_DIR/../common/run-with-progress.sh"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/install-$(date '+%Y%m%d-%H%M%S').log"
+BUILD_LOG_FILE="${LOG_FILE%.log}-build.log"
+touch "$BUILD_LOG_FILE"
+export PRIVATEKONOMI_BUILD_LOG_FILE="$BUILD_LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 CURRENT_STEP="start"
@@ -98,6 +102,7 @@ select_storage_provider() {
 
 main() {
     log_info "Installationslogg: $LOG_FILE"
+    log_info "Separat bygglogg: $BUILD_LOG_FILE"
     CURRENT_STEP="kontroll av macOS"
     if [[ "$(uname -s)" != "Darwin" ]]; then
         log_error "Det här skriptet är endast avsett för macOS."
@@ -118,10 +123,12 @@ main() {
     install_dotnet_11
 
     CURRENT_STEP="NuGet-återställning"
-    dotnet restore Privatekonomi.slnx
+    run_with_progress "Återställer NuGet-paket" "$BUILD_LOG_FILE" \
+        dotnet restore Privatekonomi.slnx
 
     CURRENT_STEP="bygge av lösningen"
-    dotnet build Privatekonomi.slnx --configuration Debug --no-restore
+    run_with_progress "Bygger lösningen" "$BUILD_LOG_FILE" \
+        dotnet build Privatekonomi.slnx --configuration Debug --verbosity minimal --nologo --no-restore
 
     local tessdata_dir="$REPO_ROOT/src/Privatekonomi.Web/tessdata"
     if [[ ! -s "$tessdata_dir/eng.traineddata" || ! -s "$tessdata_dir/swe.traineddata" ]]; then
@@ -132,6 +139,7 @@ main() {
     fi
 
     CURRENT_STEP="publicering och starttjänster"
+    log_info "Publicerar Web och API och installerar bakgrundstjänster."
     local storage_provider
     storage_provider="$(select_storage_provider)"
     bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"

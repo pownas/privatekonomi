@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 CONFIG_ROOT="${PRIVATEKONOMI_CONFIG_ROOT:-$REPO_ROOT}"
 source "$SCRIPT_DIR/dotnet.sh"
+source "$SCRIPT_DIR/../common/run-with-progress.sh"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
     printf '[ERROR] Tjänsteinstallation är endast tillgänglig på macOS.\n' >&2
@@ -18,6 +19,9 @@ fi
 
 APP_SUPPORT_DIR="$HOME/Library/Application Support/Privatekonomi"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
+mkdir -p "$LOG_DIR"
+BUILD_LOG_FILE="${PRIVATEKONOMI_BUILD_LOG_FILE:-$LOG_DIR/build-$(date '+%Y%m%d-%H%M%S').log}"
+touch "$BUILD_LOG_FILE"
 AGENT_DIR="$HOME/Library/LaunchAgents"
 RELEASE_DIR="$APP_SUPPORT_DIR/releases"
 CURRENT_DIR="$APP_SUPPORT_DIR/current"
@@ -85,10 +89,12 @@ if ! release_is_complete "$CURRENT_DIR"; then
     if ! release_is_complete "$initial_release"; then
         rm -rf -- "$initial_release"
         staging="$(mktemp -d "$RELEASE_DIR/.initial.XXXXXXXX")"
-        dotnet publish "$REPO_ROOT/src/Privatekonomi.Web/Privatekonomi.Web.csproj" \
-            --configuration Release --output "$staging/Web" /p:PublishTrimmed=false /p:PublishSingleFile=false
-        dotnet publish "$REPO_ROOT/src/Privatekonomi.Api/Privatekonomi.Api.csproj" \
-            --configuration Release --output "$staging/Api" /p:PublishTrimmed=false /p:PublishSingleFile=false
+        run_with_progress "Publicerar Privatekonomi Web" "$BUILD_LOG_FILE" \
+            dotnet publish "$REPO_ROOT/src/Privatekonomi.Web/Privatekonomi.Web.csproj" \
+                --configuration Release --output "$staging/Web" /p:PublishTrimmed=false /p:PublishSingleFile=false
+        run_with_progress "Publicerar Privatekonomi API" "$BUILD_LOG_FILE" \
+            dotnet publish "$REPO_ROOT/src/Privatekonomi.Api/Privatekonomi.Api.csproj" \
+                --configuration Release --output "$staging/Api" /p:PublishTrimmed=false /p:PublishSingleFile=false
         cp "$CONFIG_ROOT/src/Privatekonomi.Web/appsettings.Production.json" "$staging/Web/"
         cp "$CONFIG_ROOT/src/Privatekonomi.Api/appsettings.Production.json" "$staging/Api/"
         printf '%s\n' "$commit" > "$staging/commit"
