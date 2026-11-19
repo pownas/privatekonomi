@@ -1,5 +1,7 @@
 # Raspberry Pi Installation och Konfiguration
 
+För nästa steg efter installationen – familjekonton, säker delning på hemnätverket, backup och SQLite-systemadministratör – se [Kom igång och dela Privatekonomi hemma](../../FAMILY_HOME_SETUP.md).
+
 ## 🚀 Automatisk Installation (Rekommenderat)
 
 **Enklaste sättet:** Använd det automatiserade installationsskriptet som hanterar hela processen:
@@ -425,7 +427,6 @@ journalctl -u privatekonomi -f
 - Alla miljövariabler för Raspberry Pi
 - Automatisk omstart vid fel
 - Startar automatiskt vid systemuppstart
-
 
 
 

@@ -1,7 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
+const int webPort = 5274;
+const int apiPort = 5277;
 
 // Raspberry Pi configuration - listen on all network interfaces
 var isRaspberryPi = Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true";
+var isLanAccessEnabled = Environment.GetEnvironmentVariable("PRIVATEKONOMI_LAN_ACCESS") == "true";
+var exposeServiceEndpoints = isRaspberryPi || isLanAccessEnabled;
 
 // Configure Aspire Dashboard to listen on all network interfaces when on Raspberry Pi
 if (isRaspberryPi)
@@ -23,43 +27,76 @@ var dotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
 var privatekonomiEnvironment = Environment.GetEnvironmentVariable("PRIVATEKONOMI_ENVIRONMENT")
     ?? aspnetEnvironment;
 
-var storageProvider = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_PROVIDER") ?? "Unknown";
+var configuredStorageProvider = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_PROVIDER");
+var storageProvider = configuredStorageProvider ?? "Unknown";
+var storageConnectionString = Environment.GetEnvironmentVariable("PRIVATEKONOMI_STORAGE_CONNECTION_STRING");
+var configureSelectedStorage = Environment.GetEnvironmentVariable("PRIVATEKONOMI_MACOS_STORAGE_CONFIG") == "true";
+// JSON persistence is process-local, so keep it in Web and leave API on its in-memory default.
+var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
 // Add the API project
-var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api")
+var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api", "http")
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
+if (configureSelectedStorage && configuredStorageProvider is not null)
+{
+    apiBuilder = apiBuilder
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+        .WithEnvironment("Storage__Provider", usesJsonFileStorage ? "InMemory" : storageProvider);
+    if (!string.IsNullOrWhiteSpace(storageConnectionString) && !usesJsonFileStorage)
+    {
+        apiBuilder = apiBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+    }
+}
+
+if (exposeServiceEndpoints)
+{
+    // Keep the advertised endpoint and the service listener on the same fixed port.
+    apiBuilder = apiBuilder
+        .WithHttpEndpoint(port: apiPort, name: "http")
+        .WithEnvironment("PORT", apiPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
+}
 if (isRaspberryPi)
 {
-    // On Raspberry Pi, explicitly set the HTTP endpoint port and pass the flag
-    // The actual binding to 0.0.0.0 is handled by Program.cs based on this flag
-    apiBuilder = apiBuilder
-        .WithHttpEndpoint(port: 5277, name: "http")
-        .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
+    apiBuilder = apiBuilder.WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
 }
 
 var api = apiBuilder;
 
 // Add the Web project and reference the API
-var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web")
+var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web", "http")
     .WithReference(api)
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
 
+if (configureSelectedStorage && configuredStorageProvider is not null)
+{
+    webBuilder = webBuilder
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
+        .WithEnvironment("Storage__Provider", storageProvider);
+    if (!string.IsNullOrWhiteSpace(storageConnectionString))
+    {
+        webBuilder = webBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+    }
+}
+
+if (exposeServiceEndpoints)
+{
+    // Keep the advertised endpoint and the service listener on the same fixed port.
+    webBuilder = webBuilder
+        .WithHttpEndpoint(port: webPort, name: "http")
+        .WithEnvironment("PORT", webPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
+}
 if (isRaspberryPi)
 {
-    // On Raspberry Pi, explicitly set the HTTP endpoint port and pass the flag
-    // The actual binding to 0.0.0.0 is handled by Program.cs based on this flag
-    webBuilder = webBuilder
-        .WithHttpEndpoint(port: 5274, name: "http")
-        .WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
+    webBuilder = webBuilder.WithEnvironment("PRIVATEKONOMI_RASPBERRY_PI", "true");
 }
 
 var web = webBuilder;

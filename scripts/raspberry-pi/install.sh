@@ -24,6 +24,8 @@
 # ============================================================================
 
 set -Ee
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/run-with-progress.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -138,17 +140,13 @@ run_dotnet_build() {
     fi
 
     printf '\n[%s] %s: dotnet build %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$stage" "$target" >> "$build_log_file"
-    if (set -o pipefail; dotnet build "$target" --configuration Release --verbosity minimal --nologo --no-restore --maxcpucount:1 -p:UseSharedCompilation=false 2>&1 | tee -a "$build_log_file"); then
+    if run_with_progress "$stage" "$build_log_file" \
+        dotnet build "$target" --configuration Release --verbosity minimal --nologo --no-restore --maxcpucount:1 -p:UseSharedCompilation=false; then
         log_success "$stage slutfördes."
         return 0
     else
         exit_code=$?
         log_error "$stage misslyckades (dotnet build avslutades med exitkod $exit_code)."
-        log_error "Full byggutdata: $build_log_file"
-        log_info "Senaste 40 raderna av byggutdata:"
-        if ! tail -n 40 "$build_log_file"; then
-            log_error "Kunde inte läsa byggloggen: $build_log_file"
-        fi
         if [ "$exit_code" -eq 137 ]; then
             log_warning "Detta tyder ofta på OOM/minnesbrist. Kontrollera swap och kernel-loggen: sudo journalctl -k -b | grep -Ei 'oom|out of memory|killed process'"
         fi
@@ -380,18 +378,20 @@ setup_project() {
     
     if resolve_build_target; then
         CURRENT_STEP="NuGet-aterstallning"
-        log_info "Återställer NuGet-paket ($BUILD_TARGET)..."
-        dotnet restore "$BUILD_TARGET"
+        run_with_progress "Återställer NuGet-paket" "$BUILD_LOG_FILE" \
+            dotnet restore "$BUILD_TARGET"
 
         run_dotnet_build "$BUILD_TARGET" "Bygger losningen"
     else
         log_warning "Ingen lösningsfil hittades. Faller tillbaka till projektfiler..."
 
         CURRENT_STEP="NuGet-aterstallning av fallback-projekt"
-        log_info "Återställer NuGet-paket (fallback)..."
-        dotnet restore src/Privatekonomi.Core/Privatekonomi.Core.csproj
-        dotnet restore src/Privatekonomi.Api/Privatekonomi.Api.csproj
-        dotnet restore src/Privatekonomi.Web/Privatekonomi.Web.csproj
+        run_with_progress "Återställer NuGet-paket för Core" "$BUILD_LOG_FILE" \
+            dotnet restore src/Privatekonomi.Core/Privatekonomi.Core.csproj
+        run_with_progress "Återställer NuGet-paket för API" "$BUILD_LOG_FILE" \
+            dotnet restore src/Privatekonomi.Api/Privatekonomi.Api.csproj
+        run_with_progress "Återställer NuGet-paket för Web" "$BUILD_LOG_FILE" \
+            dotnet restore src/Privatekonomi.Web/Privatekonomi.Web.csproj
 
         run_dotnet_build src/Privatekonomi.Api/Privatekonomi.Api.csproj "Bygger API-projektet"
         run_dotnet_build src/Privatekonomi.Web/Privatekonomi.Web.csproj "Bygger webbprojektet"
@@ -426,13 +426,14 @@ publish_application() {
         rm -rf "$publish_dir"
     fi
     
-    log_info "Publicerar för linux-arm64 med self-contained..."
+    log_info "Publicerar för linux-arm64 med self-contained. Utdata visas löpande."
     
     cd "$INSTALL_DIR"
     
     # Publish Web
     log_info "Publicerar privatekonomi.Web..."
-    if ! dotnet publish src/Privatekonomi.Web/Privatekonomi.Web.csproj \
+    if ! run_with_progress "Publicerar Privatekonomi Web" "$BUILD_LOG_FILE" \
+        dotnet publish src/Privatekonomi.Web/Privatekonomi.Web.csproj \
         --runtime linux-arm64 \
         --self-contained \
         --configuration Release \
@@ -445,7 +446,8 @@ publish_application() {
     
     # Publish API
     log_info "Publicerar Privatekonomi.Api..."
-    if ! dotnet publish src/Privatekonomi.Api/Privatekonomi.Api.csproj \
+    if ! run_with_progress "Publicerar Privatekonomi API" "$BUILD_LOG_FILE" \
+        dotnet publish src/Privatekonomi.Api/Privatekonomi.Api.csproj \
         --runtime linux-arm64 \
         --self-contained \
         --configuration Release \

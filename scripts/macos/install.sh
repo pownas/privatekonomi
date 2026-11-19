@@ -3,9 +3,14 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/dotnet.sh"
+source "$SCRIPT_DIR/../common/run-with-progress.sh"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/install-$(date '+%Y%m%d-%H%M%S').log"
+BUILD_LOG_FILE="${LOG_FILE%.log}-build.log"
+touch "$BUILD_LOG_FILE"
+export PRIVATEKONOMI_BUILD_LOG_FILE="$BUILD_LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 CURRENT_STEP="start"
@@ -25,7 +30,9 @@ on_error() {
 trap 'on_error "$?"' ERR
 
 add_dotnet_to_path() {
-    export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    if ! macos_use_dotnet_11; then
+        export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+    fi
     local profile
     case "${SHELL##*/}" in
         zsh) profile="$HOME/.zprofile" ;;
@@ -41,13 +48,13 @@ add_dotnet_to_path() {
 }
 
 has_dotnet_11() {
-    command -v dotnet >/dev/null 2>&1 && dotnet --list-sdks | awk '$1 ~ /^11\./ { found=1 } END { exit !found }'
+    macos_use_dotnet_11
 }
 
 install_dotnet_11() {
     CURRENT_STEP="installation av .NET 11 SDK"
-    add_dotnet_to_path
     if has_dotnet_11; then
+        add_dotnet_to_path
         log_info ".NET 11 SDK finns redan: $(dotnet --list-sdks | awk '$1 ~ /^11\./ { print $1; exit }')"
         return
     fi
@@ -73,25 +80,29 @@ install_dotnet_11() {
     log_success ".NET 11 SDK är installerat."
 }
 
-install_aspire_cli() {
-    CURRENT_STEP="installation av Aspire CLI"
-    if command -v aspire >/dev/null 2>&1; then
-        log_info "Aspire CLI finns redan: $(aspire --version)"
-        return
+select_storage_provider() {
+    local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-Sqlite}"
+    if [[ -z "${PRIVATEKONOMI_STORAGE_PROVIDER:-}" && -t 0 ]]; then
+        printf 'Välj datalagring:\n'
+        printf '  1) SQLite (standard)\n'
+        printf '  2) JSON-filer\n'
+        read -r -p 'Val [1]: ' selection || selection=""
+        selection="${selection:-1}"
     fi
 
-    log_info "Installerar Aspire CLI som globalt .NET-verktyg."
-    dotnet tool install --global Aspire.Cli
-    add_dotnet_to_path
-    if ! command -v aspire >/dev/null 2>&1; then
-        log_error "Aspire CLI installerades inte i PATH. Öppna en ny terminal och kör skriptet igen."
-        return 1
-    fi
-    log_success "Aspire CLI är installerat."
+    case "$selection" in
+        1|[Ss][Qq][Ll][Ii][Tt][Ee]) printf 'Sqlite\n' ;;
+        2|[Jj][Ss][Oo][Nn][Ff][Ii][Ll][Ee]|[Jj][Ss][Oo][Nn]) printf 'JsonFile\n' ;;
+        *)
+            log_error "Okänt eller ej stödd lagringsprovider '$selection'. Välj SQLite eller JSON-filer."
+            return 1
+            ;;
+    esac
 }
 
 main() {
     log_info "Installationslogg: $LOG_FILE"
+    log_info "Separat bygglogg: $BUILD_LOG_FILE"
     CURRENT_STEP="kontroll av macOS"
     if [[ "$(uname -s)" != "Darwin" ]]; then
         log_error "Det här skriptet är endast avsett för macOS."
@@ -110,19 +121,14 @@ main() {
 
     cd "$REPO_ROOT"
     install_dotnet_11
-    install_aspire_cli
-
-    CURRENT_STEP="HTTPS-utvecklarcertifikat"
-    if ! dotnet dev-certs https --check --quiet; then
-        log_info "Skapar och litar på HTTPS-utvecklarcertifikatet (macOS kan visa en Keychain-bekräftelse)."
-        dotnet dev-certs https --trust
-    fi
 
     CURRENT_STEP="NuGet-återställning"
-    dotnet restore Privatekonomi.slnx
+    run_with_progress "Återställer NuGet-paket" "$BUILD_LOG_FILE" \
+        dotnet restore Privatekonomi.slnx
 
     CURRENT_STEP="bygge av lösningen"
-    dotnet build Privatekonomi.slnx --configuration Debug --no-restore
+    run_with_progress "Bygger lösningen" "$BUILD_LOG_FILE" \
+        dotnet build Privatekonomi.slnx --configuration Debug --verbosity minimal --nologo --no-restore
 
     local tessdata_dir="$REPO_ROOT/src/Privatekonomi.Web/tessdata"
     if [[ ! -s "$tessdata_dir/eng.traineddata" || ! -s "$tessdata_dir/swe.traineddata" ]]; then
@@ -132,10 +138,18 @@ main() {
         fi
     fi
 
+    CURRENT_STEP="publicering och starttjänster"
+    log_info "Publicerar Web och API och installerar bakgrundstjänster."
+    local storage_provider
+    storage_provider="$(select_storage_provider)"
+    bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
+    bash "$SCRIPT_DIR/setup-backup.sh"
+
     log_success "Installationen är klar."
     log_info "Gå till macOS-skriptkatalogen med: cd \"$REPO_ROOT/scripts/macos\""
     log_info "Starta appen med: cd \"$REPO_ROOT/scripts/macos\" && bash start.sh"
-    log_info "Aspire Dashboard och appens adresser visas när startskriptet körs."
+    log_info "Web och API startar automatiskt när du loggar in och kan nås på Macens IP-adress."
+    log_info "Systemadministratörer kan uppdatera eller starta om appen via Drift-sidan i webbgränssnittet."
 }
 
 main "$@"
