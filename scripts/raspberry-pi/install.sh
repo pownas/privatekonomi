@@ -1572,6 +1572,22 @@ EOF
     echo ""
     log_info "För att starta båda tjänsterna:"
     echo -e "  ${YELLOW}sudo systemctl start privatekonomi-web privatekonomi-api${NC}"
+
+    if [ -f "$INSTALL_DIR/publish/Web/Privatekonomi.Web" ] &&
+       [ -f "$INSTALL_DIR/publish/Api/Privatekonomi.Api" ] &&
+       [ "$(uname -m)" = aarch64 ] && [ "$SKIP_INTERACTIVE" = false ]; then
+        echo ""
+        read -p "Vill du aktivera säker uppdatering och omstart från webbgränssnittet? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            CURRENT_STEP="aktivering av webbuppdatering"
+            if sudo bash "$INSTALL_DIR/scripts/raspberry-pi/enable-web-update.sh"; then
+                log_success "Webbuppdatering aktiverad. Öppna Drift som systemadministratör."
+            else
+                log_warning "Webbuppdatering kunde inte aktiveras automatiskt. Kör senare: sudo bash $INSTALL_DIR/scripts/raspberry-pi/enable-web-update.sh"
+            fi
+        fi
+    fi
 }
 
 # Create backup script and schedule

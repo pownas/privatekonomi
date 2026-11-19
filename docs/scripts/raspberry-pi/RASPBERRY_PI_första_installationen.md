@@ -60,7 +60,7 @@ bash setup-raspberry-pi.sh --no-ssl
 bash setup-raspberry-pi.sh --configure-ssl
 
 # Visa hjälp
-bash setup-raspberry-pi.sh --help
+bash setup-raspberry-pi.sh install --help
 ```
 
 **Efter installation:**

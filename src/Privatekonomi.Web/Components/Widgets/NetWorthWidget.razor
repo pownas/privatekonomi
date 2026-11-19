@@ -115,7 +115,8 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Kunde inte ladda nettoförmögenhet: {ex.Message}", Severity.Warning);
+            Snackbar.Add($"Kunde inte ladda nettoförmögenhet: {ex.Message}", Severity.Warning,
+                options => options.SnackbarTypeClass = "net-worth-warning-snackbar");
         }
         finally
         {

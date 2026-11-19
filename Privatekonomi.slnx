@@ -15,5 +15,12 @@
     <Project Path="tests/Privatekonomi.Api.Tests/Privatekonomi.Api.Tests.csproj" />
     <Project Path="tests/Privatekonomi.Core.Tests/Privatekonomi.Core.Tests.csproj" />
   </Folder>
-  <Project Path=".SolutionItems.csproj"  Build="false" Project="false" />
+  <Project Path=".SolutionItems.csproj">
+    <Build Solution="Debug|Any CPU" Project="false" />
+    <Build Solution="Debug|x64" Project="false" />
+    <Build Solution="Debug|x86" Project="false" />
+    <Build Solution="Release|Any CPU" Project="false" />
+    <Build Solution="Release|x64" Project="false" />
+    <Build Solution="Release|x86" Project="false" />
+  </Project>
 </Solution>

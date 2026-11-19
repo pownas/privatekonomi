@@ -247,7 +247,7 @@ Testa själv:
 bash -n scripts/raspberry-pi/install.sh
 
 # Testrun (dry-run simulation)
-bash setup-raspberry-pi.sh --help
+bash setup-raspberry-pi.sh install --help
 ```
 
 ## Dokumentation

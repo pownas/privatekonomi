@@ -173,9 +173,23 @@
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Info">
-                        Uppdatering och omstart via sidan är inte aktiverade för den här installationen. Konfigurera en stödd macOS- eller Raspberry Pi-installation för att aktivera åtgärderna.
-                    </MudAlert>
+                    @if (Updates.IsRaspberryPi)
+                    {
+                        <MudAlert Severity="Severity.Warning">
+                            Webbuppdatering är inte aktiverad på den här Raspberry Pi-installationen.
+                            Kör en gång i terminalen:
+                            <pre><code>cd ~/privatekonomi/scripts/raspberry-pi &amp;&amp; sudo bash enable-web-update.sh</code></pre>
+                            Ladda sedan om sidan. Aktiveringen kräver separata Web- och API-systemd-tjänster
+                            med publicerade ARM64-versioner.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            Uppdatering och omstart via sidan är inte aktiverade för den här installationen.
+                            Konfigurera en stödd macOS- eller Raspberry Pi-installation för att aktivera åtgärderna.
+                        </MudAlert>
+                    }
                 }
             </MudCardContent>
         </MudCard>

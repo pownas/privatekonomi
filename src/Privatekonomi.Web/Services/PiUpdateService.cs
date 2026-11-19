@@ -19,9 +19,11 @@ public sealed class PiUpdateService(
         File.ReadAllText("/proc/device-tree/model").Contains("Raspberry Pi", StringComparison.Ordinal));
     private readonly Func<bool> _isMacOS = isMacOS ?? OperatingSystem.IsMacOS;
 
+    public bool IsRaspberryPi => _isRaspberryPi();
+
     public bool IsAvailable =>
         configuration.GetValue<bool>("PiUpdate:Enabled") &&
-        (_isRaspberryPi() || (_isMacOS() && configuration.GetValue<bool>("PiUpdate:MacOSEnabled"))) &&
+        (IsRaspberryPi || (_isMacOS() && configuration.GetValue<bool>("PiUpdate:MacOSEnabled"))) &&
         !string.IsNullOrWhiteSpace(_directory) &&
         File.Exists(Path.Combine(_directory, "enabled"));
 

@@ -351,7 +351,7 @@ bash -n scripts/raspberry-pi/install.sh
 
 ✅ **Help-text:**
 ```bash
-bash setup-raspberry-pi.sh --help
+bash setup-raspberry-pi.sh install --help
 # Visar alla nya alternativ (--no-publish, --no-nginx, --no-ssl, --configure-ssl)
 ```
 

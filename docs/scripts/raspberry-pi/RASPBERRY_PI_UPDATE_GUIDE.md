@@ -6,8 +6,9 @@ Denna guide beskriver hur du uppdaterar din befintliga Privatekonomi-installatio
 
 Detta flöde kräver en **64-bitars Raspberry Pi** med publicerade `privatekonomi-web` och
 `privatekonomi-api` systemd-tjänster från installationsskriptet. Det är avstängt som
-standard och stöds inte för Aspire, `dotnet run`, äldre enskilda systemd-tjänster eller
-andra maskiner. Installera först som vanligt, och aktivera sedan en gång på Pi:n:
+standard. På en ny installation frågar installationsskriptet om funktionen ska aktiveras
+när separata systemd-tjänster och publicerade binärer finns. För en befintlig installation
+eller om du tackade nej, aktivera den en gång på Pi:n:
 
 ```bash
 cd ~/privatekonomi/scripts/raspberry-pi
@@ -21,6 +22,10 @@ appens två tjänster. Webbappen kör inga skal- eller sudo-kommandon: den kan e
 skapa en begäran i `~/privatekonomi-update/`. Uppdatera den installerade workern
 genom att köra aktiveringsskriptet igen efter ändringar i uppdateringsskriptet.
 Om du har en annan tjänstlayout, fortsätt använda den manuella uppdateringen.
+
+Flödet stöds inte för Aspire, `dotnet run`, äldre enskilda systemd-tjänster eller andra
+maskiner. Om Drift-sidan visar att webbuppdatering inte är aktiverad, kör kommandot ovan
+och ladda om sidan.
 
 Logga in som **systemadministratör** (`IsSystemAdmin`) och öppna **Drift** i menyn.
 Sidan visar appens körmiljö, drifttid, installerad commit och senaste commit på main.
