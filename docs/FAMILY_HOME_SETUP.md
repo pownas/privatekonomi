@@ -105,10 +105,20 @@ BACKUP_DIR="$HOME/Library/Application Support/Privatekonomi-Backups"
 # DB="$HOME/privatekonomi-data/privatekonomi.db"
 # BACKUP_DIR="$HOME/privatekonomi-backups"
 
+umask 077
+if [[ ! -s "$DB" ]]; then
+    echo "Databasen saknas eller är tom: $DB" >&2
+    exit 1
+fi
 mkdir -p "$BACKUP_DIR"
 BACKUP_FILE="$BACKUP_DIR/privatekonomi-before-admin-$(date +%Y%m%d-%H%M%S).db"
 cp "$DB" "$BACKUP_FILE"
-test -s "$BACKUP_FILE" && echo "Backup skapad: $BACKUP_FILE"
+chmod 600 "$BACKUP_FILE"
+if [[ ! -s "$BACKUP_FILE" ]]; then
+    echo "Backupen kunde inte verifieras: $BACKUP_FILE" >&2
+    exit 1
+fi
+echo "Backup skapad: $BACKUP_FILE"
 ```
 
 Om databasen inte finns på den valda sökvägen, kontrollera lagringsprovider och anslutningssträng i `appsettings.Production.json`. Fortsätt inte med någon annan databas än den som appen faktiskt använder.
