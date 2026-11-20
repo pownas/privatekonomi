@@ -83,10 +83,11 @@ install_dotnet_11() {
 select_storage_provider() {
     local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-Sqlite}"
     if [[ -z "${PRIVATEKONOMI_STORAGE_PROVIDER:-}" && -t 0 ]]; then
-        printf 'Välj datalagring:\n'
-        printf '  1) SQLite (standard)\n'
-        printf '  2) JSON-filer\n'
-        read -r -p 'Val [1]: ' selection || selection=""
+        printf 'Välj hur Privatekonomi ska spara dina data:\n' >&2
+        printf '  1) SQLite - rekommenderat, data sparas i en lokal databasfil.\n' >&2
+        printf '  2) JSON-filer - data sparas i separata filer.\n' >&2
+        printf 'Tryck Retur för att använda SQLite.\n' >&2
+        read -r -p 'Datalagring [1]: ' selection || selection=""
         selection="${selection:-1}"
     fi
 
@@ -142,6 +143,11 @@ main() {
     log_info "Publicerar Web och API och installerar bakgrundstjänster."
     local storage_provider
     storage_provider="$(select_storage_provider)"
+    if [[ "$storage_provider" == "Sqlite" ]]; then
+        log_info "Vald datalagring: SQLite."
+    else
+        log_info "Vald datalagring: JSON-filer."
+    fi
     bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
     bash "$SCRIPT_DIR/setup-backup.sh"
 
