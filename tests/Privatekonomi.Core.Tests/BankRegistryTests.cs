@@ -6,10 +6,26 @@ namespace Privatekonomi.Core.Tests;
 public class BankRegistryTests
 {
     [TestMethod]
+    public void SupportedBanksShouldExposeMatchingEnumIds()
+    {
+        foreach (var bank in BankRegistry.SupportedBanks)
+        {
+            Assert.AreEqual(bank.Name, BankNames.GetName(bank.Id));
+            Assert.AreEqual(bank.Id, BankNames.GetId(bank.Name));
+        }
+    }
+
+    [TestMethod]
     public void SupportedBanksShouldContainAllRequiredBanks()
     {
         // Arrange
-        var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Nordea", "SEB", "Swedbank", "Avanza", "Nordnet", "Lysa", "Opti", "Klarna", "Lantmannen Finans", "Revolut", "Nordiska banken", "Montrose" };
+        var requiredBanks = new[]
+        {
+            BankNames.Handelsbanken, BankNames.IcaBanken, BankNames.Nordea, BankNames.Seb,
+            BankNames.Swedbank, BankNames.Avanza, BankNames.Nordnet, BankNames.Lysa,
+            BankNames.Opti, BankNames.Klarna, BankNames.LantmannenFinans, BankNames.Revolut,
+            BankNames.NordiskaBanken, BankNames.Montrose
+        };
         
         // Act
         var bankNames = BankRegistry.SupportedBanks.Select(b => b.Name).ToList();

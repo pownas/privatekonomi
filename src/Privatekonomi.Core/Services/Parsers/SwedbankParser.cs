@@ -8,7 +8,7 @@ public class SwedbankParser : ICsvParser
 {
     private const int MaxHeaderSearchLines = 5;
     
-    public string BankName => "Swedbank";
+    public string BankName => BankNames.Swedbank;
 
     public bool CanParse(string csvContent)
     {

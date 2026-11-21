@@ -6,7 +6,7 @@ namespace Privatekonomi.Core.Services.Parsers;
 
 public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
 {
-    public string BankName => "Avanza";
+    public string BankName => BankNames.Avanza;
     public string FormatType => "Per konto";
 
     public bool CanParse(string csvContent)

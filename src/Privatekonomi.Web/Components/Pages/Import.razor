@@ -57,18 +57,18 @@ else if (_currentStep == ImportStep.BankSelection)
                 <MudRadio Value="@("Automatisk (auto-detektera)")" Color="Color.Primary">
                     <MudText>Automatisk (identifiera format från filen)</MudText>
                 </MudRadio>
-                <MudRadio Value="@("ICA-banken")" Color="Color.Primary">
+                <MudRadio Value="@BankNames.IcaBanken" Color="Color.Primary">
                     <MudText>ICA-banken (CSV)</MudText>
                 </MudRadio>
-                <MudRadio Value="@("Swedbank")" Color="Color.Primary">
+                <MudRadio Value="@BankNames.Swedbank" Color="Color.Primary">
                     <MudText>Swedbank (CSV)</MudText>
                 </MudRadio>
-                <MudRadio Value="@("OFX (Allmän)")" Color="Color.Primary">
+                <MudRadio Value="@BankNames.AllmanOfx" Color="Color.Primary">
                     <MudText>OFX/QFX (Allmänt bankformat)</MudText>
                 </MudRadio>
             </MudRadioGroup>
 
-            @if (_selectedBank == "OFX (Allmän)")
+            @if (_selectedBank == BankNames.AllmanOfx)
             {
                 <MudAlert Severity="Severity.Info" Class="mt-4">
                     <MudText>OFX (Open Financial Exchange) och QFX är standardformat som stöds av de flesta banker.</MudText>
@@ -110,7 +110,7 @@ else if (_currentStep == ImportStep.FileSelection)
             Bank: <strong>@(_importType == ImportType.Transactions ? _selectedBank : _selectedBankName)</strong>
         </MudText>
         
-        @if (_importType == ImportType.Investments && _selectedBankName == "Avanza")
+        @if (_importType == ImportType.Investments && _selectedBankName == BankNames.Avanza)
         {
             <MudAlert Severity="Severity.Info" Class="mb-4">
                 Avanza tillhandahåller tre CSV-format:
@@ -426,7 +426,7 @@ else if (_currentStep == ImportStep.Complete)
     {
         var allBanks = await BankSourceService.GetAllBankSourcesAsync();
         // Only show Avanza for now
-        _investmentBanks = allBanks.Where(b => b.Name == "Avanza").ToList();
+        _investmentBanks = allBanks.Where(b => b.Name == BankNames.Avanza).ToList();
         
         // If Avanza doesn't exist, add all banks
         if (!_investmentBanks.Any())
@@ -733,7 +733,7 @@ else if (_currentStep == ImportStep.Complete)
     private string GetAcceptedFileTypes()
     {
         if (_importType == ImportType.Transactions && 
-            (_selectedBank == "OFX (Allmän)" || _selectedBank == "Automatisk (auto-detektera)"))
+            (_selectedBank == BankNames.AllmanOfx || _selectedBank == "Automatisk (auto-detektera)"))
         {
             return ".ofx,.qfx,.csv";
         }
@@ -742,7 +742,7 @@ else if (_currentStep == ImportStep.Complete)
     
     private string GetFileTypeDescription()
     {
-        if (_importType == ImportType.Transactions && _selectedBank == "OFX (Allmän)")
+        if (_importType == ImportType.Transactions && _selectedBank == BankNames.AllmanOfx)
         {
             return "OFX/QFX-fil";
         }
@@ -751,7 +751,7 @@ else if (_currentStep == ImportStep.Complete)
     
     private string GetAllowedFormatsText()
     {
-        if (_importType == ImportType.Transactions && _selectedBank == "OFX (Allmän)")
+        if (_importType == ImportType.Transactions && _selectedBank == BankNames.AllmanOfx)
         {
             return ".ofx, .qfx";
         }

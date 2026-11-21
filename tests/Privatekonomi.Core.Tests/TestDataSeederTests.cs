@@ -125,34 +125,34 @@ public class TestDataSeederTests : IDisposable
 
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Avanza");
+            BankNames.Avanza);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Nordnet");
+            BankNames.Nordnet);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "ICA-banken");
+            BankNames.IcaBanken);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Swedbank");
+            BankNames.Swedbank);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Klarna");
+            BankNames.Klarna);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Lantmannen Finans");
+            BankNames.LantmannenFinans);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Revolut");
+            BankNames.Revolut);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Nordiska banken");
+            BankNames.NordiskaBanken);
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Montrose");
+            BankNames.Montrose);
 
-        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == "Lysa" && a.IsFundRobot));
-        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == "Opti" && a.IsFundRobot));
+        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == BankNames.Lysa && a.IsFundRobot));
+        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == BankNames.Opti && a.IsFundRobot));
         Assert.IsTrue(investments.All(i => i.InvestmentAccountId.HasValue));
         Assert.IsTrue(investments.All(i => i.BankSourceId.HasValue));
         Assert.IsTrue(banks.Any(b => b.AccountType == "checking"));

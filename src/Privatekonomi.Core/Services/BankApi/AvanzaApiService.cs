@@ -19,7 +19,7 @@ public class AvanzaApiService : BankApiServiceBase
     private const string BaseUrl = "https://www.avanza.se";
     private const string ApiVersion = "/_api";
     
-    public override string BankName => "Avanza";
+    public override string BankName => BankNames.Avanza;
 
     public AvanzaApiService(PrivatekonomyContext context, HttpClient httpClient) 
         : base(context, httpClient)

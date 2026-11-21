@@ -22,7 +22,7 @@ public class SwedbankApiService : BankApiServiceBase
     private readonly string _clientId;
     private readonly string _clientSecret;
 
-    public override string BankName => "Swedbank";
+    public override string BankName => BankNames.Swedbank;
 
     public SwedbankApiService(PrivatekonomyContext context, HttpClient httpClient, string clientId, string clientSecret) 
         : base(context, httpClient)

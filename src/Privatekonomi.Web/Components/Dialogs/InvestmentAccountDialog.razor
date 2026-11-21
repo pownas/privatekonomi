@@ -5,11 +5,11 @@
                           Variant="Variant.Outlined" RequiredError="Kontonamn är obligatoriskt" Class="mb-3" />
             <MudSelect @bind-Value="Account.Provider" Label="Leverantör" Required="true"
                        Variant="Variant.Outlined" Class="mb-3">
-                <MudSelectItem Value="@("Swedbank")">Swedbank</MudSelectItem>
-                <MudSelectItem Value="@("Avanza")">Avanza</MudSelectItem>
-                <MudSelectItem Value="@("Nordnet")">Nordnet</MudSelectItem>
-                <MudSelectItem Value="@("Lysa")">Lysa</MudSelectItem>
-                <MudSelectItem Value="@("Opti")">Opti</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Swedbank">Swedbank</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Avanza">Avanza</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Nordnet">Nordnet</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Lysa">Lysa</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Opti">Opti</MudSelectItem>
                 <MudSelectItem Value="@("Annan")">Annan</MudSelectItem>
             </MudSelect>
             <MudSelect @bind-Value="Account.AccountType" Label="Kontotyp" Required="true"

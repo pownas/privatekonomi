@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Services.Parsers;
 
@@ -31,7 +32,7 @@ public class AvanzaTransactionRow
 /// </summary>
 public class AvanzaTransactionParser
 {
-    public string BankName => "Avanza";
+    public string BankName => BankNames.Avanza;
 
     /// <summary>
     /// Returns true when the CSV content looks like an Avanza transaction history export.
