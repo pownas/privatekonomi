@@ -4,6 +4,28 @@
 > **Profil:** [REST API-profil v2.0.0](https://dev.dataportal.se/rest-api-profil) (publicerad juni 2026)  
 > **Statusvärden:** `-` (Ej bedömt) | `OK` (Uppfyllt) | `Pågående` (Påbörjat) | `NOK` (Ej uppfyllt) | `N/A` (Ej applicerbart)
 
+## Sammanfattning – Fördelning av krav per område
+
+| Område | SKALL | SKALL INTE | BÖR | BÖR INTE | Totalt |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| [Dokumentation](https://dev.dataportal.se/rest-api-profil/dokumentation) | 17 | 0 | 6 | 0 | **23** |
+| [Datum- och tidsformat](https://dev.dataportal.se/rest-api-profil/datum-och-tidsformat) | 2 | 0 | 2 | 0 | **4** |
+| [Resurser](https://dev.dataportal.se/rest-api-profil/resurser) | 2 | 0 | 1 | 2 | **5** |
+| [URL format och namngivning](https://dev.dataportal.se/rest-api-profil/url-format-och-namngivning) | 3 | 2 | 2 | 1 | **8** |
+| [Mognad](https://dev.dataportal.se/rest-api-profil/mognad) | 2 | 0 | 1 | 0 | **3** |
+| [Säkerhet](https://dev.dataportal.se/rest-api-profil/sakerhet) | 9 | 5 | 17 | 2 | **33** |
+| [API Message](https://dev.dataportal.se/rest-api-profil/api-message) | 2 | 0 | 4 | 0 | **6** |
+| [API Request](https://dev.dataportal.se/rest-api-profil/api-request) | 2 | 1 | 2 | 0 | **5** |
+| [API Response](https://dev.dataportal.se/rest-api-profil/api-response) | 0 | 0 | 3 | 0 | **3** |
+| [Felhantering](https://dev.dataportal.se/rest-api-profil/felhantering) | 1 | 0 | 1 | 0 | **2** |
+| [Versionshantering](https://dev.dataportal.se/rest-api-profil/versionhantering) | 8 | 1 | 10 | 0 | **19** |
+| [Spårbarhet och korrelation](https://dev.dataportal.se/rest-api-profil/sparbarhet-och-korrelation) | 3 | 1 | 2 | 0 | **6** |
+| [Webhooks](https://dev.dataportal.se/rest-api-profil/webhooks) | 4 | 0 | 2 | 0 | **6** |
+| [Hypermedia](https://dev.dataportal.se/rest-api-profil/hypermedia) | 13 | 1 | 5 | 0 | **19** |
+| [Filtrering, namnsättning och sökparametrar](https://dev.dataportal.se/rest-api-profil/filtrering-paginering-och-sokparametrar) | 6 | 0 | 7 | 0 | **13** |
+| [Cachning](https://dev.dataportal.se/rest-api-profil/cachning) | 0 | 0 | 1 | 0 | **1** |
+| **Totalt** | **74** | **11** | **66** | **5** | **156** |
+
 ## [Dokumentation](https://dev.dataportal.se/rest-api-profil/dokumentation)
 
 | ID | Krav | Typ | Status | Kommentar |
