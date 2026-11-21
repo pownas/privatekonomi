@@ -16,7 +16,7 @@
 
 <MudText Typo="Typo.body1" Class="mb-4">
     Hantera dina bankkonton, kreditkort, sparkonton, investeringskonton, lån och pensioner. 
-    Ge varje konto ett beskrivande namn och koppla det till kontoplan för redovisning.
+    Importerade kontonummer visas här automatiskt. Ge varje konto ett eget namn och en färg, och koppla det vid behov till kontoplanen.
 </MudText>
 
 <MudGrid Class="mb-4">
@@ -82,6 +82,7 @@ else
                         <MudTd DataLabel="Namn">
                             <div class="d-flex align-center">
                                 <MudIcon Icon="@GetAccountTypeIcon(context.AccountType)" Size="Size.Small" Class="mr-2" />
+                                <span aria-label="Kontofärg" title="Kontofärg" style="width: 14px; height: 14px; background-color: @context.Color; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                 <strong>@context.Name</strong>
                             </div>
                         </MudTd>

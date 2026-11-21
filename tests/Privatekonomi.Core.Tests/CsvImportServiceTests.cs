@@ -198,5 +198,6 @@ public class CsvImportServiceTests : IDisposable
         Assert.IsTrue(
             bankSource.Name.Contains("84525") && bankSource.Name.Contains("1234567891"),
             $"BankSource name should include clearing and account number, got: '{bankSource.Name}'");
+        Assert.AreEqual("#FF7900", bankSource.Color);
     }
 }

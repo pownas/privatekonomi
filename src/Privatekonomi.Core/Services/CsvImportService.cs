@@ -532,6 +532,7 @@ public class CsvImportService : ICsvImportService
             var newBankSource = new BankSource
             {
                 Name = displayName,
+                Color = BankRegistry.GetBankColor(bankName) ?? "#1976D2",
                 Institution = bankName,
                 ClearingNumber = clearingNumber,
                 AccountNumber = accountNumber,
