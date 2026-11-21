@@ -10,6 +10,13 @@ using NuGet.Versioning;
 string solutionRoot = FindSolutionRoot();
 string propsFilePath = Path.Combine(solutionRoot, "Directory.Packages.props");
 string markdownReportPath = Path.Combine(solutionRoot, "docs", "sbom-report.md");
+string vulnerabilityCachePath = Path.Combine(solutionRoot, "tests", "SbomScanner", "vulnerabilities-cache.json");
+bool offline = args.Contains("--offline", StringComparer.Ordinal);
+bool requireOnline = args.Contains("--require-online", StringComparer.Ordinal);
+if (args.Any(arg => arg is not "--offline" and not "--require-online") || (offline && requireOnline))
+{
+    throw new ArgumentException("Använd antingen --offline, --require-online eller inga argument.");
+}
 var extractedPackages = new List<NuGetPackage>();
 
 // Kontroll om man vill se förhandsversioner av NuGet-paket eller ej
@@ -162,80 +169,40 @@ using var handler = new HttpClientHandler
 {
     AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
 };
-using var client = new HttpClient(handler);
-
-Console.WriteLine("Hämtar Service Index från NuGet...");
-
-// 4. Hämta NuGet V3 Service Index
-var serviceIndexUrl = "https://api.nuget.org/v3/index.json";
-var serviceIndex = await client.GetFromJsonAsync<ServiceIndex>(serviceIndexUrl).ConfigureAwait(true);
-
-// Hämta RegistrationsBaseUrl för att kunna kolla senaste versioner live
-var regResourceUrl = serviceIndex?.Resources
-    .FirstOrDefault(r => r.Type.StartsWith("RegistrationsBaseUrl/3.6.0", StringComparison.OrdinalIgnoreCase))?.Id;
-
-// 5. Hitta slutpunkten för VulnerabilityInfo i indexet
-var vulnResourceUrl = serviceIndex?.Resources
-    .FirstOrDefault(r => r.Type.StartsWith("VulnerabilityInfo", StringComparison.OrdinalIgnoreCase))?.Id;
-
-if (vulnResourceUrl is null || regResourceUrl is null)
+using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
+var source = await SbomDataProvider.LoadAsync(client, "https://api.nuget.org/v3/index.json", vulnerabilityCachePath, offline, requireOnline).ConfigureAwait(true);
+var vulnerabilities = source.Cache.Vulnerabilities;
+string? regResourceUrl = source.RegistrationUrl;
+Console.WriteLine($"Sårbarhetsdata hämtad {source.Cache.UpdatedAtUtc:u} ({(source.IsCached ? "lokal cache" : "NuGet")}).");
+Console.WriteLine($"Lokal databas: {vulnerabilityCachePath}");
+if (source.IsCached)
 {
-    throw new InvalidDataException("Kunde inte hitta nödvändiga NuGet-API-slutpunkter.");
-}
-
-// 6. Hämta fillistan
-var vulnFiles = await client.GetFromJsonAsync<List<VulnerabilityFile>>(vulnResourceUrl).ConfigureAwait(true);
-
-if (vulnFiles == null || !vulnFiles.Any(f => f.Name == "base"))
-{
-    throw new InvalidDataException("Kunde inte hitta NuGets sårbarhetsdatabas.");
-}
-
-var vulnerabilities = new Dictionary<string, List<Vulnerability>>(StringComparer.OrdinalIgnoreCase);
-foreach (var vulnFile in vulnFiles)
-{
-    Console.WriteLine($"Laddar ner sårbarhetsdatabasen: {vulnFile.Name}");
-    using var page = await client.GetFromJsonAsync<JsonDocument>(vulnFile.Id).ConfigureAwait(true)
-        ?? throw new InvalidDataException($"Tom sårbarhetsdatabas: {vulnFile.Id}");
-    if (page.RootElement.ValueKind == JsonValueKind.Array && page.RootElement.GetArrayLength() == 0)
-    {
-        continue;
-    }
-    var entries = page.RootElement.Deserialize<Dictionary<string, List<Vulnerability>>>()
-        ?? throw new InvalidDataException($"Ogiltig sårbarhetsdatabas: {vulnFile.Id}");
-    foreach (var entry in entries)
-    {
-        if (!vulnerabilities.TryGetValue(entry.Key, out var list))
-        {
-            list = [];
-            vulnerabilities.Add(entry.Key, list);
-        }
-        list.AddRange(entry.Value);
-    }
+    Console.Error.WriteLine($"VARNING: {source.Warning} Lokala sårbarhetsdata kan vara inaktuella; paketversioner kan inte kontrolleras.");
 }
 
 // 9. Hämta senaste versioner för alla unika paket parallellt
-Console.WriteLine($"{Environment.NewLine}Hämtar senaste versioner från NuGet live-API...");
+Console.WriteLine($"{Environment.NewLine}Kontrollerar senaste paketversioner...");
 var uniqueLookups = extractedPackages
     .Select(p => new { Name = p.Name, Lower = p.Name.ToLowerInvariant() })
     .DistinctBy(p => p.Lower)
     .ToList();
 
 using var lookupLimit = new SemaphoreSlim(12);
+using var lookupCancellation = new CancellationTokenSource();
 var lookupTasks = uniqueLookups.Select(async item =>
 {
-    await lookupLimit.WaitAsync().ConfigureAwait(false);
+    await lookupLimit.WaitAsync(lookupCancellation.Token).ConfigureAwait(false);
     try
     {
-        var packageRegUrl = $"{regResourceUrl.TrimEnd('/')}/{item.Lower}/index.json";
-        var regIndex = await client.GetFromJsonAsync<NugetRegistrationIndex>(packageRegUrl).ConfigureAwait(false)
+        var packageRegUrl = $"{(regResourceUrl ?? throw new InvalidDataException("NuGets versionsregister saknas.")).TrimEnd('/')}/{item.Lower}/index.json";
+        var regIndex = await client.GetFromJsonAsync<NugetRegistrationIndex>(packageRegUrl, lookupCancellation.Token).ConfigureAwait(false)
             ?? throw new InvalidDataException($"Tomt versionsregister för {item.Name}.");
         for (int p = regIndex.Pages.Count - 1; p >= 0; p--)
         {
             var page = regIndex.Pages[p];
             if (page.Items == null)
             {
-                page = await client.GetFromJsonAsync<RegistrationPage>(page.Id).ConfigureAwait(false)
+                page = await client.GetFromJsonAsync<RegistrationPage>(page.Id, lookupCancellation.Token).ConfigureAwait(false)
                     ?? throw new InvalidDataException($"Tom registersida för {item.Name}.");
             }
             foreach (var entry in (page.Items ?? []).AsEnumerable().Reverse())
@@ -249,17 +216,35 @@ var lookupTasks = uniqueLookups.Select(async item =>
         }
         return new { item.Name, LatestVersion = "Okänd" };
     }
+    catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+    {
+        await lookupCancellation.CancelAsync().ConfigureAwait(false);
+        throw;
+    }
     finally
     {
         lookupLimit.Release();
     }
 });
 
-var lookupResults = await Task.WhenAll(lookupTasks).ConfigureAwait(true);
-var latestVersionsDict = lookupResults.ToDictionary(x => x.Name, x => x.LatestVersion, StringComparer.OrdinalIgnoreCase);
+var latestVersionsDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+bool versionsUnavailable = source.IsCached;
+if (!source.IsCached)
+{
+    try
+    {
+        var lookupResults = await Task.WhenAll(lookupTasks).ConfigureAwait(true);
+        latestVersionsDict = lookupResults.ToDictionary(x => x.Name, x => x.LatestVersion, StringComparer.OrdinalIgnoreCase);
+    }
+    catch (Exception ex) when (!requireOnline && ex is (HttpRequestException or OperationCanceledException))
+    {
+        versionsUnavailable = true;
+        Console.Error.WriteLine($"VARNING: Paketversioner kunde inte hämtas från NuGet: {ex.Message}");
+    }
+}
 
 // 10. Processa och bygg data för rapporten
-Console.WriteLine($"{Environment.NewLine}Alla versioner hämtade. Analyserar resultat...");
+Console.WriteLine($"{Environment.NewLine}Analyserar resultat...");
 
 var reportData = new List<ReportItem>();
 var groupedPackages = extractedPackages.GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase).OrderBy(g => g.Key);
@@ -308,7 +293,7 @@ foreach (var packageGroup in groupedPackages)
 
 // 11. Skicka utdata till de två olika kanalerna
 PrintToConsole(reportData);
-await GenerateMarkdownReportAsync(reportData, markdownReportPath).ConfigureAwait(true);
+await GenerateMarkdownReportAsync(reportData, markdownReportPath, source, versionsUnavailable).ConfigureAwait(true);
 
 Console.WriteLine($"{Environment.NewLine}🚀 Skanning klar! Markdown-rapport genererad på: {markdownReportPath}");
 
@@ -363,6 +348,11 @@ static void PrintToConsole(List<ReportItem> items)
             Console.ResetColor();
             Console.Write($"{item.PackageName,-60} | Version: {item.InstalledVersion,-10} | CPM: {item.CpmStatus,-15}");
 
+            if (item.LatestVersion == "Okänd")
+            {
+                Console.Write(" [Senaste version ej kontrollerad]");
+            }
+
             if (item.IsSecuredOrPatched)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -385,12 +375,22 @@ static void PrintToConsole(List<ReportItem> items)
 
 #region Utmatningsmetod - Generera Markdown-rapport
 
-static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string outputPath)
+static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string outputPath, VulnerabilitySource source, bool versionsUnavailable)
 {
     var sb = new StringBuilder();
 
     sb.AppendLine("# 🛡️ Security & SBOM Scan Report");
     sb.AppendLine($"*Genererad den: {DateTime.Now:yyyy-MM-dd HH:mm:ss}*");
+    sb.AppendLine();
+    sb.AppendLine($"Sårbarhetsdata: {(source.IsCached ? "lokal cache (`tests/SbomScanner/vulnerabilities-cache.json`)" : "NuGet")}, hämtad {source.Cache.UpdatedAtUtc:u}.");
+    if (source.IsCached)
+    {
+        sb.AppendLine("> ⚠️ Den lokala sårbarhetsdatabasen kan vara inaktuell. Nya sårbarheter kan saknas.");
+    }
+    if (versionsUnavailable)
+    {
+        sb.AppendLine("> ⚠️ Senaste paketversioner kunde inte kontrolleras mot NuGet.");
+    }
     sb.AppendLine();
 
     // 1. Sammanfattning (KPI-Kort)
@@ -398,6 +398,9 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
     int vulnerablePackages = items.Count(i => i.ActiveVulnerabilities.Count != 0);
     int versionMismatches = items.Where(i => i.HasVersionMismatch).Select(i => i.PackageName).Distinct().Count();
     int outdatedPackages = items.Count(i => SbomVersioning.IsUpdateAvailable(i.InstalledVersion, i.LatestVersion) && i.ActiveVulnerabilities.Count == 0);
+    string outdatedSummary = versionsUnavailable ? "Ej kontrollerat"
+        : items.Any(i => i.LatestVersion == "Okänd") ? $"Minst {outdatedPackages}"
+        : outdatedPackages.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     sb.AppendLine("## 📊 Översikt");
     sb.AppendLine("<table width=\"100%\">");
@@ -405,7 +408,7 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#f6f8fa; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #d0d7de;\"><b>Totalt skannade</b><br><font size=\"5\" color=\"#1f2328\">{totalPackages}</font></td>");
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#ffebe9; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #ffc1c0;\"><b>⚠️ Aktiva sårbarheter</b><br><font size=\"5\" color=\"#cf222e\"><b>{vulnerablePackages}</b></font></td>");
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#fff8c5; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #eee0b0;\"><b>🔄 Olika paketversioner</b><br><font size=\"5\" color=\"#9a6700\"><b>{versionMismatches}</b></font></td>");
-    sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#ddf4ff; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #b6e3ff;\"><b>📦 Outdaterade paket</b><br><font size=\"5\" color=\"#0969da\"><b>{outdatedPackages}</b></font></td>");
+    sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#ddf4ff; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #b6e3ff;\"><b>📦 Outdaterade paket</b><br><font size=\"5\" color=\"#0969da\"><b>{outdatedSummary}</b></font></td>");
     sb.AppendLine("  </tr>");
     sb.AppendLine("</table>");
     sb.AppendLine();
@@ -509,6 +512,8 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
 
         string statusBadge = item.HasVersionMismatch
             ? "<span style=\"background-color:#fff8c5; color:#744210; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">⚠️ Olika versioner</span>"
+            : item.LatestVersion == "Okänd"
+                ? "<span style=\"background-color:#fff8c5; color:#744210; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">⚠️ Version ej kontrollerad</span>"
             : SbomVersioning.IsUpdateAvailable(item.InstalledVersion, item.LatestVersion)
                 ? "<span style=\"background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">🔄 Uppdatering</span>"
                 : "<span style=\"background-color:#dafbe1; color:#1f883d; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">✓ OK</span>";
@@ -597,6 +602,126 @@ static string FindSolutionRoot()
 }
 
 #endregion
+
+internal static class SbomDataProvider
+{
+    private static readonly JsonSerializerOptions CacheJsonOptions = new() { WriteIndented = true };
+
+    internal static async Task<VulnerabilitySource> LoadAsync(HttpClient client, string indexUrl, string cachePath, bool offline, bool requireOnline)
+    {
+        if (offline)
+        {
+            return await LoadCacheAsync(cachePath, "Offline-läge är valt.").ConfigureAwait(false);
+        }
+
+        try
+        {
+            Console.WriteLine($"Hämtar NuGets serviceindex: {indexUrl}");
+            var index = await client.GetFromJsonAsync<ServiceIndex>(indexUrl).ConfigureAwait(false)
+                ?? throw new InvalidDataException("NuGets serviceindex är tomt.");
+            string registrationUrl = index.Resources.FirstOrDefault(r => r.Type.StartsWith("RegistrationsBaseUrl/3.6.0", StringComparison.OrdinalIgnoreCase))?.Id
+                ?? throw new InvalidDataException("NuGets versionsregister saknas i serviceindexet.");
+            string vulnerabilityUrl = index.Resources.FirstOrDefault(r => r.Type.StartsWith("VulnerabilityInfo", StringComparison.OrdinalIgnoreCase))?.Id
+                ?? throw new InvalidDataException("NuGets sårbarhetsdatabas saknas i serviceindexet.");
+            var pages = await client.GetFromJsonAsync<List<VulnerabilityFile>>(vulnerabilityUrl).ConfigureAwait(false);
+            if (pages == null || !pages.Any(page => page.Name == "base"))
+            {
+                throw new InvalidDataException("NuGets sårbarhetsdatabas saknar basfil.");
+            }
+
+            var vulnerabilities = new Dictionary<string, List<Vulnerability>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var page in pages)
+            {
+                Console.WriteLine($"Laddar ner sårbarhetsdatabasen: {page.Name}");
+                using var json = await client.GetFromJsonAsync<JsonDocument>(page.Id).ConfigureAwait(false)
+                    ?? throw new InvalidDataException($"Tom sårbarhetsdatabas: {page.Id}");
+                if (json.RootElement.ValueKind == JsonValueKind.Array && json.RootElement.GetArrayLength() == 0)
+                {
+                    continue;
+                }
+                var entries = json.RootElement.Deserialize<Dictionary<string, List<Vulnerability>>>()
+                    ?? throw new InvalidDataException($"Ogiltig sårbarhetsdatabas: {page.Id}");
+                foreach (var entry in entries)
+                {
+                    if (!vulnerabilities.TryGetValue(entry.Key, out var list))
+                    {
+                        list = [];
+                        vulnerabilities.Add(entry.Key, list);
+                    }
+                    list.AddRange(entry.Value);
+                }
+            }
+
+            var cache = new VulnerabilityCache(DateTimeOffset.UtcNow, vulnerabilities);
+            ValidateCache(cache, cachePath);
+            string temporaryPath = $"{cachePath}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                await using (var stream = File.Create(temporaryPath))
+                {
+                    await JsonSerializer.SerializeAsync(stream, cache, CacheJsonOptions).ConfigureAwait(false);
+                }
+                File.Move(temporaryPath, cachePath, true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+            return new VulnerabilitySource(cache, false, registrationUrl, null);
+        }
+        catch (Exception ex) when (!requireOnline && ex is (HttpRequestException or TaskCanceledException))
+        {
+            return await LoadCacheAsync(cachePath, $"NuGet kunde inte nås: {ex.Message}").ConfigureAwait(false);
+        }
+    }
+
+    private static async Task<VulnerabilitySource> LoadCacheAsync(string cachePath, string warning)
+    {
+        if (!File.Exists(cachePath))
+        {
+            throw new FileNotFoundException($"{warning} Ingen lokal sårbarhetsdatabas finns; kör skannern med nätverksåtkomst först.", cachePath);
+        }
+        await using var stream = File.OpenRead(cachePath);
+        var cache = await JsonSerializer.DeserializeAsync<VulnerabilityCache>(stream).ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Den lokala sårbarhetsdatabasen är tom: {cachePath}");
+        ValidateCache(cache, cachePath);
+        cache = cache with { Vulnerabilities = new Dictionary<string, List<Vulnerability>>(cache.Vulnerabilities, StringComparer.OrdinalIgnoreCase) };
+        return new VulnerabilitySource(cache, true, null, warning);
+    }
+
+    private static void ValidateCache(VulnerabilityCache cache, string path)
+    {
+        if (cache.UpdatedAtUtc == default || cache.Vulnerabilities == null || cache.Vulnerabilities.Count == 0 ||
+            cache.Vulnerabilities.Values.Any(entries => entries == null))
+        {
+            throw new InvalidDataException($"Sårbarhetsdatabasen är ofullständig: {path}");
+        }
+    }
+}
+
+internal sealed record VulnerabilityCache(DateTimeOffset UpdatedAtUtc, Dictionary<string, List<Vulnerability>> Vulnerabilities);
+internal sealed record VulnerabilitySource(VulnerabilityCache Cache, bool IsCached, string? RegistrationUrl, string? Warning);
+
+internal static class SbomVersioning
+{
+    internal static bool IsVersionAffected(string currentVersionStr, string rangeStr)
+    {
+        if (!NuGetVersion.TryParse(currentVersionStr, out var currentVersion) ||
+            !VersionRange.TryParse(rangeStr, out var range))
+        {
+            throw new InvalidDataException($"Ogiltig paketversion eller sårbarhetsintervall: {currentVersionStr}, {rangeStr}");
+        }
+
+        return range.Satisfies(currentVersion);
+    }
+
+    internal static bool IsUpdateAvailable(string installedVersion, string latestVersion) =>
+        NuGetVersion.TryParse(latestVersion, out var latest) &&
+        NuGetVersion.TryParse(installedVersion, out var installed) && latest > installed;
+}
 
 
 #region DataModeller

@@ -1,5 +1,7 @@
 ﻿# 🛡️ Security & SBOM Scan Report
-*Genererad den: 2026-11-21 13:21:13*
+*Genererad den: 2026-11-21 13:30:33*
+
+Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
 
 ## 📊 Översikt
 <table width="100%">
