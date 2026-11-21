@@ -7,6 +7,7 @@ using Privatekonomi.Core.Services;
 namespace Privatekonomi.Api.Controllers;
 
 [Authorize]
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class SalaryHistoryController : ControllerBase

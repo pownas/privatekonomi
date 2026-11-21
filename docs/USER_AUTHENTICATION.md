@@ -86,7 +86,9 @@ The authentication system is built using:
 - **ASP.NET Core Identity**: Robust authentication framework
 - **Entity Framework Core**: User data storage
 - **Cookie Authentication**: Secure session management
-- **InMemory Database**: Currently uses in-memory storage (can be migrated to SQL Server)
+- **Storage**: Web has its own configurable Identity and database; the separate
+  API process has its own configuration and does not automatically share accounts.
+  See [storage guide](STORAGE_GUIDE.md).
 
 ### User Model
 
@@ -136,48 +138,22 @@ Authentication__RequireConfirmedAccount=true
 
 Passkeys can be added and removed from the signed-in user's Passkeys page. WebAuthn operations require HTTPS or `localhost`; an HTTP LAN address is not a secure browser context.
 
-### Migration to SQL Server
+### Changing storage
 
-To migrate from InMemory to SQL Server:
-
-1. Add the SQL Server package to Core project:
-```bash
-dotnet add src/Privatekonomi.Core package Microsoft.EntityFrameworkCore.SqlServer
-```
-
-2. Update `Program.cs` in Web and Api projects:
-```csharp
-builder.Services.AddDbContext<PrivatekonomyContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-```
-
-3. Add connection string to `appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=Privatekonomi;Trusted_Connection=True;MultipleActiveResultSets=true"
-  }
-}
-```
-
-4. Create initial migration:
-```bash
-dotnet ef migrations add InitialCreate --project src/Privatekonomi.Core
-```
-
-5. Apply migration:
-```bash
-dotnet ef database update --project src/Privatekonomi.Web
-```
+SQL Server is already a supported `Storage` provider. Changing provider does not
+transfer accounts or other data. Back up first and consult the
+[storage guide](STORAGE_GUIDE.md) for configuration and schema caveats.
 
 ## API Authentication
 
-The Web API endpoints now support authentication through the Identity system. API endpoints can be accessed using:
-
-1. **Cookie Authentication**: Automatically used by the Blazor web app
-2. **Token Authentication**: Can be added for mobile apps or external clients
-
-To add token-based authentication for the API, consider implementing JWT tokens.
+The alpha personal API uses its own Identity store and password login at
+`POST /api/session/login` over HTTPS. The returned bearer token authorizes the
+personal transaction endpoints; it is not the Web cookie. API registration
+and a two-factor login flow are not provided, and accounts with two-factor
+enabled are rejected. Web does not use this personal API. Legacy controllers are
+blocked by default and normally return 403 even for personal tokens; earlier
+versions may expose data anonymously. See [legacy API security](LEGACY_API_SECURITY.md) and the
+[developer quickstart](DEVELOPER_QUICKSTART.md).
 
 ## Passkeys
 

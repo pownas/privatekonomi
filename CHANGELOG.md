@@ -5,6 +5,14 @@
 Första versionsmärkningen av den befintliga applikationen. Detta är en
 alfa-version, inte en beskrivning av en färdig backendmigrering.
 
+### Pågående backendmigrering
+
+- `/api-info` visar version och tillgänglig bygginformation samt värdmiljö och konfigurerad lagringsprovider.
+- API:ets demodata kräver ett uttryckligt val och ett nytt InMemory-lager. Okända lagringsproviders avvisas.
+- Äldre API-endpoints är spärrade tills de har säker användarisolering. Det påverkar bland annat bankkopplingar och notifieringsåtgärder; se [säkerhetsinformationen](docs/LEGACY_API_SECURITY.md).
+- Pi-installationen avvisar delad JsonFile-lagring för Web och API för att undvika att processerna skriver över varandras data.
+- Webbappen använder fortfarande databasen direkt; migreringen är inte färdig.
+
 ### Befintliga funktioner
 
 - Dashboard, transaktionshantering och budgetuppföljning. Se [README](README.md).

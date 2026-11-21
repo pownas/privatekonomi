@@ -8,6 +8,7 @@ namespace Privatekonomi.Api.Controllers;
 /// API controller for managing user categorization rules.
 /// This provides an alias to the CategoryRulesController at /api/rules as per the specification.
 /// </summary>
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class RulesController : ControllerBase

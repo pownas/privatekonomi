@@ -527,7 +527,7 @@ configure_storage() {
     # Ask user for storage provider (always ask to allow easy change)
     echo -e "${YELLOW}Välj lagringsalternativ:${NC}"
     echo "  1) SQLite (Rekommenderat - snabb, låg resursanvändning)"
-    echo "  2) JsonFile (Enkel backup, automatisk sparning var 5:e minut)"
+    echo "  2) JsonFile (kan inte användas säkert med Web och API samtidigt)"
     
     if [ "$existing_provider" = "Sqlite" ]; then
         read -p "Ditt val (1/2) [1 - nuvarande]: " storage_choice
@@ -537,19 +537,28 @@ configure_storage() {
         read -p "Ditt val (1/2) [1]: " storage_choice
     fi
     
-    storage_choice=${storage_choice:-1}
+    if [ -z "$storage_choice" ]; then
+        if [ "$existing_provider" = "JsonFile" ]; then
+            storage_choice=2
+        else
+            storage_choice=1
+        fi
+    fi
     
     local storage_provider
     local connection_string
     
     if [ "$storage_choice" = "2" ]; then
-        storage_provider="JsonFile"
-        connection_string="$DATA_DIR"
-        log_info "Använder JsonFile-lagring"
-    else
+        log_error "JsonFile kan inte konfigureras säkert: Web och API har separata minnesdatabaser men skriver till samma filer."
+        log_error "Befintlig konfiguration och data lämnas oförändrade. Välj SQLite endast om ett byte är avsett; data migreras inte."
+        return 1
+    elif [ "$storage_choice" = "1" ]; then
         storage_provider="Sqlite"
         connection_string="Data Source=$DATA_DIR/privatekonomi.db"
         log_info "Använder SQLite-lagring"
+    else
+        log_error "Ogiltigt lagringsval: $storage_choice. Välj 1 eller 2."
+        return 1
     fi
     
     # Create appsettings.Production.json for Web

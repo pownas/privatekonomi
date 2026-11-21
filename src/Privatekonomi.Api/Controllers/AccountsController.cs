@@ -4,6 +4,7 @@ using Privatekonomi.Core.Services;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountsController : ControllerBase

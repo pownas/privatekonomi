@@ -3,21 +3,26 @@
 En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
 
 > **Alfastatus och säkerhet:** Backendmigreringen är inte färdig. Webbappen använder
-> fortfarande databasen och Core-tjänster direkt, och flera API-endpoints saknar
-> autentisering och fullständig användarisolering. Exponera inte API:et för
-> obetrodda användare eller nätverk och använd inte verkliga personliga data.
+> fortfarande databasen och Core-tjänster direkt. Äldre API-endpoints är
+> spärrade tills de har säker autentisering och användarisolering.
+> Använd inte verkliga personliga data innan migreringen är färdig.
 > Webbens och API:ets lagringsinställningar kan dessutom peka på olika datakällor.
 
 Ett första API-flöde för läsning av egna transaktioner finns på
 `/api/personal/transactions`. Det kräver en bearer-token från
 `/api/session/login` och HTTPS; hushållstransaktioner ingår inte. Webbappen
-använder ännu inte detta flöde. Övriga API-endpoints är inte säkrade genom
-det nya flödet. API:ets vanliga HTTP-profil kan inte användas för detta flöde;
+använder ännu inte detta flöde. Övriga API-endpoints är spärrade, vilket
+påverkar bland annat bankkopplingar och notifieringsåtgärder; se
+[säkerhetsinformationen](docs/LEGACY_API_SECURITY.md). API:ets vanliga HTTP-profil kan inte användas för detta flöde;
 för lokal utveckling finns en HTTPS-profil (`dotnet run --launch-profile https`
 i `src/Privatekonomi.Api`). API-inloggningen använder konton i API:ets egen
 lagring, som i övergångsläget kan skilja sig från webbappens.
 API-inloggningen stöder ännu inte tvåfaktorsautentiserade konton eller
 registrering, och hastighetsbegränsningen gäller per API-process.
+
+`GET /api-info` visar API-version, byggnummer, kort SHA, värdmiljö och
+konfigurerad lagringsprovider när informationen finns. Värdmiljön eller
+providern anger inte i sig om data är test- eller produktionsdata.
 
 ## 🌐 Landningssida (Beta)
 

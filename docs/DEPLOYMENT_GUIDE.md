@@ -2,6 +2,15 @@
 
 Denna guide beskriver hur du använder den automatiserade release-pipelinen för att driftsätta Privatekonomi till ett webbhotell via SFTP.
 
+> **Alfa och API-säkerhet:** Äldre API-controllers är spärrade som standard och
+> svarar normalt 403 även med en personlig token. Tidigare versioner utan
+> spärr kan ge anonym åtkomst till data, bland annat via `GET /api/transactions`;
+> verifiera den driftsatta versionen och isolera eller uppdatera äldre system.
+> HTTPS och personal API:s autentisering skyddar inte automatiskt äldre rutter.
+> Spärren påverkar klienter och bank-OAuth: se
+> [säkerhetsguiden](LEGACY_API_SECURITY.md). Publika `GET /api-info` visar
+> byggmetadata och konfigurerad lagringsprovider, men är inte ett säkerhetstest.
+
 > **📚 Nytt! MySQL/MariaDB-support:** Se [MYSQL_DEPLOYMENT_GUIDE.md](./MYSQL_DEPLOYMENT_GUIDE.md) för detaljerad guide om MySQL-deployment.
 
 ## Innehållsförteckning

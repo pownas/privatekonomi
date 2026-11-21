@@ -9,7 +9,7 @@ using Privatekonomi.Core.Services;
 
 namespace Privatekonomi.Api.Tests.Infrastructure;
 
-public sealed class ApiWebApplicationFactory(string databaseName)
+public class ApiWebApplicationFactory(string databaseName)
     : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)

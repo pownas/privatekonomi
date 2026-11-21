@@ -84,3 +84,6 @@ mv -f "$api_temp" "$api_config"
 
 printf '[OK] Produktionskonfiguration skapad: %s och %s\n' "$web_config" "$api_config"
 printf '[INFO] Lagring: Web=%s, API=%s\n' "$web_provider" "$api_provider"
+if [[ "$provider" == "JsonFile" ]]; then
+    printf '[WARN] API använder separat minneslagring; API-data delas inte med Web och försvinner vid omstart.\n' >&2
+fi

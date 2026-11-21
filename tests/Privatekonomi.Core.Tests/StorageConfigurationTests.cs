@@ -11,6 +11,25 @@ namespace Privatekonomi.Core.Tests;
 [TestClass]
 public class StorageConfigurationTests
 {
+    [TestMethod]
+    [DataRow("InMemroy")]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void UnknownProviderFailsInsteadOfUsingInMemory(string provider)
+    {
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            CreateServiceProvider(new Dictionary<string, string?> { ["Storage:Provider"] = provider }));
+        StringAssert.Contains(exception.Message, "Unknown storage provider");
+    }
+
+    [TestMethod]
+    public void MissingProviderKeepsInMemoryDefault()
+    {
+        using var services = CreateServiceProvider(new Dictionary<string, string?>());
+        using var context = services.GetRequiredService<PrivatekonomyContext>();
+        Assert.IsTrue(context.Database.IsInMemory());
+    }
+
     private static ServiceProvider CreateServiceProvider(Dictionary<string, string?> configValues)
     {
         var configuration = new ConfigurationBuilder()

@@ -81,17 +81,21 @@ install_dotnet_11() {
 }
 
 select_storage_provider() {
-    local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-Sqlite}"
+    local selection="${PRIVATEKONOMI_STORAGE_PROVIDER:-}"
+    local provider_file="$HOME/Library/Application Support/Privatekonomi/storage-provider"
+    if [[ -z "$selection" && -f "$provider_file" ]]; then
+        IFS= read -r selection < "$provider_file" || true
+    fi
     if [[ -z "${PRIVATEKONOMI_STORAGE_PROVIDER:-}" && -t 0 ]]; then
+        local answer
         printf 'Välj hur Privatekonomi ska spara dina data:\n' >&2
         printf '  1) SQLite - rekommenderat, data sparas i en lokal databasfil.\n' >&2
         printf '  2) JSON-filer - data sparas i separata filer.\n' >&2
-        printf 'Tryck Retur för att använda SQLite.\n' >&2
-        read -r -p 'Datalagring [1]: ' selection || selection=""
-        selection="${selection:-1}"
+        read -r -p "Datalagring [${selection:-Sqlite}]: " answer || answer=""
+        selection="${answer:-$selection}"
     fi
 
-    case "$selection" in
+    case "${selection:-Sqlite}" in
         1|[Ss][Qq][Ll][Ii][Tt][Ee]) printf 'Sqlite\n' ;;
         2|[Jj][Ss][Oo][Nn][Ff][Ii][Ll][Ee]|[Jj][Ss][Oo][Nn]) printf 'JsonFile\n' ;;
         *)

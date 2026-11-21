@@ -21,7 +21,7 @@ Installationsskriptet hanterar:
 - ✅ Kloning/uppdatering av Privatekonomi-projekt
 - ✅ Återställning av NuGet-paket och Aspire-beroenden
 - ✅ **Publicering för linux-arm64 med self-contained binärer (NYTT)**
-- ✅ Val av lagringsalternativ (SQLite/JsonFile)
+- ✅ Konfiguration av SQLite-lagring
 - ✅ Automatisk skapande av appsettings.Production.json
 - ✅ Skapande av datakatalog och backup-katalog
 - ✅ Installation av Entity Framework CLI-verktyg
@@ -35,6 +35,16 @@ Installationsskriptet hanterar:
 - ✅ Automatiska dagliga backuper med cron (valfri)
 - ✅ Statisk IP-konfiguration (valfri)
 - ✅ Verifiering och användningsinstruktioner
+
+> **Varning:** Kontrollera befintlig konfiguration före start. JSON-persistens är
+> processlokal och Web och API får aldrig skriva till samma JSON-katalog:
+> minnesbilderna kan skriva över varandra och orsaka dataförlust. Ett byte till
+> SQLite migrerar inte data automatiskt. Säkerhetskopiera först och se
+> [lagringsguiden](../../STORAGE_GUIDE.md). Installationsskriptets SQLite-val
+> kan konfigurera samma databasfil för Web och API; använd separata databaser
+> för att isolera tjänster och miljöer. API:s personliga inloggning och
+> transaktionsanrop kräver att API självt ser HTTPS. HTTPS vid en Nginx-proxy
+> garanterar inte detta om anslutningen från proxyn till API är HTTP.
 
 **Kommandoradsalternativ:**
 ```bash
@@ -427,6 +437,4 @@ journalctl -u privatekonomi -f
 - Alla miljövariabler för Raspberry Pi
 - Automatisk omstart vid fel
 - Startar automatiskt vid systemuppstart
-
-
 

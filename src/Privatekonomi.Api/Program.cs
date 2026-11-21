@@ -156,18 +156,25 @@ using (var scope = app.Services.CreateScope())
     var storageSettings = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<StorageSettings>>().Value;
     var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
 
+    ApiSeedPolicy.ValidateDemoInitialization(
+        context, app.Environment.IsDevelopment(), app.Configuration.GetValue<bool>("DemoUser:Enabled"));
     using var initializationLock = SqliteInitializationLock.Acquire(context);
 
     // For SQLite, ensure database is created
+    bool databaseCreated;
     if (storageSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
     {
         logger.LogInformation("Using SQLite storage, ensuring database is created...");
-        context.Database.EnsureCreated();
+        databaseCreated = context.Database.EnsureCreated();
     }
     else
     {
-        context.Database.EnsureCreated();
+        databaseCreated = context.Database.EnsureCreated();
     }
+
+    ApiSeedPolicy.ValidateTestDataInitialization(context, storageSettings.Provider,
+        app.Environment.IsDevelopment(), app.Configuration.GetValue<bool>("DemoUser:Enabled"),
+        storageSettings.SeedTestData, databaseCreated);
 
     await MissingTableSchemaInitializer.EnsureTablesAsync(context);
     
@@ -183,6 +190,15 @@ using (var scope = app.Services.CreateScope())
         if (persistence.Exists())
             await persistence.LoadAsync(context);
     }
+
+    if (ApiSeedPolicy.CanSeedReferenceData(context))
+        TestDataSeeder.SeedProductionReferenceData(context);
+    else
+        logger.LogWarning("Skipping API reference data initialization for shared relational storage; it is not coordinated across processes.");
+
+    await DevelopmentDataInitializer.InitializeAsync(
+        context, scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
+        app.Environment, app.Configuration);
 
     logger.LogInformation("Database initialized with provider: {Provider}", storageSettings.Provider);
 }

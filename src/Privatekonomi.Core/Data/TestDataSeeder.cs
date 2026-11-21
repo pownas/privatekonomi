@@ -151,7 +151,7 @@ public static class TestDataSeeder
 
     private static void SeedFinancialInstitutions(PrivatekonomyContext context, string userId)
     {
-        if (context.BankSources.Any() && context.InvestmentAccounts.Any())
+        if (context.BankSources.Any(b => b.UserId == userId) && context.InvestmentAccounts.Any(a => a.UserId == userId))
         {
             return;
         }
@@ -195,11 +195,11 @@ public static class TestDataSeeder
             new() { Name = "Revolut kryptodepå", Provider = BankNames.Revolut, AccountType = "AF", AccountNumber = "REV-CRYPTO-001", Currency = "EUR", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now }
         };
 
-        if (!context.BankSources.Any())
+        if (!context.BankSources.Any(b => b.UserId == userId))
         {
             context.BankSources.AddRange(bankAccounts);
         }
-        if (!context.InvestmentAccounts.Any())
+        if (!context.InvestmentAccounts.Any(a => a.UserId == userId))
         {
             context.InvestmentAccounts.AddRange(investmentAccounts);
         }
@@ -529,20 +529,22 @@ public static class TestDataSeeder
             }
         };
 
-        var avanzaIsk = context.InvestmentAccounts.First(a => a.Provider == BankNames.Avanza && a.AccountType == "ISK");
-        var avanzaAf = context.InvestmentAccounts.First(a => a.Provider == BankNames.Avanza && a.AccountType == "AF");
-        var nordnetIsk = context.InvestmentAccounts.First(a => a.Provider == BankNames.Nordnet && a.AccountType == "ISK");
-        var swedbankIsk = context.InvestmentAccounts.First(a => a.Provider == BankNames.Swedbank && a.AccountType == "ISK");
-        var icabankenAf = context.InvestmentAccounts.First(a => a.Provider == BankNames.IcaBanken);
-        var montroseIsk = context.InvestmentAccounts.First(a => a.Provider == BankNames.Montrose);
-        var revolutCrypto = context.InvestmentAccounts.First(a => a.Provider == BankNames.Revolut);
+        var accounts = context.InvestmentAccounts.Where(a => a.UserId == userId);
+        var banks = context.BankSources.Where(b => b.UserId == userId);
+        var avanzaIsk = accounts.First(a => a.Provider == BankNames.Avanza && a.AccountType == "ISK");
+        var avanzaAf = accounts.First(a => a.Provider == BankNames.Avanza && a.AccountType == "AF");
+        var nordnetIsk = accounts.First(a => a.Provider == BankNames.Nordnet && a.AccountType == "ISK");
+        var swedbankIsk = accounts.First(a => a.Provider == BankNames.Swedbank && a.AccountType == "ISK");
+        var icabankenAf = accounts.First(a => a.Provider == BankNames.IcaBanken);
+        var montroseIsk = accounts.First(a => a.Provider == BankNames.Montrose);
+        var revolutCrypto = accounts.First(a => a.Provider == BankNames.Revolut);
 
-        var avanzaBank = context.BankSources.First(b => b.Institution == BankNames.Avanza && b.AccountType == "investment");
-        var nordnetBank = context.BankSources.First(b => b.Institution == BankNames.Nordnet && b.AccountType == "investment");
-        var swedbankBank = context.BankSources.First(b => b.Institution == BankNames.Swedbank && b.AccountType == "investment");
-        var icabankenBank = context.BankSources.First(b => b.Institution == BankNames.IcaBanken && b.AccountType == "investment");
-        var montroseBank = context.BankSources.First(b => b.Institution == BankNames.Montrose && b.AccountType == "investment");
-        var revolutCryptoBank = context.BankSources.First(b => b.Institution == BankNames.Revolut && b.AccountType == "crypto");
+        var avanzaBank = banks.First(b => b.Institution == BankNames.Avanza && b.AccountType == "investment");
+        var nordnetBank = banks.First(b => b.Institution == BankNames.Nordnet && b.AccountType == "investment");
+        var swedbankBank = banks.First(b => b.Institution == BankNames.Swedbank && b.AccountType == "investment");
+        var icabankenBank = banks.First(b => b.Institution == BankNames.IcaBanken && b.AccountType == "investment");
+        var montroseBank = banks.First(b => b.Institution == BankNames.Montrose && b.AccountType == "investment");
+        var revolutCryptoBank = banks.First(b => b.Institution == BankNames.Revolut && b.AccountType == "crypto");
 
         investments[0].InvestmentAccountId = avanzaIsk.InvestmentAccountId;
         investments[0].BankSourceId = avanzaBank.BankSourceId;
