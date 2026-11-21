@@ -104,7 +104,8 @@ public static class Extensions
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation()
                     // Add Blazor activity source for UI interaction tracing
-                    .AddSource("Privatekonomi.Web.Blazor");
+                    .AddSource("Privatekonomi.Web.Blazor")
+                    .AddSource("Privatekonomi.Navigation");
             });
 
         builder.AddOpenTelemetryExporters();

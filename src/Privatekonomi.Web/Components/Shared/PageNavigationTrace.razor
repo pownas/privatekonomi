@@ -1,0 +1,83 @@
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject INavigationPerformanceService NavigationPerformanceService
+@inject NavigationManager NavigationManager
+
+<RouteView RouteData="RouteData" DefaultLayout="DefaultLayout" />
+
+@code {
+    [Parameter, EditorRequired]
+    public RouteData RouteData { get; set; } = default!;
+
+    [Parameter]
+    public Type? DefaultLayout { get; set; }
+
+    private string? _targetUrl;
+    private Activity? _renderActivity;
+    private bool _completionPending;
+
+    protected override void OnParametersSet()
+    {
+        var targetUrl = NormalizeTargetUrl(NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+        if (string.Equals(targetUrl, _targetUrl, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _renderActivity?.Stop();
+        _targetUrl = targetUrl;
+
+        if (NavigationPerformanceService.GetActiveNavigation(targetUrl) is null)
+        {
+            NavigationPerformanceService.StartNavigation(targetUrl, "RouteView");
+        }
+
+        _renderActivity = NavigationPerformanceService.StartPageRender(targetUrl, RouteData.PageType.Name);
+        _completionPending = true;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!_completionPending || _targetUrl is null)
+        {
+            return;
+        }
+
+        NavigationPerformanceService.CompletePageRender(
+            _targetUrl,
+            RouteData.PageType.Name,
+            _renderActivity);
+        _renderActivity = null;
+        _completionPending = false;
+    }
+
+    public void Dispose()
+    {
+        if (_completionPending && _targetUrl is not null)
+        {
+            NavigationPerformanceService.CancelNavigation(_targetUrl);
+        }
+        else
+        {
+            _renderActivity?.Stop();
+        }
+    }
+
+    private static string NormalizeTargetUrl(string url)
+    {
+        var queryIndex = url.IndexOf('?', StringComparison.Ordinal);
+        if (queryIndex >= 0)
+        {
+            url = url[..queryIndex];
+        }
+
+        var fragmentIndex = url.IndexOf('#', StringComparison.Ordinal);
+        if (fragmentIndex >= 0)
+        {
+            url = url[..fragmentIndex];
+        }
+
+        return url.Trim('/');
+    }
+}
