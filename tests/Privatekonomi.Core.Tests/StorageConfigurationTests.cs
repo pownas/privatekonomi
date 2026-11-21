@@ -208,6 +208,20 @@ public class StorageConfigurationTests
     }
 
     [TestMethod]
+    public void PostgreSqlStorageShouldBeConfigurable()
+    {
+        using var serviceProvider = CreateServiceProvider(new Dictionary<string, string?>
+        {
+            ["Storage:Provider"] = "PostgreSQL",
+            ["Storage:ConnectionString"] = "Host=localhost;Database=PrivatekonomiTest;Username=test;******",
+            ["Storage:SeedTestData"] = "false"
+        });
+        using var context = serviceProvider.GetRequiredService<PrivatekonomyContext>();
+
+        Assert.IsTrue(context.Database.IsNpgsql());
+    }
+
+    [TestMethod]
     public void SqlServerStorageShouldBeConfigurable()
     {
         // Arrange

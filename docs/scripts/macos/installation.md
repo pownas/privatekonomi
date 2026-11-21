@@ -60,7 +60,7 @@ Uppdatering kräver att den ursprungliga Git-klonen fortfarande finns kvar på s
 
 Verifierade nattliga backuper schemaläggs kl. 02:30 och sparas separat i `~/Library/Application Support/Privatekonomi-Backups/`; backuper äldre än 60 dagar tas bort efter att en ny backup verifierats. Du kan köra en backup manuellt med `bash "$HOME/Library/Application Support/Privatekonomi/backup.sh"`. Backupjobbet kräver att användaren är inloggad; om datorn sover kl. 02:30 kör macOS normalt den schemalagda uppgiften när den väcks. Backupen ligger på samma Mac och skyddar därför inte mot diskfel eller förlust av datorn; kopiera backupmappen till en separat disk eller säker molnlagring för sådant skydd.
 
-För återställning av SQLite: stoppa appen och ersätt `privatekonomi.db` med önskad fil från backupmappen. För JSON: stoppa appen, packa upp önskad `.tar.gz`-backup till `~/Library/Application Support/Privatekonomi/json/` och starta om. PostgreSQL är inte tillgängligt som val ännu eftersom projektet saknar PostgreSQL EF Core-provider och serverkonfiguration. Välj SQLite eller JSON-filer tills PostgreSQL-stöd har implementerats.
+För återställning av SQLite: stoppa appen och ersätt `privatekonomi.db` med önskad fil från backupmappen. För JSON: stoppa appen, packa upp önskad `.tar.gz`-backup till `~/Library/Application Support/Privatekonomi/json/` och starta om. PostgreSQL kan nu användas som lagringsprovider och migreras med anvisningarna i [migrationsguiden](../../DATA_MIGRATION_GUIDE.md).
 
 ## Felsökning
 

@@ -8,6 +8,8 @@
 @using System.Text.Json
 @using Microsoft.Extensions.Options
 @using Privatekonomi.Core.Configuration
+@using Privatekonomi.Core.Services.DataMigration
+@inject IDataMigrationService DataMigrationService
 
 <PageTitle>Datahantering - Privatekonomi</PageTitle>
 
@@ -107,6 +109,74 @@
             </MudAlert>
         }
     }
+</MudPaper>
+
+@* Provider Migration Section *@
+<MudPaper Class="pa-6 mb-4">
+    <MudText Typo="Typo.h5" Class="mb-3">
+        <MudIcon Icon="@Icons.Material.Filled.SyncAlt" Class="mr-2" />
+        Flytta mellan databaser
+    </MudText>
+
+    <MudAlert Severity="Severity.Warning" Class="mb-4">
+        Säkerhetskopiera källan och målet innan migrering. Målplattformen måste vara ny eller tom.
+        Befintliga användardata skrivs aldrig över automatiskt.
+    </MudAlert>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudSelect T="string" @bind-Value="_migrationSourceProvider" Label="Källprovider" Variant="Variant.Outlined">
+                @foreach (var provider in _migrationProviders)
+                {
+                    <MudSelectItem Value="@provider">@provider</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudSelect T="string" @bind-Value="_migrationTargetProvider" Label="Målprovider" Variant="Variant.Outlined">
+                @foreach (var provider in _migrationProviders)
+                {
+                    <MudSelectItem Value="@provider">@provider</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="_migrationSourceConnection"
+                          Label="Källans anslutningssträng eller JSON-mapp"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="_migrationTargetConnection"
+                          Label="Målets anslutningssträng eller JSON-mapp"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+        </MudItem>
+    </MudGrid>
+
+    @if (!string.IsNullOrWhiteSpace(_migrationResultMessage))
+    {
+        <MudAlert Severity="@(_migrationSucceeded ? Severity.Success : Severity.Error)" Class="mt-4">
+            @_migrationResultMessage
+        </MudAlert>
+    }
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.SyncAlt"
+               OnClick="RunDataMigration"
+               Disabled="_migrating"
+               Class="mt-4">
+        @if (_migrating)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            <MudText Class="ml-2">Migrerar...</MudText>
+        }
+        else
+        {
+            <span>Starta migrering</span>
+        }
+    </MudButton>
 </MudPaper>
 
 @* Import Section *@
@@ -255,6 +325,15 @@
     private bool _mergeMode = false;
     private DateTime? _lastSaveTime = null;
     private string _storageProvider = "Unknown";
+    private readonly string[] _migrationProviders =
+        { "Sqlite", "SqlServer", "MySQL", "MariaDB", "PostgreSQL", "JsonFile" };
+    private string _migrationSourceProvider = "Sqlite";
+    private string _migrationTargetProvider = "Sqlite";
+    private string _migrationSourceConnection = "";
+    private string _migrationTargetConnection = "";
+    private bool _migrating;
+    private bool _migrationSucceeded;
+    private string _migrationResultMessage = "";
     
     // Year export fields
     private bool _loadingYears = true;
@@ -271,6 +350,8 @@
     protected override async Task OnInitializedAsync()
     {
         _storageProvider = StorageSettings?.Value?.Provider ?? "Unknown";
+        _migrationSourceProvider = _storageProvider;
+        _migrationSourceConnection = StorageSettings?.Value?.ConnectionString ?? "";
         await LoadAvailableYears();
     }
 
@@ -454,6 +535,45 @@
         finally
         {
             _importing = false;
+        }
+    }
+
+    private async Task RunDataMigration()
+    {
+        _migrating = true;
+        _migrationResultMessage = "";
+
+        try
+        {
+            var result = await DataMigrationService.MigrateAsync(new DataMigrationRequest
+            {
+                SourceProvider = _migrationSourceProvider,
+                SourceConnectionString = _migrationSourceConnection,
+                TargetProvider = _migrationTargetProvider,
+                TargetConnectionString = _migrationTargetConnection
+            });
+
+            _migrationSucceeded = result.Success;
+            _migrationResultMessage = result.Message;
+            if (result.Success && result.MigratedCounts.Count > 0)
+            {
+                var counts = string.Join(", ",
+                    result.MigratedCounts.Select(pair => $"{pair.Key}: {pair.Value}"));
+                _migrationResultMessage += $" Migrerat: {counts}.";
+            }
+
+            Snackbar.Add(_migrationResultMessage,
+                result.Success ? Severity.Success : Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _migrationSucceeded = false;
+            _migrationResultMessage = $"Migreringen misslyckades: {ex.Message}";
+            Snackbar.Add(_migrationResultMessage, Severity.Error);
+        }
+        finally
+        {
+            _migrating = false;
         }
     }
 

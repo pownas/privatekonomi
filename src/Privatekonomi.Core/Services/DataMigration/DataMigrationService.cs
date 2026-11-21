@@ -86,7 +86,7 @@ public sealed class DataMigrationService : IDataMigrationService
 
     private static void ValidateProvider(string provider)
     {
-        if (provider is not ("SQLITE" or "SQLSERVER" or "JSONFILE"))
+        if (provider is not ("SQLITE" or "SQLSERVER" or "MYSQL" or "MARIADB" or "POSTGRESQL" or "JSONFILE"))
             throw new InvalidOperationException($"Lagringsprovider '{provider}' stöds inte för migrering.");
     }
 
@@ -100,6 +100,10 @@ public sealed class DataMigrationService : IDataMigrationService
             "SQLITE" => "SQLITE",
             "SQLSERVER" => "SQLSERVER",
             "SQL_SERVER" => "SQLSERVER",
+            "MYSQL" => "MYSQL",
+            "MARIADB" => "MARIADB",
+            "POSTGRESQL" => "POSTGRESQL",
+            "POSTGRES" => "POSTGRESQL",
             "JSONFILE" => "JSONFILE",
             "JSON" => "JSONFILE",
             _ => provider.Trim().ToUpperInvariant()
@@ -120,6 +124,18 @@ public sealed class DataMigrationService : IDataMigrationService
                 if (string.IsNullOrWhiteSpace(connectionString))
                     throw new InvalidOperationException("Anslutningssträng för SQL Server saknas.");
                 options.UseSqlServer(connectionString);
+                break;
+            case "MYSQL":
+            case "MARIADB":
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("Anslutningssträng för MySQL/MariaDB saknas.");
+                var serverVersion = ServerVersion.AutoDetect(connectionString);
+                options.UseMySql(connectionString, serverVersion);
+                break;
+            case "POSTGRESQL":
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("Anslutningssträng för PostgreSQL saknas.");
+                options.UseNpgsql(connectionString);
                 break;
             default:
                 throw new InvalidOperationException($"Provider '{provider}' kan inte användas som EF-relationsdatabas.");

@@ -65,6 +65,20 @@ public static class StorageExtensions
                 });
                 break;
 
+            case "postgresql":
+            case "postgres":
+                if (string.IsNullOrEmpty(storageSettings.ConnectionString))
+                {
+                    throw new InvalidOperationException(
+                        "ConnectionString is required for PostgreSQL provider. " +
+                        "Please specify a connection string in Storage:ConnectionString configuration.");
+                }
+                services.AddDbContextFactory<PrivatekonomyContext>(options =>
+                {
+                    options.UseNpgsql(storageSettings.ConnectionString);
+                });
+                break;
+
             case "jsonfile":
                 // JsonFile uses InMemory with persistence layer
                 services.AddSingleton<JsonIdentityPersistenceService>();

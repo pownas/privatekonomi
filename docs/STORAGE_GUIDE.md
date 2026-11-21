@@ -222,6 +222,9 @@ skrivande processer före filkopiering. Testa återställning till en separat pl
 och säkerhetskopiera även API:s databas om den är beständig. För JSON: stoppa
 processen ordnat och kopiera hela katalogen. Backuper kan innehålla kontodata.
 
+För kompletta exempel mellan Windows, macOS, Raspberry Pi och alla providers,
+se [migrationsguiden](DATA_MIGRATION_GUIDE.md).
+
 ## Schema och felsökning
 
 `EnsureCreated` skapar en ny databas men uppdaterar inte ett befintligt schema
