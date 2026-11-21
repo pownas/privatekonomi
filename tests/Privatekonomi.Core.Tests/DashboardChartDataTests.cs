@@ -36,6 +36,39 @@ public class DashboardChartDataTests
     }
 
     [TestMethod]
+    public void InternalTransfersAreExcludedFromCategoryChartData()
+    {
+        var transactions = new[]
+        {
+            new Transaction
+            {
+                Date = DateTime.Today,
+                Amount = 500m,
+                IsInternalTransfer = true,
+                TransactionCategories = new List<TransactionCategory>
+                {
+                    new() { Category = new Category { Name = "Överföringar", IsInternalTransferCategory = true }, Amount = 500m }
+                }
+            },
+            new Transaction
+            {
+                Date = DateTime.Today,
+                Amount = 100m,
+                IsIncome = true,
+                TransactionCategories = new List<TransactionCategory>
+                {
+                    new() { Category = new Category { Name = "Lön" }, Amount = 100m }
+                }
+            }
+        };
+
+        var amounts = DashboardChartData.GetCategoryAmounts(transactions).ToList();
+
+        Assert.AreEqual(1, amounts.Count);
+        Assert.AreEqual("Lön", amounts[0].Category);
+    }
+
+    [TestMethod]
     public async Task CategoryStatisticsUseAllocatedAmountsRatherThanEntireTransactions()
     {
         var options = new DbContextOptionsBuilder<PrivatekonomyContext>()

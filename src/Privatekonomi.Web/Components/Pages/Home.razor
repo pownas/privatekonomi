@@ -65,16 +65,17 @@ else
 {
     @if (_preferences.ShowTotalCards)
     {
-    <MudGrid Class="dashboard-grid mb-4">
-        <MudItem xs="12" md="6" lg="3">
+    <MudGrid Class="dashboard-grid dashboard-summary-grid mb-4">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-income" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Inkomster</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="_totalIncome" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="_totalIncome" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -89,15 +90,16 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-expense" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.TrendingDown" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Utgifter</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="_totalExpenses" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="_totalExpenses" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -112,15 +114,16 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-net" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.AccountBalance" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Nettoresultat</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="@(_totalIncome - _totalExpenses)" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="@(_totalIncome - _totalExpenses)" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -135,7 +138,7 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-neutral" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.Receipt" />

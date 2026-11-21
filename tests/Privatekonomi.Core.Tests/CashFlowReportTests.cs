@@ -35,4 +35,43 @@ public class CashFlowReportTests
         Assert.AreEqual(400m, report.Periods[0].Expenses);
         Assert.AreEqual(600m, report.Periods[0].NetFlow);
     }
+
+    [TestMethod]
+    public async Task InternalTransfersAreExcludedFromCashFlow()
+    {
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        await using var context = new PrivatekonomyContext(options);
+        var transferCategory = new Category
+        {
+            Name = "Överföringar",
+            IsInternalTransferCategory = true
+        };
+        context.Transactions.AddRange(
+            new Transaction
+            {
+                Date = new DateTime(2026, 1, 5),
+                IsIncome = false,
+                Amount = 500m,
+                IsInternalTransfer = true,
+                TransactionCategories = new List<TransactionCategory>
+                {
+                    new() { Category = transferCategory, Amount = 500m }
+                }
+            },
+            new Transaction
+            {
+                Date = new DateTime(2026, 1, 5),
+                IsIncome = true,
+                Amount = 1000m
+            });
+        await context.SaveChangesAsync();
+
+        var report = await new ReportService(context).GetCashFlowReportAsync(
+            new DateTime(2026, 1, 1), new DateTime(2026, 1, 31));
+
+        Assert.AreEqual(1000m, report.TotalIncome);
+        Assert.AreEqual(0m, report.TotalExpenses);
+        Assert.AreEqual(1000m, report.NetCashFlow);
+    }
 }
