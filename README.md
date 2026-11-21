@@ -2,6 +2,23 @@
 
 En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
 
+> **Alfastatus och säkerhet:** Backendmigreringen är inte färdig. Webbappen använder
+> fortfarande databasen och Core-tjänster direkt, och flera API-endpoints saknar
+> autentisering och fullständig användarisolering. Exponera inte API:et för
+> obetrodda användare eller nätverk och använd inte verkliga personliga data.
+> Webbens och API:ets lagringsinställningar kan dessutom peka på olika datakällor.
+
+Ett första API-flöde för läsning av egna transaktioner finns på
+`/api/personal/transactions`. Det kräver en bearer-token från
+`/api/session/login` och HTTPS; hushållstransaktioner ingår inte. Webbappen
+använder ännu inte detta flöde. Övriga API-endpoints är inte säkrade genom
+det nya flödet. API:ets vanliga HTTP-profil kan inte användas för detta flöde;
+för lokal utveckling finns en HTTPS-profil (`dotnet run --launch-profile https`
+i `src/Privatekonomi.Api`). API-inloggningen använder konton i API:ets egen
+lagring, som i övergångsläget kan skilja sig från webbappens.
+API-inloggningen stöder ännu inte tvåfaktorsautentiserade konton eller
+registrering, och hastighetsbegränsningen gäller per API-process.
+
 ## 🌐 Landningssida (Beta)
 
 - **Landningssida för ekonomiappen.se**: ⭐ NYTT!
@@ -19,7 +36,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - Baserat på 50/30/20-regeln med justerbara kategorier
   - Information om dataskydd och GDPR
   - Se [Onboarding guide](docs/ONBOARDING_GUIDE.md)
-- **Användarautentisering**: Komplett användarsystem med registrering, inloggning och dataisolering per användare
+- **Användarautentisering**: Registrering och inloggning i webbappen; API:ets autentisering och användarisolering är ännu inte färdigställda
 - **Dashboard**: Översikt över totala inkomster, utgifter och nettoresultat
 - **Anpassd Dashboard med Widget-system**: ⭐ NYT!
   - Skapa personliga dashboard-layouter med anpassningsbara widgets

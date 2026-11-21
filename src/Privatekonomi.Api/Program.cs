@@ -5,6 +5,8 @@ using Privatekonomi.Core.Services;
 using Privatekonomi.Api.Middleware;
 using Privatekonomi.Api.Services;
 using Privatekonomi.Core.Configuration;
+using Privatekonomi.Core.Models;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +50,43 @@ builder.Services.AddProblemDetails();
 
 // Register global exception handler
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// Legacy [Authorize] endpoints must not accept personal API tokens.
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = ApiAuthentication.LegacyDenyScheme;
+    options.DefaultChallengeScheme = ApiAuthentication.LegacyDenyScheme;
+    options.DefaultForbidScheme = ApiAuthentication.LegacyDenyScheme;
+})
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, LegacyDenyAuthenticationHandler>(
+        ApiAuthentication.LegacyDenyScheme, _ => { })
+    .AddBearerToken(ApiAuthentication.Scheme);
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = builder.Configuration.GetValue<bool?>("Authentication:RequireConfirmedAccount")
+        ?? (builder.Environment.IsProduction()
+            && !string.IsNullOrWhiteSpace(builder.Configuration["Email:SmtpHost"])
+            && !string.IsNullOrWhiteSpace(builder.Configuration["Email:PublicBaseUrl"]));
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+})
+    .AddEntityFrameworkStores<PrivatekonomyContext>()
+    .AddSignInManager();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("api-login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -161,6 +200,8 @@ app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowBlazorWeb");
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map Aspire default endpoints (health checks, etc.)
