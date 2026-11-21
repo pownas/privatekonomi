@@ -846,12 +846,50 @@ else
                     }
                 });
 
-            Snackbar.Add($"Transaktionen kategoriserades som {GetQuickCategoryName(category)}.", Severity.Success);
+            Snackbar.Add(
+                $"{transaction.Description} kategoriserades som {GetQuickCategoryName(category)}.",
+                Severity.Success,
+                options =>
+                {
+                    options.Action = "Ångra";
+                    options.ActionColor = Color.Inherit;
+                    options.OnClick = _ => UndoImportedTransactionCategorizationAsync(transaction, category.CategoryId);
+                });
             await LoadData();
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Kunde inte kategorisera transaktionen: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task UndoImportedTransactionCategorizationAsync(Transaction transaction, int categoryId)
+    {
+        try
+        {
+            var currentTransaction = await TransactionService.GetTransactionByIdAsync(transaction.TransactionId);
+            if (currentTransaction is null)
+            {
+                Snackbar.Add("Transaktionen kunde inte hittas och kategoriseringen kunde inte ångras.", Severity.Warning);
+                return;
+            }
+
+            if (currentTransaction.TransactionCategories.Count != 1 ||
+                currentTransaction.TransactionCategories.First().CategoryId != categoryId)
+            {
+                Snackbar.Add($"Kategoriseringen av {transaction.Description} kunde inte ångras eftersom transaktionen har ändrats.", Severity.Warning);
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>());
+            Snackbar.Add($"Kategoriseringen av {transaction.Description} har ångrats.", Severity.Info);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kunde inte ångra kategoriseringen av {transaction.Description}: {ex.Message}", Severity.Error);
         }
     }
 
