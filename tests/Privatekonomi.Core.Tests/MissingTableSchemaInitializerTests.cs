@@ -9,7 +9,7 @@ namespace Privatekonomi.Core.Tests;
 public class MissingTableSchemaInitializerTests
 {
     [TestMethod]
-    public async Task EnsureTablesAsync_CreatesMissingModelTablesAndIsIdempotent()
+    public async Task EnsureTablesAsyncCreatesMissingModelTablesAndIsIdempotent()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -27,7 +27,7 @@ public class MissingTableSchemaInitializerTests
     }
 
     [TestMethod]
-    public async Task EnsureTablesAsync_RenamesLegacyCsnColumnsAndPreservesData()
+    public async Task EnsureTablesAsyncRenamesLegacyCsnColumnsAndPreservesData()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -53,18 +53,17 @@ public class MissingTableSchemaInitializerTests
         context.Loans.Add(loan);
         await context.SaveChangesAsync();
 
-        var legacyColumns = new[]
+        var renameStatements = new[]
         {
-            ("CsnLoanType", "CSN_LoanType"),
-            ("CsnStudyYear", "CSN_StudyYear"),
-            ("CsnMonthlyPayment", "CSN_MonthlyPayment"),
-            ("CsnRemainingAmount", "CSN_RemainingAmount"),
-            ("CsnLastUpdate", "CSN_LastUpdate")
+            "ALTER TABLE \"Loans\" RENAME COLUMN \"CsnLoanType\" TO \"CSN_LoanType\"",
+            "ALTER TABLE \"Loans\" RENAME COLUMN \"CsnStudyYear\" TO \"CSN_StudyYear\"",
+            "ALTER TABLE \"Loans\" RENAME COLUMN \"CsnMonthlyPayment\" TO \"CSN_MonthlyPayment\"",
+            "ALTER TABLE \"Loans\" RENAME COLUMN \"CsnRemainingAmount\" TO \"CSN_RemainingAmount\"",
+            "ALTER TABLE \"Loans\" RENAME COLUMN \"CsnLastUpdate\" TO \"CSN_LastUpdate\""
         };
-        foreach (var (currentName, legacyName) in legacyColumns)
+        foreach (var statement in renameStatements)
         {
-            await context.Database.ExecuteSqlRawAsync(
-                $"ALTER TABLE \"Loans\" RENAME COLUMN \"{currentName}\" TO \"{legacyName}\"");
+            await context.Database.ExecuteSqlRawAsync(statement);
         }
         context.ChangeTracker.Clear();
 
@@ -79,7 +78,7 @@ public class MissingTableSchemaInitializerTests
     }
 
     [TestMethod]
-    public async Task EnsureTablesAsync_AddsMissingCsnColumn()
+    public async Task EnsureTablesAsyncAddsMissingCsnColumn()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -107,7 +106,7 @@ public class MissingTableSchemaInitializerTests
     }
 
     [TestMethod]
-    public async Task EnsureTablesAsync_IgnoresNonRelationalProvider()
+    public async Task EnsureTablesAsyncIgnoresNonRelationalProvider()
     {
         await using var context = new PrivatekonomyContext(
             new DbContextOptionsBuilder<PrivatekonomyContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
