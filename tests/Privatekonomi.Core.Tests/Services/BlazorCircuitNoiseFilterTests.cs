@@ -11,7 +11,7 @@ public class BlazorCircuitNoiseFilterTests
     [TestMethod]
     public void OnEnd_DropsBlazorComponentHubActivities()
     {
-        using var listener = CreateListener();
+        using var listener = CreateListener(SignalRActivitySourceName);
         ActivitySource.AddActivityListener(listener);
         using var source = new ActivitySource(SignalRActivitySourceName);
         using var activity = source.StartActivity(
@@ -30,7 +30,7 @@ public class BlazorCircuitNoiseFilterTests
     [TestMethod]
     public void OnEnd_PreservesOtherSignalRActivities()
     {
-        using var listener = CreateListener();
+        using var listener = CreateListener(SignalRActivitySourceName);
         ActivitySource.AddActivityListener(listener);
         using var source = new ActivitySource(SignalRActivitySourceName);
         using var activity = source.StartActivity("MyHub/ImportantOperation");
@@ -45,9 +45,28 @@ public class BlazorCircuitNoiseFilterTests
         Assert.IsTrue(activity.Recorded);
     }
 
-    private static ActivityListener CreateListener() => new()
+    [TestMethod]
+    public void OnEnd_DropsMudBlazorEventActivities()
     {
-        ShouldListenTo = source => source.Name == SignalRActivitySourceName,
+        const string activitySourceName = "Microsoft.AspNetCore.Components.Server.Circuits";
+        using var listener = CreateListener(activitySourceName);
+        ActivitySource.AddActivityListener(listener);
+        using var source = new ActivitySource(activitySourceName);
+        using var activity = source.StartActivity("Event ontransitionend MudBlazor.EventUtil+AsyncReceiver.Invoke");
+        var filter = new BlazorCircuitNoiseFilter();
+
+        Assert.IsNotNull(activity);
+        Assert.IsTrue(activity.Recorded);
+
+        activity.Stop();
+        filter.OnEnd(activity);
+
+        Assert.IsFalse(activity.Recorded);
+    }
+
+    private static ActivityListener CreateListener(string activitySourceName) => new()
+    {
+        ShouldListenTo = source => source.Name == activitySourceName,
         Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded
     };
 }
