@@ -15,7 +15,22 @@ och versionsnumren följer i huvudsak [Semantisk versionshantering](https://semv
 
 ## [Unreleased]
 
-Inga nya ändringar har dokumenterats ännu.
+### Changed
+
+- Rättade Aspires konfigurationsprioritet så explicita AppHost-parametrar kan
+  styra effektiva lagringsinställningar efter lokala filer och User Secrets.
+- Lade till API-data profiler för Mock/InMemory, SQLite och SQL Server samt
+  en explicit `web-api-base-url`-parameter.
+- Bytte dataprofil och provider endast vid API-processens uppstart.
+- `/api-info` visar nu den aktiva API-data profilen.
+- Flyttade och dokumenterade backend-/frontend-lagringsgränsen; Web använder
+  fortfarande eget datalager tills dataflödena är fullt migrerade till API:t.
+
+### Security
+
+- Mock-profil och testseeding nekas i Production.
+- SQL Server-profilen kräver en separat anslutningssträng.
+- Äldre API-controllers förblir spärrade tills deras användarisolering är klar.
 
 
 ## [v0.0.4](https://github.com/pownas/privatekonomi/releases/tag/v0.0.4) – November 2026

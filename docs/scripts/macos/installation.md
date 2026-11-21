@@ -35,9 +35,20 @@ bash setup-macos.sh start
 
 Vid installationen väljer du SQLite (standard) eller JSON-filer. Valet sparas i `~/Library/Application Support/Privatekonomi/storage-provider`; senare starter använder det sparade valet. Om du vill byta provider kan du köra `PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile bash scripts/macos/start.sh` (eller `Sqlite`). Data lagras i samma Privatekonomi-katalog.
 
+Providerbyte migrerar inte data eller konton. Med JSON använder Web en egen
+JSON-katalog och API InMemory, vars data försvinner vid omstart. JSON är
+processlokalt: låt aldrig Web och API eller flera instanser skriva till samma
+JSON-katalog. Kontrollera tjänsternas faktiska konfiguration före start.
+Installationsvalet SQLite konfigurerar däremot samma databasfil för Web och API;
+för isolering, konfigurera separata databaser och secrets per tjänst och miljö.
+Se [lagringsguiden](../../STORAGE_GUIDE.md).
+
 Web och API körs i bakgrunden och övervakas av `launchd`. De startas automatiskt när macOS-användaren loggar in och startas om om en process oväntat avslutas. Det går inte att starta en personlig LaunchAgent före inloggning; datorn måste vara på och användarkontot inloggat. Startkommandot uppdaterar tjänstekonfigurationen och startar om tjänsterna. Loggar finns under `~/Library/Logs/Privatekonomi/`.
 
 Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Tjänsterna lyssnar på nätverksgränssnitten, så enheter på samma hemnätverk kan använda `http://<Macens-IP-adress>:5274`. macOS-brandväggen kan behöva tillåta inkommande anslutningar för .NET. LAN-anslutningen använder HTTP och är endast avsedd för ett betrott privat nätverk. Öppna inte portarna mot internet; HTTP krypterar inte trafik. Aspire Dashboard startas inte av dessa tjänster.
+
+API:s personliga inloggning och transaktionsanrop kräver HTTPS som API självt
+uppfattar som HTTPS; ovanstående HTTP-adress kan inte användas för dem.
 
 Installeraren skapar separata `appsettings.Production.json` för Web och API med portar, lagringsprovider, datakatalog och utan testdata. Filerna innehåller lokala sökvägar och ignoreras av Git.
 

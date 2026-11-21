@@ -8,6 +8,7 @@ namespace Privatekonomi.Api.Controllers;
 /// <summary>
 /// API controller for managing budget alerts and warnings
 /// </summary>
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/budget-alerts")]
 public class BudgetAlertsController : ControllerBase

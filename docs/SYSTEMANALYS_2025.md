@@ -1,5 +1,9 @@
 # Systemanalys av Privatekonomi - 2025
 
+> Historisk systemanalys från 2025; innehållet är inte en aktuell arkitektur-
+> eller säkerhetsbedömning. Se [dokumentationsöversikten](README.md) för aktuella
+> referenser.
+
 **Datum:** 2025-11-04  
 **Version:** 1.0  
 **Syfte:** Omfattande översyn av befintligt privatekonomisystem och identifiering av saknade funktioner

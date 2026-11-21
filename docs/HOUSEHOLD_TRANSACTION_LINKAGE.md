@@ -224,3 +224,10 @@ Potential improvements for consideration:
 - Related Documentation:
   - [FAMILY_COLLABORATION_GUIDE.md](FAMILY_COLLABORATION_GUIDE.md)
   - [ProgramSpecifikation.md](ProgramSpecifikation.md)
+# Historisk API-status
+
+> API-route-exemplen i detta dokument är inte tillgängliga i den aktuella
+> standardkonfigurationen. Äldre API-controllers är spärrade och returnerar
+> normalt HTTP 403. Web-funktioner som använder interna Core-tjänster är ett
+> separat flöde. Se [API-guiden](API_GUIDE.md) och
+> [säkerhetsguiden](LEGACY_API_SECURITY.md) innan du använder exempel nedan.

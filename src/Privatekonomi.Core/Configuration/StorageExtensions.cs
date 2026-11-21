@@ -23,7 +23,7 @@ public static class StorageExtensions
         
         services.Configure<StorageSettings>(configuration.GetSection("Storage"));
         
-        switch (storageSettings.Provider.ToLowerInvariant())
+        switch (storageSettings.Provider?.ToLowerInvariant())
         {
             case "sqlite":
                 services.AddDbContextFactory<PrivatekonomyContext>(options =>
@@ -76,10 +76,13 @@ public static class StorageExtensions
                 break;
 
             case "inmemory":
-            default:
                 services.AddDbContextFactory<PrivatekonomyContext>(options =>
                     options.UseInMemoryDatabase("PrivatekonomyDb"));
                 break;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Unknown storage provider '{storageSettings.Provider}'. Check Storage:Provider configuration.");
         }
         
         return services;

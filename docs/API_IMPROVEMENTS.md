@@ -1,5 +1,10 @@
 # Backend API Improvements
 
+> **Historiskt och inaktuellt som API-referens.** Detta dokument beskriver ett
+> tidigare förslag/implementation och listar routes som nu är spärrade som
+> standard. Använd inte exemplen som fungerande API-anrop. Aktuell status finns i
+> [API-guiden](API_GUIDE.md) och [säkerhetsguiden](LEGACY_API_SECURITY.md).
+
 Detta dokument beskriver de förbättringar som gjorts i backend API:et baserat på den medföljande OpenAPI-specifikationen.
 
 ## Nya Endpoints

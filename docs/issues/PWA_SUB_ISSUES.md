@@ -1,5 +1,8 @@
 # PWA Implementation Sub-Issues
 
+> Historisk test-/arbetsplan. Routes, testmiljöer och issue-statusar behöver
+> verifieras mot aktuell kod och issue tracker innan de används.
+
 Based on `docs/PWA_NEXT_STEPS.md`, here are the recommended sub-issues to implement PWA testing and production features.
 
 ---

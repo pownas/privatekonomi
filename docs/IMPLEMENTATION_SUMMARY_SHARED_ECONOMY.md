@@ -1,5 +1,10 @@
 # Implementeringssammanfattning: Delad Ekonomi för Hushållsappen (MVP)
 
+> Historisk implementation summary, inte aktuell API-auktoriserings- eller
+> databasdriftsvägledning. Verifiera beteendet mot källkoden och använd
+> [lagringsguiden](STORAGE_GUIDE.md) samt
+> [API-säkerhetsguiden](LEGACY_API_SECURITY.md) för aktuella gränser.
+
 ## Översikt
 Denna implementation levererar en komplett MVP för delad ekonomi i hushållsappen, vilket möjliggör för partners, samboende och familjer att hantera gemensamma budgetar och skuldbalanser.
 

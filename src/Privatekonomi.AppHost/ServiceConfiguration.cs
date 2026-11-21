@@ -8,19 +8,20 @@ internal static class ServiceConfiguration
         var projectDirectory = Path.GetFullPath(Path.Combine(appHostDirectory, "..", projectName));
         var configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(projectDirectory, "appsettings.json"), optional: true)
-            .AddJsonFile(Path.Combine(projectDirectory, $"appsettings.{environment}.json"), optional: true)
-            .AddEnvironmentVariables();
-
-        if (overrides is not null)
-        {
-            configuration.AddInMemoryCollection(overrides);
-        }
+            .AddJsonFile(Path.Combine(projectDirectory, $"appsettings.{environment}.json"), optional: true);
 
         if (string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(environment, "Local", StringComparison.OrdinalIgnoreCase))
         {
             configuration.AddJsonFile(Path.Combine(projectDirectory, "appsettings.local.json"), optional: true);
             configuration.AddUserSecrets(userSecretsId);
+        }
+
+        configuration.AddEnvironmentVariables();
+
+        if (overrides is not null)
+        {
+            configuration.AddInMemoryCollection(overrides);
         }
 
         return configuration.Build();

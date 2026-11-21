@@ -1,5 +1,9 @@
 # Funktionsanalys - Innehållsförteckning
 
+> Historiskt analys- och roadmapunderlag (2025). Prioriteringar och status är
+> inte verifierade mot dagens implementation; använd inte dokumentet som
+> installationsguide eller aktuell funktionslista.
+
 **Skapad:** 2025-10-21  
 **Syfte:** Kartlägga implementerade funktioner och planera för saknade funktioner i Privatekonomi
 

@@ -1,5 +1,9 @@
 # RBAC Kravspecifikation - Rollbaserad Åtkomstkontroll
 
+> Utvecklingsspecifikation, inte bekräftelse på att RBAC är implementerat eller
+> aktivt. Kontrollera aktuell kod och tester innan dokumentet används som
+> behörighetsbeskrivning.
+
 **Datum:** 2025-11-05  
 **Version:** 1.0  
 **Status:** Utvecklingsspecifikation  

@@ -204,7 +204,7 @@ Dessa färgkoder används i `/navigation-performance` dashboarden.
 ## Relaterade dokument
 
 - [ASPIRE_GUIDE.md](ASPIRE_GUIDE.md) - .NET Aspire integration
-- [TELEMETRY_TRACKING.md](TELEMETRY_TRACKING.md) - Allmän telemetri-dokumentation (om den finns)
+- Telemetri hanteras enligt aktuell implementation och Aspire-konfiguration.
 
 ## Exempel på användning
 

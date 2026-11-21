@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
 using Privatekonomi.Api.Tests.Infrastructure;
+using ApiWebApplicationFactory = Privatekonomi.Api.Tests.Infrastructure.LegacyFunctionalApiWebApplicationFactory;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
 

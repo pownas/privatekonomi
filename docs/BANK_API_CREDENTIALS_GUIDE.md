@@ -1,5 +1,11 @@
 # Hur man erhåller API-nycklar för bankintegrationer
 
+> **Historisk/experimentell information.** Bankkopplingsendpoints och
+> OAuth-callbacken är spärrade i den aktuella API-konfigurationen. Callback-
+> adresser och tokenlivslängder i detta dokument är inte verifierade
+> driftinstruktioner. Se [säkerhetsguiden](LEGACY_API_SECURITY.md) innan någon
+> bankintegration aktiveras.
+
 Denna guide beskriver hur du erhåller nödvändiga API-nycklar och credentials för att integrera med Swedbank, Avanza Bank och ICA Banken.
 
 ## Innehåll

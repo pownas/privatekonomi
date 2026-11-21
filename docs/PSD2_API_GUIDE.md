@@ -1,5 +1,10 @@
 # PSD2 API Guide - Automatisk bankimport
 
+> **Status: tillfälligt avstängt i API:t.** Bankkopplingsendpoints och
+> OAuth-callbacken är spärrade och kan normalt svara HTTP 403. Denna guide är
+> historisk teknisk bakgrund, inte en körbar installations- eller
+> auktoriseringsguide. Se [säkerhetsguiden för äldre API:er](LEGACY_API_SECURITY.md).
+
 Denna guide beskriver hur du använder PSD2-API-stödet för att automatiskt importera transaktioner från Swedbank, Avanza Bank och ICA Banken.
 
 ## Översikt

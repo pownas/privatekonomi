@@ -1,397 +1,208 @@
-# Guide för lagringsmetoder - Privatekonomi
+# Guide för lagringsmetoder
 
-Denna guide beskriver hur du konfigurerar olika lagringsmetoder i Privatekonomi-applikationen.
+## Alfa: Web och API
 
-## Översikt
+Web och API är separata processer med varsin `Storage`-konfiguration och
+Identity-installation. Web använder Core-tjänster direkt mot
+sitt eget datalager, inte `/api/personal`. API:s personliga endpoints läser
+API-processens datalager. Aspire startar båda, men gör inte deras data eller
+inloggningar gemensamma.
 
-Privatekonomi stödjer fyra olika lagringsmetoder:
+Som standard använder Web `JsonFile` (`./data`), men i Development SQLite
+(`privatekonomi-development.db`). API använder `InMemory` i både bas- och
+Development-konfigurationen. Samma provider eller databasnamn betyder inte att
+processernas minnesdata delas. Om båda pekar på samma relationsdatabas används
+visserligen samma fysiska tabeller, men detta gör inte Web till en API-klient.
+Föredra separata databaser och konton för tjänsterna och håll mock/test och
+produktion åtskilda.
 
-1. **InMemory** - Data lagras i minnet, försvinner när applikationen stängs av (standard för utveckling)
-2. **SQLite** - Data lagras i en lokal SQLite-databas (persistent, lämplig för produktion och lokal användning)
-3. **SQL Server** - Data lagras i Microsoft SQL Server (persistent, lämplig för storskalig produktion)
-4. **JsonFile** - Data lagras i JSON-filer (planerad, ej implementerad än)
+> **Säkerhetsgräns för alfa-API:** Äldre API-controllers är nu spärrade som
+> standard och svarar normalt 403, även med en personlig bearer-token. I äldre
+> versioner utan spärren kan exempelvis anonyma anrop till
+> `GET /api/transactions` läsa transaktioner utan användarfiltrering. HTTPS
+> och skyddet för `/api/personal` skyddar inte automatiskt äldre rutter.
+> Kontrollera vilken version som faktiskt körs och isolera äldre installationer
+> bakom en tillförlitlig åtkomstgräns eller uppdatera dem. Spärren påverkar
+> befintliga klienter och bank-OAuth; se [säkerhetsguiden](LEGACY_API_SECURITY.md).
+
+## Isolera mock, test och produktion
+
+Använd olika datalager för varje kombination av tjänst och miljö, exempelvis:
+
+| Miljö | Web | API |
+|---|---|---|
+| Lokal mock/Development | separat SQLite-fil för demo eller InMemory | separat InMemory eller SQLite-fil |
+| Test | egen tillfällig databas per testkörning | egen tillfällig databas per testkörning |
+| Produktion | egen beständig databas | egen beständig databas |
+
+Använd olika absoluta sökvägar, databasnamn, databasanvändare och hemligheter.
+Ge varje process endast åtkomst till sitt eget lager. Bankmockar och exempeldata
+är inte produktionsdata: koppla aldrig test eller mockar till produktionsdatabasen,
+bankkonton eller produktionshemligheter. Kontrollera effektiv konfiguration och
+miljö före start. Håll `Storage:SeedTestData` avstängd i produktion.
+Web skapar referensdata vid start; i Development skapas ett nytt demokonto och
+dess exempeldata endast om `DemoUser:Enabled` respektive `Storage:SeedTestData`
+är aktiverade. Befintliga demokonton ändras inte eller seedas på nytt.
+
+**API-demo:** API:s bas- och Development-konfiguration använder InMemory och
+`SeedTestData=false`; demo är inte aktiverat som standard. Ett API-demokonto
+kräver Development, `DemoUser:Enabled=true` samt API:ts egna `DemoUser:Email`
+och `DemoUser:Password`. Det skapas bara om kontot inte redan finns.
+API-exempeldata kräver dessutom `Storage:SeedTestData=true` och en **ny**
+InMemory-databas. Med exempeldata aktiverade avvisas SQLite och JsonFile vid
+uppstart; de kan däremot användas för ett demokonto utan exempeldata.
+Aktiverad API-demo i Development blockeras på SQL Server och MySQL/MariaDB på
+grund av okoordinerad samtidig initiering. API hoppar också över seedning av
+referensdata på dessa serverdatabaser; för InMemory, JsonFile och SQLite körs
+referensdatainitieringen. API-kontot finns inte automatiskt i Webs lager.
+Använd aldrig demouppgifter i produktion.
 
 ## Konfiguration
 
-Lagringsmetoden konfigureras via `appsettings.json` eller `appsettings.Development.json`.
+Varje process läser sina egna `appsettings.json` och `appsettings.{Environment}.json`.
+I Development och Local läggs även `appsettings.local.json` och projektets User
+Secrets till efter standardkonfigurationen. Därefter läses miljövariabler med
+prefixet `PRIVATEKONOMI_ASPIRE_`, som Aspire använder för vissa överstyrningar.
+Vanliga miljövariabler använder `__` för nästlade nycklar; ange dem separat för
+varje process, till exempel i respektive tjänsts servicekonfiguration:
 
-### Storage-sektion
-
-```json
-{
-  "Storage": {
-    "Provider": "InMemory",
-    "ConnectionString": "",
-    "SeedTestData": true
-  }
-}
+```text
+ASPNETCORE_ENVIRONMENT=Production
+Storage__Provider=Sqlite
+Storage__ConnectionString=Data Source=/var/lib/privatekonomi/web-prod.db
+Storage__SeedTestData=false
 ```
 
-### Konfigurationsalternativ
+För API, använd exempelvis `/var/lib/privatekonomi/api-prod.db` i stället.
+Relativa sökvägar utgår från processens arbetskatalog. Välj en beständig katalog
+utanför publicerade filer och web root, och säkerställ katalogbehörighet. Sätt inte
+en gemensam `Storage__ConnectionString` i en föräldraprocess som startar båda.
+Aspires parametrar och särskilda macOS-överstyrningar beskrivs i
+[Aspire-guiden](ASPIRE_GUIDE.md); kontrollera den faktiska konfigurationen per tjänst.
 
-| Parameter | Beskrivning | Möjliga värden |
-|-----------|-------------|----------------|
-| `Provider` | Vilken lagringsmetod som ska användas | `InMemory`, `Sqlite`, `SqlServer`, `JsonFile` |
-| `ConnectionString` | Anslutningssträng eller sökväg till databas/fil | Se exempel nedan |
-| `SeedTestData` | Om testdata ska laddas (endast för utveckling) | `true`, `false` |
+Lösenord och anslutningssträngar med credentials hör hemma i en säker
+hemlighetshanterare eller tjänstens skyddade miljövariabler, inte i versionshanterade
+filer. Lokalt kan respektive projekts User Secrets användas i Development/Local,
+till exempel `dotnet user-secrets set "Storage:ConnectionString" "..." --project
+src/Privatekonomi.Api`. User Secrets är inte krypterade och är inte en
+produktionslösning. Ge test och produktion olika secrets; skydda även databasfiler,
+JSON-filer, säkerhetskopior och loggar.
 
-## Exempel på konfigurationer
+## Providers
 
-### 1. InMemory (Standard för utveckling)
+### API-data profiler i Aspire
 
-Lämplig för: Utveckling, testning, demonstration
+API:t kan startas med en uttrycklig data-profil via Aspire-parametern
+`api-data-profile`:
 
-```json
-{
-  "Storage": {
-    "Provider": "InMemory",
-    "ConnectionString": "",
-    "SeedTestData": true
-  }
-}
-```
+| Profil | Provider | Avsedd användning |
+|---|---|---|
+| `Mock` | InMemory | utveckling och isolerade manuella tester; seedning kräver Development |
+| `Sqlite` | Sqlite | lättviktslagring för lokal eller produktion |
+| `SqlServer` | SqlServer | lokal Development-testdatabas eller produktionsdatabas |
 
-**Fördelar:**
-- Snabb uppstart
-- Inga filer skapas
-- Perfekt för utveckling och testning
+Profilerna väljer lagringsprovider vid API-processens uppstart. De är inte en
+live-hot-swap: byt profil i AppHost/startmiljön och starta om API:t (helst
+även Web om den ska arbeta mot samma identitets-/datalager). `Mock` nekas i
+Production. Testseeding nekas i Production oavsett profil.
 
-**Nackdelar:**
-- Data försvinner när applikationen stängs av
-- Begränsat av tillgängligt minne
+Aspire-parametrarna `api-sqlite-connection-string` och
+`api-sqlserver-connection-string` innehåller respektive connection string;
+SQL Server-anslutningen är sekret och krävs för `SqlServer`-profilen.
+Parametern `web-api-base-url` styr vilken API-adress Web använder. Den kan
+vara en separat mock-API-adress eller den riktiga API-processens adress, men
+den byter inte data eller autentisering på en redan startad process.
 
-### 2. SQLite (Rekommenderas för produktion)
+| `Storage:Provider` | Funktion |
+|---|---|
+| `InMemory` | EF-databas i processens minne. All data, även konton, försvinner vid avslut. Separata processer delar inte minne. |
+| `Sqlite` | Filbaserad relationsdatabas; tom anslutningssträng använder `Data Source=privatekonomi.db`. |
+| `SqlServer` | Relationsdatabas; anslutningssträng krävs. |
+| `MySQL`, `MariaDB` | Relationsdatabas; anslutningssträng krävs. Se [MySQL-guiden](MYSQL_DEPLOYMENT_GUIDE.md). |
+| `JsonFile` | Implementerad filpersistens över en processlokal InMemory-databas. |
 
-Lämplig för: Produktion, lokal användning, Raspberry Pi, NAS
+Kontrollera stavningen och den effektiva providerinställningen. `SeedTestData`
+är en inställning för initiering, inte ett byte eller en kopiering av datalager.
+
+### SQLite
 
 ```json
 {
   "Storage": {
     "Provider": "Sqlite",
-    "ConnectionString": "Data Source=privatekonomi.db",
+    "ConnectionString": "Data Source=/var/lib/privatekonomi/web-prod.db",
     "SeedTestData": false
   }
 }
 ```
 
-**Alternativa ConnectionStrings:**
+SQLite passar mindre installationer, men har begränsad samtidig skrivning. Föredra
+lokal disk framför att dela en SQLite-fil via nätverksfilsystem. `Mode=Memory`
+ger inte en beständig diskbackup. För större installationer kan en serverbaserad
+provider vara lämpligare.
 
-```json
-// Absolut sökväg
-"ConnectionString": "Data Source=/var/data/privatekonomi.db"
-
-// Relativ sökväg
-"ConnectionString": "Data Source=./data/privatekonomi.db"
-
-// Minnesläge med backup på disk
-"ConnectionString": "Data Source=privatekonomi.db;Mode=Memory;Cache=Shared"
-
-// Nätverkssökväg (för delad åtkomst)
-"ConnectionString": "Data Source=/mnt/nas/privatekonomi.db"
-```
-
-**Fördelar:**
-- Persistent lagring
-- Snabb och pålitlig
-- Ingen server behövs
-- Lämplig för Raspberry Pi och NAS
-- Kan delas över nätverk
-
-**Nackdelar:**
-- Filbaserad, kräver läs/skrivrättigheter
-- Begränsad samtidig åtkomst (lämplig för familj, inte storskalig användning)
-
-### 3. SQL Server (Rekommenderas för storskalig produktion)
-
-Lämplig för: Storskalig produktion, företag, molnbaserad hosting
+### SQL Server
 
 ```json
 {
   "Storage": {
     "Provider": "SqlServer",
-    "ConnectionString": "Server=localhost;Database=Privatekonomi;Trusted_Connection=True;MultipleActiveResultSets=true",
+    "ConnectionString": "Server=localhost;Database=PrivatekonomiWeb;Integrated Security=true",
     "SeedTestData": false
   }
 }
 ```
 
-**Alternativa ConnectionStrings:**
-
-```json
-// Lokal SQL Server med Windows Authentication
-"ConnectionString": "Server=localhost;Database=Privatekonomi;Trusted_Connection=True;MultipleActiveResultSets=true"
-
-// SQL Server med SQL Authentication
-"ConnectionString": "Server=localhost;Database=Privatekonomi;User Id=sa;Password=YourPassword;MultipleActiveResultSets=true;TrustServerCertificate=True"
-
-// Azure SQL Database
-"ConnectionString": "Server=tcp:yourserver.database.windows.net,1433;Initial Catalog=Privatekonomi;Persist Security Info=False;User ID=yourusername;Password=yourpassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-
-// SQL Server Express LocalDB
-"ConnectionString": "Server=(localdb)\\mssqllocaldb;Database=Privatekonomi;Trusted_Connection=True;MultipleActiveResultSets=true"
-```
-
-**Fördelar:**
-- Mycket hög prestanda och skalbarhet
-- Stöd för många samtidiga användare
-- Avancerade säkerhetsfunktioner
-- Backup och återställning inbyggt
-- Stöd för replikering och hög tillgänglighet
-- Perfekt för molnbaserad hosting (Azure SQL)
-
-**Nackdelar:**
-- Kräver SQL Server-installation (eller Azure SQL)
-- Mer komplext att konfigurera
-- Kostnad för SQL Server-licens (utom Express Edition)
-- Överkapacitet för små installationer
-
-**OBS:** ConnectionString måste anges för SQL Server. Om du inte anger en ConnectionString får du ett felmeddelande.
-
-### 4. JsonFile (Implementerad)
-
-Lämplig för: Backup, import/export, versionshantering, portabilitet
-
-```json
-{
-  "Storage": {
-    "Provider": "JsonFile",
-    "ConnectionString": "./data",
-    "SeedTestData": false
-  }
-}
-```
-
-**Alternativa ConnectionStrings:**
-
-```json
-// Relativ sökväg
-"ConnectionString": "./data"
-
-// Absolut sökväg
-"ConnectionString": "/var/data/privatekonomi"
-
-// Standard (om ej angiven)
-"ConnectionString": "" // Använder ./data som standard
-```
-
-**Så fungerar det:**
-- Använder InMemory-databas för snabb åtkomst
-- Sparar automatiskt data till JSON-filer var 5:e minut
-- Sparar vid applikationens avslut
-- Laddar data automatiskt vid uppstart om JSON-filer finns
-- Varje entitetstyp sparas i en egen JSON-fil (t.ex. categories.json, transactions.json)
-
-**Fördelar:**
-- Läsbar textformat (JSON)
-- Enkel backup (kopiera katalogen)
-- Versionshantering möjlig (git, etc.)
-- Portabelt mellan olika system
-- Snabb åtkomst (InMemory)
-- Inget beroende av databas-server
-
-**Nackdelar:**
-- Större filstorlek än SQLite
-- Periodisk spara kan förlora senaste ändringarna vid plötslig krasch (max 5 minuter)
-- Mindre effektivt för stora datamängder (>10000 transaktioner)
-- JSON-filer måste läsas helt vid uppstart
-
-**Användningsfall:**
-- Prototyping och utveckling
-- Små installationer med få transaktioner
-- När textbaserad lagring önskas
-- För enkel versionshantering av data
-- Backup och export
-
-**Filstruktur:**
-```
-./data/
-├── categories.json
-├── transactions.json
-├── budgets.json
-├── investments.json
-└── ... (övriga entiteter)
-```
-
-## Miljöspecifik konfiguration
-
-Du kan ha olika konfigurationer för olika miljöer:
-
-### appsettings.json (Bas)
-```json
-{
-  "Storage": {
-    "Provider": "Sqlite",
-    "ConnectionString": "Data Source=privatekonomi.db",
-    "SeedTestData": false
-  }
-}
-```
-
-### appsettings.Development.json (Utveckling)
-```json
-{
-  "Storage": {
-    "Provider": "InMemory",
-    "ConnectionString": "",
-    "SeedTestData": true
-  }
-}
-```
-
-### appsettings.Production.json (Produktion)
-```json
-{
-  "Storage": {
-    "Provider": "Sqlite",
-    "ConnectionString": "Data Source=/var/app/data/privatekonomi.db",
-    "SeedTestData": false
-  }
-}
-```
-
-## Nätverksåtkomst
-
-För att göra applikationen tillgänglig från andra enheter på det lokala nätverket:
-
-### 1. Konfigurera SQLite med delad sökväg
-
-Placera databasen på en delad nätverkssökväg:
-
-```json
-{
-  "Storage": {
-    "Provider": "Sqlite",
-    "ConnectionString": "Data Source=/mnt/nas/privatekonomi.db"
-  }
-}
-```
-
-### 2. Montera nätverksenhet
-
-**Linux/Raspberry Pi:**
-```bash
-# NFS
-sudo mount -t nfs nas.local:/share /mnt/nas
-
-# CIFS/SMB
-sudo mount -t cifs //nas.local/share /mnt/nas -o user=username
-```
-
-**Windows:**
-```powershell
-net use Z: \\nas\share /user:username
-```
-
-### 3. Konfigurera Aspire/Kestrel för nätverksåtkomst
-
-Se `ASPIRE_GUIDE.md` för information om hur du exponerar tjänsten på det lokala nätverket.
-
-## Migrera data mellan lagringsmetoder
-
-### Från InMemory till SQLite
-
-1. Exportera data (via Export-funktionen i UI)
-2. Ändra konfiguration till SQLite
-3. Starta om applikationen
-4. Importera data (via Import-funktionen i UI)
-
-### Från SQLite till annan SQLite-databas
-
-Kopiera helt enkelt databas-filen:
-
-```bash
-cp privatekonomi.db /ny/sökväg/privatekonomi.db
-```
-
-Uppdatera sedan ConnectionString i konfigurationen.
-
-## Backup och återställning
-
-### SQLite Backup
-
-```bash
-# Enkel kopia
-cp privatekonomi.db privatekonomi.backup.db
-
-# Med SQLite-verktyg
-sqlite3 privatekonomi.db ".backup privatekonomi.backup.db"
-
-# Schemalägga backup (cron)
-0 2 * * * cp /var/data/privatekonomi.db /backups/privatekonomi-$(date +\%Y\%m\%d).db
-```
-
-### Återställa backup
-
-```bash
-# Stoppa applikationen först
-cp privatekonomi.backup.db privatekonomi.db
-# Starta applikationen igen
-```
-
-## Databasschema vid Raspberry Pi-uppdatering
-
-En SQLite-databas ska inte återskapas för att få med nya kolumner eller tabeller. `EnsureCreated` skapar en ny databas, men uppdaterar inte schemat i en befintlig databas. Vid start kör Web och API idempotenta, additiva schemauppdateringar: saknade kolumner läggs till och befintliga rader lämnas kvar. Nya schemaändringar måste därför ha en motsvarande säker uppdatering som kontrollerar om kolumnen eller tabellen redan finns.
-
-Kör `cd ~/privatekonomi/scripts/raspberry-pi && bash update.sh` eller den aktiverade webbuppdateringen för att publicera en ny version.
-
-Anropa inte `Database.Migrate()` blint mot äldre Pi-databaser: de kan sakna EF:s migrationshistorik och tidigare tabeller, vilket gör att äldre migrationer inte säkert kan spelas om. Säkerhetskopiera alltid före schemauppdatering och gör varje uppdatering idempotent.
-
-## Felsökning
-
-### Problem: "Database is locked"
-
-**Lösning:** Endast en process kan skriva till SQLite-databasen åt gången. Se till att endast en instans av applikationen körs.
-
-### Problem: "Permission denied"
-
-**Lösning:** Kontrollera att applikationen har läs/skrivrättigheter till katalogen där databasen finns:
-
-```bash
-chmod 755 /var/data
-chmod 664 /var/data/privatekonomi.db
-```
-
-### Problem: "Database file not found"
-
-**Lösning:** Kontrollera att ConnectionString pekar på rätt sökväg. För relativa sökvägar, använd `./` prefix.
-
-## Prestanda
-
-### InMemory
-- **Läshastighet:** Mycket snabb
-- **Skrivhastighet:** Mycket snabb
-- **Minneskrav:** Högt (all data i minnet)
-- **Max datamängd:** Begränsad av RAM
-
-### SQLite
-- **Läshastighet:** Snabb
-- **Skrivhastighet:** Snabb
-- **Minneskrav:** Lågt
-- **Max datamängd:** Praktiskt obegränsad (flera TB möjligt)
-
-### Rekommendationer
-
-- **Utveckling:** InMemory med SeedTestData=true
-- **Småskalig produktion (1-10 användare):** SQLite
-- **Raspberry Pi/NAS:** SQLite med regelbunden backup
-- **Familjeanvändning:** SQLite på delad lagring
-
-## Säkerhet
-
-### SQLite
-- Placera databas-filen utanför web root
-- Använd filsystembehörigheter för att begränsa åtkomst
-- Överväg kryptering av databas-filen (SQLCipher)
-- Ta regelbundna backuper
-
-### Nätverksåtkomst
-- Använd VPN för åtkomst utanför hemmanätverket
-- Konfigurera brandvägg för att begränsa åtkomst
-- Använd HTTPS (se Aspire-guide)
-
-## Support
-
-För fler frågor, se:
-- `README.md` - Allmän information
-- `ASPIRE_GUIDE.md` - Information om Aspire och nätverkskonfiguration
-- GitHub Issues - Rapportera problem eller föreslå förbättringar
+Ange en annan databas för API och olika databaser för utveckling, test och
+produktion. Lägg autentiseringsuppgifter i en hemlighetshanterare.
+
+### JsonFile
+
+`Storage:ConnectionString` är en katalog, exempelvis `./data` (även standard om
+den är tom). Varje process laddar filerna till sitt eget minne vid start.
+Ekonomidata sparas periodiskt var femte minut och vid ordnat avslut; en krasch
+eller skrivfel kan medföra dataförlust. Identity-data, inklusive lösenordshashar,
+sparas separat i `identity.json` vid ändringar. Ekonomidata omfattar bland annat
+`categories.json` och månatliga filer som `transactions-2025-01.json`.
+
+> **Varning för dataförlust:** JSON-persistensen är processlokal. Web, API och
+> andra instanser får **inte dela samma JSON-katalog**, inte ens om de använder
+> samma konfiguration. Deras minnesbilder synkroniseras inte och separata
+> skrivningar kan skriva över varandras data. Kontrollera särskilt befintliga
+> Raspberry Pi-installationer innan båda processerna startas.
+
+Använd en separat katalog per process. Filerna innehåller känsliga
+personuppgifter; lägg dem inte i Git.
+Säkerhetskopiera hela katalogen efter ordnat stopp och skydda kopian.
+JSON-formatet är ingen garanti för fullständig export eller migrering.
+
+## Byte av provider och säkerhetskopiering
+
+Att ändra `Provider` eller `ConnectionString` flyttar inte data eller konton.
+Import/export täcker inte nödvändigtvis alla entiteter och Identity; det finns
+ingen utlovad generell migrering mellan providers eller miljöer. Behåll
+originalet, planera och verifiera eventuell separat överföring innan bytet.
+Flytta inte testdata till produktion som rutin.
+
+För SQLite: använd exempelvis `sqlite3 /sökväg/web-prod.db ".backup
+'/säker/backup/web-prod.db'"` för en konsekvent backup, eller stoppa alla
+skrivande processer före filkopiering. Testa återställning till en separat plats
+och säkerhetskopiera även API:s databas om den är beständig. För JSON: stoppa
+processen ordnat och kopiera hela katalogen. Backuper kan innehålla kontodata.
+
+## Schema och felsökning
+
+`EnsureCreated` skapar en ny databas men uppdaterar inte ett befintligt schema
+generellt. Web och API kör särskilda additiva initialiserare för vissa tabeller
+och kolumner. De ersätter inte en allmän migrationsstrategi. Säkerhetskopiera
+innan uppdatering och kör inte hela EF-migrationskedjan blint mot äldre databaser
+som skapats med `EnsureCreated`.
+
+- **Data saknas efter omstart:** kontrollera provider och process; InMemory är
+  flyktigt. För JSON, kontrollera loggar och rätt katalog.
+- **Database is locked:** kontrollera samtidiga skribenter och filsystemet.
+- **Permission denied:** kontrollera tjänstekontots rättigheter till katalog och fil.
+- **Fel databas:** kontrollera miljö, överstyrningar och arbetskatalog.
+
+Se även [utvecklarguiden](DEVELOPER_QUICKSTART.md) och
+[snabbguiden](STORAGE_QUICKSTART.md).

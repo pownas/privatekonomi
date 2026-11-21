@@ -2,7 +2,8 @@
 set -euo pipefail
 
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-temp="$(mktemp -d)"
+temp="$repo/.macos-dotnet-test-$$"
+mkdir -m 700 "$temp"
 trap '/bin/rm -rf -- "$temp"' EXIT
 
 export HOME="$temp/home"
@@ -98,12 +99,25 @@ grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Api/appsettings.
 grep -Fq 'privatekonomi.db' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5274"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5277"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
-output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile /bin/bash "$repo/scripts/macos/start.sh")"
+output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile /bin/bash "$repo/scripts/macos/start.sh" 2>"$temp/json-warning")"
 [[ "$output" == *"Lagring: JsonFile"* ]]
 [[ "$output" == *"SERVICES_SETUP=installed provider=JsonFile"* ]]
+grep -Fq 'API-data delas inte med Web och försvinner vid omstart' "$temp/json-warning"
 grep -Fq '"Provider": "JsonFile"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Provider": "InMemory"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
 grep -Fq 'Application Support/Privatekonomi/json' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
+
+source <(/bin/sed -n '/^select_storage_provider() {/,/^}$/p' "$repo/scripts/macos/install.sh")
+log_error() { printf '%s\n' "$1" >&2; }
+mkdir -p "$HOME/Library/Application Support/Privatekonomi"
+printf 'JsonFile\n' > "$HOME/Library/Application Support/Privatekonomi/storage-provider"
+[[ "$(select_storage_provider)" == "JsonFile" ]]
+[[ "$(PRIVATEKONOMI_STORAGE_PROVIDER=Sqlite select_storage_provider)" == "Sqlite" ]]
+printf 'unsupported\n' > "$HOME/Library/Application Support/Privatekonomi/storage-provider"
+if select_storage_provider >"$temp/selection-output" 2>&1; then
+    echo "Expected unsupported stored provider to fail."
+    exit 1
+fi
 
 if PRIVATEKONOMI_STORAGE_PROVIDER=PostgreSQL /bin/bash "$repo/scripts/macos/start.sh" >"$temp/postgres-output" 2>&1; then
     echo "Expected unsupported PostgreSQL selection to fail."

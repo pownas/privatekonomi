@@ -1,5 +1,11 @@
 # Programspecifikation för Privatekonomi-applikation
 
+> **Historisk specifikation – inte aktuell system- eller API-dokumentation.**
+> Dokumentet beskriver en äldre .NET-version och funktioner som kan ha ändrats.
+> Web använder fortfarande egna Core-tjänster och lagring; API-routes som listas
+> här ska inte antas vara tillgängliga. Se [aktuell API-guide](API_GUIDE.md) och
+> [dokumentationsöversikten](README.md).
+
 ## 1. Sammanfattning
 En privatekonomi-applikation byggd med .NET 9, Blazor Server och MudBlazor med syfte att hjälpa användare att få koll och kontroll över sin ekonomi. Applikationen gör det möjligt att registrera inkomster och utgifter, kategorisera transaktioner, samt automatiskt kategorisera nya transaktioner baserat på tidigare inmatningar. Den stödjer även budgethantering, investeringshantering, och CSV-import från svenska banker som ICA-banken, Swedbank och Avanza.
 

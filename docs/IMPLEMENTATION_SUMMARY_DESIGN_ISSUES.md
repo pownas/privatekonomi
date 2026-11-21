@@ -1,5 +1,9 @@
 # Design Implementation Sub-Issues - Implementation Summary
 
+> Historical implementation note. The specifications are proposals, not a
+> verified statement of current UI status; check the current issue and UI before
+> treating work as open or complete.
+
 **Task:** Create 7 separate design improvement sub-issues based on DESIGN_ANALYSIS_2025.md  
 **Status:** ✅ Complete  
 **Date:** 2025-12-06  
@@ -15,14 +19,14 @@ Successfully created **8 comprehensive documentation files** containing detailed
 
 | File | Lines | Size | Description |
 |------|-------|------|-------------|
-| [DESIGN_ISSUES_INDEX.md](DESIGN_ISSUES_INDEX.md) | 214 | 7.4 KB | Index and quick reference for all issues |
-| [DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md](DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md) | 162 | 5.7 KB | Dashboard with trends and hierarchy |
-| [DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md](DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md) | 240 | 6.5 KB | Navigation with active marking |
-| [DESIGN_ISSUE_03_DATA_CARDS.md](DESIGN_ISSUE_03_DATA_CARDS.md) | 315 | 9.3 KB | Modern data cards with gradients |
-| [DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md](DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md) | 381 | 11.5 KB | Charts with unified palette |
-| [DESIGN_ISSUE_05_LOGIN_PAGE.md](DESIGN_ISSUE_05_LOGIN_PAGE.md) | 441 | 13.4 KB | Login page with illustrations |
-| [DESIGN_ISSUE_06_MICROINTERACTIONS.md](DESIGN_ISSUE_06_MICROINTERACTIONS.md) | 494 | 12.5 KB | Animations and feedback |
-| [DESIGN_ISSUE_07_EMPTY_STATES.md](DESIGN_ISSUE_07_EMPTY_STATES.md) | 539 | 15.6 KB | Empty states with guidance |
+| [DESIGN_ISSUES_INDEX.md](issues/DESIGN_ISSUES_INDEX.md) | 214 | 7.4 KB | Index and quick reference for all issues |
+| [DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md](issues/DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md) | 162 | 5.7 KB | Dashboard with trends and hierarchy |
+| [DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md](issues/DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md) | 240 | 6.5 KB | Navigation with active marking |
+| [DESIGN_ISSUE_03_DATA_CARDS.md](issues/DESIGN_ISSUE_03_DATA_CARDS.md) | 315 | 9.3 KB | Modern data cards with gradients |
+| [DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md](issues/DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md) | 381 | 11.5 KB | Charts with unified palette |
+| [DESIGN_ISSUE_05_LOGIN_PAGE.md](issues/DESIGN_ISSUE_05_LOGIN_PAGE.md) | 441 | 13.4 KB | Login page with illustrations |
+| [DESIGN_ISSUE_06_MICROINTERACTIONS.md](issues/DESIGN_ISSUE_06_MICROINTERACTIONS.md) | 494 | 12.5 KB | Animations and feedback |
+| [DESIGN_ISSUE_07_EMPTY_STATES.md](issues/DESIGN_ISSUE_07_EMPTY_STATES.md) | 539 | 15.6 KB | Empty states with guidance |
 | **Total** | **2,786** | **81.9 KB** | **8 files** |
 
 ---
@@ -320,19 +324,19 @@ All issues share these common requirements:
 ## Links to Documentation
 
 ### Source Documents
-- [DESIGN_ANALYSIS_2025.md](../DESIGN_ANALYSIS_2025.md) - Original analysis
-- [DESIGN_IMPLEMENTATION_SUB_ISSUES.md](DESIGN_IMPLEMENTATION_SUB_ISSUES.md) - Detailed specs
-- [VISUAL_UX_IMPROVEMENTS.md](../VISUAL_UX_IMPROVEMENTS.md) - Already implemented
+- [DESIGN_ANALYSIS_2025.md](DESIGN_ANALYSIS_2025.md) - Original analysis
+- [DESIGN_IMPLEMENTATION_SUB_ISSUES.md](issues/DESIGN_IMPLEMENTATION_SUB_ISSUES.md) - Detailed specs
+- [VISUAL_UX_IMPROVEMENTS.md](VISUAL_UX_IMPROVEMENTS.md) - Historical UI notes
 
 ### Issue Documents
-- [DESIGN_ISSUES_INDEX.md](DESIGN_ISSUES_INDEX.md) - Quick reference
-- [DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md](DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md)
-- [DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md](DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md)
-- [DESIGN_ISSUE_03_DATA_CARDS.md](DESIGN_ISSUE_03_DATA_CARDS.md)
-- [DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md](DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md)
-- [DESIGN_ISSUE_05_LOGIN_PAGE.md](DESIGN_ISSUE_05_LOGIN_PAGE.md)
-- [DESIGN_ISSUE_06_MICROINTERACTIONS.md](DESIGN_ISSUE_06_MICROINTERACTIONS.md)
-- [DESIGN_ISSUE_07_EMPTY_STATES.md](DESIGN_ISSUE_07_EMPTY_STATES.md)
+- [DESIGN_ISSUES_INDEX.md](issues/DESIGN_ISSUES_INDEX.md) - Quick reference
+- [DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md](issues/DESIGN_ISSUE_01_DASHBOARD_REDESIGN.md)
+- [DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md](issues/DESIGN_ISSUE_02_NAVIGATION_IMPROVEMENTS.md)
+- [DESIGN_ISSUE_03_DATA_CARDS.md](issues/DESIGN_ISSUE_03_DATA_CARDS.md)
+- [DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md](issues/DESIGN_ISSUE_04_CHART_IMPROVEMENTS.md)
+- [DESIGN_ISSUE_05_LOGIN_PAGE.md](issues/DESIGN_ISSUE_05_LOGIN_PAGE.md)
+- [DESIGN_ISSUE_06_MICROINTERACTIONS.md](issues/DESIGN_ISSUE_06_MICROINTERACTIONS.md)
+- [DESIGN_ISSUE_07_EMPTY_STATES.md](issues/DESIGN_ISSUE_07_EMPTY_STATES.md)
 
 ---
 

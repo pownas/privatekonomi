@@ -1,5 +1,9 @@
 # Design Implementation Sub-Issues - Index
 
+> Historical design proposal. The “Redo” status below reflects the original
+> planning snapshot, not verified current issue status or shipped UI. Check the
+> current application and issue tracker before planning work.
+
 **Baserat på:** `docs/DESIGN_ANALYSIS_2025.md`  
 **Huvuddokument:** `docs/issues/DESIGN_IMPLEMENTATION_SUB_ISSUES.md`  
 **Datum:** 2025-12-06  
