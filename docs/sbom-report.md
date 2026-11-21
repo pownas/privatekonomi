@@ -1,5 +1,6 @@
 ﻿# 🛡️ Security & SBOM Scan Report
 *Genererad den: 2026-11-21 13:30:33*
+*Genererad av [SbomScanner.csproj](../tests/SbomScanner/SbomScanner.csproj)*
 
 Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
 

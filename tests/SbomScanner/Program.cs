@@ -381,6 +381,7 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
 
     sb.AppendLine("# 🛡️ Security & SBOM Scan Report");
     sb.AppendLine($"*Genererad den: {DateTime.Now:yyyy-MM-dd HH:mm:ss}*");
+    sb.AppendLine("*Genererad av [SbomScanner.csproj](../tests/SbomScanner/SbomScanner.csproj)*");
     sb.AppendLine();
     sb.AppendLine($"Sårbarhetsdata: {(source.IsCached ? "lokal cache (`tests/SbomScanner/vulnerabilities-cache.json`)" : "NuGet")}, hämtad {source.Cache.UpdatedAtUtc:u}.");
     if (source.IsCached)
