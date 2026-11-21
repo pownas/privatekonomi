@@ -53,14 +53,14 @@ public class ImportController : ControllerBase
 
             // Parse and preview
             memoryStream.Position = 0;
-            
+
             // Determine bank name for OFX files
             var effectiveBankName = request.BankName;
             if ((extension == ".ofx" || extension == ".qfx") && !request.BankName.Contains("OFX", StringComparison.OrdinalIgnoreCase))
             {
-                effectiveBankName = "OFX (Allmän)";
+                effectiveBankName = BankNames.AllmanOfx;
             }
-            
+
             var result = await _csvImportService.PreviewCsvAsync(memoryStream, effectiveBankName);
 
             if (!result.Success)
@@ -169,7 +169,7 @@ public class ImportController : ControllerBase
         try
         {
             var importJob = await _csvImportService.GetImportJobAsync(id);
-            
+
             if (importJob == null)
             {
                 return NotFound(new { error = "Import-jobb hittades inte" });
@@ -198,7 +198,7 @@ public class ImportController : ControllerBase
             return StatusCode(500, new { error = $"Ett fel uppstod: {ex.Message}" });
         }
     }
-    
+
     /// <summary>
     /// Get all supported banks for import.
     /// </summary>
@@ -207,11 +207,11 @@ public class ImportController : ControllerBase
     {
         var banks = new List<BankInfo>
         {
-            new() { Name = "ICA-banken", FileTypes = new[] { "CSV" }, Description = "ICA-banken CSV-export" },
-            new() { Name = "Swedbank", FileTypes = new[] { "CSV" }, Description = "Swedbank CSV-export (båda formaten)" },
-            new() { Name = "OFX (Allmän)", FileTypes = new[] { "OFX", "QFX" }, Description = "OFX/QFX-format (stöds av många banker)" }
+            new() { Name = BankNames.AllmanOfx, FileTypes = new[] { "OFX", "QFX" }, Description = "OFX/QFX-format (stöds av många banker)" },
+            new() { Name = BankNames.IcaBanken, FileTypes = new[] { "CSV" }, Description = "ICA-banken CSV-export" },
+            new() { Name = BankNames.Swedbank, FileTypes = new[] { "CSV" }, Description = "Swedbank CSV-export (båda formaten)" }
         };
-        
+
         return Ok(banks);
     }
 

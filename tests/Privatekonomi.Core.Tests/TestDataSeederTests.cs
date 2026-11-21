@@ -109,6 +109,57 @@ public class TestDataSeederTests : IDisposable
     }
 
     [TestMethod]
+    public async Task SeedTestDataAsyncCreatesRealisticBankAndInvestmentAccounts()
+    {
+        await TestDataSeeder.SeedTestDataAsync(_context, "demo-user");
+
+        var banks = await _context.BankSources
+            .Where(b => b.UserId == "demo-user")
+            .ToListAsync();
+        var investmentAccounts = await _context.InvestmentAccounts
+            .Where(a => a.UserId == "demo-user")
+            .ToListAsync();
+        var investments = await _context.Investments
+            .Where(i => i.UserId == "demo-user")
+            .ToListAsync();
+
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Avanza);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Nordnet);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.IcaBanken);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Swedbank);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Klarna);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.LantmannenFinans);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Revolut);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.NordiskaBanken);
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            BankNames.Montrose);
+
+        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == BankNames.Lysa && a.IsFundRobot));
+        Assert.IsTrue(investmentAccounts.Any(a => a.Provider == BankNames.Opti && a.IsFundRobot));
+        Assert.IsTrue(investments.All(i => i.InvestmentAccountId.HasValue));
+        Assert.IsTrue(investments.All(i => i.BankSourceId.HasValue));
+        Assert.IsTrue(banks.Any(b => b.AccountType == "checking"));
+        Assert.IsTrue(banks.Any(b => b.AccountType == "savings"));
+    }
+
+    [TestMethod]
     public void SeedProductionReferenceDataSeedsChallengeTemplates()
     {
         // Act

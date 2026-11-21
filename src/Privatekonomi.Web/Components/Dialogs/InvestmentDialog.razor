@@ -1,4 +1,5 @@
 @inject IDialogService DialogService
+@inject IInvestmentService InvestmentService
 
 <MudDialog>
     <DialogContent>
@@ -20,6 +21,43 @@
                        Class="mb-3">
                 <MudSelectItem Value="@("Aktie")">Aktie</MudSelectItem>
                 <MudSelectItem Value="@("Fond")">Fond</MudSelectItem>
+                <MudSelectItem Value="@("ETF")">ETF</MudSelectItem>
+                <MudSelectItem Value="@("Krypto")">Krypto</MudSelectItem>
+                <MudSelectItem Value="@("Fondrobot")">Fondrobot</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="int?" @bind-Value="Investment.InvestmentAccountId"
+                       Label="Investeringskonto"
+                       Variant="Variant.Outlined"
+                       Clearable="true"
+                       HelperText="Välj Swedbank, Avanza, Nordnet eller ett eget fondrobotkonto"
+                       Class="mb-3">
+                @foreach (var account in _accounts)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)account.InvestmentAccountId)">
+                        @account.Provider – @account.Name (@account.AccountType)
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudGrid Class="mb-3">
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="Investment.ISIN" Label="ISIN" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="Investment.ShortName" Label="Kortnamn / ticker" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+
+            <MudSelect @bind-Value="Investment.Currency"
+                       Label="Valuta"
+                       Variant="Variant.Outlined"
+                       Class="mb-3">
+                <MudSelectItem Value="@("SEK")">SEK</MudSelectItem>
+                <MudSelectItem Value="@("USD")">USD</MudSelectItem>
+                <MudSelectItem Value="@("EUR")">EUR</MudSelectItem>
+                <MudSelectItem Value="@("NOK")">NOK</MudSelectItem>
+                <MudSelectItem Value="@("DKK")">DKK</MudSelectItem>
             </MudSelect>
 
             <MudTextField @bind-Value="Investment.ChartOfAccountsCode"
@@ -92,10 +130,12 @@
     private MudForm? _form;
     private bool _formValid;
     private DateTime? _purchaseDate;
+    private List<InvestmentAccount> _accounts = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _purchaseDate = Investment.PurchaseDate;
+        _accounts = (await InvestmentService.GetInvestmentAccountsAsync()).ToList();
     }
 
     private void Submit()

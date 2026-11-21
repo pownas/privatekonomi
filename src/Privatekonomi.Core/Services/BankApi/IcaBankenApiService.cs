@@ -23,7 +23,7 @@ public class IcaBankenApiService : BankApiServiceBase
     private readonly string _clientId;
     private readonly string _clientSecret;
 
-    public override string BankName => "ICA-banken";
+    public override string BankName => BankNames.IcaBanken;
 
     public IcaBankenApiService(PrivatekonomyContext context, HttpClient httpClient, string clientId, string clientSecret) 
         : base(context, httpClient)

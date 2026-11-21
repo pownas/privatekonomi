@@ -139,6 +139,31 @@ else
         </MudGrid>
     }
 
+    @if (_investmentAccounts.Any(a => a.IsFundRobot))
+    {
+        <MudText Typo="Typo.h6" Class="mb-3">Fondrobotkonton</MudText>
+        <MudGrid Class="mb-4">
+            @foreach (var account in _investmentAccounts.Where(a => a.IsFundRobot))
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">@account.Provider – @account.Name</MudText>
+                            <MudText Typo="Typo.h5" Class="mt-2">@account.MarketValue.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))</MudText>
+                            <MudText Typo="Typo.body2" Color="@(account.ProfitLoss >= 0 ? Color.Success : Color.Error)">
+                                @(account.ProfitLoss >= 0 ? "+" : "")@account.ProfitLoss.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))
+                                (@(account.ProfitLossPercentage >= 0 ? "+" : "")@account.ProfitLossPercentage.ToString("F2")%)
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Insatt: @account.Contributions.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
     <!-- Investments Table -->
     <MudPaper Class="pa-4">
         <MudGrid>
@@ -164,6 +189,10 @@ else
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Upload" 
                                Href="/settings/import" Size="Size.Small">
                         Importera
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AccountBalance"
+                               OnClick="OpenAccountDialog" Size="Size.Small">
+                        Hantera konton
                     </MudButton>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" 
                                OnClick="OpenAddDialog" Size="Size.Small">
@@ -208,6 +237,16 @@ else
                             <MudSelectItem Value="@account">@account</MudSelectItem>
                         }
                     </MudSelect>
+                    <MudSelect T="int?" Value="_filterInvestmentAccountId" Label="Struktur" Clearable="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Class="ml-2" Style="min-width: 170px;"
+                               ValueChanged="@((int? value) => { _filterInvestmentAccountId = value; ApplyFilters(); })">
+                        @foreach (var account in _investmentAccounts)
+                        {
+                            <MudSelectItem Value="@((int?)account.InvestmentAccountId)">
+                                @account.Provider – @account.Name
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh><MudTableSortLabel SortBy="new Func<Investment, object>(x => x.Name)">Namn</MudTableSortLabel></MudTh>
@@ -246,7 +285,15 @@ else
                         }
                     </MudTd>
                     <MudTd DataLabel="Konto">
-                        @if (!string.IsNullOrEmpty(context.AccountNumber))
+                        @if (context.InvestmentAccount != null)
+                        {
+                            <MudText Typo="Typo.body2">@context.InvestmentAccount.Provider – @context.InvestmentAccount.Name</MudText>
+                            @if (!string.IsNullOrEmpty(context.AccountNumber))
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.AccountNumber</MudText>
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(context.AccountNumber))
                         {
                             <MudText Typo="Typo.body2">@context.AccountNumber</MudText>
                         }
@@ -308,10 +355,12 @@ else
     private IEnumerable<Investment> _investments = new List<Investment>();
     private IEnumerable<Investment> _filteredInvestments = new List<Investment>();
     private List<BankSource> _banks = new();
+    private List<InvestmentAccount> _investmentAccounts = new();
     private List<string> _accounts = new();
     private string _searchString = "";
     private int? _filterBankId = null;
     private string? _filterAccount = null;
+    private int? _filterInvestmentAccountId = null;
     
     private decimal _totalValue = 0;
     private decimal _totalCost = 0;
@@ -329,6 +378,7 @@ else
     {
         _loading = true;
         _investments = await InvestmentService.GetAllInvestmentsAsync();
+        _investmentAccounts = (await InvestmentService.GetInvestmentAccountsAsync()).ToList();
         _banks = (await BankSourceService.GetAllBankSourcesAsync()).ToList();
         _accounts = _investments
             .Where(i => !string.IsNullOrEmpty(i.AccountNumber))
@@ -357,6 +407,11 @@ else
         {
             _filteredInvestments = _filteredInvestments.Where(i => i.AccountNumber == _filterAccount);
         }
+
+        if (_filterInvestmentAccountId.HasValue)
+        {
+            _filteredInvestments = _filteredInvestments.Where(i => i.InvestmentAccountId == _filterInvestmentAccountId.Value);
+        }
         
         CalculateTotals();
         StateHasChanged();
@@ -366,6 +421,12 @@ else
     {
         _totalValue = _filteredInvestments.Sum(i => i.TotalValue);
         _totalCost = _filteredInvestments.Sum(i => i.TotalCost);
+        var robotAccounts = _investmentAccounts
+            .Where(a => a.IsFundRobot)
+            .Where(a => !_filterInvestmentAccountId.HasValue || a.InvestmentAccountId == _filterInvestmentAccountId.Value)
+            .ToList();
+        _totalValue += robotAccounts.Sum(a => a.MarketValue);
+        _totalCost += robotAccounts.Sum(a => a.Contributions);
         _totalProfitLoss = _totalValue - _totalCost;
         _totalProfitLossPercentage = _totalCost > 0 ? (_totalProfitLoss / _totalCost) * 100 : 0;
     }
@@ -375,6 +436,12 @@ else
         _typeStats = _investments
             .GroupBy(i => i.Type)
             .ToDictionary(g => g.Key, g => g.Sum(i => i.TotalValue));
+        foreach (var robot in _investmentAccounts.Where(a => a.IsFundRobot))
+        {
+            _typeStats["Fondrobot"] = _typeStats.TryGetValue("Fondrobot", out var value)
+                ? value + robot.MarketValue
+                : robot.MarketValue;
+        }
     }
 
     private void CalculateAccountTypeStats()
@@ -398,6 +465,10 @@ else
         if (investment.BankSource?.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             return true;
         if (investment.AccountNumber?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (investment.InvestmentAccount?.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (investment.InvestmentAccount?.Provider.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             return true;
         return false;
     }
@@ -505,7 +576,16 @@ else
                     CurrentPrice = investment.CurrentPrice,
                     PurchaseDate = investment.PurchaseDate,
                     LastUpdated = investment.LastUpdated,
-                    ChartOfAccountsCode = investment.ChartOfAccountsCode
+                    ChartOfAccountsCode = investment.ChartOfAccountsCode,
+                    BankSourceId = investment.BankSourceId,
+                    InvestmentAccountId = investment.InvestmentAccountId,
+                    AccountNumber = investment.AccountNumber,
+                    AccountType = investment.AccountType,
+                    ShortName = investment.ShortName,
+                    ISIN = investment.ISIN,
+                    Currency = investment.Currency,
+                    Country = investment.Country,
+                    Market = investment.Market
                 }
             },
             { x => x.IsEdit, true }
@@ -522,6 +602,31 @@ else
         {
             await InvestmentService.UpdateInvestmentAsync(updatedInvestment);
             Snackbar.Add("Investering uppdaterad", Severity.Success);
+            await LoadData();
+        }
+    }
+
+    private async Task OpenAccountDialog()
+    {
+        var parameters = new DialogParameters<InvestmentAccountDialog>
+        {
+            { x => x.Account, new InvestmentAccount
+                {
+                    AccountType = "ISK",
+                    Provider = BankNames.Avanza,
+                    Currency = "SEK",
+                    ValidFrom = DateTime.UtcNow
+                } }
+        };
+
+        var dialog = await DialogService.ShowAsync<InvestmentAccountDialog>("Lägg till investeringskonto",
+            parameters, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled && result.Data is InvestmentAccount account)
+        {
+            await InvestmentService.AddInvestmentAccountAsync(account);
+            Snackbar.Add("Investeringskonto tillagt", Severity.Success);
             await LoadData();
         }
     }

@@ -18,6 +18,8 @@ public class Investment : ITemporalEntity
     // Bank and account information
     public int? BankSourceId { get; set; }
     public BankSource? BankSource { get; set; }
+    public int? InvestmentAccountId { get; set; }
+    public InvestmentAccount? InvestmentAccount { get; set; }
     public string? AccountNumber { get; set; }
     public string? ShortName { get; set; }
     public string? ISIN { get; set; }

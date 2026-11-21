@@ -1,5 +1,6 @@
 using System.Text;
 
+using Privatekonomi.Core.Models;
 using Privatekonomi.Core.Services.Parsers;
 
 namespace Privatekonomi.Core.Tests;
@@ -132,7 +133,7 @@ NEWFILEUID:NONE
     [TestMethod]
     public void BankNameReturnsOfxAllman()
     {
-        Assert.AreEqual("OFX (Allmän)", _parser.BankName);
+        Assert.AreEqual(BankNames.AllmanOfx, _parser.BankName);
     }
 
     [TestMethod]

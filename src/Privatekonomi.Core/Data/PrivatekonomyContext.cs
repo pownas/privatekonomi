@@ -20,6 +20,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     public DbSet<CategoryRule> CategoryRules { get; set; }
     public DbSet<Loan> Loans { get; set; }
     public DbSet<Investment> Investments { get; set; }
+    public DbSet<InvestmentAccount> InvestmentAccounts { get; set; }
     public DbSet<Asset> Assets { get; set; }
     public DbSet<Budget> Budgets { get; set; }
     public DbSet<BudgetCategory> BudgetCategories { get; set; }
@@ -446,7 +447,39 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             // Temporal tracking
             entity.Property(e => e.ValidFrom).IsRequired();
             entity.Property(e => e.ValidTo);
-            
+        });
+
+        builder.Entity<InvestmentAccount>(entity =>
+        {
+            entity.HasKey(e => e.InvestmentAccountId);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Provider).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AccountType).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.AccountNumber).HasMaxLength(100);
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.InitialContributions).HasPrecision(18, 2);
+            entity.Property(e => e.CurrentValue).HasPrecision(18, 2);
+
+            entity.HasMany(e => e.Investments)
+                .WithOne(e => e.InvestmentAccount)
+                .HasForeignKey(e => e.InvestmentAccountId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.Provider, e.AccountNumber });
+            entity.Ignore(e => e.Contributions);
+            entity.Ignore(e => e.MarketValue);
+            entity.Ignore(e => e.ProfitLoss);
+            entity.Ignore(e => e.ProfitLossPercentage);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Investment>(entity =>
+        {
             // New properties for bank and account information
             entity.Property(e => e.AccountNumber).HasMaxLength(50);
             entity.Property(e => e.ShortName).HasMaxLength(50);
@@ -455,13 +488,13 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Country).HasMaxLength(2);
             entity.Property(e => e.Market).HasMaxLength(50);
             entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
-            
+
             // Relation to BankSource
             entity.HasOne(e => e.BankSource)
                 .WithMany()
                 .HasForeignKey(e => e.BankSourceId)
                 .OnDelete(DeleteBehavior.SetNull);
-            
+
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
@@ -816,12 +849,12 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
 
         // Seed initial bank sources
         builder.Entity<BankSource>().HasData(
-            new BankSource { BankSourceId = 1, Name = "ICA-banken", Color = "#DC143C", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // röd (Crimson)
-            new BankSource { BankSourceId = 2, Name = "Swedbank", Color = "#FF8C00", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // mörk orange (Dark Orange)
-            new BankSource { BankSourceId = 3, Name = "SEB", Color = "#0066CC", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // blå
-            new BankSource { BankSourceId = 4, Name = "Nordea", Color = "#00A9CE", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // ljusblå
-            new BankSource { BankSourceId = 5, Name = "Handelsbanken", Color = "#003366", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // mörk blå
-            new BankSource { BankSourceId = 6, Name = "Avanza", Color = "#006400", AccountType = "investment", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null } // mörkgrön (Dark Green)
+            new BankSource { BankSourceId = 1, Name = BankNames.IcaBanken, Color = "#DC143C", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // röd (Crimson)
+            new BankSource { BankSourceId = 2, Name = BankNames.Swedbank, Color = "#FF8C00", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // mörk orange (Dark Orange)
+            new BankSource { BankSourceId = 3, Name = BankNames.Seb, Color = "#0066CC", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // blå
+            new BankSource { BankSourceId = 4, Name = BankNames.Nordea, Color = "#00A9CE", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // ljusblå
+            new BankSource { BankSourceId = 5, Name = BankNames.Handelsbanken, Color = "#003366", AccountType = "checking", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null }, // mörk blå
+            new BankSource { BankSourceId = 6, Name = BankNames.Avanza, Color = "#006400", AccountType = "investment", Currency = "SEK", InitialBalance = 0, CreatedAt = DateTime.UtcNow, ValidFrom = DateTime.UtcNow, ValidTo = null } // mörkgrön (Dark Green)
         );
 
         // Swedish-specific entities configuration

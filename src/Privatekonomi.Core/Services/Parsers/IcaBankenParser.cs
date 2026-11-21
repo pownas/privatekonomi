@@ -6,7 +6,7 @@ namespace Privatekonomi.Core.Services.Parsers;
 
 public class IcaBankenParser : ICsvParser
 {
-    public string BankName => "ICA-banken";
+    public string BankName => BankNames.IcaBanken;
 
     public bool CanParse(string csvContent)
     {

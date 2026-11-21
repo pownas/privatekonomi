@@ -23,7 +23,7 @@ public class OfxParser : ICsvParser
         "LANGUAGE", "INTU.BID", "CODE", "SEVERITY", "MESSAGE"
     };
 
-    public string BankName => "OFX (Allmän)";
+    public string BankName => BankNames.AllmanOfx;
 
     public bool CanParse(string csvContent)
     {

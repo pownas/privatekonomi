@@ -80,6 +80,7 @@ ScaffoldingReadMe.txt
 
 # Local configuration overrides
 *.db
+*.db.init.lock
 *.db-shm
 *.db-wal
 /data/

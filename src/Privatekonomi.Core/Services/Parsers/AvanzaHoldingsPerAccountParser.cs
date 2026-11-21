@@ -6,7 +6,7 @@ namespace Privatekonomi.Core.Services.Parsers;
 
 public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
 {
-    public string BankName => "Avanza";
+    public string BankName => BankNames.Avanza;
     public string FormatType => "Per konto";
 
     public bool CanParse(string csvContent)
@@ -86,7 +86,11 @@ public class AvanzaHoldingsPerAccountParser : IInvestmentCsvParser
                 decimal gav = 0;
                 if (!string.IsNullOrEmpty(gavStr))
                 {
-                    decimal.TryParse(gavStr, NumberStyles.Any, CultureInfo.CurrentCulture, out gav);
+                    if (!decimal.TryParse(gavStr, NumberStyles.Any, CultureInfo.InvariantCulture, out gav))
+                    {
+                        decimal.TryParse(gavStr.Replace(".", ","), NumberStyles.Any,
+                            new CultureInfo("sv-SE"), out gav);
+                    }
                 }
 
                 var currentPrice = volume > 0 ? marketValue / volume : 0;

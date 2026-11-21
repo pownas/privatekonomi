@@ -19,6 +19,27 @@
     Ge varje konto ett beskrivande namn och koppla det till kontoplan för redovisning.
 </MudText>
 
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Totalt kontovärde</MudText>
+            <MudText Typo="Typo.h5">@_totalAccountBalance.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Banker och leverantörer</MudText>
+            <MudText Typo="Typo.h5">@_institutionCount</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Antal konton</MudText>
+            <MudText Typo="Typo.h5">@(_accounts?.Count ?? 0)</MudText>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
 @if (_loading)
 {
     <MudProgressCircular Indeterminate="true" />
@@ -78,7 +99,18 @@ else
                                 <span class="text-muted">-</span>
                             }
                         </MudTd>
-                        <MudTd DataLabel="Institution">@(context.Institution ?? "-")</MudTd>
+                        <MudTd DataLabel="Institution">
+                            @if (GetInstitutionWebsite(context.Institution) is string website)
+                            {
+                                <MudLink Href="@website" Target="_blank">
+                                    @(context.Institution ?? context.Name)
+                                </MudLink>
+                            }
+                            else
+                            {
+                                @(context.Institution ?? "-")
+                            }
+                        </MudTd>
                         <MudTd DataLabel="Valuta">@context.Currency</MudTd>
                         <MudTd DataLabel="Saldo">
                             <span style="@(context.CurrentBalance >= 0 ? "color: green;" : "color: red;")">
@@ -145,6 +177,8 @@ else
     private bool _loading = true;
     private List<BankSource>? _accounts;
     private Dictionary<string, List<BankSource>> _accountsByType = new();
+    private decimal _totalAccountBalance;
+    private int _institutionCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,6 +192,12 @@ else
         {
             var accounts = await BankSourceService.GetAllBankSourcesAsync();
             _accounts = accounts.ToList();
+
+            _totalAccountBalance = _accounts.Sum(a => a.CurrentBalance);
+            _institutionCount = _accounts
+                .Select(a => a.Institution ?? a.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
             
             // Group by account type
             _accountsByType = _accounts
@@ -235,6 +275,13 @@ else
         }
     }
 
+    private static string? GetInstitutionWebsite(string? institution)
+    {
+        return string.IsNullOrWhiteSpace(institution)
+            ? null
+            : BankRegistry.GetBankByName(institution)?.Website;
+    }
+
     private string GetAccountTypeDisplayName(string type) => type switch
     {
         "checking" => "Lönekonton",
@@ -244,6 +291,7 @@ else
         "loan" => "Lån",
         "pension" => "Pensionskonton",
         "cash" => "Kontanter",
+        "crypto" => "Kryptokonton",
         _ => "Övriga konton"
     };
 
@@ -256,6 +304,7 @@ else
         "loan" => Icons.Material.Filled.CreditScore,
         "pension" => Icons.Material.Filled.Elderly,
         "cash" => Icons.Material.Filled.AttachMoney,
+        "crypto" => Icons.Material.Filled.CurrencyBitcoin,
         _ => Icons.Material.Filled.AccountBalanceWallet
     };
 
