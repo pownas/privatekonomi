@@ -11,7 +11,7 @@ public static class DashboardChartData
     {
         foreach (var transaction in transactions)
         {
-            if (transaction.IsInternalTransferTransaction)
+            if (transaction.IsExcludedFromTotalsTransaction)
             {
                 continue;
             }

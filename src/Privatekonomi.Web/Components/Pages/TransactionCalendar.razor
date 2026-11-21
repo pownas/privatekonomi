@@ -63,6 +63,7 @@ else
             @foreach (var day in GetCalendarDays())
             {
                 var dayTransactions = GetTransactionsForDay(day);
+                var totalsTransactions = dayTransactions.Where(t => !t.IsExcludedFromTotalsTransaction).ToList();
                 var isToday = day.Date == DateTime.Today;
                 var isCurrentMonth = day.Month == _currentDate.Month;
                 
@@ -72,8 +73,8 @@ else
                     
                     @if (dayTransactions.Any())
                     {
-                        var income = dayTransactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-                        var expenses = dayTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+                        var income = totalsTransactions.Where(t => t.IsIncome).Sum(t => t.Amount);
+                        var expenses = totalsTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
                         
                         <div class="calendar-day-content">
                             @if (income > 0)
@@ -102,6 +103,9 @@ else
     @if (_selectedDate.HasValue)
     {
         var selectedTransactions = GetTransactionsForDay(_selectedDate.Value);
+        var selectedTotalsTransactions = selectedTransactions
+            .Where(t => !t.IsExcludedFromTotalsTransaction)
+            .ToList();
         
         <MudPaper Class="pa-4 mt-4" Elevation="2">
             <MudText Typo="Typo.h6" Class="mb-3">
@@ -122,14 +126,14 @@ else
                 <div class="d-flex justify-space-between mt-3">
                     <div>
                         <MudText Typo="Typo.body2">
-                            <strong>Inkomster:</strong> @selectedTransactions.Where(t => t.IsIncome).Sum(t => t.Amount).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                            <strong>Inkomster:</strong> @selectedTotalsTransactions.Where(t => t.IsIncome).Sum(t => t.Amount).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
                         </MudText>
                         <MudText Typo="Typo.body2">
-                            <strong>Utgifter:</strong> @selectedTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                            <strong>Utgifter:</strong> @selectedTotalsTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
                         </MudText>
                     </div>
-                    <MudText Typo="Typo.body1" Color="@(selectedTransactions.Where(t => t.IsIncome).Sum(t => t.Amount) - selectedTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount) >= 0 ? Color.Success : Color.Error)">
-                        <strong>Netto:</strong> @((selectedTransactions.Where(t => t.IsIncome).Sum(t => t.Amount) - selectedTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount)).ToString("C", new System.Globalization.CultureInfo("sv-SE")))
+                    <MudText Typo="Typo.body1" Color="@(selectedTotalsTransactions.Where(t => t.IsIncome).Sum(t => t.Amount) - selectedTotalsTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount) >= 0 ? Color.Success : Color.Error)">
+                        <strong>Netto:</strong> @((selectedTotalsTransactions.Where(t => t.IsIncome).Sum(t => t.Amount) - selectedTotalsTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount)).ToString("C", new System.Globalization.CultureInfo("sv-SE")))
                     </MudText>
                 </div>
             }

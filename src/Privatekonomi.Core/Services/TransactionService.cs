@@ -339,6 +339,7 @@ public class TransactionService : ITransactionService
                 .Select(c => c.CategoryId)
                 .ToListAsync();
             transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
+            transaction.IsExcludedFromTotals = false;
         }
 
         await context.SaveChangesAsync();
@@ -449,7 +450,10 @@ public class TransactionService : ITransactionService
         return await query.OrderByDescending(t => t.Date).ToListAsync();
     }
 
-    public async Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories)
+    public async Task UpdateTransactionCategoriesAsync(
+        int transactionId,
+        List<TransactionCategory> categories,
+        bool isExcludedFromTotals = false)
     {
         using var context = _contextFactory.CreateDbContext();
         var transaction = await context.Transactions
@@ -476,6 +480,7 @@ public class TransactionService : ITransactionService
             .Select(c => c.CategoryId)
             .ToListAsync();
         transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
+        transaction.IsExcludedFromTotals = isExcludedFromTotals;
 
         await context.SaveChangesAsync();
     }
@@ -784,7 +789,9 @@ public class TransactionService : ITransactionService
             TransactionId = t.TransactionId,
             HouseholdId = t.HouseholdId,
             CategoryIds = t.TransactionCategories.Select(tc => tc.CategoryId).ToList(),
-            CategoryAmounts = t.TransactionCategories.Select(tc => tc.Amount).ToList()
+            CategoryAmounts = t.TransactionCategories.Select(tc => tc.Amount).ToList(),
+            IsInternalTransfer = t.IsInternalTransfer,
+            IsExcludedFromTotals = t.IsExcludedFromTotals
         }).ToList();
 
         return snapshot;
@@ -868,6 +875,8 @@ public class TransactionService : ITransactionService
                     });
                 }
 
+                transaction.IsInternalTransfer = txSnapshot.IsInternalTransfer;
+                transaction.IsExcludedFromTotals = txSnapshot.IsExcludedFromTotals;
                 transaction.UpdatedAt = DateTime.UtcNow;
                 result.SuccessCount++;
                 result.SuccessfulIds.Add(txSnapshot.TransactionId);

@@ -334,7 +334,19 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Kategori" Sortable="false">
                     <CellTemplate>
-                        @if (context.Item.TransactionCategories.Any())
+                        @if (context.Item.IsInternalTransferTransaction)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                                Överföring mellan egna konton
+                            </MudChip>
+                        }
+                        else if (context.Item.IsExcludedFromTotals)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                                Övrig utan kategorisering
+                            </MudChip>
+                        }
+                        else if (context.Item.TransactionCategories.Any())
                         {
                             @foreach (var tc in context.Item.TransactionCategories)
                             {
@@ -715,6 +727,17 @@
         {
             try
             {
+                if (categorizeResult.IsExcludedFromTotals)
+                {
+                    await TransactionService.UpdateTransactionCategoriesAsync(
+                        transaction.TransactionId,
+                        new List<TransactionCategory>(),
+                        isExcludedFromTotals: true);
+                    Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                    await LoadData();
+                    return;
+                }
+
                 // Update the transaction category
                 var categories = new List<TransactionCategory>
                 {

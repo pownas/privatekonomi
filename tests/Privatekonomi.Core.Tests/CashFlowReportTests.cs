@@ -64,6 +64,13 @@ public class CashFlowReportTests
                 Date = new DateTime(2026, 1, 5),
                 IsIncome = true,
                 Amount = 1000m
+            },
+            new Transaction
+            {
+                Date = new DateTime(2026, 1, 5),
+                IsIncome = false,
+                Amount = 900m,
+                IsExcludedFromTotals = true
             });
         await context.SaveChangesAsync();
 

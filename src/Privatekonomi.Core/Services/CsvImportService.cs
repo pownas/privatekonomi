@@ -184,6 +184,9 @@ public class CsvImportService : ICsvImportService
                 }
             }
 
+            await MarkMatchingInternalTransfersAsync(result.Transactions, userId: null);
+            result.Summary = CalculateSummary(
+                result.Transactions.Where(t => !t.IsExcludedFromTotalsTransaction).ToList());
             await _context.SaveChangesAsync();
             result.Success = true;
         }
@@ -276,6 +279,9 @@ public class CsvImportService : ICsvImportService
                 }
             }
 
+            await MarkMatchingInternalTransfersAsync(result.Transactions, userId);
+            result.Summary = CalculateSummary(
+                result.Transactions.Where(t => !t.IsExcludedFromTotalsTransaction).ToList());
             await _context.SaveChangesAsync();
             
             importJob.ImportedCount = result.Transactions.Count;
@@ -548,5 +554,78 @@ public class CsvImportService : ICsvImportService
 
         // No account number in import data - fall back to matching by bank name only
         return await query.FirstOrDefaultAsync();
+    }
+
+    private async Task MarkMatchingInternalTransfersAsync(List<Transaction> importedTransactions, string? userId)
+    {
+        var importedWithAccounts = importedTransactions
+            .Where(t => t.BankSourceId.HasValue && !string.IsNullOrWhiteSpace(t.Description))
+            .ToList();
+        if (importedWithAccounts.Count == 0)
+        {
+            return;
+        }
+
+        var minDate = importedWithAccounts.Min(t => t.Date);
+        var maxDate = importedWithAccounts.Max(t => t.Date);
+        var existingTransactions = await _context.Transactions
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .Where(t => t.UserId == userId &&
+                        t.BankSourceId.HasValue &&
+                        t.Date >= minDate && t.Date <= maxDate)
+            .ToListAsync();
+
+        var importedSet = importedWithAccounts.ToHashSet();
+        var transferPairs = existingTransactions
+            .Concat(importedWithAccounts)
+            .Distinct()
+            .Where(t => t.BankSourceId.HasValue && !string.IsNullOrWhiteSpace(t.Description))
+            .GroupBy(t => new
+            {
+                t.Date,
+                Amount = Math.Abs(t.Amount),
+                Description = t.Description.Trim().ToUpperInvariant()
+            })
+            .Where(group => group.Count() == 2 &&
+                            group.Any(importedSet.Contains) &&
+                            group.Select(t => t.BankSourceId).Distinct().Count() == 2 &&
+                            group.Select(t => t.IsIncome).Distinct().Count() == 2 &&
+                            group.All(t => !t.IsInternalTransfer &&
+                                           !t.IsExcludedFromTotals &&
+                                           t.TransactionCategories.Count == 0))
+            .ToList();
+
+        if (transferPairs.Count == 0)
+        {
+            return;
+        }
+
+        var transferCategoryId = await _context.Categories
+            .Where(c => c.IsInternalTransferCategory)
+            .Select(c => (int?)c.CategoryId)
+            .FirstOrDefaultAsync();
+        if (!transferCategoryId.HasValue)
+        {
+            _logger.LogWarning("Matching transactions were found, but the internal transfer category is missing.");
+            return;
+        }
+
+        foreach (var pair in transferPairs)
+        {
+            foreach (var transaction in pair)
+            {
+                transaction.IsInternalTransfer = true;
+                transaction.TransactionCategories.Add(new TransactionCategory
+                {
+                    Transaction = transaction,
+                    CategoryId = transferCategoryId.Value,
+                    Amount = Math.Abs(transaction.Amount),
+                    Percentage = 100
+                });
+            }
+        }
+
+        _logger.LogInformation("Automatically categorized {TransferCount} internal account transfer pairs.", transferPairs.Count);
     }
 }

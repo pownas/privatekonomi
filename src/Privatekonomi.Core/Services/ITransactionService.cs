@@ -48,7 +48,10 @@ public interface ITransactionService
     Task DeleteTransactionAsync(int id);
     Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime toDate);
     Task<IEnumerable<Transaction>> GetUnmappedTransactionsAsync();
-    Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories);
+    Task UpdateTransactionCategoriesAsync(
+        int transactionId,
+        List<TransactionCategory> categories,
+        bool isExcludedFromTotals = false);
     Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAsync(int householdId);
     Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAndDateRangeAsync(int householdId, DateTime from, DateTime toDate);
     

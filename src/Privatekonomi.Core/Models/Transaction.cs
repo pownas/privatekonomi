@@ -17,6 +17,7 @@ public class Transaction : ITemporalEntity
     }
     public bool IsIncome { get; set; }
     public bool IsInternalTransfer { get; set; }
+    public bool IsExcludedFromTotals { get; set; }
     public int? BankSourceId { get; set; }
     
     // Temporal tracking
@@ -101,6 +102,7 @@ public class Transaction : ITemporalEntity
 
     public bool IsInternalTransferTransaction =>
         IsInternalTransfer || TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true);
+    public bool IsExcludedFromTotalsTransaction => IsExcludedFromTotals || IsInternalTransferTransaction;
     public ICollection<TransactionCategory> TransactionCategories { get; set; } = new List<TransactionCategory>();
     public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
 }

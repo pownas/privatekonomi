@@ -354,6 +354,7 @@
             Date = Transaction.Date,
             IsIncome = Transaction.IsIncome,
             IsInternalTransfer = Transaction.IsInternalTransfer,
+            IsExcludedFromTotals = Transaction.IsExcludedFromTotals,
             BankSourceId = Transaction.BankSourceId,
             HouseholdId = Transaction.HouseholdId,
             Currency = Transaction.Currency,
@@ -499,6 +500,11 @@
             var transferCategorySelected = _availableCategories.Any(c =>
                 categoryIds.Contains(c.CategoryId) && c.IsInternalTransferCategory);
             _transaction.IsInternalTransfer = _transaction.IsInternalTransfer || transferCategorySelected;
+            var hasCategory = categoryIds.Length > 0;
+            if (hasCategory)
+            {
+                _transaction.IsExcludedFromTotals = false;
+            }
 
             await TransactionService.UpdateTransactionAsync(_transaction);
             
@@ -575,7 +581,10 @@
                 }
             }
             
-            await TransactionService.UpdateTransactionCategoriesAsync(_transaction.TransactionId, newCategories);
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                _transaction.TransactionId,
+                newCategories,
+                _transaction.IsExcludedFromTotals && newCategories.Count == 0);
             
             Snackbar.Add("Transaktionen har uppdaterats", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));

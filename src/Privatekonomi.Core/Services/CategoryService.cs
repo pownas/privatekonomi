@@ -117,7 +117,7 @@ public class CategoryService : ICategoryService
 
         var transactions = await GetTransactionsByCategoryAsync(categoryId, fromDate, toDate);
         var allocatedTransactions = transactions
-        .Where(t => !t.IsInternalTransfer && !t.TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true))
+        .WhereIncludedInTotals()
         .Select(t => new
         {
             t.Date,

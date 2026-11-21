@@ -279,7 +279,7 @@ public class DashboardService : IDashboardService
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Where(t => t.UserId == userId && t.Date >= firstDayOfTwoMonthsAgo)
-            .Where(t => !t.IsInternalTransfer && !t.TransactionCategories.Any(tc => tc.Category != null && tc.Category.IsInternalTransferCategory))
+            .WhereIncludedInTotals()
             .ToListAsync();
 
         // Current month transactions

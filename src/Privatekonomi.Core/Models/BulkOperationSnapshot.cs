@@ -50,6 +50,8 @@ public class TransactionSnapshot
     public int? HouseholdId { get; set; }
     public List<int> CategoryIds { get; set; } = new();
     public List<decimal> CategoryAmounts { get; set; } = new();
+    public bool IsInternalTransfer { get; set; }
+    public bool IsExcludedFromTotals { get; set; }
 }
 
 /// <summary>

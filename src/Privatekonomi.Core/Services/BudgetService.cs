@@ -229,7 +229,8 @@ public class BudgetService : IBudgetService
             .Include(t => t.TransactionCategories)
             .ThenInclude(tc => tc.Category)
             .Include(t => t.BankSource)
-            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate && !t.IsIncome);
+            .Where(t => t.Date >= budget.StartDate && t.Date <= budget.EndDate && !t.IsIncome)
+            .WhereIncludedInTotals();
 
         transactionQuery = ApplyTransactionOwnershipFilter(transactionQuery);
 

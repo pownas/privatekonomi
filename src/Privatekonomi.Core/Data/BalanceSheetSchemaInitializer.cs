@@ -34,6 +34,7 @@ public static class BalanceSheetSchemaInitializer
             new AddColumnOperation { Table = "Transactions", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true },
             new AddColumnOperation { Table = "Transactions", Name = "ClearingNumber", ClrType = typeof(string), IsNullable = true },
             new AddColumnOperation { Table = "Transactions", Name = "IsInternalTransfer", ClrType = typeof(bool), DefaultValue = false },
+            new AddColumnOperation { Table = "Transactions", Name = "IsExcludedFromTotals", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "Categories", Name = "IsInternalTransferCategory", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "Assets", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Investments", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },

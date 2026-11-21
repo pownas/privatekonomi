@@ -246,9 +246,12 @@ else
         
         var transactionList = transactions.ToList();
         _totalTransactions = transactionList.Count;
+        var includedTransactions = transactionList
+            .Where(t => !t.IsExcludedFromTotalsTransaction)
+            .ToList();
         
         // Group income by category
-        _incomeCategories = transactionList
+        _incomeCategories = includedTransactions
             .Where(t => t.IsIncome)
             .SelectMany(t => t.TransactionCategories.Select(tc => new { tc.Category.Name, t.Amount }))
             .GroupBy(x => x.Name)
@@ -260,7 +263,7 @@ else
             .ToList();
         
         // Group expenses by category
-        _expenseCategories = transactionList
+        _expenseCategories = includedTransactions
             .Where(t => !t.IsIncome)
             .SelectMany(t => t.TransactionCategories.Select(tc => new { tc.Category.Name, t.Amount }))
             .GroupBy(x => x.Name)

@@ -63,7 +63,19 @@
         @if (ShowCategory)
         {
             <MudTd DataLabel="Kategori" Style="cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
-                @if (context.TransactionCategories.Any())
+                @if (context.IsInternalTransferTransaction)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                        Överföring mellan egna konton
+                    </MudChip>
+                }
+                else if (context.IsExcludedFromTotals)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                        Övrig utan kategorisering
+                    </MudChip>
+                }
+                else if (context.TransactionCategories.Any())
                 {
                     @foreach (var tc in context.TransactionCategories)
                     {

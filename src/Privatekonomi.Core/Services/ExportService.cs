@@ -370,8 +370,9 @@ public class ExportService : IExportService
         // Summary section
         csv.AppendLine();
         csv.AppendLine(CultureInfo.InvariantCulture, $"# Summering {year}");
-        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        var includedTransactions = transactions.WhereIncludedInTotals();
+        var totalIncome = includedTransactions.Where(t => t.IsIncome).Sum(t => t.Amount);
+        var totalExpenses = includedTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
         var netResult = totalIncome - totalExpenses;
         csv.AppendLine(CultureInfo.InvariantCulture, $"# Totala inkomster: {totalIncome:F2} SEK");
         csv.AppendLine(CultureInfo.InvariantCulture, $"# Totala utgifter: {totalExpenses:F2} SEK");

@@ -688,10 +688,10 @@ else
         }
         
         _totalIncome = _transactions
-            .Where(t => t.IsIncome && !t.IsInternalTransferTransaction)
+            .Where(t => t.IsIncome && !t.IsExcludedFromTotalsTransaction)
             .Sum(t => Math.Abs(t.Amount));
         _totalExpenses = _transactions
-            .Where(t => !t.IsIncome && !t.IsInternalTransferTransaction)
+            .Where(t => !t.IsIncome && !t.IsExcludedFromTotalsTransaction)
             .Sum(t => Math.Abs(t.Amount));
         await UpdateChartData();
         await LoadNetWorthData();

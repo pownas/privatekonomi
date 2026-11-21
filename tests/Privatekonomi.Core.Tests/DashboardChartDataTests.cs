@@ -24,7 +24,8 @@ public class DashboardChartDataTests
                     new() { Category = new Category { Name = "Hälsa" }, Amount = 40m }
                 }
             },
-            new Transaction { Date = date, IsIncome = true, Amount = -25m }
+            new Transaction { Date = date, IsIncome = true, Amount = -25m },
+            new Transaction { Date = date, Amount = 80m, IsExcludedFromTotals = true }
         };
 
         var amounts = DashboardChartData.GetCategoryAmounts(transactions).ToList();

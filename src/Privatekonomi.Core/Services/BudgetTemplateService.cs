@@ -348,7 +348,7 @@ public class BudgetTemplateService
     /// </summary>
     public static decimal GetSuggestedIncome(IEnumerable<Transaction> recentTransactions)
     {
-        var incomeTransactions = recentTransactions.Where(t => t.IsIncome);
+        var incomeTransactions = recentTransactions.WhereIncludedInTotals().Where(t => t.IsIncome);
         
         if (!incomeTransactions.Any())
             return 30000m; // Default Swedish median income
