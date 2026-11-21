@@ -1,8 +1,8 @@
 # Bank Connections - Developer Quick Start
 
 ## Prerequisites
-- .NET 9.0 SDK
-- Visual Studio 2022 or VS Code with C# extension
+- .NET 11.0 SDK
+- Visual Studio 2025 or VS Code with C# extension
 
 ## Running the Application
 
