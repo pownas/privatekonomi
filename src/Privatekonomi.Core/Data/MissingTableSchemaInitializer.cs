@@ -100,6 +100,37 @@ public static class MissingTableSchemaInitializer
                     await context.Database.ExecuteSqlRawAsync(sqlCommand.CommandText, cancellationToken);
             }
 
+            var investmentTable = relationalModel.Tables.FirstOrDefault(table =>
+                table.Name == "Investments");
+            if (investmentTable is not null && existingTables.Contains(investmentTable.Name))
+            {
+                var existingColumns = await ReadColumnNamesAsync(
+                    command,
+                    context.Database.ProviderName!,
+                    investmentTable.Name,
+                    investmentTable.Schema,
+                    cancellationToken);
+
+                if (!existingColumns.Contains("InvestmentAccountId"))
+                {
+                    var modelColumn = investmentTable.Columns.Single(column =>
+                        column.Name == "InvestmentAccountId");
+                    var addColumn = new AddColumnOperation
+                    {
+                        Name = "InvestmentAccountId",
+                        Table = investmentTable.Name,
+                        Schema = investmentTable.Schema,
+                        ClrType = typeof(int?),
+                        ColumnType = modelColumn.StoreType,
+                        IsNullable = true
+                    };
+                    var sqlCommands = context.GetService<IMigrationsSqlGenerator>()
+                        .Generate([addColumn], designTimeModel);
+                    foreach (var sqlCommand in sqlCommands)
+                        await context.Database.ExecuteSqlRawAsync(sqlCommand.CommandText, cancellationToken);
+                }
+            }
+
             var loanTable = relationalModel.Tables.FirstOrDefault(table =>
                 table.Columns.Any(column => column.Name == "CsnLastUpdate"));
             if (loanTable is not null && existingTables.Contains(loanTable.Name))

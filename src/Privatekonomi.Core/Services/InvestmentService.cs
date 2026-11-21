@@ -21,7 +21,8 @@ public class InvestmentService : IInvestmentService
         _parsers = new List<IInvestmentCsvParser>
         {
             new AvanzaHoldingsPerAccountParser(),
-            new AvanzaConsolidatedHoldingsParser()
+            new AvanzaConsolidatedHoldingsParser(),
+            new NordnetSwedbankHoldingsParser()
         };
         _transactionParser = new AvanzaTransactionParser();
     }
@@ -30,6 +31,7 @@ public class InvestmentService : IInvestmentService
     {
         var query = _context.Investments
             .Include(i => i.BankSource)
+            .Include(i => i.InvestmentAccount)
             .AsQueryable();
 
         // Filter by current user if authenticated
@@ -45,6 +47,7 @@ public class InvestmentService : IInvestmentService
     {
         var query = _context.Investments
             .Include(i => i.BankSource)
+            .Include(i => i.InvestmentAccount)
             .AsQueryable();
 
         // Filter by current user if authenticated
@@ -137,7 +140,7 @@ public class InvestmentService : IInvestmentService
                 result.Errors.Add(new CsvImportError 
                 { 
                     ErrorType = "Format", 
-                    ErrorMessage = "Kunde inte identifiera CSV-format. Kontrollera att filen kommer från Avanza." 
+                    ErrorMessage = "Kunde inte identifiera CSV-format. Format stöds för Avanza, Nordnet och Swedbank." 
                 });
                 result.ErrorCount++;
                 return result;
@@ -156,6 +159,36 @@ public class InvestmentService : IInvestmentService
             foreach (var parsedInvestment in parsedInvestments)
             {
                 parsedInvestment.BankSourceId = bankSourceId;
+
+                if (!string.IsNullOrWhiteSpace(parsedInvestment.AccountNumber))
+                {
+                    var bankSource = await _context.BankSources.FindAsync(bankSourceId);
+                    var provider = bankSource?.Name ?? "Annan";
+                    var account = await _context.InvestmentAccounts.FirstOrDefaultAsync(a =>
+                        a.AccountNumber == parsedInvestment.AccountNumber &&
+                        a.Provider == provider);
+
+                    if (account == null)
+                    {
+                        account = new InvestmentAccount
+                        {
+                            Name = parsedInvestment.AccountNumber!,
+                            Provider = provider,
+                            AccountNumber = parsedInvestment.AccountNumber,
+                            AccountType = parsedInvestment.AccountType ?? "AF",
+                            Currency = parsedInvestment.Currency ?? "SEK",
+                            ValidFrom = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UserId = _currentUserService?.IsAuthenticated == true
+                                ? _currentUserService.UserId
+                                : null
+                        };
+                        _context.InvestmentAccounts.Add(account);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    parsedInvestment.InvestmentAccountId = account.InvestmentAccountId;
+                }
                 
                 // Check for duplicates
                 Investment? existing = null;
@@ -189,6 +222,7 @@ public class InvestmentService : IInvestmentService
                     existing.PurchasePrice = parsedInvestment.PurchasePrice;
                     existing.CurrentPrice = parsedInvestment.CurrentPrice;
                     existing.AccountNumber = parsedInvestment.AccountNumber;
+                    existing.InvestmentAccountId = parsedInvestment.InvestmentAccountId;
                     existing.ISIN = parsedInvestment.ISIN;
                     existing.Currency = parsedInvestment.Currency;
                     existing.Country = parsedInvestment.Country;
@@ -263,9 +297,87 @@ public class InvestmentService : IInvestmentService
     {
         return await _context.Investments
             .Include(i => i.BankSource)
+            .Include(i => i.InvestmentAccount)
             .Where(i => i.AccountNumber == accountNumber)
             .OrderByDescending(i => i.LastUpdated)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InvestmentAccount>> GetInvestmentAccountsAsync()
+    {
+        var query = _context.InvestmentAccounts
+            .Include(a => a.Investments)
+            .AsQueryable();
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(a => a.UserId == _currentUserService.UserId);
+        }
+
+        return await query
+            .Where(a => a.IsActive)
+            .OrderBy(a => a.Provider)
+            .ThenBy(a => a.Name)
+            .ToListAsync();
+    }
+
+    public async Task<InvestmentAccount?> GetInvestmentAccountByIdAsync(int id)
+    {
+        var query = _context.InvestmentAccounts
+            .Include(a => a.Investments)
+            .AsQueryable();
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            query = query.Where(a => a.UserId == _currentUserService.UserId);
+        }
+
+        return await query.FirstOrDefaultAsync(a => a.InvestmentAccountId == id);
+    }
+
+    public async Task<InvestmentAccount> AddInvestmentAccountAsync(InvestmentAccount account)
+    {
+        account.CreatedAt = DateTime.UtcNow;
+        account.ValidFrom = account.ValidFrom == default ? DateTime.UtcNow : account.ValidFrom;
+        account.LastUpdated = DateTime.UtcNow;
+
+        if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
+        {
+            account.UserId = _currentUserService.UserId;
+        }
+
+        _context.InvestmentAccounts.Add(account);
+        await _context.SaveChangesAsync();
+        return account;
+    }
+
+    public async Task<InvestmentAccount> UpdateInvestmentAccountAsync(InvestmentAccount account)
+    {
+        account.UpdatedAt = DateTime.UtcNow;
+        account.LastUpdated = DateTime.UtcNow;
+        _context.InvestmentAccounts.Update(account);
+        await _context.SaveChangesAsync();
+        return account;
+    }
+
+    public async Task DeleteInvestmentAccountAsync(int id)
+    {
+        var account = await _context.InvestmentAccounts
+            .Include(a => a.Investments)
+            .FirstOrDefaultAsync(a => a.InvestmentAccountId == id);
+
+        if (account == null)
+        {
+            return;
+        }
+
+        foreach (var investment in account.Investments)
+        {
+            investment.InvestmentAccountId = null;
+        }
+
+        _context.InvestmentAccounts.Remove(account);
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>

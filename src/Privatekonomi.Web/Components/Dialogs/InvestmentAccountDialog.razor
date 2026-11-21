@@ -1,0 +1,70 @@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_formValid">
+            <MudTextField @bind-Value="Account.Name" Label="Kontonamn" Required="true"
+                          Variant="Variant.Outlined" RequiredError="Kontonamn är obligatoriskt" Class="mb-3" />
+            <MudSelect @bind-Value="Account.Provider" Label="Leverantör" Required="true"
+                       Variant="Variant.Outlined" Class="mb-3">
+                <MudSelectItem Value="@("Swedbank")">Swedbank</MudSelectItem>
+                <MudSelectItem Value="@("Avanza")">Avanza</MudSelectItem>
+                <MudSelectItem Value="@("Nordnet")">Nordnet</MudSelectItem>
+                <MudSelectItem Value="@("Lysa")">Lysa</MudSelectItem>
+                <MudSelectItem Value="@("Opti")">Opti</MudSelectItem>
+                <MudSelectItem Value="@("Annan")">Annan</MudSelectItem>
+            </MudSelect>
+            <MudSelect @bind-Value="Account.AccountType" Label="Kontotyp" Required="true"
+                       Variant="Variant.Outlined" Class="mb-3">
+                <MudSelectItem Value="@("ISK")">ISK</MudSelectItem>
+                <MudSelectItem Value="@("KF")">Kapitalförsäkring</MudSelectItem>
+                <MudSelectItem Value="@("AF")">Aktie- och fondkonto</MudSelectItem>
+                <MudSelectItem Value="@("Depå")">Depå</MudSelectItem>
+                <MudSelectItem Value="@("Fondrobot")">Fondrobotkonto</MudSelectItem>
+            </MudSelect>
+            <MudTextField @bind-Value="Account.AccountNumber" Label="Kontonummer"
+                          Variant="Variant.Outlined" Class="mb-3" />
+            <MudSelect @bind-Value="Account.Currency" Label="Valuta" Variant="Variant.Outlined" Class="mb-3">
+                <MudSelectItem Value="@("SEK")">SEK</MudSelectItem>
+                <MudSelectItem Value="@("USD")">USD</MudSelectItem>
+                <MudSelectItem Value="@("EUR")">EUR</MudSelectItem>
+                <MudSelectItem Value="@("NOK")">NOK</MudSelectItem>
+                <MudSelectItem Value="@("DKK")">DKK</MudSelectItem>
+            </MudSelect>
+            <MudSwitch T="bool" @bind-Value="Account.IsFundRobot" Label="Fondrobotkonto"
+                       Color="Color.Primary" Class="mb-3" />
+            @if (Account.IsFundRobot)
+            {
+                <MudNumericField @bind-Value="Account.InitialContributions" Label="Insatt belopp / anskaffningsvärde"
+                                 Variant="Variant.Outlined" Min="0m" Adornment="Adornment.End"
+                                 AdornmentText="@Account.Currency" Class="mb-3" />
+                <MudNumericField @bind-Value="Account.CurrentValue" Label="Nuvarande klumpsumma"
+                                 Variant="Variant.Outlined" Min="0m" Adornment="Adornment.End"
+                                 AdornmentText="@Account.Currency" Class="mb-3" />
+            }
+            <MudTextField @bind-Value="Account.Notes" Label="Anteckningar" Variant="Variant.Outlined"
+                          Lines="2" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Avbryt</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(!_formValid)" OnClick="Submit">
+            @(IsEdit ? "Uppdatera" : "Lägg till")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public required IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public InvestmentAccount Account { get; set; } = new();
+
+    [Parameter]
+    public bool IsEdit { get; set; }
+
+    private MudForm? _form;
+    private bool _formValid;
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Account));
+    private void Cancel() => MudDialog.Cancel();
+}

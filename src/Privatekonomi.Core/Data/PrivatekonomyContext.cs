@@ -20,6 +20,7 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     public DbSet<CategoryRule> CategoryRules { get; set; }
     public DbSet<Loan> Loans { get; set; }
     public DbSet<Investment> Investments { get; set; }
+    public DbSet<InvestmentAccount> InvestmentAccounts { get; set; }
     public DbSet<Asset> Assets { get; set; }
     public DbSet<Budget> Budgets { get; set; }
     public DbSet<BudgetCategory> BudgetCategories { get; set; }
@@ -446,7 +447,39 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             // Temporal tracking
             entity.Property(e => e.ValidFrom).IsRequired();
             entity.Property(e => e.ValidTo);
-            
+        });
+
+        builder.Entity<InvestmentAccount>(entity =>
+        {
+            entity.HasKey(e => e.InvestmentAccountId);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Provider).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AccountType).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.AccountNumber).HasMaxLength(100);
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.InitialContributions).HasPrecision(18, 2);
+            entity.Property(e => e.CurrentValue).HasPrecision(18, 2);
+
+            entity.HasMany(e => e.Investments)
+                .WithOne(e => e.InvestmentAccount)
+                .HasForeignKey(e => e.InvestmentAccountId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.Provider, e.AccountNumber });
+            entity.Ignore(e => e.Contributions);
+            entity.Ignore(e => e.MarketValue);
+            entity.Ignore(e => e.ProfitLoss);
+            entity.Ignore(e => e.ProfitLossPercentage);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Investment>(entity =>
+        {
             // New properties for bank and account information
             entity.Property(e => e.AccountNumber).HasMaxLength(50);
             entity.Property(e => e.ShortName).HasMaxLength(50);
@@ -455,13 +488,13 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Country).HasMaxLength(2);
             entity.Property(e => e.Market).HasMaxLength(50);
             entity.Property(e => e.ChartOfAccountsCode).HasMaxLength(20);
-            
+
             // Relation to BankSource
             entity.HasOne(e => e.BankSource)
                 .WithMany()
                 .HasForeignKey(e => e.BankSourceId)
                 .OnDelete(DeleteBehavior.SetNull);
-            
+
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)

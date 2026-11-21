@@ -17,4 +17,10 @@ public interface IInvestmentService
     // Filtering
     Task<IEnumerable<Investment>> GetInvestmentsByBankAsync(int bankSourceId);
     Task<IEnumerable<Investment>> GetInvestmentsByAccountAsync(string accountNumber);
+
+    Task<IEnumerable<InvestmentAccount>> GetInvestmentAccountsAsync();
+    Task<InvestmentAccount?> GetInvestmentAccountByIdAsync(int id);
+    Task<InvestmentAccount> AddInvestmentAccountAsync(InvestmentAccount account);
+    Task<InvestmentAccount> UpdateInvestmentAccountAsync(InvestmentAccount account);
+    Task DeleteInvestmentAccountAsync(int id);
 }

@@ -26,6 +26,12 @@ public class YahooFinanceStockPriceService : IStockPriceService
     {
         try
         {
+            if (string.Equals(investment.Type, "Fondrobot", StringComparison.OrdinalIgnoreCase) ||
+                investment.InvestmentAccount?.IsFundRobot == true)
+            {
+                _logger.LogInformation("Skipping market price lookup for fund robot {Name}", investment.Name);
+                return false;
+            }
             // Try to get the ticker symbol from the investment
             var symbol = GetTickerSymbol(investment);
             if (string.IsNullOrEmpty(symbol))
