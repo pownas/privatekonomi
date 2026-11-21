@@ -529,22 +529,79 @@ else
     {
         <MudPaper Class="pa-4 mt-4">
             <MudAlert Severity="Severity.Warning" Class="mb-3">
-                Det finns @_unmappedTransactions.Count() transaktioner utan kategori. Kategorisera dem för att inkludera i budgetanalys.
+                Det finns @_unmappedTransactions.Count importerade transaktioner utan kategori. Kategorisera dem för att inkludera i budgetanalys.
             </MudAlert>
-            <MudText Typo="Typo.h6" Class="mb-4">Transaktioner utan Kategori</MudText>
-            <TransactionListComponent Transactions="@_unmappedTransactions" 
-                                    ShowActions="true"
-                                    OnTransactionUpdated="@LoadData">
-                <CustomActions>
-                    <MudButton Variant="Variant.Text" 
-                             Color="Color.Primary" 
-                             Size="Size.Small"
-                             StartIcon="@Icons.Material.Filled.Category"
-                             Href="@($"/economy/transactions")">
-                        Kategorisera
-                    </MudButton>
-                </CustomActions>
-            </TransactionListComponent>
+            <MudText Typo="Typo.h6" Class="mb-4">Importerade transaktioner utan kategori</MudText>
+            <MudTable Items="@_unmappedTransactions" Dense="true" Hover="true" Striped="true" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>Datum</MudTh>
+                    <MudTh>Beskrivning</MudTh>
+                    <MudTh>Kategori</MudTh>
+                    <MudTh Style="text-align: right">Belopp</MudTh>
+                    <MudTh>Åtgärder</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Datum">@context.Date.ToString("yyyy-MM-dd")</MudTd>
+                    <MudTd DataLabel="Beskrivning">@context.Description</MudTd>
+                    <MudTd DataLabel="Kategori">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   Size="Size.Small"
+                                   OnClick="@(() => OpenTransactionsForMonth(context))">
+                            Okategoriserad
+                        </MudButton>
+                        @if (GetSuggestedCategory(context) is { } suggestedCategory)
+                        {
+                            <div class="d-flex align-center gap-1 mt-1">
+                                <MudText Typo="Typo.caption">@suggestedCategory.Name?</MudText>
+                                <MudButton Size="Size.Small"
+                                           Color="Color.Success"
+                                           OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
+                                    Ja
+                                </MudButton>
+                                <MudButton Size="Size.Small"
+                                           Color="Color.Default"
+                                           OnClick="@(() => DismissCategorySuggestion(context))">
+                                    Nej
+                                </MudButton>
+                            </div>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Belopp" Style="text-align: right">
+                        <MudText Typo="Typo.body2" Color="@(context.IsIncome ? Color.Success : Color.Error)">
+                            @(context.IsIncome ? "+" : "")@context.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
+                        </MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Åtgärder">
+                        <MudMenu Label="Kategorisera"
+                                 Size="Size.Small"
+                                 Variant="Variant.Outlined"
+                                 Color="Color.Primary"
+                                 StartIcon="@Icons.Material.Filled.Category">
+                            @if (GetSuggestedCategory(context) is { } suggestedCategory)
+                            {
+                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
+                                    Förslag: @suggestedCategory.Name
+                                </MudMenuItem>
+                                <MudDivider />
+                            }
+                            @foreach (var category in _quickCategories)
+                            {
+                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, category))">
+                                    @category.Name
+                                </MudMenuItem>
+                            }
+                            <MudDivider />
+                            <MudMenuItem OnClick="@(() => OpenTransactionsForMonth(context))">
+                                Öppna transaktioner för månaden
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+                </PagerContent>
+            </MudTable>
         </MudPaper>
     }
 
@@ -568,7 +625,10 @@ else
 @code {
     private bool _loading = true;
     private IEnumerable<Transaction> _transactions = new List<Transaction>();
-    private IEnumerable<Transaction> _unmappedTransactions = new List<Transaction>();
+    private List<Transaction> _unmappedTransactions = new();
+    private List<Category> _quickCategories = new();
+    private Dictionary<string, Category> _categorySuggestions = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<int> _dismissedSuggestionTransactionIds = new();
     private IEnumerable<Budget> _activeBudgets = new List<Budget>();
     private decimal _totalIncome = 0;
     private decimal _totalExpenses = 0;
@@ -657,7 +717,13 @@ else
     {
         _loading = true;
         _transactions = await TransactionService.GetAllTransactionsAsync();
-        _unmappedTransactions = await TransactionService.GetUnmappedTransactionsAsync();
+        _unmappedTransactions = (await TransactionService.GetUnmappedTransactionsAsync())
+            .Where(t => t.Imported && !t.IsExcludedFromTotalsTransaction)
+            .ToList();
+        _quickCategories = (await CategoryService.GetAllCategoriesAsync())
+            .OrderBy(category => category.Name)
+            .ToList();
+        BuildCategorySuggestions();
         _activeBudgets = await BudgetService.GetActiveBudgetsAsync();
         
         // Load budget details
@@ -696,6 +762,100 @@ else
         await UpdateChartData();
         await LoadNetWorthData();
         _loading = false;
+    }
+
+    private void BuildCategorySuggestions()
+    {
+        _categorySuggestions.Clear();
+
+        var categorizedTransactions = _transactions
+            .Where(transaction => !transaction.IsExcludedFromTotalsTransaction && transaction.TransactionCategories.Count == 1)
+            .Select(transaction => new
+            {
+                Description = NormalizeDescription(transaction.Description),
+                Category = transaction.TransactionCategories.First().Category,
+                CategoryId = transaction.TransactionCategories.First().CategoryId
+            })
+            .Where(item => !string.IsNullOrEmpty(item.Description) && item.Category is not null)
+            .GroupBy(item => item.Description, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in categorizedTransactions)
+        {
+            if (group.Count() < 3)
+            {
+                continue;
+            }
+
+            var mostCommonCategory = group
+                .GroupBy(item => item.CategoryId)
+                .OrderByDescending(categoryGroup => categoryGroup.Count())
+                .First();
+
+            if (mostCommonCategory.Count() < 3 || mostCommonCategory.Count() / (double)group.Count() < 0.8)
+            {
+                continue;
+            }
+
+            var category = mostCommonCategory.First().Category;
+            if (category is not null)
+            {
+                _categorySuggestions[group.Key] = category;
+            }
+        }
+    }
+
+    private Category? GetSuggestedCategory(Transaction transaction)
+    {
+        if (_dismissedSuggestionTransactionIds.Contains(transaction.TransactionId))
+        {
+            return null;
+        }
+
+        var description = NormalizeDescription(transaction.Description);
+        return _categorySuggestions.GetValueOrDefault(description);
+    }
+
+    private static string NormalizeDescription(string? description)
+    {
+        return string.Join(' ', (description ?? string.Empty)
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+            .ToUpperInvariant();
+    }
+
+    private async Task CategorizeImportedTransaction(Transaction transaction, Category category)
+    {
+        try
+        {
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = category.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            Snackbar.Add($"Transaktionen kategoriserades som {category.Name}.", Severity.Success);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kunde inte kategorisera transaktionen: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void DismissCategorySuggestion(Transaction transaction)
+    {
+        _dismissedSuggestionTransactionIds.Add(transaction.TransactionId);
+    }
+
+    private void OpenTransactionsForMonth(Transaction transaction)
+    {
+        Navigation.NavigateTo($"/economy/transactions?filterdate={transaction.Date:yyyy-MM}");
     }
 
     private void ToggleBudgetDetails(int budgetId)

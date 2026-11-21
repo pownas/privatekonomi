@@ -50,7 +50,7 @@
                     @foreach (var category in _categories.OrderBy(c => c.Name))
                     {
                         var isSelected = !_excludeFromTotals && _selectedCategoryId == category.CategoryId;
-                        <MudChip T="string" 
+                        <MudChip T="string"
                                  Color="@(isSelected ? Color.Primary : Color.Default)"
                                  Variant="@(isSelected ? Variant.Filled : Variant.Outlined)"
                                  OnClick="@(() => SelectCategory(category.CategoryId))"
@@ -63,8 +63,8 @@
 
                 <MudDivider Class="my-4" />
 
-                <MudSwitch @bind-Value="_createRule" 
-                           Color="Color.Primary" 
+                <MudSwitch @bind-Value="_createRule"
+                           Color="Color.Primary"
                            Label="Skapa kategoriseringsregel"
                            Class="mb-2" />
 
@@ -74,8 +74,8 @@
                         En regel skapas baserad på transaktionens beskrivning. Liknande transaktioner kommer automatiskt kategoriseras.
                     </MudAlert>
 
-                    <MudTextField @bind-Value="_rulePattern" 
-                                  Label="Mönster för regeln" 
+                    <MudTextField @bind-Value="_rulePattern"
+                                  Label="Mönster för regeln"
                                   Variant="Variant.Outlined"
                                   HelperText="Lämna tomt för att använda transaktionsbeskrivningen"
                                   Placeholder="@Transaction?.Description"
