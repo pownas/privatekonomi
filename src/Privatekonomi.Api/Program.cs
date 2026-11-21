@@ -145,6 +145,8 @@ using (var scope = app.Services.CreateScope())
             await persistence.LoadAsync(context);
     }
 
+    TestDataSeeder.SeedProductionReferenceData(context);
+
     logger.LogInformation("Database initialized with provider: {Provider}", storageSettings.Provider);
 }
 
