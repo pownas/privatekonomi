@@ -83,6 +83,7 @@ ScaffoldingReadMe.txt
 *.db.init.lock
 *.db-shm
 *.db-wal
+*.bak
 /data/
 /src/Privatekonomi.Web/data/
 /src/Privatekonomi.Api/data/
