@@ -32,3 +32,11 @@ Listan returnerar en sida med transaktioner och `nextBeforeId` när fler poster 
 ## Lagring och miljö
 
 Lagringsprovider och anslutningssträng konfigureras på API-processen för API-data. Web har fortfarande en separat lagring eftersom dess funktioner inte är migrerade till API:t; den separationen är en tillfällig arkitekturbegränsning, inte färdig måldesign. Se [lagringsguiden](STORAGE_GUIDE.md) för providers, testdata, isolering och backup.
+
+Önskad miljöindelning är testin-memory/mock för isolerade automatiska tester,
+Development med en separat SQL Server-databas och Production med beständig
+SQLite-lagring. Dessa är konfigurationsval, inte automatik som väljer eller
+migrerar data: den aktuella API Development-konfigurationen är fortfarande
+InMemory om den inte överstyrts. Innan produktionsdata läggs in ska API:ts och
+Webs verkliga provider, connection string och databas vara verifierade var för
+sig. Kör aldrig testseeding mot en beständig databas.

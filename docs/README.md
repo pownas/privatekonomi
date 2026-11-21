@@ -13,6 +13,13 @@ skulle inte migrera dess dataåtkomst och kan ändra vilken databas Web använde
 Det krävs en separat, fullständig Web→API-migrering innan dessa inställningar
 kan tas bort.
 
+Konfigurationsordningen i Aspire är nu: projektets basinställningar,
+miljöspecifika inställningar, Development/Local `appsettings.local.json` och
+User Secrets, miljövariabler och till sist explicita AppHost-överstyrningar.
+I Web/API-processerna ligger `PRIVATEKONOMI_ASPIRE_`-miljövariabler sist och
+har högst prioritet. En lokal fil ska därför inte tyst åsidosätta ett värde som
+driftsmiljön eller Aspire uttryckligen skickat in.
+
 API:ets begränsade, aktiva personliga yta är inte en ersättning för hela webbappen. Se [aktuell API-guide](API_GUIDE.md), [säkerhetsgränsen för äldre API:er](LEGACY_API_SECURITY.md) och [lagringsguiden](STORAGE_GUIDE.md). `/api-info` visar version och konfigurerad provider, inte om data är test- eller produktionsdata.
 
 ## Aktuella guider
