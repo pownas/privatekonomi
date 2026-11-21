@@ -15,6 +15,70 @@ public sealed class DataMigrationService : IDataMigrationService
         WriteIndented = true
     };
 
+    public async Task<DataMigrationPreview> PreviewAsync(
+        DataMigrationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        try
+        {
+            var sourceProvider = NormalizeProvider(request.SourceProvider);
+            var targetProvider = NormalizeProvider(request.TargetProvider);
+            ValidateProvider(sourceProvider);
+            ValidateProvider(targetProvider);
+
+            if (sourceProvider == "JSONFILE")
+            {
+                var counts = await ReadJsonSnapshotCountsAsync(request.SourceConnectionString, cancellationToken);
+                return await PreviewJsonTargetAsync(request, targetProvider, counts, cancellationToken);
+            }
+
+            await using var source = CreateContext(sourceProvider, request.SourceConnectionString);
+            if (sourceProvider == "SQLITE" && !SourceSqliteFileExists(request.SourceConnectionString))
+                throw new InvalidOperationException("Källdatabasen (SQLite) finns inte.");
+            if (!await source.Database.CanConnectAsync(cancellationToken))
+                throw new InvalidOperationException($"Källans anslutning misslyckades ({sourceProvider}).");
+
+            var sourceCounts = await CountEntitiesAsync(source, cancellationToken);
+            if (targetProvider == "JSONFILE")
+            {
+                ValidateJsonTargetDirectory(request.TargetConnectionString);
+                return new DataMigrationPreview
+                {
+                    CanMigrate = true,
+                    Message = "Källan är tillgänglig och JSON-målet är tomt.",
+                    SourceProvider = request.SourceProvider,
+                    TargetProvider = request.TargetProvider,
+                    SourceCounts = sourceCounts
+                };
+            }
+
+            await using var target = CreateContext(targetProvider, request.TargetConnectionString);
+            await target.Database.EnsureCreatedAsync(cancellationToken);
+            await EnsureTargetIsEmptyAsync(target, cancellationToken);
+
+            return new DataMigrationPreview
+            {
+                CanMigrate = true,
+                Message = "Källan är tillgänglig och måldatabasen är tom.",
+                SourceProvider = request.SourceProvider,
+                TargetProvider = request.TargetProvider,
+                SourceCounts = sourceCounts
+            };
+        }
+        catch (Exception ex)
+        {
+            return new DataMigrationPreview
+            {
+                CanMigrate = false,
+                Message = ex.Message,
+                SourceProvider = request.SourceProvider,
+                TargetProvider = request.TargetProvider
+            };
+        }
+    }
+
     public async Task<DataMigrationResult> MigrateAsync(
         DataMigrationRequest request,
         CancellationToken cancellationToken = default)
@@ -161,6 +225,80 @@ public sealed class DataMigrationService : IDataMigrationService
         }
     }
 
+    private static async Task<Dictionary<string, int>> CountEntitiesAsync(
+        PrivatekonomyContext context,
+        CancellationToken cancellationToken)
+    {
+        var counts = new Dictionary<string, int>();
+        foreach (var entityType in context.Model.GetEntityTypes())
+        {
+            if (entityType.FindOwnership() != null)
+                continue;
+
+            var count = await GetEntitySet(context, entityType.ClrType)
+                .Cast<object>()
+                .CountAsync(cancellationToken);
+            if (count > 0)
+                counts[entityType.ClrType.Name] = count;
+        }
+        return counts;
+    }
+
+    private static void ValidateJsonTargetDirectory(string targetDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(targetDirectory))
+            throw new InvalidOperationException("Målmapp för JSON saknas.");
+
+        Directory.CreateDirectory(targetDirectory);
+        if (Directory.EnumerateFileSystemEntries(targetDirectory).Any())
+            throw new InvalidOperationException(
+                "Målmappen för JSON innehåller redan filer; befintliga data skrivs inte över.");
+    }
+
+    private static async Task<Dictionary<string, int>> ReadJsonSnapshotCountsAsync(
+        string sourceDirectory,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sourceDirectory))
+            throw new InvalidOperationException("Källmapp för JSON saknas.");
+
+        var snapshotPath = Path.Combine(sourceDirectory, DataMigrationSnapshot.FileName);
+        if (!File.Exists(snapshotPath))
+            throw new InvalidOperationException(
+                $"JSON-snapshot saknas ({DataMigrationSnapshot.FileName}).");
+
+        await using var stream = File.OpenRead(snapshotPath);
+        var snapshot = await JsonSerializer.DeserializeAsync<DataMigrationSnapshot>(
+            stream,
+            JsonOptions,
+            cancellationToken) ?? throw new InvalidOperationException("JSON-snapshot kunde inte läsas.");
+
+        return snapshot.Entities.ToDictionary(pair => pair.Key, pair => pair.Value.Count);
+    }
+
+    private static async Task<DataMigrationPreview> PreviewJsonTargetAsync(
+        DataMigrationRequest request,
+        string targetProvider,
+        Dictionary<string, int> counts,
+        CancellationToken cancellationToken)
+    {
+        if (targetProvider == "JSONFILE")
+            throw new InvalidOperationException("JSON till JSON stöds inte som direkt omkopiering.");
+
+        await using var target = CreateContext(targetProvider, request.TargetConnectionString);
+        await target.Database.EnsureCreatedAsync(cancellationToken);
+        await EnsureTargetIsEmptyAsync(target, cancellationToken);
+
+        return new DataMigrationPreview
+        {
+            CanMigrate = true,
+            Message = "JSON-snapshotet är giltigt och måldatabasen är tom.",
+            SourceProvider = request.SourceProvider,
+            TargetProvider = request.TargetProvider,
+            SourceCounts = counts
+        };
+    }
+
     private static async Task EnsureTargetIsEmptyAsync(PrivatekonomyContext target, CancellationToken cancellationToken)
     {
         foreach (var entityType in target.Model.GetEntityTypes())
@@ -205,72 +343,83 @@ public sealed class DataMigrationService : IDataMigrationService
             .ToList();
         var identityTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var entityType in allEntityTypes)
-        {
-            var sourceSet = GetEntitySet(source, entityType.ClrType);
-            var sourceEntities = await sourceSet.Cast<object>().ToListAsync(cancellationToken);
-            if (sourceEntities.Count == 0)
-                continue;
-
-            var existingTargetEntities = await GetEntitySet(target, entityType.ClrType)
-                .Cast<object>()
-                .ToListAsync(cancellationToken);
-
-            var clones = sourceEntities
-                .Select(entity => CloneEntity(entity, entityType))
-                .Where(clone => !HasMatchingPrimaryKey(entityType, clone, existingTargetEntities))
-                .ToList();
-            if (clones.Count == 0)
-                continue;
-
-            await target.AddRangeAsync(clones, cancellationToken);
-            if (target.Database.IsSqlServer())
-            {
-                var tableName = entityType.GetTableName();
-                if (!string.IsNullOrWhiteSpace(tableName))
-                {
-                    var schemaName = entityType.GetSchema();
-                    identityTables.Add(string.IsNullOrWhiteSpace(schemaName)
-                        ? $"[{tableName.Replace("]", "]]")}]"
-                        : $"[{schemaName.Replace("]", "]]")}].[{tableName.Replace("]", "]]")}]");
-                }
-            }
-            counts[entityType.ClrType.Name] = clones.Count;
-        }
-
-        var enabledIdentityTables = new List<string>();
-        if (target.Database.IsSqlServer())
-        {
-            foreach (var tableName in identityTables)
-            {
-                try
-                {
-                    await target.Database.ExecuteSqlRawAsync(
-                        $"SET IDENTITY_INSERT {tableName} ON",
-                        cancellationToken);
-                    enabledIdentityTables.Add(tableName);
-                }
-                catch (Microsoft.Data.SqlClient.SqlException)
-                {
-                    // Tabellen har ingen identity-kolumn eller ingår inte i migreringen.
-                }
-            }
-        }
-
+        await using var transaction = await target.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            await target.SaveChangesAsync(cancellationToken);
-        }
-        finally
-        {
-            foreach (var tableName in enabledIdentityTables)
+            foreach (var entityType in allEntityTypes)
             {
-                await target.Database.ExecuteSqlRawAsync(
-                    $"SET IDENTITY_INSERT {tableName} OFF",
-                    cancellationToken);
+                var sourceSet = GetEntitySet(source, entityType.ClrType);
+                var sourceEntities = await sourceSet.Cast<object>().ToListAsync(cancellationToken);
+                if (sourceEntities.Count == 0)
+                    continue;
+
+                var existingTargetEntities = await GetEntitySet(target, entityType.ClrType)
+                    .Cast<object>()
+                    .ToListAsync(cancellationToken);
+
+                var clones = sourceEntities
+                    .Select(entity => CloneEntity(entity, entityType))
+                    .Where(clone => !HasMatchingPrimaryKey(entityType, clone, existingTargetEntities))
+                    .ToList();
+                if (clones.Count == 0)
+                    continue;
+
+                await target.AddRangeAsync(clones, cancellationToken);
+                if (target.Database.IsSqlServer())
+                {
+                    var tableName = entityType.GetTableName();
+                    if (!string.IsNullOrWhiteSpace(tableName))
+                    {
+                        var schemaName = entityType.GetSchema();
+                        identityTables.Add(string.IsNullOrWhiteSpace(schemaName)
+                            ? $"[{tableName.Replace("]", "]]")}]"
+                            : $"[{schemaName.Replace("]", "]]")}].[{tableName.Replace("]", "]]")}]");
+                    }
+                }
+                counts[entityType.ClrType.Name] = clones.Count;
             }
+
+            var enabledIdentityTables = new List<string>();
+            if (target.Database.IsSqlServer())
+            {
+                foreach (var tableName in identityTables)
+                {
+                    try
+                    {
+                        await target.Database.ExecuteSqlRawAsync(
+                            $"SET IDENTITY_INSERT {tableName} ON",
+                            cancellationToken);
+                        enabledIdentityTables.Add(tableName);
+                    }
+                    catch (Microsoft.Data.SqlClient.SqlException)
+                    {
+                        // Tabellen har ingen identity-kolumn eller ingår inte i migreringen.
+                    }
+                }
+            }
+
+            try
+            {
+                await target.SaveChangesAsync(cancellationToken);
+            }
+            finally
+            {
+                foreach (var tableName in enabledIdentityTables)
+                {
+                    await target.Database.ExecuteSqlRawAsync(
+                        $"SET IDENTITY_INSERT {tableName} OFF",
+                        cancellationToken);
+                }
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+            return counts;
         }
-        return counts;
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     private static bool HasMatchingPrimaryKey(
@@ -326,12 +475,7 @@ public sealed class DataMigrationService : IDataMigrationService
         PrivatekonomyContext source,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(targetDirectory))
-            throw new InvalidOperationException("Målmapp för JSON saknas.");
-
-        Directory.CreateDirectory(targetDirectory);
-        if (Directory.EnumerateFileSystemEntries(targetDirectory).Any())
-            throw new InvalidOperationException("Målmappen för JSON innehåller redan filer; befintliga data skrivs inte över.");
+        ValidateJsonTargetDirectory(targetDirectory);
 
         var snapshot = new DataMigrationSnapshot();
         foreach (var entityType in source.Model.GetEntityTypes())
@@ -391,52 +535,98 @@ public sealed class DataMigrationService : IDataMigrationService
                        ?? throw new InvalidOperationException("JSON-snapshot kunde inte läsas.");
 
         var counts = new Dictionary<string, int>();
-        foreach (var entityType in target.Model.GetEntityTypes())
+        await using var transaction = await target.Database.BeginTransactionAsync(cancellationToken);
+        var enabledIdentityTables = new List<string>();
+        try
         {
-            if (entityType.FindOwnership() != null)
-                continue;
-
-            var typeName = entityType.ClrType.FullName ?? entityType.ClrType.Name;
-            if (!snapshot.Entities.TryGetValue(typeName, out var records))
-                continue;
-
-            var existingEntities = await GetEntitySet(target, entityType.ClrType)
-                .Cast<object>()
-                .ToListAsync(cancellationToken);
-
-            foreach (var record in records)
+            foreach (var entityType in target.Model.GetEntityTypes())
             {
-                var entity = Activator.CreateInstance(entityType.ClrType)
-                             ?? throw new InvalidOperationException($"Det går inte att skapa entitetstypen {entityType.ClrType.Name}.");
-
-                foreach (var property in entityType.GetProperties())
-                {
-                    var propertyInfo = property.PropertyInfo;
-                    if (propertyInfo == null || !propertyInfo.CanWrite ||
-                        !record.TryGetValue(property.Name, out var jsonElement))
-                        continue;
-
-                    if (jsonElement.ValueKind == JsonValueKind.Null)
-                    {
-                        propertyInfo.SetValue(entity, null);
-                        continue;
-                    }
-
-                    var value = jsonElement.Deserialize(property.ClrType, JsonOptions);
-                    propertyInfo.SetValue(entity, value);
-                }
-
-                if (HasMatchingPrimaryKey(entityType, entity, existingEntities))
+                if (entityType.FindOwnership() != null)
                     continue;
 
-                await target.AddAsync(entity, cancellationToken);
-                existingEntities.Add(entity);
+                var typeName = entityType.ClrType.FullName ?? entityType.ClrType.Name;
+                if (!snapshot.Entities.TryGetValue(typeName, out var records))
+                    continue;
+
+                var existingEntities = await GetEntitySet(target, entityType.ClrType)
+                    .Cast<object>()
+                    .ToListAsync(cancellationToken);
+
+                foreach (var record in records)
+                {
+                    var entity = Activator.CreateInstance(entityType.ClrType)
+                                 ?? throw new InvalidOperationException($"Det går inte att skapa entitetstypen {entityType.ClrType.Name}.");
+
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        var propertyInfo = property.PropertyInfo;
+                        if (propertyInfo == null || !propertyInfo.CanWrite ||
+                            !record.TryGetValue(property.Name, out var jsonElement))
+                            continue;
+
+                        if (jsonElement.ValueKind == JsonValueKind.Null)
+                        {
+                            propertyInfo.SetValue(entity, null);
+                            continue;
+                        }
+
+                        var value = jsonElement.Deserialize(property.ClrType, JsonOptions);
+                        propertyInfo.SetValue(entity, value);
+                    }
+
+                    if (HasMatchingPrimaryKey(entityType, entity, existingEntities))
+                        continue;
+
+                    await target.AddAsync(entity, cancellationToken);
+                    existingEntities.Add(entity);
+                }
+
+                counts[entityType.ClrType.Name] = records.Count;
             }
 
-            counts[entityType.ClrType.Name] = records.Count;
-        }
+            if (target.Database.IsSqlServer())
+            {
+                foreach (var entityType in target.Model.GetEntityTypes())
+                {
+                    var tableName = entityType.GetTableName();
+                    if (string.IsNullOrWhiteSpace(tableName) ||
+                        !snapshot.Entities.ContainsKey(entityType.ClrType.FullName ?? entityType.ClrType.Name))
+                        continue;
 
-        await target.SaveChangesAsync(cancellationToken);
-        return counts;
+                    var schemaName = entityType.GetSchema();
+                    var sqlTableName = string.IsNullOrWhiteSpace(schemaName)
+                        ? $"[{tableName.Replace("]", "]]")}]"
+                        : $"[{schemaName.Replace("]", "]]")}].[{tableName.Replace("]", "]]")}]";
+                    try
+                    {
+                        await target.Database.ExecuteSqlRawAsync(
+                            $"SET IDENTITY_INSERT {sqlTableName} ON",
+                            cancellationToken);
+                        enabledIdentityTables.Add(sqlTableName);
+                    }
+                    catch (Microsoft.Data.SqlClient.SqlException)
+                    {
+                    }
+                }
+            }
+
+            await target.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return counts;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            foreach (var tableName in enabledIdentityTables)
+            {
+                await target.Database.ExecuteSqlRawAsync(
+                    $"SET IDENTITY_INSERT {tableName} OFF",
+                    cancellationToken);
+            }
+        }
     }
 }

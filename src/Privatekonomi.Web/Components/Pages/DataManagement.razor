@@ -1,14 +1,20 @@
 @page "/settings/data-management"
 @page "/data-management"
 @rendermode InteractiveServer
+@attribute [Authorize]
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JS
 @using System.Text.Json
 @using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
 @using Privatekonomi.Core.Configuration
 @using Privatekonomi.Core.Services.DataMigration
+@using Privatekonomi.Core.Models
 @inject IDataMigrationService DataMigrationService
 
 <PageTitle>Datahantering - Privatekonomi</PageTitle>
@@ -112,6 +118,8 @@
 </MudPaper>
 
 @* Provider Migration Section *@
+@if (_isSystemAdmin)
+{
 <MudPaper Class="pa-6 mb-4">
     <MudText Typo="Typo.h5" Class="mb-3">
         <MudIcon Icon="@Icons.Material.Filled.SyncAlt" Class="mr-2" />
@@ -125,7 +133,7 @@
 
     <MudGrid>
         <MudItem xs="12" md="6">
-            <MudSelect T="string" @bind-Value="_migrationSourceProvider" Label="Källprovider" Variant="Variant.Outlined">
+            <MudSelect T="string" @bind-Value="_migrationSourceProvider" @bind-Value:after="ResetMigrationPreview" Label="Källprovider" Variant="Variant.Outlined">
                 @foreach (var provider in _migrationProviders)
                 {
                     <MudSelectItem Value="@provider">@provider</MudSelectItem>
@@ -133,7 +141,7 @@
             </MudSelect>
         </MudItem>
         <MudItem xs="12" md="6">
-            <MudSelect T="string" @bind-Value="_migrationTargetProvider" Label="Målprovider" Variant="Variant.Outlined">
+            <MudSelect T="string" @bind-Value="_migrationTargetProvider" @bind-Value:after="ResetMigrationPreview" Label="Målprovider" Variant="Variant.Outlined">
                 @foreach (var provider in _migrationProviders)
                 {
                     <MudSelectItem Value="@provider">@provider</MudSelectItem>
@@ -141,13 +149,13 @@
             </MudSelect>
         </MudItem>
         <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="_migrationSourceConnection"
+            <MudTextField @bind-Value="_migrationSourceConnection" @bind-Value:after="ResetMigrationPreview"
                           Label="Källans anslutningssträng eller JSON-mapp"
                           Variant="Variant.Outlined"
                           Lines="2" />
         </MudItem>
         <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="_migrationTargetConnection"
+            <MudTextField @bind-Value="_migrationTargetConnection" @bind-Value:after="ResetMigrationPreview"
                           Label="Målets anslutningssträng eller JSON-mapp"
                           Variant="Variant.Outlined"
                           Lines="2" />
@@ -161,11 +169,25 @@
         </MudAlert>
     }
 
+    <MudCheckBox @bind-Value="_migrationConfirmed" Color="Color.Primary" Class="mt-3"
+                 Disabled="!_migrationPreviewSucceeded">
+        Jag har säkert kopierat källan och målet och vill starta migreringen
+    </MudCheckBox>
+
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Info"
+               StartIcon="@Icons.Material.Filled.FactCheck"
+               OnClick="PreviewDataMigration"
+               Disabled="_previewing || _migrating"
+               Class="mt-4 mr-2">
+        Kontrollera källa och mål
+    </MudButton>
+
     <MudButton Variant="Variant.Filled"
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.SyncAlt"
                OnClick="RunDataMigration"
-               Disabled="_migrating"
+               Disabled="_migrating || !_migrationPreviewSucceeded || !_migrationConfirmed"
                Class="mt-4">
         @if (_migrating)
         {
@@ -178,6 +200,7 @@
         }
     </MudButton>
 </MudPaper>
+}
 
 @* Import Section *@
 <MudPaper Class="pa-6 mb-4">
@@ -334,6 +357,10 @@
     private bool _migrating;
     private bool _migrationSucceeded;
     private string _migrationResultMessage = "";
+    private bool _isSystemAdmin;
+    private bool _previewing;
+    private bool _migrationPreviewSucceeded;
+    private bool _migrationConfirmed;
     
     // Year export fields
     private bool _loadingYears = true;
@@ -343,6 +370,12 @@
 
     [Inject]
     private IOptions<StorageSettings>? StorageSettings { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    [Inject]
+    private UserManager<ApplicationUser>? UserManager { get; set; }
     
     [Inject]
     private IExportService? ExportService { get; set; }
@@ -352,6 +385,17 @@
         _storageProvider = StorageSettings?.Value?.Provider ?? "Unknown";
         _migrationSourceProvider = _storageProvider;
         _migrationSourceConnection = StorageSettings?.Value?.ConnectionString ?? "";
+
+        if (AuthenticationStateTask != null)
+        {
+            var authState = await AuthenticationStateTask;
+            var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrWhiteSpace(userId) && UserManager != null)
+            {
+                var appUser = await UserManager.FindByIdAsync(userId);
+                _isSystemAdmin = appUser?.IsSystemAdmin == true;
+            }
+        }
         await LoadAvailableYears();
     }
 
@@ -535,6 +579,52 @@
         finally
         {
             _importing = false;
+        }
+    }
+
+    private void ResetMigrationPreview()
+    {
+        _migrationPreviewSucceeded = false;
+        _migrationConfirmed = false;
+    }
+
+    private async Task PreviewDataMigration()
+    {
+        _previewing = true;
+        _migrationPreviewSucceeded = false;
+        _migrationConfirmed = false;
+        _migrationResultMessage = "";
+
+        try
+        {
+            var preview = await DataMigrationService.PreviewAsync(new DataMigrationRequest
+            {
+                SourceProvider = _migrationSourceProvider,
+                SourceConnectionString = _migrationSourceConnection,
+                TargetProvider = _migrationTargetProvider,
+                TargetConnectionString = _migrationTargetConnection
+            });
+
+            _migrationPreviewSucceeded = preview.CanMigrate;
+            _migrationResultMessage = preview.Message;
+            if (preview.CanMigrate && preview.SourceCounts.Count > 0)
+            {
+                var counts = string.Join(", ",
+                    preview.SourceCounts.Select(pair => $"{pair.Key}: {pair.Value}"));
+                _migrationResultMessage += $" Källa: {counts}.";
+            }
+
+            Snackbar.Add(_migrationResultMessage,
+                preview.CanMigrate ? Severity.Success : Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _migrationResultMessage = $"Förkontrollen misslyckades: {ex.Message}";
+            Snackbar.Add(_migrationResultMessage, Severity.Error);
+        }
+        finally
+        {
+            _previewing = false;
         }
     }
 

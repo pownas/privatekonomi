@@ -21,6 +21,11 @@ MariaDB, PostgreSQL och JSON-snapshot.
 6. Kontrollera att målet är tomt och välj **Starta migrering**.
 7. Läs resultatmeddelandet och migreringsantal per entitet.
 
+Migrationsavsnittet visas endast för systemadministratörer. Innan start krävs
+både en lyckad förhandskontroll av källan och målet samt en explicit
+bekräftelse på att säkerhetskopior är gjorda. En ändrad provider eller
+anslutning återställer förhandskontrollen och kräver kontroll på nytt.
+
 Autentiserade API-klienter kan använda samma funktion direkt:
 
 ```text
@@ -28,6 +33,10 @@ POST /api/data-migration
 Content-Type: application/json
 Authorization: ******
 ```
+
+Använd först `POST /api/data-migration/preview` med samma begäran för att
+kontrollera käll- och målstatus. Migreringen startas först med
+`POST /api/data-migration`. Båda anropen kräver systemadministratör.
 
 Exempel:
 

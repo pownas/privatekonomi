@@ -175,6 +175,77 @@ public class DataMigrationServiceTests
         }
     }
 
+    [TestMethod]
+    public async Task PreviewReportsSourceCountsAndProtectedTarget()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), $"privatekonomi-preview-source-{Guid.NewGuid():N}.db");
+        var targetPath = Path.Combine(Path.GetTempPath(), $"privatekonomi-preview-target-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using (var source = CreateSqliteContext(sourcePath))
+            {
+                await source.Database.EnsureCreatedAsync();
+                source.Categories.Add(new Category
+                {
+                    Name = "Förhandsgranskad",
+                    Color = "#123ABC",
+                    TaxRelated = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await source.SaveChangesAsync();
+            }
+
+            await using (var target = CreateSqliteContext(targetPath))
+            {
+                await target.Database.EnsureCreatedAsync();
+                target.Categories.Add(new Category
+                {
+                    Name = "Befintlig",
+                    Color = "#ABC123",
+                    TaxRelated = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await target.SaveChangesAsync();
+            }
+
+            var preview = await new DataMigrationService().PreviewAsync(new DataMigrationRequest
+            {
+                SourceProvider = "Sqlite",
+                SourceConnectionString = $"Data Source={sourcePath}",
+                TargetProvider = "Sqlite",
+                TargetConnectionString = $"Data Source={targetPath}"
+            });
+
+            Assert.IsFalse(preview.CanMigrate);
+            StringAssert.Contains(preview.Message, "inte tom");
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            DeleteFile(sourcePath);
+            DeleteFile(targetPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task PreviewReportsMissingSqliteSource()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"privatekonomi-missing-{Guid.NewGuid():N}.db");
+        var preview = await new DataMigrationService().PreviewAsync(new DataMigrationRequest
+        {
+            SourceProvider = "Sqlite",
+            SourceConnectionString = $"Data Source={missingPath}",
+            TargetProvider = "Sqlite",
+            TargetConnectionString = $"Data Source={Path.Combine(Path.GetTempPath(), $"unused-{Guid.NewGuid():N}.db")}"
+        });
+
+        Assert.IsFalse(preview.CanMigrate);
+        StringAssert.Contains(preview.Message, "finns inte");
+        if (File.Exists(missingPath))
+            File.Delete(missingPath);
+    }
+
     private static PrivatekonomyContext CreateSqliteContext(string path)
     {
         var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
