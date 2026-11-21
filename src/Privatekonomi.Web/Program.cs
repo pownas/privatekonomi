@@ -209,6 +209,8 @@ builder.Services.AddScoped<ISocialFeatureService, SocialFeatureService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IDataImportService, DataImportService>();
+builder.Services.AddScoped<Privatekonomi.Core.Services.DataMigration.IDataMigrationService,
+    Privatekonomi.Core.Services.DataMigration.DataMigrationService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IHeatmapAnalysisService, HeatmapAnalysisService>();
 builder.Services.AddScoped<ISalaryHistoryService, SalaryHistoryService>();

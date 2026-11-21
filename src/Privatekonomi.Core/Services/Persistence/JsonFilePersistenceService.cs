@@ -1,11 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Privatekonomi.Core.Configuration;
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
+using Privatekonomi.Core.Services.DataMigration;
 
 namespace Privatekonomi.Core.Services.Persistence;
 
@@ -122,6 +124,14 @@ public class JsonFilePersistenceService : IDataPersistenceService
         {
             _logger.LogInformation("Loading data from JSON files in {Directory}", _dataDirectory);
 
+            var migrationSnapshotPath = Path.Combine(_dataDirectory, "privatekonomi-migration.json");
+            if (File.Exists(migrationSnapshotPath))
+            {
+                await LoadMigrationSnapshotAsync(context, migrationSnapshotPath);
+                _logger.LogInformation("Data loaded successfully from migration snapshot");
+                return;
+            }
+
             // Load in order to respect foreign key relationships
             await LoadEntityAsync<Category>(context, context.Categories, "categories.json");
             await LoadEntityAsync<BankSource>(context, context.BankSources, "banksources.json");
@@ -167,6 +177,68 @@ public class JsonFilePersistenceService : IDataPersistenceService
             _logger.LogError(ex, "Error loading data from JSON files");
             throw;
         }
+    }
+
+    private async Task LoadMigrationSnapshotAsync(
+        PrivatekonomyContext context,
+        string snapshotPath)
+    {
+        await using var stream = File.OpenRead(snapshotPath);
+        var snapshot = await JsonSerializer.DeserializeAsync<DataMigrationSnapshot>(stream, _jsonOptions)
+                       ?? throw new InvalidOperationException("JSON-migrationssnapshot kunde inte läsas.");
+
+        foreach (var entityType in context.Model.GetEntityTypes())
+        {
+            if (entityType.FindOwnership() != null)
+                continue;
+
+            var typeName = entityType.ClrType.FullName ?? entityType.ClrType.Name;
+            if (!snapshot.Entities.TryGetValue(typeName, out var records))
+                continue;
+
+            var setMethod = typeof(DbContext).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                .Single(method => method.Name == "Set" &&
+                                  method.IsGenericMethodDefinition &&
+                                  method.GetParameters().Length == 0);
+            var entitySet = (IQueryable)(setMethod.MakeGenericMethod(entityType.ClrType)
+                .Invoke(context, null)!);
+            var existingEntities = await entitySet.Cast<object>().ToListAsync();
+            foreach (var record in records)
+            {
+                var entity = Activator.CreateInstance(entityType.ClrType)
+                             ?? throw new InvalidOperationException(
+                                 $"Det går inte att skapa entitetstypen {entityType.ClrType.Name}.");
+
+                foreach (var property in entityType.GetProperties())
+                {
+                    var propertyInfo = property.PropertyInfo;
+                    if (propertyInfo == null || !propertyInfo.CanWrite ||
+                        !record.TryGetValue(property.Name, out var jsonElement))
+                        continue;
+
+                    propertyInfo.SetValue(
+                        entity,
+                        jsonElement.ValueKind == JsonValueKind.Null
+                            ? null
+                            : jsonElement.Deserialize(property.ClrType, _jsonOptions));
+                }
+
+                var primaryKey = entityType.FindPrimaryKey();
+                if (primaryKey != null &&
+                    existingEntities.Any(existing => primaryKey.Properties.All(property =>
+                    {
+                        var propertyInfo = property.PropertyInfo;
+                        return propertyInfo != null &&
+                               Equals(propertyInfo.GetValue(entity), propertyInfo.GetValue(existing));
+                    })))
+                    continue;
+
+                await context.AddAsync(entity);
+                existingEntities.Add(entity);
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 
     private async Task SaveEntityAsync<T>(List<T> entities, string fileName)

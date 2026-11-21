@@ -122,6 +122,8 @@ builder.Services.AddScoped<IRoundUpService, RoundUpService>();
 builder.Services.AddScoped<IPocketService, PocketService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IDataImportService, DataImportService>();
+builder.Services.AddScoped<Privatekonomi.Core.Services.DataMigration.IDataMigrationService,
+    Privatekonomi.Core.Services.DataMigration.DataMigrationService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ISalaryHistoryService, SalaryHistoryService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

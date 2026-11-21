@@ -174,14 +174,46 @@ sparas separat i `identity.json` vid ändringar. Ekonomidata omfattar bland anna
 Använd en separat katalog per process. Filerna innehåller känsliga
 personuppgifter; lägg dem inte i Git.
 Säkerhetskopiera hela katalogen efter ordnat stopp och skydda kopian.
-JSON-formatet är ingen garanti för fullständig export eller migrering.
+JSON-migrationssnapshotet används för en fullständig EF-migrering; äldre
+processspecifika JSON-filer bör betraktas som en begränsad kompatibilitetslösning.
 
 ## Byte av provider och säkerhetskopiering
 
 Att ändra `Provider` eller `ConnectionString` flyttar inte data eller konton.
-Import/export täcker inte nödvändigtvis alla entiteter och Identity; det finns
-ingen utlovad generell migrering mellan providers eller miljöer. Behåll
-originalet, planera och verifiera eventuell separat överföring innan bytet.
+Mellan Privatekonomi-processer finns ett skyddat API-stöd för generell
+migrering av EF-entiteter, inklusive Identity-konton och relationsnycklar,
+mellan `Sqlite`, `SQL Server` och JSON-migrationssnapshot.
+
+Starta migreringen autentiserat med:
+
+```text
+POST /api/data-migration
+Content-Type: application/json
+
+{
+  "sourceProvider": "Sqlite",
+  "sourceConnectionString": "Data Source=/var/lib/privatekonomi/web.db",
+  "targetProvider": "SqlServer",
+  "targetConnectionString": "Server=...;Database=PrivatekonomiWeb;..."
+}
+```
+
+JSON används med provider `JsonFile`; ange målkatalogen i
+`targetConnectionString` vid export och källkatalogen i `sourceConnectionString`
+vid import. Filen heter `privatekonomi-migration.json` och innehåller känsliga
+Identity-fält och lösenordshashar; behandla den som en konfidentiell fullbackup.
+
+Arbetsflöde:
+
+1. Säkerhetskopiera källan och målplattformen.
+2. Stoppa skrivande processer så att källdata inte ändras under flytten.
+3. Kontrollera provider och anslutningssträng/katalog.
+4. Använd en ny tom målprovider eller tom JSON-katalog. Befintliga
+   användardata skrivs aldrig över automatiskt.
+5. Kontrollera `success`, `message` och `migratedCounts` i svaret.
+6. Starta målplattformen och verifiera inloggning, data och relationer.
+
+Fel returneras tydligt och migreringen avbryts om målet innehåller data.
 Flytta inte testdata till produktion som rutin.
 
 För SQLite: använd exempelvis `sqlite3 /sökväg/web-prod.db ".backup
