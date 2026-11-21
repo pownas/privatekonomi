@@ -90,6 +90,29 @@ JSON-filer, säkerhetskopior och loggar.
 
 ## Providers
 
+### API-data profiler i Aspire
+
+API:t kan startas med en uttrycklig data-profil via Aspire-parametern
+`api-data-profile`:
+
+| Profil | Provider | Avsedd användning |
+|---|---|---|
+| `Mock` | InMemory | utveckling och isolerade manuella tester; seedning kräver Development |
+| `Sqlite` | Sqlite | lättviktslagring för lokal eller produktion |
+| `SqlServer` | SqlServer | lokal Development-testdatabas eller produktionsdatabas |
+
+Profilerna väljer lagringsprovider vid API-processens uppstart. De är inte en
+live-hot-swap: byt profil i AppHost/startmiljön och starta om API:t (helst
+även Web om den ska arbeta mot samma identitets-/datalager). `Mock` nekas i
+Production. Testseeding nekas i Production oavsett profil.
+
+Aspire-parametrarna `api-sqlite-connection-string` och
+`api-sqlserver-connection-string` innehåller respektive connection string;
+SQL Server-anslutningen är sekret och krävs för `SqlServer`-profilen.
+Parametern `web-api-base-url` styr vilken API-adress Web använder. Den kan
+vara en separat mock-API-adress eller den riktiga API-processens adress, men
+den byter inte data eller autentisering på en redan startad process.
+
 | `Storage:Provider` | Funktion |
 |---|---|
 | `InMemory` | EF-databas i processens minne. All data, även konton, försvinner vid avslut. Separata processer delar inte minne. |

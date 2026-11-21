@@ -60,6 +60,15 @@ var apiStorageProvider = builder.AddParameter("api-storage-provider", apiSetting
 var webStorageProvider = builder.AddParameter("web-storage-provider", webSettings["Storage:Provider"] ?? "InMemory");
 var apiSeedTestData = builder.AddParameter("api-seed-test-data", apiSettings["Storage:SeedTestData"] ?? "false");
 var webSeedTestData = builder.AddParameter("web-seed-test-data", webSettings["Storage:SeedTestData"] ?? "false");
+var apiDataProfile = builder.AddParameter("api-data-profile",
+    apiSettings["ApiData:Profile"] ?? (aspnetEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase) ? "Sqlite" : "Mock"));
+var apiSqliteConnection = builder.AddParameter("api-sqlite-connection-string",
+    apiSettings["ApiData:SqliteConnectionString"] ?? "Data Source=privatekonomi-api.db");
+var apiSqlServerConnection = builder.AddParameter("api-sqlserver-connection-string",
+    apiSettings["ApiData:SqlServerConnectionString"] ?? "Server=localhost;Database=PrivatekonomiApi;Integrated Security=true;TrustServerCertificate=true",
+    secret: true).AsOptional();
+var webApiBaseUrl = builder.AddParameter("web-api-base-url",
+    webSettings["ApiSettings:BaseUrl"] ?? "http://localhost:5277");
 var bankSyncEnabled = builder.AddParameter("web-bank-sync-enabled", webSettings["BankSync:Enabled"] ?? "false");
 var bankSyncInterval = builder.AddParameter("web-bank-sync-interval-minutes", webSettings["BankSync:IntervalMinutes"] ?? "60");
 
@@ -72,7 +81,10 @@ var apiBuilder = builder.AddDotnetProject("api", "../Privatekonomi.Api/Privateko
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false")
     .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__Provider", apiStorageProvider)
-    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__SeedTestData", apiSeedTestData);
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__SeedTestData", apiSeedTestData)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_ApiData__Profile", apiDataProfile)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_ApiData__SqliteConnectionString", apiSqliteConnection)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_ApiData__SqlServerConnectionString", apiSqlServerConnection);
 
 if (configureSelectedStorage && configuredStorageProvider is not null)
 {
@@ -110,6 +122,7 @@ var webBuilder = builder.AddDotnetProject("web", "../Privatekonomi.Web/Privateko
     .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false")
     .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__Provider", webStorageProvider)
     .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__SeedTestData", webSeedTestData)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_ApiSettings__BaseUrl", webApiBaseUrl)
     .WithEnvironment("PRIVATEKONOMI_ASPIRE_BankSync__Enabled", bankSyncEnabled)
     .WithEnvironment("PRIVATEKONOMI_ASPIRE_BankSync__IntervalMinutes", bankSyncInterval);
 

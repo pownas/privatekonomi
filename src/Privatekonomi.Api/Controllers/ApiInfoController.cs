@@ -15,5 +15,9 @@ public sealed class ApiInfoController(IWebHostEnvironment environment, IOptions<
     /// <summary>Gets the API version and available build metadata.</summary>
     [HttpGet]
     public ActionResult<ApiInfoResponse> Get() =>
-        ApiInfoResponse.FromAssembly(typeof(ApiInfoController).Assembly, environment.EnvironmentName, storageSettings.Value.Provider);
+        ApiInfoResponse.FromAssembly(
+            typeof(ApiInfoController).Assembly,
+            environment.EnvironmentName,
+            storageSettings.Value.Provider,
+            HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiData:Profile"]);
 }

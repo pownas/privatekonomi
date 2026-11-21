@@ -35,7 +35,12 @@ Lagringsprovider och anslutningssträng konfigureras på API-processen för API-
 
 Önskad miljöindelning är testin-memory/mock för isolerade automatiska tester,
 Development med en separat SQL Server-databas och Production med beständig
-SQLite-lagring. Dessa är konfigurationsval, inte automatik som väljer eller
+SQLite-lagring. Aspire-parametrarna `api-data-profile`,
+`api-sqlite-connection-string` och `api-sqlserver-connection-string` väljer
+profilerna `Mock`, `Sqlite` respektive `SqlServer` vid processstart.
+`web-api-base-url` styr adressen Web använder för API-anrop.
+
+Dessa är konfigurationsval, inte automatik som väljer eller
 migrerar data: den aktuella API Development-konfigurationen är fortfarande
 InMemory om den inte överstyrts. Innan produktionsdata läggs in ska API:ts och
 Webs verkliga provider, connection string och databas vara verifierade var för

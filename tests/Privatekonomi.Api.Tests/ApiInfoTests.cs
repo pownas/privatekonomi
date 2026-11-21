@@ -39,7 +39,7 @@ public class ApiInfoTests
         Assert.IsFalse(body.Contains("alice", StringComparison.Ordinal));
         using var json = JsonDocument.Parse(body);
         var properties = json.RootElement.EnumerateObject().Select(property => property.Name).Order().ToArray();
-        CollectionAssert.AreEqual(new[] { "buildNumber", "environment", "sha", "storageProvider", "version" }, properties);
+        CollectionAssert.AreEqual(new[] { "buildNumber", "dataProfile", "environment", "sha", "storageProvider", "version" }, properties);
 
         var expectedVersion = typeof(ApiInfoController).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>().Single(item => item.Key == "AppVersion").Value;
@@ -52,12 +52,13 @@ public class ApiInfoTests
     [TestMethod]
     public void MetadataUsesEmbeddedRevisionAndBuildNumber()
     {
-        var info = ApiInfoResponse.FromMetadata("0.1.0-alfa", "42", "0.1.0-alfa+1234567890abcdef", "abcdef1234567890", "Production", "sqlserver");
+        var info = ApiInfoResponse.FromMetadata("0.1.0-alfa", "42", "0.1.0-alfa+1234567890abcdef", "abcdef1234567890", "Production", "sqlserver", "SqlServer");
         Assert.AreEqual("0.1.0-alfa", info.Version);
         Assert.AreEqual("42", info.BuildNumber);
         Assert.AreEqual("12345678", info.Sha);
         Assert.AreEqual("Production", info.Environment);
         Assert.AreEqual("SqlServer", info.StorageProvider);
+        Assert.AreEqual("SqlServer", info.DataProfile);
     }
 
     [TestMethod]

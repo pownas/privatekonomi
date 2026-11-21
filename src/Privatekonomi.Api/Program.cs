@@ -17,6 +17,10 @@ if (builder.Environment.IsDevelopment() || string.Equals(builder.Environment.Env
 }
 builder.Configuration.AddEnvironmentVariables("PRIVATEKONOMI_ASPIRE_");
 
+// API owns the effective data source. Apply an Aspire/startup profile before
+// EF DbContextFactory and storage services are registered.
+ApiSeedPolicy.ApplyDataProfile(builder.Configuration, builder.Environment);
+
 // LAN access configuration - ensure we listen on all network interfaces
 var isRaspberryPi = Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true";
 var isLanAccessEnabled = Environment.GetEnvironmentVariable("PRIVATEKONOMI_LAN_ACCESS") == "true";
