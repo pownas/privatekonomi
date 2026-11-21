@@ -50,7 +50,7 @@ else if (_currentStep == ImportStep.BankSelection)
 {
     <MudPaper Class="pa-6">
         <MudText Typo="Typo.h6" Class="mb-4">Välj bank</MudText>
-        
+
         @if (_importType == ImportType.Transactions)
         {
             <MudRadioGroup @bind-Value="_selectedBank">
@@ -58,13 +58,13 @@ else if (_currentStep == ImportStep.BankSelection)
                     <MudText>Automatisk (identifiera format från filen)</MudText>
                 </MudRadio>
                 <MudRadio Value="@BankNames.IcaBanken" Color="Color.Primary">
-                    <MudText>ICA-banken (CSV)</MudText>
-                </MudRadio>
-                <MudRadio Value="@BankNames.AllmanOfx" Color="Color.Primary">
-                    <MudText>OFX/QFX (Allmänt bankformat)</MudText>
+                    <MudText>@BankNames.IcaBanken (CSV)</MudText>
                 </MudRadio>
                 <MudRadio Value="@BankNames.Swedbank" Color="Color.Primary">
-                    <MudText>Swedbank (CSV)</MudText>
+                    <MudText>@BankNames.Swedbank (CSV)</MudText>
+                </MudRadio>
+                <MudRadio Value="@BankNames.AllmanOfx" Color="Color.Primary">
+                    <MudText>@BankNames.AllmanOfx</MudText>
                 </MudRadio>
             </MudRadioGroup>
 
@@ -87,9 +87,9 @@ else if (_currentStep == ImportStep.BankSelection)
                 }
             </MudRadioGroup>
         }
-        
+
         <MudDivider Class="my-4" />
-        
+
         <div class="d-flex justify-space-between">
             <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="BackToTypeSelection">
                 Tillbaka
@@ -109,7 +109,7 @@ else if (_currentStep == ImportStep.FileSelection)
         <MudText Typo="Typo.body2" Class="mb-2">
             Bank: <strong>@(_importType == ImportType.Transactions ? _selectedBank : _selectedBankName)</strong>
         </MudText>
-        
+
         @if (_importType == ImportType.Investments && _selectedBankName == BankNames.Avanza)
         {
             <MudAlert Severity="Severity.Info" Class="mb-4">
@@ -122,7 +122,7 @@ else if (_currentStep == ImportStep.FileSelection)
                 Alla format stöds! Transaktioner importeras som investeringstransaktioner.
             </MudAlert>
         }
-        
+
         <MudFileUpload T="IBrowserFile" @ref="_fileUpload" FilesChanged="OnFileSelected" Accept="@GetAcceptedFileTypes()">
             <CustomContent>
                 <MudPaper Outlined="true" Class="pa-8 d-flex flex-column align-center justify-center" Style="min-height: 200px; cursor: pointer;" @onclick="OpenFilePickerAsync">
@@ -632,9 +632,9 @@ else if (_currentStep == ImportStep.Complete)
             // (IBrowserFile references expire after the initial read in Blazor)
             using var stream = new MemoryStream(_fileBytes);
             (CsvImportResult result, ImportJob importJob) = await CsvImportService.ImportWithJobAsync(
-                stream, 
-                _selectedBank, 
-                _selectedFile.Name, 
+                stream,
+                _selectedBank,
+                _selectedFile.Name,
                 _selectedFile.Size,
                 userId,
                 skipDuplicates: true);
