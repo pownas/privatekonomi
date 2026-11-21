@@ -6,13 +6,11 @@ namespace Privatekonomi.Core.Tests;
 public class BankRegistryTests
 {
     [TestMethod]
-    public void SupportedBanksShouldExposeMatchingEnumIds()
+    public void SupportedBanksShouldBeSortedByName()
     {
-        foreach (var bank in BankRegistry.SupportedBanks)
-        {
-            Assert.AreEqual(bank.Name, BankNames.GetName(bank.Id));
-            Assert.AreEqual(bank.Id, BankNames.GetId(bank.Name));
-        }
+        var names = BankRegistry.SupportedBanks.Select(b => b.Name).ToList();
+        var sortedNames = names.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+        CollectionAssert.AreEqual(sortedNames, names);
     }
 
     [TestMethod]

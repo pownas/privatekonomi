@@ -208,8 +208,8 @@ public class ImportController : ControllerBase
         var banks = new List<BankInfo>
         {
             new() { Name = BankNames.IcaBanken, FileTypes = new[] { "CSV" }, Description = "ICA-banken CSV-export" },
-            new() { Name = BankNames.Swedbank, FileTypes = new[] { "CSV" }, Description = "Swedbank CSV-export (båda formaten)" },
-            new() { Name = BankNames.AllmanOfx, FileTypes = new[] { "OFX", "QFX" }, Description = "OFX/QFX-format (stöds av många banker)" }
+            new() { Name = BankNames.AllmanOfx, FileTypes = new[] { "OFX", "QFX" }, Description = "OFX/QFX-format (stöds av många banker)" },
+            new() { Name = BankNames.Swedbank, FileTypes = new[] { "CSV" }, Description = "Swedbank CSV-export (båda formaten)" }
         };
 
         return Ok(banks);

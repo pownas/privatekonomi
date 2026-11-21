@@ -5,11 +5,19 @@
                           Variant="Variant.Outlined" RequiredError="Kontonamn är obligatoriskt" Class="mb-3" />
             <MudSelect @bind-Value="Account.Provider" Label="Leverantör" Required="true"
                        Variant="Variant.Outlined" Class="mb-3">
-                <MudSelectItem Value="@BankNames.Swedbank">Swedbank</MudSelectItem>
                 <MudSelectItem Value="@BankNames.Avanza">Avanza</MudSelectItem>
-                <MudSelectItem Value="@BankNames.Nordnet">Nordnet</MudSelectItem>
+                <MudSelectItem Value="@BankNames.IcaBanken">ICA-banken</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Klarna">Klarna</MudSelectItem>
+                <MudSelectItem Value="@BankNames.LantmannenFinans">Lantmannen Finans</MudSelectItem>
                 <MudSelectItem Value="@BankNames.Lysa">Lysa</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Montrose">Montrose</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Nordea">Nordea</MudSelectItem>
+                <MudSelectItem Value="@BankNames.NordiskaBanken">Nordiska banken</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Nordnet">Nordnet</MudSelectItem>
                 <MudSelectItem Value="@BankNames.Opti">Opti</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Revolut">Revolut</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Seb">SEB</MudSelectItem>
+                <MudSelectItem Value="@BankNames.Swedbank">Swedbank</MudSelectItem>
                 <MudSelectItem Value="@("Annan")">Annan</MudSelectItem>
             </MudSelect>
             <MudSelect @bind-Value="Account.AccountType" Label="Kontotyp" Required="true"

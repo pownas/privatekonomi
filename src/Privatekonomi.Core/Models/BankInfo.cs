@@ -2,6 +2,7 @@ namespace Privatekonomi.Core.Models;
 
 public static class BankNames
 {
+    public const string AllmanOfx = "OFX/QFX (Allmänt bankformat)";
     public const string Avanza = "Avanza";
     public const string Handelsbanken = "Handelsbanken";
     public const string IcaBanken = "ICA-banken";
@@ -12,7 +13,6 @@ public static class BankNames
     public const string Nordea = "Nordea";
     public const string NordiskaBanken = "Nordiska banken";
     public const string Nordnet = "Nordnet";
-    public const string AllmanOfx = "OFX (Allmän)";
     public const string Opti = "Opti";
     public const string Revolut = "Revolut";
     public const string Seb = "SEB";
@@ -27,7 +27,7 @@ public class BankInfo
     public string Name { get; set; } = string.Empty;
     public string ColorHex { get; set; } = string.Empty;
     public string Website { get; set; } = string.Empty;
-    
+
     public BankInfo(string name, string colorHex, string website)
     {
         Name = name;
@@ -61,13 +61,13 @@ public static class BankRegistry
         new BankInfo(BankNames.Seb, "#60CD18", "https://seb.se"),
         new BankInfo(BankNames.Swedbank, "#FF7900", "https://www.swedbank.se")
     };
-    
+
     /// <summary>
     /// Get bank info by name
     /// </summary>
     public static BankInfo? GetBankByName(string name)
     {
-        return SupportedBanks.FirstOrDefault(b => 
+        return SupportedBanks.FirstOrDefault(b =>
             b.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -94,7 +94,7 @@ public static class BankRegistry
         var path = uri.AbsolutePath.TrimEnd('/');
         return $"{uri.Scheme.ToLowerInvariant()}://{host.ToLowerInvariant()}{path}";
     }
-    
+
     /// <summary>
     /// Get color for a bank
     /// </summary>
@@ -102,7 +102,7 @@ public static class BankRegistry
     {
         if (string.IsNullOrEmpty(bankName))
             return null;
-            
+
         return GetBankByName(bankName)?.ColorHex;
     }
 }
