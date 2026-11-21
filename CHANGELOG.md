@@ -1,178 +1,341 @@
-# Ändringshistorik
+# Ändringshistorik (CHANGELOG / Release notes)
 
-En sammanfattning av större förändringar från projektstarten den 16 oktober 2025
-till och med commit `ec3a23a` den 21 november 2026. Versionsnumren nedan är
-**påhittade historiska milstolpar**, inte faktiska releaser eller Git-taggar.
-Datumen anger ungefär när arbetet utfördes, inte utgivningsdatum. Funktioner
-kan ha ändrats eller tagits bort senare.
+Alla betydande förändringar i detta projekt dokumenteras i den här filen.
+Formatet följer [Keep a Changelog 1.1.0](https://keepachangelog.com/sv/1.1.0/)
+och versionsnumren följer i huvudsak [Semantisk versionshantering](https://semver.org/lang/sv/).
 
-De faktiska publicerade releaserna är [v0.0.1](https://github.com/pownas/privatekonomi/releases/tag/v0.0.1)
-och [v0.0.2](https://github.com/pownas/privatekonomi/releases/tag/v0.0.2)
-från den 9 november 2025 samt [v0.0.3](https://github.com/pownas/privatekonomi/releases/tag/v0.0.3)
-från den 12 november 2025. De motsvarar inte milstolparna med samma nummer nedan.
+## Ändringstyper
 
-## v0.0.15 – November 2026
+- `Added` – nya funktioner.
+- `Changed` – ändringar i existerande funktionalitet.
+- `Deprecated` – funktioner som snart tas bort.
+- `Removed` – borttagna funktioner.
+- `Fixed` – felrättningar.
+- `Security` – åtgärdade eller dokumenterade säkerhetsproblem.
 
-- Uppgraderade till .NET 11 och Aspire 17 samt uppdaterade beroenden och
-  konfiguration.
-- Utökade hanteringen av investeringskonton, banker och kontotyper, inklusive
-  parsning av innehav från Nordnet och Swedbank samt förbättrat bankval och
-  filuppladdning.
-- Lade till en SBOM-skanner med kontroll mot NuGets sårbarhetsdatabas och
-  möjlighet till offlinekörning. Lade även till en REST API-avstämning mot
-  DIGG:s profil och en sammanfattande bedömning.
-- Förbättrade säkerheten kring hushållens balansräkningar och delade konton,
-  samtycke, medlemskap och äldre data. Skyddade Identity-konton och begränsade
-  konfigurerbar demoinitialisering till utvecklingsmiljön.
-- Lade till filloggning med Serilog och stöd för att läsa loggar vid felsökning.
-  Förbättrade databasens schemainitialisering och uppgradering av äldre kolumner.
-- Flyttade installationsskript till `scripts` och byggde ut installation och
-  uppdatering för macOS, Windows och Raspberry Pi, med bland annat tjänster,
-  säkerhetskopiering och tydligare byggstatus.
-- Rättade PWA-cacheproblem efter uppgraderingar, förbättrade onboarding och
-  administration samt öppnade Swagger vid API-start.
+## [Unreleased]
 
-## v0.0.14 – September–oktober 2026
+Inga nya ändringar har dokumenterats ännu.
 
-- Förbättrade kontosäkerhet och inloggning med passkeys, kontroller av ägarskap
-  för budgetar och konton samt hantering av saknade användaridentiteter.
-- Lade till frivillig delning av balansräkningar inom hushåll, redigerbara
-  BAS-kopplingar och tydligare hantering av bankkrediter.
-- Lade till en administrativ vy för senaste ändringar och en driftvy för
-  uppdateringar och omstarter. Transaktionsfiltrering och sidindelning flyttades
-  till databasfrågor.
-- Införde en valbar webbinitierad uppdaterare för Raspberry Pi med
-  behörighetskontroller, hälsokontroller och återställning. Förbättrade även
-  HTTPS-certifikat, Cloudflare DNS-01 och val av branch vid driftsättning.
-- Förbättrade bankimport, registrering, responsiv layout och diagram samt tog
-  bort ImageSharp-beroendet från OCR-bearbetningen.
 
-## v0.0.13 – Juli–augusti 2026
+## [v0.0.4](https://github.com/pownas/privatekonomi/releases/tag/v0.0.4) – November 2026
 
-- Införde central pakethantering, uppdaterade NuGet-beroenden och förbättrade
-  byggkonfiguration, exempelkonfigurationer och loggning.
-- Förbättrade CSV-importen med bankidentifiering, användaravgränsad
-  dubblettkontroll, kodningshantering och detaljerade radvisa varningar.
-  Normaliserade transaktionsdatum och rättade svenska tecken i äldre
-  Swedbank-filer.
-- Förbättrade Raspberry Pi-installation och uppdatering, inklusive separata
-  systemd-tjänster, samt rättade problem i mobilens sidhuvud.
+[Commit `ec3a23a`](https://github.com/pownas/privatekonomi/commit/ec3a23a3f716f6e962c0b0bd9f9d3274f444dc0c)
+Koden i: [Diff mellan v0.0.3 och v0.0.4](https://github.com/pownas/privatekonomi/compare/v0.0.3...v0.0.4)
+Koden i beta diff: [Diff mellan v0.0.4-beta och v0.0.4](https://github.com/pownas/privatekonomi/compare/d8bdfc8685e9a624fdc67fcebda289cc2d0fc328...ec3a23a3f716f6e962c0b0bd9f9d3274f444dc0c)
 
-## v0.0.12 – Februari–mars 2026
+### Added
 
-- Förbättrade CSV-importen för ICA Banken, Swedbank och Avanza, inklusive
-  Avanza-transaktioner som investeringar, kontonummer och hantering av
-  filströmmar.
-- Lade till fakturascheman och en bakgrundstjänst för påminnelser samt
-  månadsvis partitionering av transaktioner vid JSON-lagring.
-- Förbättrade transaktionslistans sidindelning och prestanda, tomma lägen,
-  inloggningssidan, animationer och mobil/PWA-upplevelsen.
-- Uppdaterade Aspire och MudBlazor, förbättrade tester och databasåtkomst samt
-  åtgärdade flera bygg-, analys- och service worker-problem.
+- Utökad hantering av investeringskonton, banker och kontotyper.
+- SBOM-skanner med kontroll mot NuGets sårbarhetsdatabas och offlinekörning.
+- REST API-avstämning mot DIGG:s profil och sammanfattande bedömning.
+- Filloggning med Serilog och stöd för att läsa loggar vid felsökning.
+- Utbyggd installation och uppdatering för macOS, Windows och Raspberry Pi,
+  inklusive tjänster, säkerhetskopiering och tydligare byggstatus.
 
-## v0.0.11 – December 2025
+### Changed
 
-- Uppdaterade kontoplanen till BAS 2026, moderniserade lösningsformatet till
-  `.slnx` och flyttade tester från xUnit till MSTest.
+- Uppgraderat till .NET 11 och Aspire 17 samt uppdaterade beroenden och konfiguration.
+- Flyttat installationsskript till `scripts`.
+- Förbättrad parsning av Nordnet- och Swedbank-innehav, bankval och filuppladdning.
+- Förbättrad schemainitialisering och uppgradering av äldre databaskolumner.
+- Förbättrad onboarding och administration samt Swagger öppnas vid API-start.
+
+### Fixed
+
+- Rättade PWA-cacheproblem efter uppgraderingar.
+
+### Security
+
+- Förbättrade skyddet för hushållens balansräkningar, delade konton, samtycke
+  och äldre data.
+- Skyddade Identity-konton och begränsade konfigurerbar demoinitialisering
+  till utvecklingsmiljön.
+
+## [v0.0.4-beta](https://github.com/pownas/privatekonomi/commit/d8bdfc8685e9a624fdc67fcebda289cc2d0fc328) – September–oktober 2026
+
+[Commit `d8bdfc8`](https://github.com/pownas/privatekonomi/commit/d8bdfc8685e9a624fdc67fcebda289cc2d0fc328)
+Koden i: [Diff mellan v0.0.4-alfa.3 och v0.0.4-beta](https://github.com/pownas/privatekonomi/compare/c0f076bd7801b856358ba6407b40be79799b7524...d8bdfc8685e9a624fdc67fcebda289cc2d0fc328)
+
+### Added
+
+- Frivillig delning av balansräkningar inom hushåll och redigerbara BAS-kopplingar.
+- Administrativ vy för senaste ändringar och driftvy för uppdateringar och omstarter.
+- Webbinitierad uppdaterare för Raspberry Pi med behörighetskontroller,
+  hälsokontroller och återställning.
+
+### Changed
+
+- Förbättrad kontosäkerhet och inloggning med passkeys samt ägarskapskontroller.
+- Transaktionsfiltrering och sidindelning flyttades till databasfrågor.
+- Förbättrad bankimport, registrering, responsiv layout och diagram.
+- Förbättrad hantering av HTTPS-certifikat, Cloudflare DNS-01 och branchval.
+- Tog bort ImageSharp-beroendet från OCR-bearbetningen.
+
+### Fixed
+
+- Hantering av saknade användaridentiteter och bankkrediter.
+
+## [v0.0.4-alfa.3](https://github.com/pownas/privatekonomi/commit/c0f076bd7801b856358ba6407b40be79799b7524) – Juli–augusti 2026
+
+[Commit `c0f076b`](https://github.com/pownas/privatekonomi/commit/c0f076bd7801b856358ba6407b40be79799b7524)
+Koden i: [Diff mellan v0.0.4-alfa.2 och v0.0.4-alfa.3](https://github.com/pownas/privatekonomi/compare/ba87dadfb050dfd65f484273874592b700e19fff...c0f076bd7801b856358ba6407b40be79799b7524)
+
+### Added
+
+- Central pakethantering och separata systemd-tjänster för Raspberry Pi.
+
+### Changed
+
+- Uppdaterade NuGet-beroenden och förbättrade byggkonfiguration,
+  exempelkonfigurationer och loggning.
+- Förbättrad CSV-import med bankidentifiering, användaravgränsad dubblettkontroll,
+  kodningshantering, radvisa varningar och normaliserade transaktionsdatum.
+- Förbättrad Raspberry Pi-installation och uppdatering.
+
+### Fixed
+
+- Rättade svenska tecken i äldre Swedbank-filer och problem i mobilens sidhuvud.
+
+## [v0.0.4-alfa.2](https://github.com/pownas/privatekonomi/commit/ba87dadfb050dfd65f484273874592b700e19fff) – Februari–mars 2026
+
+[Commit `ba87dad`](https://github.com/pownas/privatekonomi/commit/ba87dadfb050dfd65f484273874592b700e19fff)
+Koden i: [Diff mellan v0.0.4-alfa.1 och v0.0.4-alfa.2](https://github.com/pownas/privatekonomi/compare/49facc81f4c6e68738fd2a84a1280d1cb29ec971...ba87dadfb050dfd65f484273874592b700e19fff)
+
+### Added
+
+- Fakturascheman och bakgrundstjänst för påminnelser.
+- Månadsvis partitionering av transaktioner vid JSON-lagring.
+
+### Changed
+
+- Förbättrad CSV-import för ICA Banken, Swedbank och Avanza.
+- Förbättrad transaktionslista, prestanda, tomma lägen, inloggning,
+  animationer och mobil/PWA-upplevelse.
+- Uppdaterade Aspire och MudBlazor samt förbättrade tester och databasåtkomst.
+
+### Fixed
+
+- Rättade flera problem med byggning, analys och service workers.
+
+## [v0.0.4-alfa.1](https://github.com/pownas/privatekonomi/commit/49facc81f4c6e68738fd2a84a1280d1cb29ec971) – December 2025
+
+[Commit `49facc8`](https://github.com/pownas/privatekonomi/commit/49facc81f4c6e68738fd2a84a1280d1cb29ec971)
+Koden i: [Diff mellan v0.0.3 och v0.0.4-alfa.1](https://github.com/pownas/privatekonomi/compare/187a10ab5a2e68a609908b462fc1dca319a04ee0...49facc81f4c6e68738fd2a84a1280d1cb29ec971)
+
+### Changed
+
+- Uppdaterade kontoplanen till BAS 2026.
+- Moderniserade lösningsformatet till `.slnx`.
+- Flyttade tester från xUnit till MSTest.
 - Förbättrade dashboardens design, testdata, navigationsdiagnostik, Swagger
-  och Swedbanks CSV-parser, bland annat för metadata och citerade fält.
+  och Swedbanks CSV-parser.
 
-## v0.0.10 – November 2025, efter v0.0.3-releasen
+## [v0.0.3](https://github.com/pownas/privatekonomi/releases/tag/v0.0.3) – 12 November 2025, Fungerande raspberry pi installer + .NET10
 
-- Förbättrade den ekonomiska översikten med månadsrapport, budgetbyggare,
-  snabbkategorisering och filter. Budgetförslag i onboarding började sparas.
-- Lade till OFX-parser, spårning av importjobb och statusändpunkt samt
-  förbättrade automatisk kategorisering och inloggning.
-- Utökade hushållsfunktionerna med bilder för aktiviteter, återkommande
-  uppgifter och Kanban-vy. Förbättrade även hantering av gemensamma budgetar.
-- Rättade bland annat inloggning, CSV-import, delade sparmål, Safari/iOS-tema
+[Commit `187a10a`](https://github.com/pownas/privatekonomi/commit/187a10ab5a2e68a609908b462fc1dca319a04ee0)
+Koden i: [Diff mellan v0.0.2 och v0.0.3](https://github.com/pownas/privatekonomi/compare/v0.0.2...v0.0.3)
+
+### Added
+
+- Månadsrapport, budgetbyggare, OFX-parser och statusändpunkt för importjobb.
+- Bilder för aktiviteter, återkommande uppgifter och Kanban-vy för hushåll.
+
+### Changed
+
+- Förbättrade ekonomisk översikt, snabbkategorisering, filter, automatisk
+  kategorisering, inloggning och hantering av gemensamma budgetar.
+- Budgetförslag i onboarding började sparas.
+
+### Fixed
+
+- Rättade inloggning, CSV-import, delade sparmål, Safari/iOS-tema
   och bankval i kontodialoger.
 
-## v0.0.9 – November 2025, v0.0.2–v0.0.3-releaserna
+## [v0.0.2](https://github.com/pownas/privatekonomi/releases/tag/v0.0.2) – 9 November 2025, andra release (med MySQL-stöd)
 
-- Lade till MySQL/MariaDB och utökade releaseflödet och
-  driftsättningsdokumentationen för webbhotell.
+[Commit `1a41fa6`](https://github.com/pownas/privatekonomi/commit/1a41fa670d7fa8c1545839c121ff3cf65811178f)
+Koden i: [Diff mellan v0.0.1 och v0.0.2](https://github.com/pownas/privatekonomi/compare/v0.0.1...v0.0.2)
+
+### Added
+
+- Stöd för MySQL/MariaDB.
+- Bolåneanalys, sexstegs-onboarding och administrativ dashboard.
+
+### Changed
+
 - Uppgraderade till .NET 10 LTS och Aspire 13.
-- Lade till bolåneanalys med svenska amorteringskrav och ränterisk, simulering
-  och prioritering av sparmål samt ett onboardingflöde i sex steg.
-- Lade till en administrativ dashboard och förbättrade autentisering och
-  gränssnitt för gemensamma sparmål.
-- Förbättrade Raspberry Pi-installationen: .NET- och EF-verktyg, nätverksåtkomst,
-  systemd och Nginx. Webben och API:et kördes direkt utan Aspire på Pi.
+- Utökade releaseflödet och driftsättningsdokumentationen för webbhotell.
+- Förbättrade autentisering, gemensamma sparmål och Raspberry Pi-installationen.
+- Webben och API:et kunde köras direkt utan Aspire på Raspberry Pi.
 
-## v0.0.8 – November 2025, första releasen
+## [v0.0.1](https://github.com/pownas/privatekonomi/releases/tag/v0.0.1) – 9 November 2025, första releasen
 
-- Lade till rollbaserad åtkomstkontroll, kontohantering och hushållens
-  tidslinje och uppgifter.
-- Införde delade budgetar och skuldbalansering samt analys av
-  kassaflödesscenarier och förbättrade skuldstrategier.
-- Lade till OCR-skanning av kvitton med Tesseract och en landningssida.
-- Byggde ut installations-, nätverks- och uppdateringsstöd för Raspberry Pi
-  samt lade till en releasepipeline.
+[Commit `79fa60a`](https://github.com/pownas/privatekonomi/commit/79fa60a45d4e3cfacfbf60530e30af49ee802eb6)
+Koden i: [Tag v0.0.1](https://github.com/pownas/privatekonomi/tree/v0.0.1)
 
-## v0.0.7 – Början av november 2025
 
-- Införde svenska hushållsbudgetmallar, budgetvarningar, målstolpar,
-  avrundningssparande och påminnelser med snooze.
-- Lade till utgiftsanalys och värmekarta, koppling mellan kvitton och
-  transaktioner samt massåtgärder för transaktioner.
+### Added
+
+- Rollbaserad åtkomstkontroll, kontohantering och hushållens tidslinje och uppgifter.
+- Delade budgetar, skuldbalansering och kassaflödesscenarier.
+- OCR-skanning av kvitton med Tesseract och en landningssida.
+- Utbyggt installations-, nätverks- och uppdateringsstöd för Raspberry Pi.
+- Releasepipeline.
+
+### Changed
+
+- Förbättrade skuldstrategier.
+
+## [v0.0.1-beta] – Början av november 2025
+
+[Commit `90477a1`](https://github.com/pownas/privatekonomi/commit/90477a102c77de57c182cc7f7d5b23789e780981)
+
+### Added
+
+- Svenska hushållsbudgetmallar, budgetvarningar, målstolpar och avrundningssparande.
+- Påminnelser med snooze, utgiftsanalys, värmekarta och massåtgärder.
+- Koppling mellan kvitton och transaktioner.
+
+### Changed
+
 - Samlade importfunktionerna och förbättrade PWA-stöd, offlinehantering,
   navigering, mobilanpassning och testdata.
 
-## v0.0.6 – Slutet av oktober 2025
+## [v0.0.1-alpha.6] – Slutet av oktober 2025
 
-- Lade till kvitton, fakturor, abonnemang och pensioner samt utökade
-  investeringsöversikten med fler tillgångs- och kontotyper.
-- Införde sparutmaningar, ML-baserad kategorisering, notifieringar,
-  livsplanering och funktioner för försäkring och arv.
-- Lade till ekonomiskt hälsopoäng, KALP, jämförelse med Konsumentverkets
-  riktlinjer och kostnadsperiodisering.
-- Utökade analys och visualisering med periodjämförelser, nettoförmögenhet
-  och anpassningsbara dashboardwidgetar.
+[Commit `06b9785`](https://github.com/pownas/privatekonomi/commit/06b97854aee048f51caac965bd44b8507a773fcb)
 
-## v0.0.5 – Slutet av oktober 2025
+### Added
 
-- Lade till import och export av data, säkerhetskopiering och export per år.
-  Kontoplanen utökades med BAS-inspirerade kontonummer.
-- Införde historik för data, anpassningsbar dashboard, transaktionskalender,
+- Kvitton, fakturor, abonnemang och pensioner.
+- Sparutmaningar, ML-baserad kategorisering, notifieringar och livsplanering.
+- Funktioner för försäkring och arv samt ekonomiskt hälsopoäng och KALP.
+- Jämförelse med Konsumentverkets riktlinjer och kostnadsperiodisering.
+- Periodjämförelser, nettoförmögenhet och anpassningsbara dashboardwidgetar.
+
+### Changed
+
+- Utökade investeringsöversikten med fler tillgångs- och kontotyper.
+
+## [v0.0.1-alpha.5] – Slutet av oktober 2025
+
+[Commit `a614008`](https://github.com/pownas/privatekonomi/commit/a6140089b31027faf5b892e82de50150cec8159a)
+
+### Added
+
+- Import och export av data, säkerhetskopiering och export per år.
+- Historik för data, anpassningsbar dashboard, transaktionskalender,
   Sankey-diagram och etiketter med filtrering.
+- BAS-inspirerade kontonummer i kontoplanen.
+
+### Changed
+
 - Förbättrade navigering, tillgänglighet, mobillayout, tangentbordsgenvägar
   och grundläggande PWA-stöd.
 
-## v0.0.4 – 22–25 oktober 2025
+## [v0.0.1-alpha.4] – 22–25 oktober 2025
 
-- Lade till sparfickor, kategoriöversikt och visualisering av nettoförmögenhet.
+[Commit `7c52b8c`](https://github.com/pownas/privatekonomi/commit/7c52b8c617141b788e3761e1c7339f086bd973d6)
+
+### Added
+
+- Sparfickor, kategoriöversikt och visualisering av nettoförmögenhet.
+- Hantering av utländsk valuta och API-fel enligt ProblemDetails.
+- Lagring med InMemory, SQLite, SQL Server och JSON-fil.
+
+### Changed
+
 - Förbättrade transaktionsredigering, uppdelning på flera kategorier,
   hushållskoppling och budgetredigering.
-- Införde hantering av utländsk valuta, API-fel enligt ProblemDetails samt
-  lagring med InMemory, SQLite, SQL Server och JSON-fil.
-- Förbättrade säkerheten för bankkopplingar med tokenkryptering,
-  OAuth-state-validering och automatisk synkronisering.
 
-## v0.0.3 – 21 oktober 2025
+### Security
 
-- Lade till användarautentisering med ASP.NET Core Identity och
-  användaravgränsning av ekonomiska data.
-- Införde regelbaserad automatisk kategorisering, budgetmallar, kassaflödesrapport
-  och utökad export.
-- Lade till lönehistorik, gemensamma sparmål, familjefunktioner och förbättrad
-  skuldhantering.
-- Utökade svenska integrationsfunktioner med bland annat ROT/RUT, K4 och
-  SIE-export samt förbättrade mörkt läge och tillgänglighet.
+- Förbättrade bankkopplingar med tokenkryptering och OAuth-state-validering.
 
-## v0.0.2 – 17–20 oktober 2025
+## [v0.0.1-alpha.3] – 21 oktober 2025
 
-- Lade till Avanza-import och export för investeringar, uppdatering av
-  aktiekurser via Yahoo Finance samt stöd för CSN-format i Swedbank-parsern.
-- Införde hushållshantering, sparmål, fysiska tillgångar och balansräkning.
-- Utökade API:et och datamodellerna samt lade grunden för bankkopplingar
-  via PSD2.
+[Commit `91f4486`](https://github.com/pownas/privatekonomi/commit/91f448643d481f41d54571940e30a7658051a94a)
 
-## v0.0.1 – 16 oktober 2025
+### Added
 
-- Startade projektet och byggde grundapplikationen med Blazor, API, .NET och
-  Aspire.
-- Lade till transaktioner, kategorier, budgetar, lån och investeringar samt
-  en dashboard med kategoriöversikt och diagram.
-- Införde CSV-import från ICA Banken och Swedbank, testdata, Playwright-tester
-  och grundläggande dokumentation.
+- Användarautentisering med ASP.NET Core Identity.
+- Regelbaserad automatisk kategorisering, budgetmallar och kassaflödesrapport.
+- Lönehistorik, gemensamma sparmål och familjefunktioner.
+- ROT/RUT-, K4- och SIE-export.
+
+### Changed
+
+- Utökad export, förbättrad skuldhantering, mörkt läge och tillgänglighet.
+
+### Security
+
+- Begränsade ekonomiska data till inloggad användare.
+
+## [v0.0.1-alpha.2] – 17–20 oktober 2025
+
+[Commit `5d5bfdc`](https://github.com/pownas/privatekonomi/commit/5d5bfdc4b91376ea4f8fc781ccc1f5b9fc84273d)
+
+### Added
+
+- Avanza-import och export för investeringar samt uppdatering av aktiekurser.
+- CSN-format i Swedbank-parsern.
+- Hushållshantering, sparmål, fysiska tillgångar och balansräkning.
+- Grund för bankkopplingar via PSD2.
+
+### Changed
+
+- Utökade API:et och datamodellerna.
+
+## [v0.0.1-alpha.1] – 16 oktober 2025
+
+[Commit `896d690`](https://github.com/pownas/privatekonomi/commit/896d69076b2f00d65ea01e03f89fda26f4bcd2f4)
+
+### Added
+
+- Grundapplikation med Blazor, API, .NET och Aspire.
+- Transaktioner, kategorier, budgetar, lån och investeringar.
+- Dashboard med kategoriöversikt och diagram.
+- CSV-import från ICA Banken och Swedbank.
+- Testdata, Playwright-tester och grundläggande dokumentation.
+
+---
+
+## Mall för en ny version
+
+Använd mallens blocker. Ta med användarpåverkande funktioner, ändringar i befintligt beteende,
+åtgärdade fel, säkerhetsförändringar, borttagningar och föråldringar. Dölj inte en
+brytande eller säkerhetskritisk ändring i en generell punkt; dokumentera den i rätt typ.
+
+```markdown
+
+## [X.Y.Z] – Månad ÅÅÅÅ
+
+### Added
+
+- Ny användbar funktion.
+
+### Changed
+
+- Förändring i befintlig funktionalitet.
+
+### Deprecated
+
+- Funktion som snart tas bort, med rekommenderad ersättning.
+
+### Removed
+
+- Funktion eller stödd konfiguration som har tagits bort.
+
+### Fixed
+
+- Fel som har rättats.
+
+### Security
+
+- Säkerhetsproblem som har åtgärdats.
+
+[Unreleased]: https://github.com/pownas/privatekonomi/compare/vX.Y.Z...HEAD
+[X.Y.Z]: https://github.com/pownas/privatekonomi/compare/vföregående...vX.Y.Z
+
+```
