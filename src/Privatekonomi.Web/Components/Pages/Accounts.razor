@@ -19,6 +19,27 @@
     Ge varje konto ett beskrivande namn och koppla det till kontoplan för redovisning.
 </MudText>
 
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Totalt kontovärde</MudText>
+            <MudText Typo="Typo.h5">@_totalAccountBalance.ToString("C0", new System.Globalization.CultureInfo("sv-SE"))</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Banker och leverantörer</MudText>
+            <MudText Typo="Typo.h5">@_institutionCount</MudText>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudCard Elevation="2" Class="pa-3">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Antal konton</MudText>
+            <MudText Typo="Typo.h5">@(_accounts?.Count ?? 0)</MudText>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
 @if (_loading)
 {
     <MudProgressCircular Indeterminate="true" />
@@ -145,6 +166,8 @@ else
     private bool _loading = true;
     private List<BankSource>? _accounts;
     private Dictionary<string, List<BankSource>> _accountsByType = new();
+    private decimal _totalAccountBalance;
+    private int _institutionCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,6 +181,12 @@ else
         {
             var accounts = await BankSourceService.GetAllBankSourcesAsync();
             _accounts = accounts.ToList();
+
+            _totalAccountBalance = _accounts.Sum(a => a.CurrentBalance);
+            _institutionCount = _accounts
+                .Select(a => a.Institution ?? a.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
             
             // Group by account type
             _accountsByType = _accounts

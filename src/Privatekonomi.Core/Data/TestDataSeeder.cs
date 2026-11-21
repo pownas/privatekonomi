@@ -24,6 +24,7 @@ public static class TestDataSeeder
         }
         
         // Seed data with user association
+        SeedFinancialInstitutions(context, testUserId);
         SeedTransactions(context, testUserId);
         SeedInvestments(context, testUserId);
         SeedAssets(context, testUserId);
@@ -148,6 +149,54 @@ public static class TestDataSeeder
         context.SaveChanges();
     }
 
+    private static void SeedFinancialInstitutions(PrivatekonomyContext context, string userId)
+    {
+        if (context.BankSources.Any() && context.InvestmentAccounts.Any())
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var bankAccounts = new List<BankSource>
+        {
+            new() { Name = "ICA-banken lönekonto", Institution = "ICA-banken", AccountType = "checking", AccountNumber = "1930-104825", ClearingNumber = "1930", Currency = "SEK", InitialBalance = 48500m, OpenedDate = now.AddYears(-4), ChartOfAccountsCode = "1930", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Swedbank lönekonto", Institution = "Swedbank", AccountType = "checking", AccountNumber = "8327-9001148", ClearingNumber = "8327", Currency = "SEK", InitialBalance = 72000m, OpenedDate = now.AddYears(-7), ChartOfAccountsCode = "1930", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Icabanken transaktionskonto", Institution = "Icabanken", AccountType = "checking", AccountNumber = "123456789", ClearingNumber = "9275", Currency = "SEK", InitialBalance = 32400m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1930", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Nordnet sparkonto", Institution = "Nordnet", AccountType = "savings", AccountNumber = "NORD-SPAR-001", Currency = "SEK", InitialBalance = 98000m, OpenedDate = now.AddYears(-3), ChartOfAccountsCode = "1920", Color = "#2E7D32", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Avanza sparkonto", Institution = "Avanza", AccountType = "savings", AccountNumber = "AV-SPAR-002", Currency = "SEK", InitialBalance = 125000m, OpenedDate = now.AddYears(-5), ChartOfAccountsCode = "1920", Color = "#00C281", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Swedbank sparkonto", Institution = "Swedbank", AccountType = "savings", AccountNumber = "8327-6400123", ClearingNumber = "8327", Currency = "SEK", InitialBalance = 245000m, OpenedDate = now.AddYears(-6), ChartOfAccountsCode = "1920", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Klarna spar", Institution = "Klarna", AccountType = "savings", AccountNumber = "KL-SAVE-001", Currency = "SEK", InitialBalance = 62000m, OpenedDate = now.AddYears(-1), ChartOfAccountsCode = "1920", Color = "#FFB3C7", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Lantmannen Finans sparkonto", Institution = "Lantmannen Finans", AccountType = "savings", AccountNumber = "LMF-SAVE-001", Currency = "SEK", InitialBalance = 87000m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1920", Color = "#5B3A29", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Avanza ISK", Institution = "Avanza", AccountType = "investment", AccountNumber = "ISK-783456", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-6), ChartOfAccountsCode = "1810", Color = "#00C281", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Avanza KF", Institution = "Avanza", AccountType = "investment", AccountNumber = "KF-456789", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-4), ChartOfAccountsCode = "1810", Color = "#00C281", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Nordnet ISK", Institution = "Nordnet", AccountType = "investment", AccountNumber = "ISK-920184", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-5), ChartOfAccountsCode = "1810", Color = "#2E7D32", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Swedbank ISK", Institution = "Swedbank", AccountType = "investment", AccountNumber = "ISK-550017", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-3), ChartOfAccountsCode = "1810", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Icabanken fondkonto", Institution = "Icabanken", AccountType = "investment", AccountNumber = "ICAFOND-001", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1810", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now }
+        };
+
+        var investmentAccounts = new List<InvestmentAccount>
+        {
+            new() { Name = "ISK-personlig", Provider = "Avanza", AccountType = "ISK", AccountNumber = "ISK-783456", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Aktie- & fondkonto", Provider = "Avanza", AccountType = "AF", AccountNumber = "AF-783457", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "ISK-portfölj", Provider = "Nordnet", AccountType = "ISK", AccountNumber = "ISK-920184", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Kapitalförsäkring", Provider = "Nordnet", AccountType = "KF", AccountNumber = "KF-920185", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "ISK-fond & aktier", Provider = "Swedbank", AccountType = "ISK", AccountNumber = "ISK-550017", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Aktie- & fondkonto", Provider = "Icabanken", AccountType = "AF", AccountNumber = "ICAFOND-001", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Lysa målfond", Provider = "Lysa", AccountType = "Fondrobot", AccountNumber = "LYSA-001", Currency = "SEK", IsFundRobot = true, InitialContributions = 180000m, CurrentValue = 207450m, Notes = "Demosaldo för en globalt diversifierad portfölj.", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Opti portfölj - Hög", Provider = "Opti", AccountType = "Fondrobot", AccountNumber = "OPTI-001", Currency = "SEK", IsFundRobot = true, InitialContributions = 150000m, CurrentValue = 170250m, Notes = "Demosaldo för en fondrobotportfölj.", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now }
+        };
+
+        if (!context.BankSources.Any())
+        {
+            context.BankSources.AddRange(bankAccounts);
+        }
+        if (!context.InvestmentAccounts.Any())
+        {
+            context.InvestmentAccounts.AddRange(investmentAccounts);
+        }
+        context.SaveChanges();
+    }
+
     private static void SeedTransactions(PrivatekonomyContext context, string userId)
     {
 
@@ -202,8 +251,15 @@ public static class TestDataSeeder
         // Payment methods for different categories
         var paymentMethods = new[] { "Kort", "Swish", "Autogiro", "Banköverföring", "Kontant", "E-faktura" };
 
-        // Bank source IDs to simulate transactions from different banks (1-6 as per seeded data)
-        var bankSourceIds = new[] { 1, 2, 3, 4, 5, 6 };
+        // Use the realistic bank and savings accounts seeded for this test user.
+        var bankSourceIds = context.BankSources
+            .Where(b => b.UserId == userId)
+            .Select(b => b.BankSourceId)
+            .ToArray();
+        if (bankSourceIds.Length == 0)
+        {
+            bankSourceIds = [1];
+        }
 
         // Amount ranges for different categories (min, max)
         var amountRanges = new Dictionary<int, (decimal min, decimal max)>
@@ -463,6 +519,73 @@ public static class TestDataSeeder
                 ValidTo = null
             }
         };
+
+        var avanzaIsk = context.InvestmentAccounts.First(a => a.Provider == "Avanza" && a.AccountType == "ISK");
+        var avanzaAf = context.InvestmentAccounts.First(a => a.Provider == "Avanza" && a.AccountType == "AF");
+        var nordnetIsk = context.InvestmentAccounts.First(a => a.Provider == "Nordnet" && a.AccountType == "ISK");
+        var swedbankIsk = context.InvestmentAccounts.First(a => a.Provider == "Swedbank" && a.AccountType == "ISK");
+        var icabankenAf = context.InvestmentAccounts.First(a => a.Provider == "Icabanken");
+
+        var avanzaBank = context.BankSources.First(b => b.Institution == "Avanza" && b.AccountType == "investment");
+        var nordnetBank = context.BankSources.First(b => b.Institution == "Nordnet" && b.AccountType == "investment");
+        var swedbankBank = context.BankSources.First(b => b.Institution == "Swedbank" && b.AccountType == "investment");
+        var icabankenBank = context.BankSources.First(b => b.Institution == "Icabanken" && b.AccountType == "investment");
+
+        investments[0].InvestmentAccountId = avanzaIsk.InvestmentAccountId;
+        investments[0].BankSourceId = avanzaBank.BankSourceId;
+        investments[0].ISIN = "SE0000115440";
+        investments[0].Currency = "SEK";
+        investments[0].AccountType = "ISK";
+        investments[0].AccountNumber = avanzaIsk.AccountNumber;
+
+        investments[1].InvestmentAccountId = nordnetIsk.InvestmentAccountId;
+        investments[1].BankSourceId = nordnetBank.BankSourceId;
+        investments[1].ISIN = "SE0000120788";
+        investments[1].Currency = "SEK";
+        investments[1].AccountType = "ISK";
+        investments[1].AccountNumber = nordnetIsk.AccountNumber;
+
+        investments[2].InvestmentAccountId = avanzaAf.InvestmentAccountId;
+        investments[2].BankSourceId = avanzaBank.BankSourceId;
+        investments[2].ISIN = "SE0000112728";
+        investments[2].Currency = "SEK";
+        investments[2].AccountType = "AF";
+        investments[2].AccountNumber = avanzaAf.AccountNumber;
+
+        investments[3].InvestmentAccountId = swedbankIsk.InvestmentAccountId;
+        investments[3].BankSourceId = swedbankBank.BankSourceId;
+        investments[3].ISIN = "SE0000429851";
+        investments[3].Currency = "SEK";
+        investments[3].AccountType = "ISK";
+        investments[3].AccountNumber = swedbankIsk.AccountNumber;
+
+        investments[4].InvestmentAccountId = icabankenAf.InvestmentAccountId;
+        investments[4].BankSourceId = icabankenBank.BankSourceId;
+        investments[4].ISIN = "SE0000987220";
+        investments[4].Currency = "SEK";
+        investments[4].AccountType = "AF";
+        investments[4].AccountNumber = icabankenAf.AccountNumber;
+
+        investments[5].InvestmentAccountId = avanzaIsk.InvestmentAccountId;
+        investments[5].BankSourceId = avanzaBank.BankSourceId;
+        investments[5].ISIN = "SE0015948659";
+        investments[5].Currency = "SEK";
+        investments[5].AccountType = "ISK";
+        investments[5].AccountNumber = avanzaIsk.AccountNumber;
+
+        investments[6].InvestmentAccountId = nordnetIsk.InvestmentAccountId;
+        investments[6].BankSourceId = nordnetBank.BankSourceId;
+        investments[6].ISIN = "SE0000108642";
+        investments[6].Currency = "SEK";
+        investments[6].AccountType = "ISK";
+        investments[6].AccountNumber = nordnetIsk.AccountNumber;
+
+        investments[7].InvestmentAccountId = swedbankIsk.InvestmentAccountId;
+        investments[7].BankSourceId = swedbankBank.BankSourceId;
+        investments[7].ISIN = "FI0009900028";
+        investments[7].Currency = "SEK";
+        investments[7].AccountType = "ISK";
+        investments[7].AccountNumber = swedbankIsk.AccountNumber;
 
         context.Investments.AddRange(investments);
         context.SaveChanges();

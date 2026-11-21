@@ -9,13 +9,13 @@ public class BankRegistryTests
     public void SupportedBanksShouldContainAllRequiredBanks()
     {
         // Arrange
-        var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Nordea", "SEB", "Swedbank", "Avanza" };
+        var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Icabanken", "Nordea", "SEB", "Swedbank", "Avanza", "Nordnet", "Lysa", "Opti", "Klarna", "Lantmannen Finans" };
         
         // Act
         var bankNames = BankRegistry.SupportedBanks.Select(b => b.Name).ToList();
         
         // Assert
-        Assert.AreEqual(6, BankRegistry.SupportedBanks.Count);
+        Assert.AreEqual(requiredBanks.Length, BankRegistry.SupportedBanks.Count);
         foreach (var requiredBank in requiredBanks)
         {
             CollectionAssert.Contains(bankNames, requiredBank);

@@ -27,10 +27,16 @@ public static class BankRegistry
     {
         new BankInfo("Handelsbanken", "#003781"),  // Handelsbanken blue
         new BankInfo("ICA-banken", "#E3000F"),     // ICA red
+        new BankInfo("Icabanken", "#E3000F"),
         new BankInfo("Nordea", "#0000A0"),         // Nordea blue
         new BankInfo("SEB", "#60CD18"),            // SEB green
         new BankInfo("Swedbank", "#FF7900"),       // Swedbank orange
-        new BankInfo("Avanza", "#00C281")          // Avanza green/turquoise
+        new BankInfo("Avanza", "#00C281"),         // Avanza green/turquoise
+        new BankInfo("Nordnet", "#2E7D32"),
+        new BankInfo("Lysa", "#31A8A0"),
+        new BankInfo("Opti", "#4F46E5"),
+        new BankInfo("Klarna", "#FFB3C7"),
+        new BankInfo("Lantmannen Finans", "#5B3A29")
     };
     
     /// <summary>
