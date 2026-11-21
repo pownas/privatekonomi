@@ -385,7 +385,7 @@ Se [SYSTEMD_SERVICE_GUIDE.md](./SYSTEMD_SERVICE_GUIDE.md) för att konfigurera s
 2. **Container deployment:** Om webbhotellet stöder Docker containers:
    - Skapa Docker image för Aspire Dashboard
    - Deployas som container tillsammans med Web och API
-   - Se [Docker deployment guide](./DOCKER_GUIDE.md) (planerad)
+   - Containerstöd och orkestrering beror på aktuell hostingmiljö; se [Aspire-guiden](ASPIRE_GUIDE.md) för lokal utveckling.
 
 3. **Separat monitoring:** Använd webbhotellets inbyggda monitoring eller:
    - Application Insights (Azure)

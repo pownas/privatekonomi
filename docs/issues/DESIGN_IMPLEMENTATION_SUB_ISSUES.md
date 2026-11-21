@@ -1,5 +1,9 @@
 # Design Implementation Sub-Issues
 
+> Historical plan. The manual issue-creation checklist and its statuses have
+> not been verified against the current issue tracker; do not treat them as
+> active implementation instructions.
+
 Baserat på `docs/DESIGN_ANALYSIS_2025.md`, här är de rekommenderade sub-issues för att implementera designförbättringarna.
 
 **Huvudissue:** pownas/Privatekonomi#426  

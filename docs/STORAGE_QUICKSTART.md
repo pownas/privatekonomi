@@ -14,6 +14,9 @@ och hemligheter för Web/API och för mock, test och produktion.
 API-exempeldata kräver en ny InMemory-databas, Development och ett aktiverat
 API-demokonto med e-post och lösenord. API:s standard har `SeedTestData=false`.
 Se [API-demovillkoren](STORAGE_GUIDE.md#isolera-mock-test-och-produktion).
+Web använder fortfarande Core och sin egen Storage-konfiguration direkt.
+API- och Web-data delas inte automatiskt; ta inte bort Web-lagringen förrän
+Web-flödena är migrerade till API:t.
 
 ```json
 {
@@ -25,11 +28,16 @@ Se [API-demovillkoren](STORAGE_GUIDE.md#isolera-mock-test-och-produktion).
 ```
 
 ### Produktion (persistent data)
+
+Exemplet är en relativ SQLite-sökväg och beror på processens arbetskatalog.
+Ange i drift en beständig absolut sökväg för respektive process, håll Web och
+API åtskilda och säkerhetskopiera före schema- eller providerbyte.
+
 ```json
 {
   "Storage": {
     "Provider": "Sqlite",
-    "ConnectionString": "Data Source=privatekonomi.db",
+    "ConnectionString": "Data Source=/var/lib/privatekonomi/api-prod.db",
     "SeedTestData": false
   }
 }

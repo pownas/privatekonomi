@@ -2,6 +2,14 @@
 
 Denna guide beskriver hur du använder den automatiserade release-pipelinen för att driftsätta Privatekonomi till ett webbhotell via SFTP.
 
+> Denna webbhotellsguide innehåller historiska värd- och serviceexempel.
+> Projektet och release-workflowen använder .NET 11 och publicerar Web och API
+> separat. Verifiera aktuell pipeline i
+> [release-deploy.yml](../.github/workflows/release-deploy.yml); återanvänd inte
+> en sammanslagen Web/API-katalog eller gammal systemd-konfiguration.
+> För den aktuella API- och lagringsgränsen, se [API-guiden](API_GUIDE.md) och
+> [lagringsguiden](STORAGE_GUIDE.md).
+
 > **Alfa och API-säkerhet:** Äldre API-controllers är spärrade som standard och
 > svarar normalt 403 även med en personlig token. Tidigare versioner utan
 > spärr kan ge anonym åtkomst till data, bland annat via `GET /api/transactions`;
@@ -37,7 +45,7 @@ Release-pipelinen automatiserar följande steg:
 ### Teknisk Stack
 
 - **CI/CD:** GitHub Actions
-- **Build:** .NET 9 SDK
+- **Build:** .NET 11 SDK
 - **Deployment:** SFTP/FTPS med separata kataloger för Web och API
 - **Database:** MySQL/MariaDB, SQLite, SQL Server
 - **Trigger:** Git tags (v1.0.0, v2.1.0, etc.)
@@ -55,7 +63,7 @@ Release-pipelinen automatiserar följande steg:
 
 2. **Server-miljö**
    - Linux server (rekommenderat)
-   - .NET 9 Runtime installerad (eller använd self-contained deployment)
+   - .NET 11 Runtime installerad (eller använd self-contained deployment)
    - Skrivbehörighet i deployment-katalogerna
    - Minst 1 GB ledigt diskutrymme
 
@@ -193,7 +201,7 @@ För att testa pipelinen utan att skapa en release:
 
 ```
 ✓ Checkout code
-✓ Setup .NET 9
+✓ Setup .NET 11
 ✓ Restore dependencies
 ✓ Build solution (Release mode)
 ✓ Run tests
@@ -369,7 +377,7 @@ Förväntad filstruktur:
 **Symptom:** Applikationen startar inte efter deployment
 
 **Lösning:**
-1. Kontrollera att .NET 9 Runtime är installerad:
+1. Kontrollera att .NET 11 Runtime är installerad:
    ```bash
    dotnet --list-runtimes
    ```

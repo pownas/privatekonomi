@@ -253,5 +253,5 @@ Och refereras i dokumentationen som:
 ---
 
 För detaljerad teknisk dokumentation, se:
-- [RECEIPT_TRANSACTION_LINKING.md](RECEIPT_TRANSACTION_LINKING.md) - Teknisk dokumentation
-- [RECEIPT_TRANSACTION_LINKING_SCREENSHOTS.md](RECEIPT_TRANSACTION_LINKING_SCREENSHOTS.md) - ASCII mockups och detaljerad UI-beskrivning
+- [RECEIPT_TRANSACTION_LINKING.md](../RECEIPT_TRANSACTION_LINKING.md) - Teknisk dokumentation
+- [RECEIPT_TRANSACTION_LINKING_SCREENSHOTS.md](../RECEIPT_TRANSACTION_LINKING_SCREENSHOTS.md) - ASCII mockups och detaljerad UI-beskrivning

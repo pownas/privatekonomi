@@ -272,7 +272,7 @@ Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer
 
 #### 🍓 Raspberry Pi Installation (Automatisk)
 
-> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
+> **Historisk ändringsnotering (november 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 i stället för 0.0.0.0 åtgärdades då. Detta är inte en aktuell hälsokontroll; se [Raspberry Pi-guiden](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md) för nuvarande driftinstruktioner.
 
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
@@ -438,7 +438,9 @@ cd src/Privatekonomi.Api
 dotnet run
 ```
 
-API Swagger-dokumentation finns på: `http://localhost:5000/swagger`
+API Swagger-dokumentation finns på `http://localhost:5277/swagger` med HTTP-profilen
+eller `https://localhost:7023/swagger` med HTTPS-profilen. API-inloggning och
+personliga API-anrop kräver HTTPS; se [API-guiden](docs/API_GUIDE.md).
 
 #### Lokal konfiguration (appsettings.local.json & User Secrets)
 
@@ -704,6 +706,9 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 
 ## 📋 Dokumentation
 
+- **[Dokumentationsöversikt](docs/README.md)**: aktuell arkitektur, källor och historiska dokument
+- **[API_GUIDE.md](docs/API_GUIDE.md)**: aktiva API-flöden och begränsningar
+
 ### Användarguider
 
 - **[USER_AUTHENTICATION.md](docs/USER_AUTHENTICATION.md)**: Guide för användarregistrering, inloggning och datahantering
@@ -712,7 +717,7 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 - **[STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md)**: Guide för olika lagringsalternativ och konfiguration
 - **[YEAR_EXPORT_GUIDE.md](docs/YEAR_EXPORT_GUIDE.md)**: Guide för export av ekonomisk data per år
 - **[CSV_IMPORT_GUIDE.md](docs/CSV_IMPORT_GUIDE.md)**: Guide för import av transaktioner från ICA-banken och Swedbank
-- **[PSD2_API_GUIDE.md](docs/PSD2_API_GUIDE.md)**: Guide för automatisk bankimport via PSD2-API (Swedbank, Avanza, ICA Banken)
+- **[PSD2_API_GUIDE.md](docs/PSD2_API_GUIDE.md)**: Historisk teknisk bakgrund; bank-API och OAuth-flöde är för närvarande spärrade
 - **[AVANZA_IMPORT_GUIDE.md](docs/AVANZA_IMPORT_GUIDE.md)**: Guide för import av investeringar från Avanza Bank
 - **[STOCK_PRICE_API_GUIDE.md](docs/STOCK_PRICE_API_GUIDE.md)**: Guide för automatisk uppdatering av aktiekurser via API
 - **[INVESTMENT_PENSION_GUIDE.md](docs/INVESTMENT_PENSION_GUIDE.md)**: ⭐ NYTT! Guide för investeringar och pensionshantering

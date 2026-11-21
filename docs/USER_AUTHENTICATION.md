@@ -1,5 +1,10 @@
 # User Authentication and Management
 
+> **Arkitekturstatus:** Web och API har separata Identity-lager. Web-konton
+> skapas inte automatiskt i API och Web använder fortfarande sina egna
+> datatjänster och lagring. API-inloggningen är begränsad till de endpoints som
+> beskrivs i [API-guiden](API_GUIDE.md).
+
 ## Overview
 
 Privatekonomi now includes a comprehensive user authentication and management system built on ASP.NET Core Identity. This enables multiple users to:
@@ -45,12 +50,13 @@ Users can be members of households to share expenses and manage joint finances:
 
 ### Test User Account
 
-A test user is automatically created with the following credentials:
+In Development kan ett testkonto skapas endast när demofunktionen är uttryckligen
+aktiverad och e-post/lösenord har konfigurerats. Kontot skapas inte automatiskt
+i andra miljöer och dessa uppgifter ska aldrig användas för riktiga konton.
 
-- **Email**: test@example.com
-- **Password**: TestPassword123!
-
-This account comes with pre-populated test data (50 transactions, budgets, goals, etc.).
+Demokontot och exempeldata följer den aktuella processens lagrings- och
+seedningsregler; Web och API delar inte automatiskt konto eller data. Se
+[lagringsguiden](STORAGE_GUIDE.md).
 
 ### Creating a New Account
 
@@ -167,7 +173,6 @@ Planned features for the authentication system:
 
 - [ ] Social login (Google, Microsoft, GitHub)
 - [ ] Two-factor authentication (2FA)
-- [ ] Two-factor authentication (2FA)
 - [ ] User profile management page
 - [ ] Admin user roles and permissions
 - [ ] Audit logging for security events
@@ -186,11 +191,10 @@ Planned features for the authentication system:
 
 - Data is isolated per user
 - If you're a new user, you won't see the test data
-- Test data is only associated with test@example.com
+- Demo data is created only under the configured Development seed policy; Web and API data are separate.
 
 ### Session expired
 
-- Sessions expire after 30 minutes of inactivity
 - Check "Remember me" during login for persistent sessions
 - Re-login if your session has expired
 

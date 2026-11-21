@@ -1,5 +1,8 @@
 # Privatekonomi Roadmap 2025
 
+> Arkiverad roadmap från 2025. Datum, mål och status är historiska och ska inte
+> tolkas som aktuell plan.
+
 **Version:** 1.0  
 **Datum:** 2025-11-04  
 **Status:** Förslag - Öppen för diskussion

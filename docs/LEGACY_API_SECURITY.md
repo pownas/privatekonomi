@@ -1,5 +1,9 @@
 # Äldre API är spärrat
 
+> Aktuell säkerhetsreferens: se även [API-guiden](API_GUIDE.md). Web använder
+> fortfarande sitt eget datalager; API-spärren innebär inte att hela Web-appen
+> använder API:t.
+
 De äldre API-controllerna är av säkerhetsskäl spärrade tills de har migrerats med behörighetskontroll och isolering av användardata. De returnerar normalt HTTP 403 även för en giltig personlig bearer-token. En token för det personliga API:et innebär inte generell behörighet. `api-info`, inloggningen och det nya personliga transaktions-API:et påverkas inte.
 
 Det påverkar klienter som använder de äldre API:erna, inklusive webbens bankkopplingar och notifieringsåtgärder när de anropar API-tjänsten. Backup/export/import i datahantering, export av lånestrategier och service workerns synkronisering av transaktioner påverkas också om deras URL:er routas till API-tjänsten. Funktioner som använder interna tjänster direkt omfattas inte av denna spärr.
