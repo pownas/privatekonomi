@@ -440,11 +440,11 @@
     [SupplyParameterFromQuery(Name = "search")] public string? SearchFilter { get; set; }
     [SupplyParameterFromQuery(Name = "category")] public string? CategoryFilter { get; set; }
     [SupplyParameterFromQuery(Name = "household")] public string? HouseholdFilter { get; set; }
-    [SupplyParameterFromQuery(Name = "min")] public string? MinimumAmountFilter { get; set; }
-    [SupplyParameterFromQuery(Name = "max")] public string? MaximumAmountFilter { get; set; }
-    [SupplyParameterFromQuery(Name = "from")] public string? DateFromFilter { get; set; }
-    [SupplyParameterFromQuery(Name = "to")] public string? DateToFilter { get; set; }
-    [SupplyParameterFromQuery(Name = "type")] public string? TransactionTypeFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "minAmount")] public string? MinimumAmountFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "maxAmount")] public string? MaximumAmountFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "dateFrom")] public string? DateFromFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "dateTo")] public string? DateToFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "transactionType")] public string? TransactionTypeFilter { get; set; }
     private bool _hasLoadedData;
 
     protected override async Task OnParametersSetAsync()
@@ -538,6 +538,7 @@
             _households = households.ToList();
             var categories = await CategoryService.GetAllCategoriesAsync();
             _categories = categories.ToList();
+            RestoreFiltersFromQuery();
             var monthStart = _currentMonth;
             var monthEnd = _currentMonth.AddMonths(1).AddTicks(-1);
             _transactions = await TransactionService.GetTransactionsByDateRangeAsync(monthStart, monthEnd);
@@ -572,7 +573,8 @@
     private DateTime GetRequestedMonth()
     {
         if (DateTime.TryParseExact(FilterDate, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out var filterDate))
+                System.Globalization.DateTimeStyles.None, out var filterDate) &&
+            !(filterDate.Year == 9999 && filterDate.Month == 12))
         {
             return new DateTime(filterDate.Year, filterDate.Month, 1);
         }
@@ -588,8 +590,12 @@
     private void RestoreFiltersFromQuery()
     {
         _searchString = SearchFilter ?? string.Empty;
-        _selectedCategoryId = int.TryParse(CategoryFilter, out var categoryId) ? categoryId : null;
-        _selectedHouseholdId = int.TryParse(HouseholdFilter, out var householdId) ? householdId : null;
+        _selectedCategoryId = _categories.FirstOrDefault(category =>
+            string.Equals(category.Name, CategoryFilter, StringComparison.OrdinalIgnoreCase))?.CategoryId ??
+            (int.TryParse(CategoryFilter, out var categoryId) ? categoryId : null);
+        _selectedHouseholdId = _households.FirstOrDefault(household =>
+            string.Equals(household.Name, HouseholdFilter, StringComparison.OrdinalIgnoreCase))?.HouseholdId ??
+            (int.TryParse(HouseholdFilter, out var householdId) ? householdId : null);
         _minAmount = decimal.TryParse(MinimumAmountFilter, System.Globalization.NumberStyles.Number,
             System.Globalization.CultureInfo.InvariantCulture, out var minimumAmount) ? minimumAmount : null;
         _maxAmount = decimal.TryParse(MaximumAmountFilter, System.Globalization.NumberStyles.Number,
@@ -613,13 +619,17 @@
     {
         var query = new List<string> { $"filterdate={_currentMonth:yyyy-MM}" };
         AddQueryParameter(query, "search", _searchString);
-        AddQueryParameter(query, "category", _selectedCategoryId?.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "household", _selectedHouseholdId?.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "min", _minAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "max", _maxAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "from", _dateFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "to", _dateTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
-        AddQueryParameter(query, "type", _transactionTypeFilter);
+        var selectedCategoryName = _categories.FirstOrDefault(category => category.CategoryId == _selectedCategoryId)?.Name
+            ?? _selectedCategoryId?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var selectedHouseholdName = _households.FirstOrDefault(household => household.HouseholdId == _selectedHouseholdId)?.Name
+            ?? _selectedHouseholdId?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        AddQueryParameter(query, "category", selectedCategoryName);
+        AddQueryParameter(query, "household", selectedHouseholdName);
+        AddQueryParameter(query, "minAmount", _minAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "maxAmount", _maxAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "dateFrom", _dateFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "dateTo", _dateTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "transactionType", _transactionTypeFilter);
 
         var relativeUrl = $"economy/transactions?{string.Join('&', query)}";
         if (!string.Equals(Navigation.ToBaseRelativePath(Navigation.Uri), relativeUrl, StringComparison.Ordinal))
