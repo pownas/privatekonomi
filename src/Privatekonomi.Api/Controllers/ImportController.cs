@@ -6,6 +6,7 @@ using System.Globalization;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class ImportController : ControllerBase

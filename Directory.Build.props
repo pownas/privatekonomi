@@ -2,6 +2,8 @@
 
   <PropertyGroup Label="General">
     <TargetFramework>net11.0</TargetFramework>
+    <AppVersion>0.1.0-alfa</AppVersion>
+    <Version>$(AppVersion)</Version>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

@@ -165,7 +165,7 @@ A: Nej, endast utgifter (IsIncome = false) analyseras i heatmapen.
 ## Relaterade Funktioner
 
 - **[Transaktionskalender](../src/Privatekonomi.Web/Components/Pages/TransactionCalendar.razor)**: Visa transaktioner per dag
-- **[Kategoriöversikt](../src/Privatekonomi.Web/Components/Pages/CategoriesOverview.razor)**: Analysera utgifter per kategori
+- **[Kategoriöversikt](../src/Privatekonomi.Web/Components/Pages/CategoryOverview.razor)**: Analysera utgifter per kategori
 - **[Budget](../src/Privatekonomi.Web/Components/Pages/Budgets.razor)**: Skapa budgetar baserat på mönster
 - **[Ekonomisk Hälsa](../src/Privatekonomi.Web/Components/Pages/HealthScore.razor)**: Övergripande ekonomisk hälsobedömning
 

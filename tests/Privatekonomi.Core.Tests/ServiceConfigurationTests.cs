@@ -22,7 +22,7 @@ public class ServiceConfigurationTests
             File.WriteAllText(Path.Combine(web, "appsettings.Development.json"),
                 """{"Storage":{"Provider":"Sqlite","SeedTestData":true}}""");
             File.WriteAllText(Path.Combine(web, "appsettings.local.json"),
-                """{"Storage":{"Provider":"MySql"}}""");
+                $$"""{"Storage":{"Provider":"MySql"},"{{environmentKey}}":"local"}""");
             File.WriteAllText(Path.Combine(api, "appsettings.json"),
                 """{"Storage":{"Provider":"InMemory","SeedTestData":true}}""");
             Environment.SetEnvironmentVariable(environmentKey, "environment");
@@ -33,12 +33,13 @@ public class ServiceConfigurationTests
             var productionSettings = ServiceConfiguration.Load(appHost, "Web", "Production", Guid.NewGuid().ToString());
             var localSettings = ServiceConfiguration.Load(appHost, "Web", "Local", Guid.NewGuid().ToString());
 
-            Assert.AreEqual("MySql", webSettings["Storage:Provider"]);
+            Assert.AreEqual("SqlServer", webSettings["Storage:Provider"]);
             Assert.AreEqual("True", webSettings["Storage:SeedTestData"]);
             Assert.AreEqual("InMemory", apiSettings["Storage:Provider"]);
             Assert.AreEqual("JsonFile", productionSettings["Storage:Provider"]);
             Assert.AreEqual("MySql", localSettings["Storage:Provider"]);
             Assert.AreEqual("environment", webSettings[environmentKey]);
+            Assert.AreEqual("environment", localSettings[environmentKey]);
         }
         finally
         {

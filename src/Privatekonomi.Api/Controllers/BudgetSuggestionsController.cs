@@ -5,6 +5,7 @@ using Privatekonomi.Api.Exceptions;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/budget-suggestions")]
 public class BudgetSuggestionsController : ControllerBase

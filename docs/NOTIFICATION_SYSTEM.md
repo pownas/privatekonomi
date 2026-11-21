@@ -1,5 +1,10 @@
 # Smart Notifikationssystem
 
+> Historisk funktionsbeskrivning. API-notifieringsroutes är spärrade som
+> standard; in-app-funktioner i Web kan använda interna tjänster. Se
+> [säkerhetsguiden för äldre API:er](LEGACY_API_SECURITY.md) innan API-exemplen
+> nedan används.
+
 Detta dokument beskriver det smarta notifikationssystemet med flera kanaler som implementerats i Privatekonomi.
 
 ## Översikt

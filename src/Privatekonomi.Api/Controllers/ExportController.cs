@@ -7,6 +7,7 @@ using Privatekonomi.Core.Services.Persistence;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class ExportController : ControllerBase

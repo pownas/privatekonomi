@@ -166,7 +166,8 @@ for project in Web Api; do
     echo "Publicerar $project..."
     dotnet publish "$stage/source/src/Privatekonomi.$project/Privatekonomi.$project.csproj" \
         --runtime linux-arm64 --self-contained true --configuration Release \
-        -o "$stage/publish/$project" /p:PublishTrimmed=false /p:PublishSingleFile=false
+        -o "$stage/publish/$project" /p:PublishTrimmed=false /p:PublishSingleFile=false \
+        -p:SourceRevisionId="$commit"
     test -f "$stage/publish/$project/Privatekonomi.$project"
     if [ -f "$publish/$project/appsettings.Production.json" ]; then
         cp -a "$publish/$project/appsettings.Production.json" "$stage/publish/$project/"

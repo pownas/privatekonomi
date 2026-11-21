@@ -177,7 +177,8 @@ PRIVATEKONOMI_CONFIG_ROOT="$stage/source" \
 for project in Web Api; do
     echo "Publicerar $project..."
     dotnet publish "$stage/source/src/Privatekonomi.$project/Privatekonomi.$project.csproj" \
-        --configuration Release --output "$stage/$project" /p:PublishTrimmed=false /p:PublishSingleFile=false
+        --configuration Release --output "$stage/$project" /p:PublishTrimmed=false /p:PublishSingleFile=false \
+        -p:SourceRevisionId="$commit"
     [[ -f "$stage/$project/Privatekonomi.$project.dll" ]]
     cp "$stage/source/src/Privatekonomi.$project/appsettings.Production.json" "$stage/$project/"
 done

@@ -474,9 +474,9 @@ OBS: Denna förenkling ignorerar ränta. För exakt beräkning används amorteri
 
 ### Dokumentation
 
-- [Användarguide](/docs/MORTGAGE_ANALYSIS_GUIDE.md)
-- [Loan Model](/src/Privatekonomi.Core/Models/Loan.cs)
-- [IMortgageAnalysisService](/src/Privatekonomi.Core/Services/IMortgageAnalysisService.cs)
+- [Användarguide](MORTGAGE_ANALYSIS_GUIDE.md)
+- [Loan Model](../src/Privatekonomi.Core/Models/Loan.cs)
+- [IMortgageAnalysisService](../src/Privatekonomi.Core/Services/IMortgageAnalysisService.cs)
 
 ---
 

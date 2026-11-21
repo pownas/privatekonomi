@@ -6,6 +6,7 @@ using Privatekonomi.Api.Exceptions;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/transactions/bulk")]
 public class BulkOperationsController : ControllerBase

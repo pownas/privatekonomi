@@ -6,8 +6,9 @@ Snabbguide för vanliga deployment-uppgifter i Privatekonomi release pipeline.
 
 ### Via Kommandoraden
 ```bash
-# Hämta senaste ändringar
-git pull origin main
+# Kontrollera att releasen utgår från en granskad commit/tagg
+git status --short
+git log -1 --oneline
 
 # Skapa version tag (semantic versioning)
 git tag -a v1.2.3 -m "Release 1.2.3: Beskrivning av ändringar"
@@ -59,10 +60,16 @@ Gå till: **Settings** → **Secrets and variables** → **Actions**
 SFTP_HOST           = ftp.example.com
 SFTP_USERNAME       = your_username
 SFTP_PASSWORD       = your_password
-SFTP_PORT           = 21 (FTPS) eller 22 (SFTP)
-SFTP_REMOTE_DIR     = /var/www/privatekonomi/
+SFTP_PORT           = porten för FTPS-servern
+SFTP_WEB_DIR        = sökväg för Web-publiceringen
+SFTP_API_DIR        = sökväg för API-publiceringen
 PRODUCTION_URL      = https://privatekonomi.example.com
 ```
+
+Workflowen publicerar Web och API separat. Konfigurera även `MYSQL_CONNECTION_STRING`
+om deploymentens MySQL-steg används. Exakta workflowvillkor och paketversioner
+finns i [release-deploy.yml](../.github/workflows/release-deploy.yml); använd inte
+en gemensam mål-katalog för Web och API.
 
 ## Verifiera Deployment
 
@@ -267,7 +274,10 @@ git tag -a v2.0.0-alpha.1 -m "Release 2.0.0 Alpha 1"
 git tag -a v2.0.0-rc.1 -m "Release 2.0.0 RC 1"
 ```
 
-**OBS:** Pre-release versioner deployar INTE automatiskt till produktion.
+**Varning:** Workflowens `v*.*.*`-taggfilter matchar även beta-, alfa- och
+release-candidate-taggar med samma punktstruktur. Sådana taggar kan därför
+starta deployment. Pusha inte en pre-release-tagg innan du verifierat aktuell
+workflow och avsett målmiljö.
 
 ## Säkerhetschecklist
 

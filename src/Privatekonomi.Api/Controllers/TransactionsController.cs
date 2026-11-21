@@ -6,6 +6,7 @@ using Privatekonomi.Api.Models;
 
 namespace Privatekonomi.Api.Controllers;
 
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/[controller]")]
 public class TransactionsController : ControllerBase

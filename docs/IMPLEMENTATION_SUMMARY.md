@@ -1,5 +1,10 @@
 # Backend API Review - Implementation Summary
 
+> **Historisk API-granskning.** Authentication, routes and data-storage
+> behavior have changed since this review. Older controllers are blocked by
+> default; do not use endpoint examples below as current instructions. See the
+> [API guide](API_GUIDE.md) and [legacy API security guide](LEGACY_API_SECURITY.md).
+
 ## Översikt
 
 Baserat på den medföljande OpenAPI-specifikationen har backend API:et utökats med nya endpoints och funktionalitet. Alla ändringar är **bakåtkompatibla** och befintlig funktionalitet fortsätter fungera som tidigare.

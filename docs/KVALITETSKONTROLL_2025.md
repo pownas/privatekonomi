@@ -1,4 +1,8 @@
 # Kvalitetskontroll - Privatekonomi
+
+> Historisk kvalitetskontroll från 2025. Resultat och kvarstående punkter är
+> inte en bedömning av aktuell branch.
+
 ## Översikt och Kvalitetsgenomgång
 
 **Datum:** 2025-12-01  

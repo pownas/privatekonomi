@@ -2,6 +2,28 @@
 
 En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
 
+> **Alfastatus och säkerhet:** Backendmigreringen är inte färdig. Webbappen använder
+> fortfarande databasen och Core-tjänster direkt. Äldre API-endpoints är
+> spärrade tills de har säker autentisering och användarisolering.
+> Använd inte verkliga personliga data innan migreringen är färdig.
+> Webbens och API:ets lagringsinställningar kan dessutom peka på olika datakällor.
+
+Ett första API-flöde för läsning av egna transaktioner finns på
+`/api/personal/transactions`. Det kräver en bearer-token från
+`/api/session/login` och HTTPS; hushållstransaktioner ingår inte. Webbappen
+använder ännu inte detta flöde. Övriga API-endpoints är spärrade, vilket
+påverkar bland annat bankkopplingar och notifieringsåtgärder; se
+[säkerhetsinformationen](docs/LEGACY_API_SECURITY.md). API:ets vanliga HTTP-profil kan inte användas för detta flöde;
+för lokal utveckling finns en HTTPS-profil (`dotnet run --launch-profile https`
+i `src/Privatekonomi.Api`). API-inloggningen använder konton i API:ets egen
+lagring, som i övergångsläget kan skilja sig från webbappens.
+API-inloggningen stöder ännu inte tvåfaktorsautentiserade konton eller
+registrering, och hastighetsbegränsningen gäller per API-process.
+
+`GET /api-info` visar API-version, byggnummer, kort SHA, värdmiljö och
+konfigurerad lagringsprovider när informationen finns. Värdmiljön eller
+providern anger inte i sig om data är test- eller produktionsdata.
+
 ## 🌐 Landningssida (Beta)
 
 - **Landningssida för ekonomiappen.se**: ⭐ NYTT!
@@ -19,7 +41,7 @@ En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor 
   - Baserat på 50/30/20-regeln med justerbara kategorier
   - Information om dataskydd och GDPR
   - Se [Onboarding guide](docs/ONBOARDING_GUIDE.md)
-- **Användarautentisering**: Komplett användarsystem med registrering, inloggning och dataisolering per användare
+- **Användarautentisering**: Registrering och inloggning i webbappen; API:ets autentisering och användarisolering är ännu inte färdigställda
 - **Dashboard**: Översikt över totala inkomster, utgifter och nettoresultat
 - **Anpassd Dashboard med Widget-system**: ⭐ NYT!
   - Skapa personliga dashboard-layouter med anpassningsbara widgets
@@ -250,7 +272,7 @@ Se [macOS-installationsguiden](docs/scripts/macos/installation.md) för detaljer
 
 #### 🍓 Raspberry Pi Installation (Automatisk)
 
-> **🎯 Nyligen Åtgärdat (November 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 istället för 0.0.0.0 är nu löst. Se [Network Fix Dokumentation](docs/scripts/raspberry-pi/RASPBERRY_PI_NETWORK_FIX_2025_11.md) för detaljer.
+> **Historisk ändringsnotering (november 2025):** Nätverksåtkomstproblem där tjänster lyssnade på 127.0.0.1 i stället för 0.0.0.0 åtgärdades då. Detta är inte en aktuell hälsokontroll; se [Raspberry Pi-guiden](docs/scripts/raspberry-pi/RASPBERRY_PI_GUIDE.md) för nuvarande driftinstruktioner.
 
 För Raspberry Pi-användare finns ett komplett installationsskript som automatiserar hela installationsprocessen:
 
@@ -416,7 +438,9 @@ cd src/Privatekonomi.Api
 dotnet run
 ```
 
-API Swagger-dokumentation finns på: `http://localhost:5000/swagger`
+API Swagger-dokumentation finns på `http://localhost:5277/swagger` med HTTP-profilen
+eller `https://localhost:7023/swagger` med HTTPS-profilen. API-inloggning och
+personliga API-anrop kräver HTTPS; se [API-guiden](docs/API_GUIDE.md).
 
 #### Lokal konfiguration (appsettings.local.json & User Secrets)
 
@@ -682,6 +706,9 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 
 ## 📋 Dokumentation
 
+- **[Dokumentationsöversikt](docs/README.md)**: aktuell arkitektur, källor och historiska dokument
+- **[API_GUIDE.md](docs/API_GUIDE.md)**: aktiva API-flöden och begränsningar
+
 ### Användarguider
 
 - **[USER_AUTHENTICATION.md](docs/USER_AUTHENTICATION.md)**: Guide för användarregistrering, inloggning och datahantering
@@ -690,7 +717,7 @@ Se [STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md) för detaljerad information om:
 - **[STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md)**: Guide för olika lagringsalternativ och konfiguration
 - **[YEAR_EXPORT_GUIDE.md](docs/YEAR_EXPORT_GUIDE.md)**: Guide för export av ekonomisk data per år
 - **[CSV_IMPORT_GUIDE.md](docs/CSV_IMPORT_GUIDE.md)**: Guide för import av transaktioner från ICA-banken och Swedbank
-- **[PSD2_API_GUIDE.md](docs/PSD2_API_GUIDE.md)**: Guide för automatisk bankimport via PSD2-API (Swedbank, Avanza, ICA Banken)
+- **[PSD2_API_GUIDE.md](docs/PSD2_API_GUIDE.md)**: Historisk teknisk bakgrund; bank-API och OAuth-flöde är för närvarande spärrade
 - **[AVANZA_IMPORT_GUIDE.md](docs/AVANZA_IMPORT_GUIDE.md)**: Guide för import av investeringar från Avanza Bank
 - **[STOCK_PRICE_API_GUIDE.md](docs/STOCK_PRICE_API_GUIDE.md)**: Guide för automatisk uppdatering av aktiekurser via API
 - **[INVESTMENT_PENSION_GUIDE.md](docs/INVESTMENT_PENSION_GUIDE.md)**: ⭐ NYTT! Guide för investeringar och pensionshantering

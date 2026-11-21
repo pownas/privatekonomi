@@ -352,9 +352,9 @@ Potentiella förbättringar för framtida versioner:
 
 ## Relaterade Dokument
 
-- [Notification System Documentation](/docs/NOTIFICATIONS.md)
-- [API Documentation](/docs/API.md)
-- [User Guide - Notifications](/docs/USER_GUIDE_NOTIFICATIONS.md)
+- [Notification System Documentation](NOTIFICATION_SYSTEM.md)
+- [API Documentation](API_GUIDE.md)
+- [Notification UI Guide](NOTIFICATION_UI_GUIDE.md)
 
 ## Support och Frågor
 

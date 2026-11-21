@@ -1,5 +1,10 @@
 # User Authentication and Management
 
+> **Arkitekturstatus:** Web och API har separata Identity-lager. Web-konton
+> skapas inte automatiskt i API och Web använder fortfarande sina egna
+> datatjänster och lagring. API-inloggningen är begränsad till de endpoints som
+> beskrivs i [API-guiden](API_GUIDE.md).
+
 ## Overview
 
 Privatekonomi now includes a comprehensive user authentication and management system built on ASP.NET Core Identity. This enables multiple users to:
@@ -45,12 +50,13 @@ Users can be members of households to share expenses and manage joint finances:
 
 ### Test User Account
 
-A test user is automatically created with the following credentials:
+In Development kan ett testkonto skapas endast när demofunktionen är uttryckligen
+aktiverad och e-post/lösenord har konfigurerats. Kontot skapas inte automatiskt
+i andra miljöer och dessa uppgifter ska aldrig användas för riktiga konton.
 
-- **Email**: test@example.com
-- **Password**: TestPassword123!
-
-This account comes with pre-populated test data (50 transactions, budgets, goals, etc.).
+Demokontot och exempeldata följer den aktuella processens lagrings- och
+seedningsregler; Web och API delar inte automatiskt konto eller data. Se
+[lagringsguiden](STORAGE_GUIDE.md).
 
 ### Creating a New Account
 
@@ -86,7 +92,9 @@ The authentication system is built using:
 - **ASP.NET Core Identity**: Robust authentication framework
 - **Entity Framework Core**: User data storage
 - **Cookie Authentication**: Secure session management
-- **InMemory Database**: Currently uses in-memory storage (can be migrated to SQL Server)
+- **Storage**: Web has its own configurable Identity and database; the separate
+  API process has its own configuration and does not automatically share accounts.
+  See [storage guide](STORAGE_GUIDE.md).
 
 ### User Model
 
@@ -136,48 +144,22 @@ Authentication__RequireConfirmedAccount=true
 
 Passkeys can be added and removed from the signed-in user's Passkeys page. WebAuthn operations require HTTPS or `localhost`; an HTTP LAN address is not a secure browser context.
 
-### Migration to SQL Server
+### Changing storage
 
-To migrate from InMemory to SQL Server:
-
-1. Add the SQL Server package to Core project:
-```bash
-dotnet add src/Privatekonomi.Core package Microsoft.EntityFrameworkCore.SqlServer
-```
-
-2. Update `Program.cs` in Web and Api projects:
-```csharp
-builder.Services.AddDbContext<PrivatekonomyContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-```
-
-3. Add connection string to `appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=Privatekonomi;Trusted_Connection=True;MultipleActiveResultSets=true"
-  }
-}
-```
-
-4. Create initial migration:
-```bash
-dotnet ef migrations add InitialCreate --project src/Privatekonomi.Core
-```
-
-5. Apply migration:
-```bash
-dotnet ef database update --project src/Privatekonomi.Web
-```
+SQL Server is already a supported `Storage` provider. Changing provider does not
+transfer accounts or other data. Back up first and consult the
+[storage guide](STORAGE_GUIDE.md) for configuration and schema caveats.
 
 ## API Authentication
 
-The Web API endpoints now support authentication through the Identity system. API endpoints can be accessed using:
-
-1. **Cookie Authentication**: Automatically used by the Blazor web app
-2. **Token Authentication**: Can be added for mobile apps or external clients
-
-To add token-based authentication for the API, consider implementing JWT tokens.
+The alpha personal API uses its own Identity store and password login at
+`POST /api/session/login` over HTTPS. The returned bearer token authorizes the
+personal transaction endpoints; it is not the Web cookie. API registration
+and a two-factor login flow are not provided, and accounts with two-factor
+enabled are rejected. Web does not use this personal API. Legacy controllers are
+blocked by default and normally return 403 even for personal tokens; earlier
+versions may expose data anonymously. See [legacy API security](LEGACY_API_SECURITY.md) and the
+[developer quickstart](DEVELOPER_QUICKSTART.md).
 
 ## Passkeys
 
@@ -190,7 +172,6 @@ Passkeys require a browser with WebAuthn support and a secure origin: use HTTPS,
 Planned features for the authentication system:
 
 - [ ] Social login (Google, Microsoft, GitHub)
-- [ ] Two-factor authentication (2FA)
 - [ ] Two-factor authentication (2FA)
 - [ ] User profile management page
 - [ ] Admin user roles and permissions
@@ -210,11 +191,10 @@ Planned features for the authentication system:
 
 - Data is isolated per user
 - If you're a new user, you won't see the test data
-- Test data is only associated with test@example.com
+- Demo data is created only under the configured Development seed policy; Web and API data are separate.
 
 ### Session expired
 
-- Sessions expire after 30 minutes of inactivity
 - Check "Remember me" during login for persistent sessions
 - Re-login if your session has expired
 

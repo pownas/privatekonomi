@@ -8,6 +8,7 @@ namespace Privatekonomi.Api.Controllers;
 /// Dashboard API controller for aggregated ekonomisk översikt.
 /// Provides endpoint for retrieving aggregated dashboard data.
 /// </summary>
+[LegacyApiDisabled]
 [ApiController]
 [Route("api/me")]
 public class DashboardController : ControllerBase

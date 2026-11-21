@@ -5,6 +5,8 @@ using Privatekonomi.Core.Services;
 using Privatekonomi.Api.Middleware;
 using Privatekonomi.Api.Services;
 using Privatekonomi.Core.Configuration;
+using Privatekonomi.Core.Models;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +50,43 @@ builder.Services.AddProblemDetails();
 
 // Register global exception handler
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// Legacy [Authorize] endpoints must not accept personal API tokens.
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = ApiAuthentication.LegacyDenyScheme;
+    options.DefaultChallengeScheme = ApiAuthentication.LegacyDenyScheme;
+    options.DefaultForbidScheme = ApiAuthentication.LegacyDenyScheme;
+})
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, LegacyDenyAuthenticationHandler>(
+        ApiAuthentication.LegacyDenyScheme, _ => { })
+    .AddBearerToken(ApiAuthentication.Scheme);
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = builder.Configuration.GetValue<bool?>("Authentication:RequireConfirmedAccount")
+        ?? (builder.Environment.IsProduction()
+            && !string.IsNullOrWhiteSpace(builder.Configuration["Email:SmtpHost"])
+            && !string.IsNullOrWhiteSpace(builder.Configuration["Email:PublicBaseUrl"]));
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+})
+    .AddEntityFrameworkStores<PrivatekonomyContext>()
+    .AddSignInManager();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("api-login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -117,18 +156,25 @@ using (var scope = app.Services.CreateScope())
     var storageSettings = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<StorageSettings>>().Value;
     var context = scope.ServiceProvider.GetRequiredService<PrivatekonomyContext>();
 
+    ApiSeedPolicy.ValidateDemoInitialization(
+        context, app.Environment.IsDevelopment(), app.Configuration.GetValue<bool>("DemoUser:Enabled"));
     using var initializationLock = SqliteInitializationLock.Acquire(context);
 
     // For SQLite, ensure database is created
+    bool databaseCreated;
     if (storageSettings.Provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
     {
         logger.LogInformation("Using SQLite storage, ensuring database is created...");
-        context.Database.EnsureCreated();
+        databaseCreated = context.Database.EnsureCreated();
     }
     else
     {
-        context.Database.EnsureCreated();
+        databaseCreated = context.Database.EnsureCreated();
     }
+
+    ApiSeedPolicy.ValidateTestDataInitialization(context, storageSettings.Provider,
+        app.Environment.IsDevelopment(), app.Configuration.GetValue<bool>("DemoUser:Enabled"),
+        storageSettings.SeedTestData, databaseCreated);
 
     await MissingTableSchemaInitializer.EnsureTablesAsync(context);
     
@@ -144,6 +190,15 @@ using (var scope = app.Services.CreateScope())
         if (persistence.Exists())
             await persistence.LoadAsync(context);
     }
+
+    if (ApiSeedPolicy.CanSeedReferenceData(context))
+        TestDataSeeder.SeedProductionReferenceData(context);
+    else
+        logger.LogWarning("Skipping API reference data initialization for shared relational storage; it is not coordinated across processes.");
+
+    await DevelopmentDataInitializer.InitializeAsync(
+        context, scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(),
+        app.Environment, app.Configuration);
 
     logger.LogInformation("Database initialized with provider: {Provider}", storageSettings.Provider);
 }
@@ -161,6 +216,8 @@ app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowBlazorWeb");
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map Aspire default endpoints (health checks, etc.)

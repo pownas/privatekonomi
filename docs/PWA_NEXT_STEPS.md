@@ -1,5 +1,9 @@
 # PWA - Nästa Steg för Testning och Produktion
 
+> **Historisk testplan, ej driftsinstruktion.** Endpoints och testmiljöer som
+> nämns här kan saknas eller vara inaktuella. Verifiera varje route mot aktuell
+> API-kod innan den används; se [API-guiden](API_GUIDE.md).
+
 Detta dokument beskriver de steg som behöver göras för att testa och förbereda PWA-implementationen för produktion.
 
 ## 📋 Översikt

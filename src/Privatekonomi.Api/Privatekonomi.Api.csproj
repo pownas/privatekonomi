@@ -14,4 +14,14 @@
     <ProjectReference Include="..\Privatekonomi.ServiceDefaults\Privatekonomi.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <PropertyGroup Label="Version metadata">
+    <BuildNumber Condition="'$(BuildNumber)' == ''">$(GITHUB_RUN_NUMBER)</BuildNumber>
+  </PropertyGroup>
+
+  <ItemGroup Label="Version metadata">
+    <AssemblyMetadata Include="AppVersion" Value="$(AppVersion)" />
+    <AssemblyMetadata Include="BuildNumber" Value="$(BuildNumber)" />
+    <AssemblyMetadata Include="GitHubSha" Value="$(GITHUB_SHA)" />
+  </ItemGroup>
+
 </Project>
