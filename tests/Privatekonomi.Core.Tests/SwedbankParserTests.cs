@@ -50,6 +50,23 @@ public class SwedbankParserTests
     }
 
     [TestMethod]
+    [DataRow("Bokföringsdag")]
+    [DataRow("Bokf?ringsdag")]
+    [DataRow("Bokf\0ringsdag")]
+    [DataRow("Bokf 0ringsdag")]
+    public async Task SwedbankParserParseAsyncHandlesHeaderEncodingArtifacts(string dateHeader)
+    {
+        var csv = $"Radnummer,Valuta,{dateHeader},Beskrivning,Belopp\n1,SEK,2025-11-12,Test,-50.00";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await new SwedbankParser().ParseAsync(stream);
+
+        Assert.AreEqual(1, result.Transactions.Count);
+        Assert.AreEqual(new DateTime(2025, 11, 12), result.Transactions[0].Date);
+        Assert.AreEqual(50m, result.Transactions[0].Amount);
+    }
+
+    [TestMethod]
     public void SwedbankParserCanParseReturnsTrueForEnglishFormat()
     {
         // Arrange

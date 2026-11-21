@@ -176,7 +176,7 @@ public static class MissingTableSchemaInitializer
                             Name = column.CurrentName,
                             Table = loanTable.Name,
                             Schema = loanTable.Schema,
-                            ClrType = modelColumn.PropertyMappings.First().Property.ClrType,
+                            ClrType = modelColumn.PropertyMappings[0].Property.ClrType,
                             ColumnType = modelColumn.StoreType,
                             IsNullable = modelColumn.IsNullable
                         };

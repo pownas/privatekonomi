@@ -566,15 +566,13 @@ public class SwedbankParser : ICsvParser
     // Normalize header for encoding issues (replace common encoding errors)
     private static string NormalizeHeader(string header)
     {
-#pragma warning disable CA1307 // Specify StringComparison for clarity
         return header.ToLowerInvariant()
             .Replace('å', 'a').Replace('ä', 'a').Replace('ö', 'o')
             .Replace('\u00e5', 'a').Replace('\u00e4', 'a').Replace('\u00f6', 'o')
             .Replace('\uFFFD', '?') // replacement char
             // Common encoding artefacts for "för".
-            .Replace("f?r", "for")
-            .Replace("f\0r", "for")
-            .Replace("f 0r", "for");
-#pragma warning restore CA1307 // Specify StringComparison for clarity
+            .Replace("f?r", "for", StringComparison.Ordinal)
+            .Replace("f\0r", "for", StringComparison.Ordinal)
+            .Replace("f 0r", "for", StringComparison.Ordinal);
     }
 }
