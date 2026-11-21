@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Privatekonomi.Core.Models;
 
 namespace Privatekonomi.Core.Data;
 
@@ -32,6 +33,8 @@ public static class BalanceSheetSchemaInitializer
         {
             new AddColumnOperation { Table = "Transactions", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true },
             new AddColumnOperation { Table = "Transactions", Name = "ClearingNumber", ClrType = typeof(string), IsNullable = true },
+            new AddColumnOperation { Table = "Transactions", Name = "IsInternalTransfer", ClrType = typeof(bool), DefaultValue = false },
+            new AddColumnOperation { Table = "Categories", Name = "IsInternalTransferCategory", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "Assets", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Investments", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Loans", Name = "ChartOfAccountsCode", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
@@ -76,6 +79,33 @@ public static class BalanceSheetSchemaInitializer
                 await context.Database.ExecuteSqlRawAsync(command.CommandText, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            if (!await context.Categories.AnyAsync(c => c.Name == "Överföringar", cancellationToken))
+            {
+                var category = await context.Categories.FindAsync(new object[] { 35 }, cancellationToken);
+                if (category == null)
+                {
+                    context.Categories.Add(new Category
+                    {
+                        CategoryId = 35,
+                        Name = "Överföringar",
+                        AccountNumber = "8999",
+                        Color = "#607D8B",
+                        IsSystemCategory = true,
+                        IsInternalTransferCategory = true,
+                        OriginalName = "Överföringar",
+                        OriginalColor = "#607D8B",
+                        OriginalAccountNumber = "8999",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    category.IsInternalTransferCategory = true;
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+            }
         }
         finally
         {

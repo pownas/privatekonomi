@@ -196,7 +196,13 @@ public class TransactionService : ITransactionService
                     CategoryId = suggestedCategory.CategoryId,
                     Amount = transaction.Amount
                 });
+                transaction.IsInternalTransfer = suggestedCategory.IsInternalTransferCategory;
             }
+        }
+
+        if (transaction.TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true))
+        {
+            transaction.IsInternalTransfer = true;
         }
 
         context.Transactions.Add(transaction);
@@ -327,6 +333,12 @@ public class TransactionService : ITransactionService
                     Amount = c.Amount
                 })
                 .ToList();
+
+            var transferCategoryIds = await context.Categories
+                .Where(c => c.IsInternalTransferCategory)
+                .Select(c => c.CategoryId)
+                .ToListAsync();
+            transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
         }
 
         await context.SaveChangesAsync();
@@ -458,6 +470,12 @@ public class TransactionService : ITransactionService
             category.TransactionId = transactionId;
             context.TransactionCategories.Add(category);
         }
+
+        var transferCategoryIds = await context.Categories
+            .Where(c => c.IsInternalTransferCategory)
+            .Select(c => c.CategoryId)
+            .ToListAsync();
+        transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
 
         await context.SaveChangesAsync();
     }
@@ -644,6 +662,11 @@ public class TransactionService : ITransactionService
                     });
                 }
 
+                var transferCategoryIds = await context.Categories
+                    .Where(c => c.IsInternalTransferCategory)
+                    .Select(c => c.CategoryId)
+                    .ToListAsync();
+                transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
                 transaction.UpdatedAt = DateTime.UtcNow;
                 result.SuccessCount++;
                 result.SuccessfulIds.Add(id);

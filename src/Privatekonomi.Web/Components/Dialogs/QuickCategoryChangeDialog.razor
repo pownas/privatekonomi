@@ -137,16 +137,17 @@
         try
         {
             // Update the transaction categories
-            Transaction.TransactionCategories.Clear();
-            Transaction.TransactionCategories.Add(new TransactionCategory
-            {
-                TransactionId = Transaction.TransactionId,
-                CategoryId = _selectedCategoryId,
-                Amount = Transaction.Amount,
-                Percentage = 100
-            });
-
-            await TransactionService.UpdateTransactionAsync(Transaction);
+            await TransactionService.UpdateTransactionCategoriesAsync(Transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = Transaction.TransactionId,
+                        CategoryId = _selectedCategoryId,
+                        Amount = Transaction.Amount,
+                        Percentage = 100
+                    }
+                });
             
             var categoryName = _categories.FirstOrDefault(c => c.CategoryId == _selectedCategoryId)?.Name ?? "vald kategori";
             Snackbar.Add($"Transaktion kategoriserad som '{categoryName}'", Severity.Success);

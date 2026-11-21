@@ -116,7 +116,9 @@ public class CategoryService : ICategoryService
         var fromDate = toDate.AddMonths(-months);
 
         var transactions = await GetTransactionsByCategoryAsync(categoryId, fromDate, toDate);
-        var allocatedTransactions = transactions.Select(t => new
+        var allocatedTransactions = transactions
+        .Where(t => !t.IsInternalTransfer && !t.TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true))
+        .Select(t => new
         {
             t.Date,
             t.IsIncome,

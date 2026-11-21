@@ -12,6 +12,7 @@ public class Category
     public decimal? DefaultBudgetMonthly { get; set; } // Default monthly budget suggestion
     public bool TaxRelated { get; set; } // Whether category is tax-deductible or affects tax reporting
     public bool IsSystemCategory { get; set; } // Whether this is a default system category
+    public bool IsInternalTransferCategory { get; set; }
     public string? OriginalName { get; set; } // Original name for system categories (for reset)
     public string? OriginalColor { get; set; } // Original color for system categories (for reset)
     public string? OriginalAccountNumber { get; set; } // Original account number for system categories (for reset)

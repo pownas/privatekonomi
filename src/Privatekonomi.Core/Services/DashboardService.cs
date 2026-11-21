@@ -276,7 +276,10 @@ public class DashboardService : IDashboardService
 
         // Get transactions for current and previous month
         var transactions = await _context.Transactions
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
             .Where(t => t.UserId == userId && t.Date >= firstDayOfTwoMonthsAgo)
+            .Where(t => !t.IsInternalTransfer && !t.TransactionCategories.Any(tc => tc.Category != null && tc.Category.IsInternalTransferCategory))
             .ToListAsync();
 
         // Current month transactions

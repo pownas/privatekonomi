@@ -16,6 +16,7 @@ public class Transaction : ITemporalEntity
         set => _date = value.Date;
     }
     public bool IsIncome { get; set; }
+    public bool IsInternalTransfer { get; set; }
     public int? BankSourceId { get; set; }
     
     // Temporal tracking
@@ -97,6 +98,9 @@ public class Transaction : ITemporalEntity
     public BankSource? BankSource { get; set; }
     public Pocket? Pocket { get; set; }
     public Household? Household { get; set; }
+
+    public bool IsInternalTransferTransaction =>
+        IsInternalTransfer || TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true);
     public ICollection<TransactionCategory> TransactionCategories { get; set; } = new List<TransactionCategory>();
     public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
 }

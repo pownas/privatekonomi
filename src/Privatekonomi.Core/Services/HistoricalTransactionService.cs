@@ -167,8 +167,12 @@ public class HistoricalTransactionService
     {
         var transactions = await GetTransactionsAsOfDateAsync(asOfDate);
 
-        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        var totalIncome = transactions
+            .Where(t => t.IsIncome && !t.IsInternalTransferTransaction)
+            .Sum(t => t.Amount);
+        var totalExpenses = transactions
+            .Where(t => !t.IsIncome && !t.IsInternalTransferTransaction)
+            .Sum(t => t.Amount);
         var netAmount = totalIncome - totalExpenses;
 
         return (totalIncome, totalExpenses, netAmount);

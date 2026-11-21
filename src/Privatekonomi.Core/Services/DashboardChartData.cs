@@ -11,6 +11,11 @@ public static class DashboardChartData
     {
         foreach (var transaction in transactions)
         {
+            if (transaction.IsInternalTransferTransaction)
+            {
+                continue;
+            }
+
             if (transaction.TransactionCategories.Count == 0)
             {
                 yield return (transaction.Date, transaction.IsIncome, "Okategoriserad", Math.Abs(transaction.Amount));

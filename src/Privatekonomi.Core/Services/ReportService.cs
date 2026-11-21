@@ -18,7 +18,11 @@ public class ReportService : IReportService
         fromDate = fromDate.Date;
         toDate = toDate.Date;
         var query = _context.Transactions
-            .Where(t => t.Date >= fromDate && t.Date <= toDate);
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .Where(t => t.Date >= fromDate && t.Date <= toDate)
+            .Where(t => !t.IsInternalTransfer &&
+                        !t.TransactionCategories.Any(tc => tc.Category != null && tc.Category.IsInternalTransferCategory));
 
         if (householdId.HasValue)
         {
@@ -582,7 +586,12 @@ public class ReportService : IReportService
         var yearAgoPeriodEnd = yearAgoPeriodStart.AddMonths(1).AddDays(-1);
 
         // Get transactions for all periods
-        var query = _context.Transactions.AsQueryable();
+        var query = _context.Transactions
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .Where(t => !t.IsInternalTransfer &&
+                        !t.TransactionCategories.Any(tc => tc.Category != null && tc.Category.IsInternalTransferCategory))
+            .AsQueryable();
         
         if (householdId.HasValue)
         {

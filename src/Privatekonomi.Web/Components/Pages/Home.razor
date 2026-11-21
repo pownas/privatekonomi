@@ -684,8 +684,12 @@ else
             Snackbar.Add($"Kunde inte ladda trenddata: {ex.Message}", Severity.Warning);
         }
         
-        _totalIncome = _transactions.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
-        _totalExpenses = _transactions.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
+        _totalIncome = _transactions
+            .Where(t => t.IsIncome && !t.IsInternalTransferTransaction)
+            .Sum(t => Math.Abs(t.Amount));
+        _totalExpenses = _transactions
+            .Where(t => !t.IsIncome && !t.IsInternalTransferTransaction)
+            .Sum(t => Math.Abs(t.Amount));
         await UpdateChartData();
         await LoadNetWorthData();
         _loading = false;
