@@ -31,6 +31,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Install Aspire CLI
+        run: |
+          dotnet tool install --global Aspire.Cli --version 17.0.0
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
       - name: Restore dependencies
         run: dotnet restore
 

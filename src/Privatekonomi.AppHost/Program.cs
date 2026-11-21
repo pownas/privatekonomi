@@ -34,22 +34,54 @@ var configureSelectedStorage = Environment.GetEnvironmentVariable("PRIVATEKONOMI
 // JSON persistence is process-local, so keep it in Web and leave API on its in-memory default.
 var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
+var selectedStorage = configureSelectedStorage && configuredStorageProvider is not null;
+var apiOverrides = new Dictionary<string, string?>();
+var webOverrides = new Dictionary<string, string?>();
+if (selectedStorage)
+{
+    apiOverrides["Storage:Provider"] = usesJsonFileStorage ? "InMemory" : storageProvider;
+    webOverrides["Storage:Provider"] = storageProvider;
+    if (!string.IsNullOrWhiteSpace(storageConnectionString))
+    {
+        webOverrides["Storage:ConnectionString"] = storageConnectionString;
+        if (!usesJsonFileStorage)
+        {
+            apiOverrides["Storage:ConnectionString"] = storageConnectionString;
+        }
+    }
+}
+
+var apiSettings = ServiceConfiguration.Load(builder.AppHostDirectory, "Privatekonomi.Api", dotnetEnvironment,
+    "eb8f9493-8e5f-4f49-95ce-0bf639dddbd5", apiOverrides);
+var webSettings = ServiceConfiguration.Load(builder.AppHostDirectory, "Privatekonomi.Web", dotnetEnvironment,
+    "2b2d9b8c-52d5-49e1-8a2b-4fcf76e8ae78", webOverrides);
+
+var apiStorageProvider = builder.AddParameter("api-storage-provider", apiSettings["Storage:Provider"] ?? "InMemory");
+var webStorageProvider = builder.AddParameter("web-storage-provider", webSettings["Storage:Provider"] ?? "InMemory");
+var apiSeedTestData = builder.AddParameter("api-seed-test-data", apiSettings["Storage:SeedTestData"] ?? "false");
+var webSeedTestData = builder.AddParameter("web-seed-test-data", webSettings["Storage:SeedTestData"] ?? "false");
+var bankSyncEnabled = builder.AddParameter("web-bank-sync-enabled", webSettings["BankSync:Enabled"] ?? "false");
+var bankSyncInterval = builder.AddParameter("web-bank-sync-interval-minutes", webSettings["BankSync:IntervalMinutes"] ?? "60");
+
 // Add the API project
-var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api", "http")
+var apiBuilder = builder.AddDotnetProject("api", "../Privatekonomi.Api/Privatekonomi.Api.csproj",
+        options => options.LaunchProfileName = "http")
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false")
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__Provider", apiStorageProvider)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__SeedTestData", apiSeedTestData);
 
 if (configureSelectedStorage && configuredStorageProvider is not null)
 {
     apiBuilder = apiBuilder
-        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
-        .WithEnvironment("Storage__Provider", usesJsonFileStorage ? "InMemory" : storageProvider);
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
     if (!string.IsNullOrWhiteSpace(storageConnectionString) && !usesJsonFileStorage)
     {
-        apiBuilder = apiBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+        var apiConnectionString = builder.AddParameter("api-storage-connection-string", apiSettings["Storage:ConnectionString"] ?? storageConnectionString, secret: true).AsOptional();
+        apiBuilder = apiBuilder.WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__ConnectionString", apiConnectionString);
     }
 }
 
@@ -68,22 +100,27 @@ if (isRaspberryPi)
 var api = apiBuilder;
 
 // Add the Web project and reference the API
-var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web", "http")
+var webBuilder = builder.AddDotnetProject("web", "../Privatekonomi.Web/Privatekonomi.Web.csproj",
+        options => options.LaunchProfileName = "http")
     .WithReference(api)
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
     .WithEnvironment("PRIVATEKONOMI_ENVIRONMENT", privatekonomiEnvironment)
-    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false");
+    .WithEnvironment("PRIVATEKONOMI_LAN_ACCESS", isLanAccessEnabled ? "true" : "false")
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__Provider", webStorageProvider)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__SeedTestData", webSeedTestData)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_BankSync__Enabled", bankSyncEnabled)
+    .WithEnvironment("PRIVATEKONOMI_ASPIRE_BankSync__IntervalMinutes", bankSyncInterval);
 
 if (configureSelectedStorage && configuredStorageProvider is not null)
 {
     webBuilder = webBuilder
-        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider)
-        .WithEnvironment("Storage__Provider", storageProvider);
+        .WithEnvironment("PRIVATEKONOMI_STORAGE_PROVIDER", storageProvider);
     if (!string.IsNullOrWhiteSpace(storageConnectionString))
     {
-        webBuilder = webBuilder.WithEnvironment("Storage__ConnectionString", storageConnectionString);
+        var webConnectionString = builder.AddParameter("web-storage-connection-string", webSettings["Storage:ConnectionString"] ?? storageConnectionString, secret: true).AsOptional();
+        webBuilder = webBuilder.WithEnvironment("PRIVATEKONOMI_ASPIRE_Storage__ConnectionString", webConnectionString);
     }
 }
 

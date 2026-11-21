@@ -22,6 +22,7 @@ if (builder.Environment.IsDevelopment() || string.Equals(builder.Environment.Env
     builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
     builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
 }
+builder.Configuration.AddEnvironmentVariables("PRIVATEKONOMI_ASPIRE_");
 
 // LAN access configuration - ensure we listen on all network interfaces
 var isRaspberryPi = Environment.GetEnvironmentVariable("PRIVATEKONOMI_RASPBERRY_PI") == "true";

@@ -1,17 +1,19 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.6.5">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="General">
     <OutputType>Exe</OutputType>
     <IsAspireHost>true</IsAspireHost>
-    <AspireUseCliBundle>false</AspireUseCliBundle>
-    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
     <UserSecretsId>a1d43a2c-e345-4da9-b866-2a39d5009e40</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup Label="Projects">
-    <ProjectReference Include="..\Privatekonomi.Api\Privatekonomi.Api.csproj" />
-    <ProjectReference Include="..\Privatekonomi.Web\Privatekonomi.Web.csproj" />
-    <ProjectReference Include="..\Privatekonomi.ServiceDefaults\Privatekonomi.ServiceDefaults.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\Privatekonomi.Api\Privatekonomi.Api.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Privatekonomi.Web\Privatekonomi.Web.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Packages">
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.DotNet" />
   </ItemGroup>
 
 </Project>

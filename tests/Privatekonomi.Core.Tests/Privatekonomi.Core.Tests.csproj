@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\Privatekonomi.Web\Privatekonomi.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\src\Privatekonomi.AppHost\ServiceConfiguration.cs" Link="ServiceConfiguration.cs" />
+  </ItemGroup>
+
 </Project>
