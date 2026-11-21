@@ -9,7 +9,7 @@ public class BankRegistryTests
     public void SupportedBanksShouldContainAllRequiredBanks()
     {
         // Arrange
-        var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Icabanken", "Nordea", "SEB", "Swedbank", "Avanza", "Nordnet", "Lysa", "Opti", "Klarna", "Lantmannen Finans" };
+        var requiredBanks = new[] { "Handelsbanken", "ICA-banken", "Nordea", "SEB", "Swedbank", "Avanza", "Nordnet", "Lysa", "Opti", "Klarna", "Lantmannen Finans", "Revolut", "Nordiska banken", "Montrose" };
         
         // Act
         var bankNames = BankRegistry.SupportedBanks.Select(b => b.Name).ToList();
@@ -34,6 +34,29 @@ public class BankRegistryTests
             Assert.AreNotEqual(0, bank.ColorHex.Length);
             StringAssert.StartsWith(bank.ColorHex, "#");
         }
+    }
+
+    [TestMethod]
+    public void AllBanksShouldHaveUniqueWebsite()
+    {
+        var websites = BankRegistry.SupportedBanks
+            .Select(b => BankRegistry.NormalizeWebsite(b.Website))
+            .ToList();
+
+        Assert.AreEqual(websites.Count, websites.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.IsTrue(BankRegistry.SupportedBanks.All(b =>
+            Uri.TryCreate(b.Website, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)));
+    }
+
+    [TestMethod]
+    public void GetBankByWebsiteShouldBeNormalized()
+    {
+        var bank = BankRegistry.GetBankByWebsite("https://www.icabanken.se/");
+
+        Assert.IsNotNull(bank);
+        Assert.AreEqual("ICA-banken", bank.Name);
+        Assert.AreEqual("https://www.icabanken.se", bank.Website.TrimEnd('/'));
     }
     
     [TestMethod]

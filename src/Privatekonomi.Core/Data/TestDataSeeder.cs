@@ -161,7 +161,7 @@ public static class TestDataSeeder
         {
             new() { Name = "ICA-banken lönekonto", Institution = "ICA-banken", AccountType = "checking", AccountNumber = "1930-104825", ClearingNumber = "1930", Currency = "SEK", InitialBalance = 48500m, OpenedDate = now.AddYears(-4), ChartOfAccountsCode = "1930", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Swedbank lönekonto", Institution = "Swedbank", AccountType = "checking", AccountNumber = "8327-9001148", ClearingNumber = "8327", Currency = "SEK", InitialBalance = 72000m, OpenedDate = now.AddYears(-7), ChartOfAccountsCode = "1930", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
-            new() { Name = "Icabanken transaktionskonto", Institution = "Icabanken", AccountType = "checking", AccountNumber = "123456789", ClearingNumber = "9275", Currency = "SEK", InitialBalance = 32400m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1930", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "ICA-banken transaktionskonto", Institution = "ICA-banken", AccountType = "checking", AccountNumber = "123456789", ClearingNumber = "9275", Currency = "SEK", InitialBalance = 32400m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1930", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Nordnet sparkonto", Institution = "Nordnet", AccountType = "savings", AccountNumber = "NORD-SPAR-001", Currency = "SEK", InitialBalance = 98000m, OpenedDate = now.AddYears(-3), ChartOfAccountsCode = "1920", Color = "#2E7D32", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Avanza sparkonto", Institution = "Avanza", AccountType = "savings", AccountNumber = "AV-SPAR-002", Currency = "SEK", InitialBalance = 125000m, OpenedDate = now.AddYears(-5), ChartOfAccountsCode = "1920", Color = "#00C281", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Swedbank sparkonto", Institution = "Swedbank", AccountType = "savings", AccountNumber = "8327-6400123", ClearingNumber = "8327", Currency = "SEK", InitialBalance = 245000m, OpenedDate = now.AddYears(-6), ChartOfAccountsCode = "1920", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
@@ -171,7 +171,14 @@ public static class TestDataSeeder
             new() { Name = "Avanza KF", Institution = "Avanza", AccountType = "investment", AccountNumber = "KF-456789", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-4), ChartOfAccountsCode = "1810", Color = "#00C281", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Nordnet ISK", Institution = "Nordnet", AccountType = "investment", AccountNumber = "ISK-920184", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-5), ChartOfAccountsCode = "1810", Color = "#2E7D32", UserId = userId, CreatedAt = now, ValidFrom = now },
             new() { Name = "Swedbank ISK", Institution = "Swedbank", AccountType = "investment", AccountNumber = "ISK-550017", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-3), ChartOfAccountsCode = "1810", Color = "#FF7900", UserId = userId, CreatedAt = now, ValidFrom = now },
-            new() { Name = "Icabanken fondkonto", Institution = "Icabanken", AccountType = "investment", AccountNumber = "ICAFOND-001", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1810", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now }
+            new() { Name = "ICA-banken fondkonto", Institution = "ICA-banken", AccountType = "investment", AccountNumber = "ICAFOND-001", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1810", Color = "#E3000F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Revolut bankkonto SEK", Institution = "Revolut", AccountType = "checking", AccountNumber = "REV-SEK-001", Currency = "SEK", InitialBalance = 18500m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1930", Color = "#191C1F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Revolut valutakonto USD", Institution = "Revolut", AccountType = "cash", AccountNumber = "REV-USD-001", Currency = "USD", InitialBalance = 750m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1920", Color = "#191C1F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Revolut valutakonto EUR", Institution = "Revolut", AccountType = "cash", AccountNumber = "REV-EUR-001", Currency = "EUR", InitialBalance = 620m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1920", Color = "#191C1F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Revolut sparkonto", Institution = "Revolut", AccountType = "savings", AccountNumber = "REV-SAVE-001", Currency = "SEK", InitialBalance = 54000m, OpenedDate = now.AddYears(-1), ChartOfAccountsCode = "1920", Color = "#191C1F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Revolut kryptokonto", Institution = "Revolut", AccountType = "crypto", AccountNumber = "REV-CRYPTO-001", Currency = "EUR", InitialBalance = 0m, OpenedDate = now.AddYears(-1), ChartOfAccountsCode = "1810", Color = "#191C1F", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Nordiska banken sparkonto", Institution = "Nordiska banken", AccountType = "savings", AccountNumber = "NORDISKA-SAVE-001", Currency = "SEK", InitialBalance = 115000m, OpenedDate = now.AddYears(-3), ChartOfAccountsCode = "1920", Color = "#123B5D", UserId = userId, CreatedAt = now, ValidFrom = now },
+            new() { Name = "Montrose ISK", Institution = "Montrose", AccountType = "investment", AccountNumber = "MONT-ISK-001", Currency = "SEK", InitialBalance = 0m, OpenedDate = now.AddYears(-2), ChartOfAccountsCode = "1810", Color = "#6B5B95", UserId = userId, CreatedAt = now, ValidFrom = now }
         };
 
         var investmentAccounts = new List<InvestmentAccount>
@@ -181,9 +188,11 @@ public static class TestDataSeeder
             new() { Name = "ISK-portfölj", Provider = "Nordnet", AccountType = "ISK", AccountNumber = "ISK-920184", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
             new() { Name = "Kapitalförsäkring", Provider = "Nordnet", AccountType = "KF", AccountNumber = "KF-920185", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
             new() { Name = "ISK-fond & aktier", Provider = "Swedbank", AccountType = "ISK", AccountNumber = "ISK-550017", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
-            new() { Name = "Aktie- & fondkonto", Provider = "Icabanken", AccountType = "AF", AccountNumber = "ICAFOND-001", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Aktie- & fondkonto", Provider = "ICA-banken", AccountType = "AF", AccountNumber = "ICAFOND-001", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
             new() { Name = "Lysa målfond", Provider = "Lysa", AccountType = "Fondrobot", AccountNumber = "LYSA-001", Currency = "SEK", IsFundRobot = true, InitialContributions = 180000m, CurrentValue = 207450m, Notes = "Demosaldo för en globalt diversifierad portfölj.", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
-            new() { Name = "Opti portfölj - Hög", Provider = "Opti", AccountType = "Fondrobot", AccountNumber = "OPTI-001", Currency = "SEK", IsFundRobot = true, InitialContributions = 150000m, CurrentValue = 170250m, Notes = "Demosaldo för en fondrobotportfölj.", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now }
+            new() { Name = "Opti portfölj - Hög", Provider = "Opti", AccountType = "Fondrobot", AccountNumber = "OPTI-001", Currency = "SEK", IsFundRobot = true, InitialContributions = 150000m, CurrentValue = 170250m, Notes = "Demosaldo för en fondrobotportfölj.", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Montrose ISK", Provider = "Montrose", AccountType = "ISK", AccountNumber = "MONT-ISK-001", Currency = "SEK", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now },
+            new() { Name = "Revolut kryptodepå", Provider = "Revolut", AccountType = "AF", AccountNumber = "REV-CRYPTO-001", Currency = "EUR", UserId = userId, CreatedAt = now, ValidFrom = now, LastUpdated = now }
         };
 
         if (!context.BankSources.Any())
@@ -524,12 +533,16 @@ public static class TestDataSeeder
         var avanzaAf = context.InvestmentAccounts.First(a => a.Provider == "Avanza" && a.AccountType == "AF");
         var nordnetIsk = context.InvestmentAccounts.First(a => a.Provider == "Nordnet" && a.AccountType == "ISK");
         var swedbankIsk = context.InvestmentAccounts.First(a => a.Provider == "Swedbank" && a.AccountType == "ISK");
-        var icabankenAf = context.InvestmentAccounts.First(a => a.Provider == "Icabanken");
+        var icabankenAf = context.InvestmentAccounts.First(a => a.Provider == "ICA-banken");
+        var montroseIsk = context.InvestmentAccounts.First(a => a.Provider == "Montrose");
+        var revolutCrypto = context.InvestmentAccounts.First(a => a.Provider == "Revolut");
 
         var avanzaBank = context.BankSources.First(b => b.Institution == "Avanza" && b.AccountType == "investment");
         var nordnetBank = context.BankSources.First(b => b.Institution == "Nordnet" && b.AccountType == "investment");
         var swedbankBank = context.BankSources.First(b => b.Institution == "Swedbank" && b.AccountType == "investment");
-        var icabankenBank = context.BankSources.First(b => b.Institution == "Icabanken" && b.AccountType == "investment");
+        var icabankenBank = context.BankSources.First(b => b.Institution == "ICA-banken" && b.AccountType == "investment");
+        var montroseBank = context.BankSources.First(b => b.Institution == "Montrose" && b.AccountType == "investment");
+        var revolutCryptoBank = context.BankSources.First(b => b.Institution == "Revolut" && b.AccountType == "crypto");
 
         investments[0].InvestmentAccountId = avanzaIsk.InvestmentAccountId;
         investments[0].BankSourceId = avanzaBank.BankSourceId;
@@ -580,12 +593,35 @@ public static class TestDataSeeder
         investments[6].AccountType = "ISK";
         investments[6].AccountNumber = nordnetIsk.AccountNumber;
 
-        investments[7].InvestmentAccountId = swedbankIsk.InvestmentAccountId;
-        investments[7].BankSourceId = swedbankBank.BankSourceId;
+        investments[7].InvestmentAccountId = montroseIsk.InvestmentAccountId;
+        investments[7].BankSourceId = montroseBank.BankSourceId;
         investments[7].ISIN = "FI0009900028";
         investments[7].Currency = "SEK";
         investments[7].AccountType = "ISK";
-        investments[7].AccountNumber = swedbankIsk.AccountNumber;
+        investments[7].AccountNumber = montroseIsk.AccountNumber;
+
+        investments.Add(new Investment
+        {
+            InvestmentId = 9,
+            Name = "Bitcoin",
+            ShortName = "BTC",
+            Type = "Krypto",
+            Quantity = 0.035m,
+            PurchasePrice = 425000m,
+            CurrentPrice = 680000m,
+            PurchaseDate = DateTime.UtcNow.AddMonths(-10),
+            LastUpdated = DateTime.UtcNow,
+            Currency = "EUR",
+            ISIN = "BTC",
+            Market = "Revolut",
+            AccountType = "AF",
+            AccountNumber = revolutCrypto.AccountNumber,
+            InvestmentAccountId = revolutCrypto.InvestmentAccountId,
+            BankSourceId = revolutCryptoBank.BankSourceId,
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId,
+            ValidFrom = DateTime.UtcNow
+        });
 
         context.Investments.AddRange(investments);
         context.SaveChanges();

@@ -99,7 +99,18 @@ else
                                 <span class="text-muted">-</span>
                             }
                         </MudTd>
-                        <MudTd DataLabel="Institution">@(context.Institution ?? "-")</MudTd>
+                        <MudTd DataLabel="Institution">
+                            @if (GetInstitutionWebsite(context.Institution) is string website)
+                            {
+                                <MudLink Href="@website" Target="_blank">
+                                    @(context.Institution ?? context.Name)
+                                </MudLink>
+                            }
+                            else
+                            {
+                                @(context.Institution ?? "-")
+                            }
+                        </MudTd>
                         <MudTd DataLabel="Valuta">@context.Currency</MudTd>
                         <MudTd DataLabel="Saldo">
                             <span style="@(context.CurrentBalance >= 0 ? "color: green;" : "color: red;")">
@@ -264,6 +275,13 @@ else
         }
     }
 
+    private static string? GetInstitutionWebsite(string? institution)
+    {
+        return string.IsNullOrWhiteSpace(institution)
+            ? null
+            : BankRegistry.GetBankByName(institution)?.Website;
+    }
+
     private string GetAccountTypeDisplayName(string type) => type switch
     {
         "checking" => "Lönekonton",
@@ -273,6 +291,7 @@ else
         "loan" => "Lån",
         "pension" => "Pensionskonton",
         "cash" => "Kontanter",
+        "crypto" => "Kryptokonton",
         _ => "Övriga konton"
     };
 
@@ -285,6 +304,7 @@ else
         "loan" => Icons.Material.Filled.CreditScore,
         "pension" => Icons.Material.Filled.Elderly,
         "cash" => Icons.Material.Filled.AttachMoney,
+        "crypto" => Icons.Material.Filled.CurrencyBitcoin,
         _ => Icons.Material.Filled.AccountBalanceWallet
     };
 

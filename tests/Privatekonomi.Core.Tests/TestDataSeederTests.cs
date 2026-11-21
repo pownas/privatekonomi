@@ -131,7 +131,7 @@ public class TestDataSeederTests : IDisposable
             "Nordnet");
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
-            "Icabanken");
+            "ICA-banken");
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
             "Swedbank");
@@ -141,6 +141,15 @@ public class TestDataSeederTests : IDisposable
         CollectionAssert.Contains(
             banks.Select(b => b.Institution).Distinct().ToList(),
             "Lantmannen Finans");
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            "Revolut");
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            "Nordiska banken");
+        CollectionAssert.Contains(
+            banks.Select(b => b.Institution).Distinct().ToList(),
+            "Montrose");
 
         Assert.IsTrue(investmentAccounts.Any(a => a.Provider == "Lysa" && a.IsFundRobot));
         Assert.IsTrue(investmentAccounts.Any(a => a.Provider == "Opti" && a.IsFundRobot));
