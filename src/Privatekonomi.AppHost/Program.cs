@@ -35,7 +35,8 @@ var configureSelectedStorage = Environment.GetEnvironmentVariable("PRIVATEKONOMI
 var usesJsonFileStorage = string.Equals(storageProvider, "JsonFile", StringComparison.OrdinalIgnoreCase);
 
 // Add the API project
-var apiBuilder = builder.AddProject<Projects.Privatekonomi_Api>("api", "http")
+var apiBuilder = builder.AddDotnetProject("api", "../Privatekonomi.Api/Privatekonomi.Api.csproj",
+        options => options.LaunchProfileName = "http")
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
     .WithEnvironment("DOTNET_ENVIRONMENT", dotnetEnvironment)
@@ -68,7 +69,8 @@ if (isRaspberryPi)
 var api = apiBuilder;
 
 // Add the Web project and reference the API
-var webBuilder = builder.AddProject<Projects.Privatekonomi_Web>("web", "http")
+var webBuilder = builder.AddDotnetProject("web", "../Privatekonomi.Web/Privatekonomi.Web.csproj",
+        options => options.LaunchProfileName = "http")
     .WithReference(api)
     .WithExternalHttpEndpoints()
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", aspnetEnvironment)
