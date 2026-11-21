@@ -107,6 +107,8 @@ public static class BalanceSheetSchemaInitializer
                     await context.SaveChangesAsync(cancellationToken);
                 }
             }
+
+            await StandardCategoryInitializer.EnsureCategoriesAsync(context, cancellationToken);
         }
         finally
         {

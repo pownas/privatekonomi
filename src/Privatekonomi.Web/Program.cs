@@ -328,6 +328,8 @@ try
                 logger.LogInformation("Data loaded successfully from JSON files");
             }
         }
+
+        await StandardCategoryInitializer.EnsureCategoriesAsync(context);
         
         // Always seed production reference data (challenge templates, etc.)
         logger.LogInformation("Seeding production reference data (challenge templates)...");
