@@ -5,26 +5,9 @@
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
   </PropertyGroup>
 
-  <Target Name="CopyLockFilesAndProps" AfterTargets="Build">
-    <ItemGroup>
-      <LockFiles Include="..\*\packages.lock.json"
-                 Exclude="..\SbomScanner\packages.lock.json" />
-      <LockFiles Update="@(LockFiles)">
-        <ProjectName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(LockFiles.Identity)'))))</ProjectName>
-      </LockFiles>
-
-      <PropsFile Include="..\Directory.Packages.props" />
-    </ItemGroup>
-
-    <RemoveDir Directories="$(TargetDir)ProjectLockfiles" />
-
-    <Copy SourceFiles="@(LockFiles)"
-          DestinationFiles="@(LockFiles->'$(TargetDir)ProjectLockfiles\%(ProjectName)\%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
-
-    <Copy SourceFiles="@(PropsFile)"
-          DestinationFolder="$(TargetDir)"
-          SkipUnchangedFiles="true" />
-  </Target>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" />
+    <InternalsVisibleTo Include="Privatekonomi.Core.Tests" />
+  </ItemGroup>
 
 </Project>

@@ -2,6 +2,17 @@
 
 En privatekonomi-applikation byggd med .NET 11 STS, Blazor Server och MudBlazor för att hjälpa användare att få koll och kontroll över sin ekonomi.
 
+## SBOM och NuGet-beroenden
+
+Kör från lösningens rot med .NET 11 SDK och internetåtkomst till nuget.org:
+
+```bash
+dotnet restore Privatekonomi.slnx
+dotnet run --project tests/SbomScanner/SbomScanner.csproj
+```
+
+Skannern läser de återställda `artifacts/obj/<projektnamn>/project.assets.json` för lösningens app- och testprojekt och skriver `docs/sbom-report.md`. Återställ alltid lösningen på nytt före skanningen så att rapporten använder aktuella beroenden. Skannern ingår inte själv som projekt i rapporten; paket som andra projekt använder via den kan däremot ingå. Rapporten omfattar NuGet-paket, inte npm-paket eller installerade ramverk. Den jämför mot nuget.orgs aktuella sårbarhetsdata och senaste stabila paketversioner; en föreslagen uppdatering kräver separat kompatibilitetsbedömning. Olika versioner i olika projekt innebär inte nödvändigtvis en konflikt.
+
 ## 🌐 Landningssida (Beta)
 
 - **Landningssida för ekonomiappen.se**: ⭐ NYTT!

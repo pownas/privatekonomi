@@ -2,114 +2,130 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using NuGet.Versioning;
 
 #pragma warning disable CA1305 // Specify IFormatProvider
 #pragma warning disable IDE0057 // Use range operator
 
-// 1. Definitiera sökvägar i utdatamappen
-string lockFilesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ProjectLockfiles");
-string propsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Directory.Packages.props");
-string markdownReportPath = GetWikiOutputPath("sbom-report.md");
+string solutionRoot = FindSolutionRoot();
+string propsFilePath = Path.Combine(solutionRoot, "Directory.Packages.props");
+string markdownReportPath = Path.Combine(solutionRoot, "docs", "sbom-report.md");
 var extractedPackages = new List<NuGetPackage>();
 
 // Kontroll om man vill se förhandsversioner av NuGet-paket eller ej
 bool includeNugetPrerelease = false;
 Console.WriteLine($"Inkludera förhandsversioner (Preview): {includeNugetPrerelease}");
 
-// 2. Kontrollera om mappen med lock-filer existerar
-if (Directory.Exists(lockFilesFolder))
+var solution = XDocument.Load(Path.Combine(solutionRoot, "Privatekonomi.slnx"));
+var projectNames = solution.Descendants("Project")
+    .Select(p => p.Attribute("Path")?.Value)
+    .Where(p => p != null && p.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+    .Select(p => Path.GetFileNameWithoutExtension(p!.Replace('/', Path.DirectorySeparatorChar)))
+    .Where(name => name != "SbomScanner" && name != ".SolutionItems")
+    .ToList();
+
+foreach (string projectName in projectNames)
 {
-    var lockFiles = Directory.GetFiles(lockFilesFolder, "packages.lock.json", SearchOption.AllDirectories);
-
-    foreach (var file in lockFiles)
+    string file = Path.Combine(solutionRoot, "artifacts", "obj", projectName, "project.assets.json");
+    if (!File.Exists(file))
     {
-        string projectName = Path.GetFileName(Path.GetDirectoryName(file) ?? "Okänt Projekt");
-        Console.WriteLine($"Läser in lock-fil för: {projectName}");
+        throw new FileNotFoundException($"Återställningsfilen för {projectName} saknas. Kör 'dotnet restore Privatekonomi.slnx' först.", file);
+    }
 
-        string jsonContent = await File.ReadAllTextAsync(file).ConfigureAwait(true);
-        var lockFile = JsonSerializer.Deserialize<LockFile>(jsonContent);
+    Console.WriteLine($"Läser in återställningsfil för: {projectName}");
+    string jsonContent = await File.ReadAllTextAsync(file).ConfigureAwait(true);
+    var assets = JsonSerializer.Deserialize<AssetsFile>(jsonContent)
+        ?? throw new InvalidDataException($"Ogiltig återställningsfil: {file}");
 
-        if (lockFile?.Dependencies is null)
+    if (assets.Targets.Count == 0)
+    {
+        throw new InvalidDataException($"Inga ramverk hittades i återställningsfilen: {file}");
+    }
+
+    foreach (var target in assets.Targets)
+    {
+        string frameworkName = target.Key.Split('/')[0];
+        if (!assets.Project.Frameworks.TryGetValue(frameworkName, out var framework))
         {
-            continue;
+            throw new InvalidDataException($"Ramverket {frameworkName} saknas i {file}.");
         }
 
-        foreach (var framework in lockFile.Dependencies)
+        var packages = new Dictionary<string, LockDependency>(StringComparer.OrdinalIgnoreCase);
+        foreach (var library in target.Value)
         {
-            // --- NYTT: Bygg en invers tabell över vem som beror på vem ---
-            // Key: Det beroende paketet (transitiva), Value: Lista på paket som drog in det
-            var dependentOnTracker = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var package in framework.Value)
+            int separator = library.Key.LastIndexOf('/');
+            if (separator <= 0 || !library.Value.Type.Equals("package", StringComparison.OrdinalIgnoreCase))
             {
-                if (package.Value.Dependencies != null)
-                {
-                    foreach (var childDep in package.Value.Dependencies)
-                    {
-                        if (!dependentOnTracker.TryGetValue(childDep.Key, out List<string>? value))
-                        {
-                            value = [];
-                            dependentOnTracker[childDep.Key] = value;
-                        }
+                continue;
+            }
 
-                        value.Add(package.Key);
+            string name = library.Key[..separator];
+            string version = library.Key[(separator + 1)..];
+            bool direct = framework.Dependencies?.ContainsKey(name) == true;
+            packages.Add(name, new LockDependency(direct ? "Direct" : "Transitive", version, library.Value.Dependencies));
+        }
+
+        var dependentOnTracker = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var package in packages)
+        {
+            if (package.Value.Dependencies != null)
+            {
+                foreach (var childDep in package.Value.Dependencies)
+                {
+                    if (!dependentOnTracker.TryGetValue(childDep.Key, out List<string>? value))
+                    {
+                        value = [];
+                        dependentOnTracker[childDep.Key] = value;
                     }
+
+                    value.Add(package.Key);
                 }
             }
-            // -------------------------------------------------------------
+        }
 
-            foreach (var package in framework.Value)
+        foreach (var package in packages)
+        {
+            string packageName = package.Key;
+            string packageVersion = package.Value.Resolved;
+
+            var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (package.Value.Type == "Direct")
             {
-                if (package.Value.Type == "Project" || string.IsNullOrEmpty(package.Value.ContentHash))
+                roots.Add("[Direkt paketberoende]");
+            }
+            else
+            {
+                FindDirectRoots(packageName, packages, dependentOnTracker, roots, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            string introducedByString = roots.Count > 0 ? string.Join(", ", roots) : "Okänd källa";
+
+            var existing = extractedPackages.FirstOrDefault(p => p.Name.Equals(packageName, StringComparison.OrdinalIgnoreCase) && p.Version == packageVersion);
+
+            if (existing == null)
+            {
+                var nuGetPkg = new NuGetPackage(packageName, packageVersion)
                 {
-                    continue;
+                    IntroducedBy = introducedByString
+                };
+                extractedPackages.Add(nuGetPkg);
+            }
+            else
+            {
+                if (existing.IntroducedBy != "[Direkt paketberoende]" && introducedByString != "[Direkt paketberoende]")
+                {
+                    var nuSources = existing.IntroducedBy.Split(", ")
+                        .Where(source => source != "Okänd källa")
+                        .Concat(roots)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                    existing.IntroducedBy = nuSources.Count > 0 ? string.Join(", ", nuSources) : "Okänd källa";
                 }
-
-                string packageName = package.Key;
-                string packageVersion = package.Value.Resolved ?? "Okänd";
-
-                // --- NYTT: Hitta rötterna (Direct dependencies) som ledde hit ---
-                var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                if (package.Value.Type == "Direct")
+                else if (introducedByString == "[Direkt paketberoende]")
                 {
-                    roots.Add("[Direkt SDK-beroende]");
-                }
-                else
-                {
-                    // Hitta alla Direct-paket som i slutändan leder till detta transitiva paket
-                    FindDirectRoots(packageName, framework.Value, dependentOnTracker, roots, []);
-                }
-
-                string introducedByString = roots.Count > 0 ? string.Join(", ", roots) : "Okänd källa";
-                // -------------------------------------------------------------
-
-                // Kontrollera om paketet redan har lagts till i listan (t.ex. från ett annat projekt)
-                var existing = extractedPackages.FirstOrDefault(p => p.Name.Equals(packageName, StringComparison.OrdinalIgnoreCase) && p.Version == packageVersion);
-
-                if (existing == null)
-                {
-                    // FIXAT: Ändrat till package.Value.ContentHash
-                    var nuGetPkg = new NuGetPackage(packageName, packageVersion, package.Value.ContentHash)
-                    {
-                        IntroducedBy = introducedByString
-                    };
-                    extractedPackages.Add(nuGetPkg);
-                }
-                else
-                {
-                    // Om paketet redan finns men dras in av andra källor i detta projekt/ramverk,
-                    // så slår vi ihop dem till en unik lista.
-                    if (existing.IntroducedBy != "[Direkt SDK-beroende]" && introducedByString != "[Direkt SDK-beroende]")
-                    {
-                        var nuSources = existing.IntroducedBy.Split(", ").Concat(roots).Distinct();
-                        existing.IntroducedBy = string.Join(", ", nuSources);
-                    }
-                    else if (introducedByString == "[Direkt SDK-beroende]")
-                    {
-                        // Om det var transitivt i ett projekt men direkt i ett annat, markera det som direkt
-                        existing.IntroducedBy = "[Direkt SDK-beroende]";
-                    }
+                    existing.IntroducedBy = "[Direkt paketberoende]";
                 }
             }
         }
@@ -117,10 +133,14 @@ if (Directory.Exists(lockFilesFolder))
 }
 
 // 3. Läs in Directory.Packages.props
+if (extractedPackages.Count == 0)
+{
+    throw new InvalidDataException("Inga NuGet-paket hittades i lösningens återställningsfiler.");
+}
+
 if (!File.Exists(propsFilePath))
 {
-    Console.WriteLine("Kunde inte hitta Directory.Packages.props i utdatamappen.");
-    return;
+    throw new FileNotFoundException("Kunde inte hitta Directory.Packages.props.", propsFilePath);
 }
 else
 {
@@ -160,25 +180,39 @@ var vulnResourceUrl = serviceIndex?.Resources
 
 if (vulnResourceUrl is null || regResourceUrl is null)
 {
-    Console.WriteLine("Kunde inte hitta nödvändiga NuGet-API-slutpunkter.");
-    return;
+    throw new InvalidDataException("Kunde inte hitta nödvändiga NuGet-API-slutpunkter.");
 }
 
 // 6. Hämta fillistan
 var vulnFiles = await client.GetFromJsonAsync<List<VulnerabilityFile>>(vulnResourceUrl).ConfigureAwait(true);
 
-// 7. Definiera den saknade variabeln
-string? baseJsonUrl = vulnFiles?.FirstOrDefault(f => f.Name == "base")?.Id;
-if (baseJsonUrl is null)
+if (vulnFiles == null || !vulnFiles.Any(f => f.Name == "base"))
 {
-    Console.WriteLine("Kunde inte hitta base.json.");
-    return;
+    throw new InvalidDataException("Kunde inte hitta NuGets sårbarhetsdatabas.");
 }
 
-Console.WriteLine($"Laddar ner sårbarhetsdatabasen från: {baseJsonUrl}");
-
-// 8. Ladda ner sårbarhetsdatabasen
-var vulnerabilities = await client.GetFromJsonAsync<Dictionary<string, List<Vulnerability>>>(baseJsonUrl).ConfigureAwait(true);
+var vulnerabilities = new Dictionary<string, List<Vulnerability>>(StringComparer.OrdinalIgnoreCase);
+foreach (var vulnFile in vulnFiles)
+{
+    Console.WriteLine($"Laddar ner sårbarhetsdatabasen: {vulnFile.Name}");
+    using var page = await client.GetFromJsonAsync<JsonDocument>(vulnFile.Id).ConfigureAwait(true)
+        ?? throw new InvalidDataException($"Tom sårbarhetsdatabas: {vulnFile.Id}");
+    if (page.RootElement.ValueKind == JsonValueKind.Array && page.RootElement.GetArrayLength() == 0)
+    {
+        continue;
+    }
+    var entries = page.RootElement.Deserialize<Dictionary<string, List<Vulnerability>>>()
+        ?? throw new InvalidDataException($"Ogiltig sårbarhetsdatabas: {vulnFile.Id}");
+    foreach (var entry in entries)
+    {
+        if (!vulnerabilities.TryGetValue(entry.Key, out var list))
+        {
+            list = [];
+            vulnerabilities.Add(entry.Key, list);
+        }
+        list.AddRange(entry.Value);
+    }
+}
 
 // 9. Hämta senaste versioner för alla unika paket parallellt
 Console.WriteLine($"{Environment.NewLine}Hämtar senaste versioner från NuGet live-API...");
@@ -187,53 +221,38 @@ var uniqueLookups = extractedPackages
     .DistinctBy(p => p.Lower)
     .ToList();
 
+using var lookupLimit = new SemaphoreSlim(12);
 var lookupTasks = uniqueLookups.Select(async item =>
 {
-    string latestVersion = "Okänd";
+    await lookupLimit.WaitAsync().ConfigureAwait(false);
     try
     {
         var packageRegUrl = $"{regResourceUrl.TrimEnd('/')}/{item.Lower}/index.json";
-        var regIndex = await client.GetFromJsonAsync<NugetRegistrationIndex>(packageRegUrl).ConfigureAwait(false);
-
-        if (regIndex?.Pages != null && regIndex.Pages.Count > 0)
+        var regIndex = await client.GetFromJsonAsync<NugetRegistrationIndex>(packageRegUrl).ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Tomt versionsregister för {item.Name}.");
+        for (int p = regIndex.Pages.Count - 1; p >= 0; p--)
         {
-            // Vi börjar leta i den senaste sidan (oftast den sista, men vi kan loopa bakifrån för säkerhetsskull)
-            for (int p = regIndex.Pages.Count - 1; p >= 0; p--)
+            var page = regIndex.Pages[p];
+            if (page.Items == null)
             {
-                var page = regIndex.Pages[p];
-                if (page.Items == null || page.Items.Count == 0)
+                page = await client.GetFromJsonAsync<RegistrationPage>(page.Id).ConfigureAwait(false)
+                    ?? throw new InvalidDataException($"Tom registersida för {item.Name}.");
+            }
+            foreach (var entry in (page.Items ?? []).AsEnumerable().Reverse())
+            {
+                var version = NuGetVersion.Parse(entry.CatalogEntry.Version);
+                if (includeNugetPrerelease || !version.IsPrerelease)
                 {
-                    continue;
-                }
-
-                // Leta bakifrån bland paketen på den sidan (senaste först)
-                for (int i = page.Items.Count - 1; i >= 0; i--)
-                {
-                    string currentVersion = page.Items[i].CatalogEntry.Version;
-
-                    // Om 'includePrerelease' är true tar vi första bästa (vilket är den absolut senaste).
-                    // Om den är false, godkänner vi bara versioner som INTE innehåller ett bindestreck.
-                    if (includeNugetPrerelease || (!currentVersion.Contains('-') && !currentVersion.Contains('+')))
-                    {
-                        latestVersion = currentVersion;
-                        break;
-                    }
-                }
-
-                // Om vi hittade en version, avbryt sökningen efter äldre sidor
-                if (latestVersion != "Okänd")
-                {
-                    break;
+                    return new { item.Name, LatestVersion = entry.CatalogEntry.Version };
                 }
             }
         }
+        return new { item.Name, LatestVersion = "Okänd" };
     }
-    catch
+    finally
     {
-        /* Ignorera API-missar, t.ex. interna paket */
+        lookupLimit.Release();
     }
-
-    return new { item.Name, LatestVersion = latestVersion };
 });
 
 var lookupResults = await Task.WhenAll(lookupTasks).ConfigureAwait(true);
@@ -256,17 +275,17 @@ foreach (var packageGroup in groupedPackages)
     foreach (var pkg in sortedPackageItems)
     {
         var cpmMatch = centralPackages.FirstOrDefault(c => c.Id.Equals(pkg.Name, StringComparison.OrdinalIgnoreCase));
-        string cpmStatus = cpmMatch != null ? $"Ja ({cpmMatch.Version})" : "Nej (Transitivt)";
+        string cpmStatus = cpmMatch != null ? $"Ja ({cpmMatch.Version})" : "Nej";
 
         latestVersionsDict.TryGetValue(pkg.Name, out string? latestNuGetVersion);
         latestNuGetVersion ??= "Okänd";
 
         var activeVulnerabilities = new List<Vulnerability>();
-        if (vulnerabilities!.TryGetValue(searchKey, out var vulnList))
+        if (vulnerabilities.TryGetValue(searchKey, out var vulnList))
         {
             foreach (var v in vulnList)
             {
-                if (IsVersionAffected(pkg.Version, v.Versions))
+                if (SbomVersioning.IsVersionAffected(pkg.Version, v.Versions))
                 {
                     activeVulnerabilities.Add(v);
                 }
@@ -307,7 +326,7 @@ static void PrintToConsole(List<ReportItem> items)
     if (conflicts.Any())
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("⚠️  FÖLJANDE PAKET HAR VERSIONSKONFLIKTER INOM LÖSNINGEN:");
+        Console.WriteLine("⚠️  FÖLJANDE PAKET HAR OLIKA VERSIONER INOM LÖSNINGEN:");
         foreach (var conflictName in conflicts)
         {
             var versions = items.First(i => i.PackageName == conflictName).AllInstalledVersions;
@@ -322,7 +341,7 @@ static void PrintToConsole(List<ReportItem> items)
         if (item.ActiveVulnerabilities.Count > 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[CRITICAL] {item.PackageName} (v. {item.InstalledVersion})");
+            Console.WriteLine($"[SÅRBAR] {item.PackageName} (v. {item.InstalledVersion})");
             Console.ResetColor();
             Console.WriteLine($"  -> Hanteras i CPM: {item.CpmStatus}");
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -351,7 +370,7 @@ static void PrintToConsole(List<ReportItem> items)
                 Console.ResetColor();
             }
 
-            if (item.LatestVersion != "Okänd" && item.LatestVersion != item.InstalledVersion)
+            if (SbomVersioning.IsUpdateAvailable(item.InstalledVersion, item.LatestVersion))
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.Write($" [Uppdatering finns: {item.LatestVersion}]");
@@ -378,14 +397,14 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
     int totalPackages = items.Count;
     int vulnerablePackages = items.Count(i => i.ActiveVulnerabilities.Count != 0);
     int versionMismatches = items.Where(i => i.HasVersionMismatch).Select(i => i.PackageName).Distinct().Count();
-    int outdatedPackages = items.Count(i => i.LatestVersion != "Okänd" && i.LatestVersion != i.InstalledVersion && i.ActiveVulnerabilities.Count == 0);
+    int outdatedPackages = items.Count(i => SbomVersioning.IsUpdateAvailable(i.InstalledVersion, i.LatestVersion) && i.ActiveVulnerabilities.Count == 0);
 
     sb.AppendLine("## 📊 Översikt");
     sb.AppendLine("<table width=\"100%\">");
     sb.AppendLine("  <tr>");
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#f6f8fa; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #d0d7de;\"><b>Totalt skannade</b><br><font size=\"5\" color=\"#1f2328\">{totalPackages}</font></td>");
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#ffebe9; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #ffc1c0;\"><b>⚠️ Aktiva sårbarheter</b><br><font size=\"5\" color=\"#cf222e\"><b>{vulnerablePackages}</b></font></td>");
-    sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#fff8c5; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #eee0b0;\"><b>🔄 Versionskonflikter</b><br><font size=\"5\" color=\"#9a6700\"><b>{versionMismatches}</b></font></td>");
+    sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#fff8c5; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #eee0b0;\"><b>🔄 Olika paketversioner</b><br><font size=\"5\" color=\"#9a6700\"><b>{versionMismatches}</b></font></td>");
     sb.AppendLine($"    <td align=\"center\" width=\"25%\" style=\"background-color:#ddf4ff; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #b6e3ff;\"><b>📦 Outdaterade paket</b><br><font size=\"5\" color=\"#0969da\"><b>{outdatedPackages}</b></font></td>");
     sb.AppendLine("  </tr>");
     sb.AppendLine("</table>");
@@ -441,8 +460,8 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
 
     if (conflictGroups.Count != 0)
     {
-        sb.AppendLine("## 🔄 Versionskonflikter upptäckta");
-        sb.AppendLine("<blockquote>💡 <b>Tips:</b> Standardisera dessa paket till en gemensam version i din <code>Directory.Packages.props</code> för att undvika oväntat runtime-beteende.</blockquote>");
+        sb.AppendLine("## 🔄 Olika paketversioner i lösningen");
+        sb.AppendLine("<blockquote>Olika projekt kan använda olika versioner utan att det innebär en konflikt. Kontrollera beroenden och kompatibilitet innan versioner ändras.</blockquote>");
         sb.AppendLine("<table width=\"100%\">");
         sb.AppendLine("  <thead>");
         sb.AppendLine("    <tr>");
@@ -489,8 +508,8 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
         }
 
         string statusBadge = item.HasVersionMismatch
-            ? "<span style=\"background-color:#fff8c5; color:#744210; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">⚠️ Konflikt</span>"
-            : item.LatestVersion != "Okänd" && item.LatestVersion != item.InstalledVersion
+            ? "<span style=\"background-color:#fff8c5; color:#744210; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">⚠️ Olika versioner</span>"
+            : SbomVersioning.IsUpdateAvailable(item.InstalledVersion, item.LatestVersion)
                 ? "<span style=\"background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">🔄 Uppdatering</span>"
                 : "<span style=\"background-color:#dafbe1; color:#1f883d; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;\">✓ OK</span>";
 
@@ -529,81 +548,6 @@ static async Task GenerateMarkdownReportAsync(List<ReportItem> items, string out
 
 #region Hjälpmetoder
 
-static bool IsVersionAffected(string currentVersionStr, string rangeStr)
-{
-    if (string.IsNullOrWhiteSpace(rangeStr))
-    {
-        return false;
-    }
-
-    if (!Version.TryParse(currentVersionStr.Split('-')[0], out var currentVersion))
-    {
-        return false;
-    }
-
-    rangeStr = rangeStr.Trim();
-
-    if (rangeStr.StartsWith('(') || rangeStr.StartsWith('['))
-    {
-        var parts = rangeStr.Substring(1, rangeStr.Length - 2).Split(',');
-        if (parts.Length != 2)
-        {
-            return false;
-        }
-
-        bool isMinInclusive = rangeStr.StartsWith('[');
-        bool isMaxInclusive = rangeStr.EndsWith(']');
-
-        string minStr = parts[0].Trim();
-        string maxStr = parts[1].Trim();
-
-        if (!string.IsNullOrEmpty(minStr) && Version.TryParse(minStr.Split('-')[0], out var minVersion))
-        {
-            if (isMinInclusive && currentVersion < minVersion)
-            {
-                return false;
-            }
-
-            if (!isMinInclusive && currentVersion <= minVersion)
-            {
-                return false;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(maxStr) && Version.TryParse(maxStr.Split('-')[0], out var maxVersion))
-        {
-            if (isMaxInclusive && currentVersion > maxVersion)
-            {
-                return false;
-            }
-
-            if (!isMaxInclusive && currentVersion >= maxVersion)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    if (rangeStr.StartsWith("<=", StringComparison.OrdinalIgnoreCase))
-    {
-        if (Version.TryParse(rangeStr.Replace("<=", "").Trim().Split('-')[0], out var v))
-        {
-            return currentVersion <= v;
-        }
-    }
-    if (rangeStr.StartsWith('<'))
-    {
-        if (Version.TryParse(rangeStr.Replace("<", "").Trim().Split('-')[0], out var v))
-        {
-            return currentVersion < v;
-        }
-    }
-
-    return false;
-}
-
 static void FindDirectRoots(
     string currentPackage,
     Dictionary<string, LockDependency> allPackages,
@@ -638,36 +582,18 @@ static void FindDirectRoots(
     }
 }
 
-/// <summary>
-/// Navigerar till solution katalogen genom att leta efter .sln-filer uppåt i katalogstrukturen, eller .git-katalogen som en fallback.
-/// </summary>
-static string GetWikiOutputPath(string fileName = "sbom-report.md")
+static string FindSolutionRoot()
 {
-    // Starta i katalogen där appen körs (t.ex. /artifacts/bin/SbomScanner/debug/)
     var currentDir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-
-    // Klättra uppåt tills vi hittar katalogen som innehåller .sln-filen eller .git
     while (currentDir != null)
     {
-        if (currentDir.GetFiles("*.sln*").Length != 0 || currentDir.GetDirectories(".git").Length != 0)
+        if (File.Exists(Path.Combine(currentDir.FullName, "Privatekonomi.slnx")))
         {
-            // Vi har hittat Solution Root!
-            string wikiDir = Path.Combine(currentDir.FullName, "wiki");
-
-            // Skapa wiki-mappen om den inte redan finns
-            if (!Directory.Exists(wikiDir))
-            {
-                Directory.CreateDirectory(wikiDir);
-            }
-
-            return Path.Combine(wikiDir, fileName);
+            return currentDir.FullName;
         }
-
         currentDir = currentDir.Parent;
     }
-
-    // Fallback om vi mot förmodan inte hittar rooten (t.ex. i en container/CI-pipeline)
-    return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+    throw new DirectoryNotFoundException("Kunde inte hitta Privatekonomi.slnx ovanför skannerns utdatamapp.");
 }
 
 #endregion
@@ -719,37 +645,32 @@ internal sealed record Vulnerability(
     string Url
 );
 
-internal sealed record LockFile(
-    [property: JsonPropertyName("dependencies")]
-    Dictionary<string, Dictionary<string, LockDependency>> Dependencies
-);
+internal sealed record AssetsFile(
+    [property: JsonPropertyName("targets")] Dictionary<string, Dictionary<string, AssetsLibrary>> Targets,
+    [property: JsonPropertyName("project")] AssetsProject Project);
 
-internal sealed record LockDependency(
-    [property: JsonPropertyName("type")]
-    string Type,
+internal sealed record AssetsProject(
+    [property: JsonPropertyName("frameworks")] Dictionary<string, AssetsFramework> Frameworks);
 
-    [property: JsonPropertyName("resolved")]
-    string Resolved,
+internal sealed record AssetsFramework(
+    [property: JsonPropertyName("dependencies")] Dictionary<string, JsonElement>? Dependencies);
 
-    [property: JsonPropertyName("contentHash")]
-    string ContentHash,
+internal sealed record AssetsLibrary(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("dependencies")] Dictionary<string, string>? Dependencies);
 
-    [property: JsonPropertyName("dependencies")]
-    Dictionary<string, string>? Dependencies
-);
+internal sealed record LockDependency(string Type, string Resolved, Dictionary<string, string>? Dependencies);
 
 internal sealed record NuGetPackage
 {
     public string Name { get; init; }
     public string Version { get; init; }
-    public string ContentHash { get; init; }
     public string IntroducedBy { get; set; } = "Okänd";
 
-    public NuGetPackage(string name, string version, string contentHash)
+    public NuGetPackage(string name, string version)
     {
         Name = name;
         Version = version;
-        ContentHash = contentHash;
     }
 }
 
@@ -759,8 +680,11 @@ internal sealed record NugetRegistrationIndex(
 );
 
 internal sealed record RegistrationPage(
+    [property: JsonPropertyName("@id")]
+    string Id,
+
     [property: JsonPropertyName("items")]
-    List<RegistrationItem> Items
+    List<RegistrationItem>? Items
 );
 
 internal sealed record RegistrationItem(
