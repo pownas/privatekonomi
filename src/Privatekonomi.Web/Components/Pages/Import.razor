@@ -57,14 +57,14 @@ else if (_currentStep == ImportStep.BankSelection)
                 <MudRadio Value="@("Automatisk (auto-detektera)")" Color="Color.Primary">
                     <MudText>Automatisk (identifiera format från filen)</MudText>
                 </MudRadio>
+                <MudRadio Value="@BankNames.AllmanOfx" Color="Color.Primary">
+                    <MudText>Allmänt bankformat (OFX/QFX)</MudText>
+                </MudRadio>
                 <MudRadio Value="@BankNames.IcaBanken" Color="Color.Primary">
                     <MudText>@BankNames.IcaBanken (CSV)</MudText>
                 </MudRadio>
                 <MudRadio Value="@BankNames.Swedbank" Color="Color.Primary">
                     <MudText>@BankNames.Swedbank (CSV)</MudText>
-                </MudRadio>
-                <MudRadio Value="@BankNames.AllmanOfx" Color="Color.Primary">
-                    <MudText>@BankNames.AllmanOfx</MudText>
                 </MudRadio>
             </MudRadioGroup>
 

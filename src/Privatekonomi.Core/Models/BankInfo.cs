@@ -2,7 +2,7 @@ namespace Privatekonomi.Core.Models;
 
 public static class BankNames
 {
-    public const string AllmanOfx = "OFX/QFX (Allmänt bankformat)";
+    public const string AllmanOfx = "OFX (Allmän)";
     public const string Avanza = "Avanza";
     public const string Handelsbanken = "Handelsbanken";
     public const string IcaBanken = "ICA-banken";
