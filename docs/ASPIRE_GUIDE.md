@@ -37,19 +37,18 @@ Privatekonomi-lösningen har nu följande Aspire-komponenter:
 
 För att köra Aspire Orchestrator behöver du:
 
-1. **.NET 9 SDK**
+1. **.NET 11 SDK**
    ```bash
-   dotnet --version  # Ska visa 9.0 eller högre
+   dotnet --version  # Ska visa 11.0 eller högre
    ```
 
-2. **Aspire workload**
+2. **Aspire CLI 17**
    ```bash
-   dotnet workload install aspire
+   dotnet tool install --global Aspire.Cli --version 17.0.0
+   aspire --version
    ```
 
-3. **Docker Desktop** (för lokal utveckling)
-   - Krävs för DCP (Distributed Control Plane)
-   - Ladda ner från: https://www.docker.com/products/docker-desktop
+   Säkerställ att katalogen för globala .NET-verktyg finns i `PATH`. CLI:n tillhandahåller dashboarden och DCP-bundlen som AppHost behöver.
 
 ## Komma igång
 
@@ -58,11 +57,10 @@ För att köra Aspire Orchestrator behöver du:
 1. Öppna terminalen i projektets rotkatalog
 2. Kör AppHost-projektet:
    ```bash
-   cd src/Privatekonomi.AppHost
-   dotnet run
+   aspire run
    ```
 
-3. Aspire Dashboard öppnas automatiskt i din webbläsare (vanligtvis på `http://localhost:15000`)
+3. Öppna dashboardlänken som visas i terminalen.
 
 ### Aspire Dashboard
 
@@ -72,6 +70,12 @@ Dashboard ger dig:
 - **Traces** för att följa requests genom systemet
 - **Metrics** för prestanda och hälsa
 - **Miljövariabler** och konfiguration
+
+### Parametrar
+
+Dashboardens Parameters-vy visar lagringsleverantör och testdatainställning för respektive tjänst samt Webs inställningar för banksynkronisering. Värdena läses från respektive tjänsts `appsettings.json`, miljöspecifika appsettings och, i Development, tjänstens User Secrets; miljövariabler har företräde. Parametrarna skickas vidare till respektive tjänst, så API och Web kan behålla olika standardvärden.
+
+På macOS behåller `PRIVATEKONOMI_MACOS_STORAGE_CONFIG` sin befintliga prioritet; med JsonFile använder API fortfarande InMemory. En anslutningssträng som skickas via denna konfiguration registreras som en hemlig parameter. Övriga lösenord, API-nycklar och anslutningssträngar från tjänsternas konfiguration kopieras inte till synliga parametrar. Dashboarden kan ändå innehålla känslig driftinformation och bör endast vara åtkomlig för betrodda användare.
 
 ### Åtkomst till tjänsterna
 
@@ -151,7 +155,7 @@ var web = builder.AddProject<Projects.Privatekonomi_Web>("web")
 - Kontrollera att Docker daemon körs: `docker ps`
 
 ### "DCP not found"
-- Installera/uppdatera Aspire workload: `dotnet workload install aspire`
+- Installera/uppdatera Aspire CLI: `dotnet tool update --global Aspire.Cli --version 17.0.0`
 - Starta om IDE/terminal efter installation
 
 ### Tjänst startar inte
