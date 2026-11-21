@@ -4,14 +4,12 @@
 
 Web och API körs som separata processer med separata Identity- och lagringskonfigurationer. **Web använder fortfarande Core-tjänster och sitt eget datalager direkt**; den fullständiga migreringen till API:t är inte klar. API:t äger därför ännu inte all applikationsdata. Ta inte bort Web-appens `Storage`-inställningar eller databasregistrering förrän Web-flödena har migrerats, identiteter och datalager har samordnats och åtkomstkontrollerna har verifierats.
 
-Detta syns även i Aspire-konfigurationen: `api-storage-provider`,
-`web-storage-provider`, `api-seed-test-data` och `web-seed-test-data` skapas
-separat och skickas till respektive process. Den särskilda macOS-överstyrningen
-`PRIVATEKONOMI_STORAGE_PROVIDER` / `PRIVATEKONOMI_STORAGE_CONNECTION_STRING`
-kan dessutom konfigurera båda processerna. Att bara radera Web-parametrarna
-skulle inte migrera dess dataåtkomst och kan ändra vilken databas Web använder.
-Det krävs en separat, fullständig Web→API-migrering innan dessa inställningar
-kan tas bort.
+Aspire exponerar inte längre separata `web-storage-provider`,
+`web-seed-test-data`, `api-storage-provider` eller `api-seed-test-data`-
+parametrar. API-datakällan styrs genom `api-data-profile` och profilens
+anslutningssträngar. Separata Web-lagringsparametrar är inte ett API-kontrakt
+och tas inte med i Aspire-dashboarden. Den fullständiga Web→API-migreringen
+återstår ändå; detta tar inte bort Web-appens nuvarande interna lagring.
 
 Konfigurationsordningen i Aspire är nu: projektets basinställningar,
 miljöspecifika inställningar, Development/Local `appsettings.local.json` och
