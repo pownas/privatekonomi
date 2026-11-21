@@ -300,7 +300,11 @@ else
     
     private List<ChartSeries<double>> _monthlyChartSeries = new();
     private string[] _monthlyChartLabels = Array.Empty<string>();
-    private ChartOptions _chartOptions = new ChartOptions();
+    private ChartOptions _chartOptions = new ChartOptions
+    {
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        TooltipSubtitleFormat = "Period: {{X_VALUE}}"
+    };
 
     [SupplyParameterFromQuery(Name = "categoryId")]
     public int? QueryCategoryId { get; set; }

@@ -15,6 +15,8 @@ public class ReportService : IReportService
 
     public async Task<CashFlowReport> GetCashFlowReportAsync(DateTime fromDate, DateTime toDate, string groupBy = "month", int? householdId = null)
     {
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
         var query = _context.Transactions
             .Where(t => t.Date >= fromDate && t.Date <= toDate);
 
@@ -33,8 +35,8 @@ public class ReportService : IReportService
             
             foreach (var group in monthlyGroups.OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month))
             {
-                var income = group.Where(t => t.IsIncome).Sum(t => t.Amount);
-                var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Amount);
+                var income = group.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+                var expenses = group.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
                 
                 periods.Add(new CashFlowPeriod
                 {
@@ -58,9 +60,8 @@ public class ReportService : IReportService
             
             foreach (var group in weeklyGroups.OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Week))
             {
-                var income = group.Where(t => t.IsIncome).Sum(t => t.Amount);
-                var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Amount);
-                var firstDate = group.Min(t => t.Date);
+                var income = group.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+                var expenses = group.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
                 
                 periods.Add(new CashFlowPeriod
                 {
@@ -74,8 +75,8 @@ public class ReportService : IReportService
             }
         }
 
-        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
 
         return new CashFlowReport
         {

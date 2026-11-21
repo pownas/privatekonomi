@@ -73,11 +73,12 @@
     private NetWorthReport? _netWorthReport = null;
     private List<ChartSeries<double>> _netWorthSeries = new();
     private string[] _netWorthLabels = Array.Empty<string>();
-    private ChartOptions _chartOptions = new ChartOptions
+    private LineChartOptions _chartOptions = new LineChartOptions
     {
         ChartPalette = new[] { Colors.Green.Default },
         TooltipSubtitleFormat = "{{X_VALUE}}",
-        TooltipTitleFormat = "{{Y_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        XAxisLabelInterval = 3,
     };
 
     protected override async Task OnInitializedAsync()
@@ -97,9 +98,7 @@
                 var culture = new System.Globalization.CultureInfo("sv-SE");
                 var history = _netWorthReport.History;
                 _netWorthLabels = history
-                    .Select((item, index) => index % 3 == 0 || index == history.Count - 1
-                        ? item.Date.ToString("MMM yyyy", culture)
-                        : string.Empty)
+                    .Select(item => item.Date.ToString("yyyy-MM-dd", culture))
                     .ToArray();
                 
                 _netWorthSeries = new List<ChartSeries<double>>
@@ -107,8 +106,7 @@
                     new ChartSeries<double>
                     {
                         Name = "Nettoförmögenhet",
-                        Data = history.Select(h => (double)h.NetWorth).ToArray(),
-                        TooltipYValueFormat = "C0"
+                        Data = history.Select(h => (double)h.NetWorth).ToArray()
                     }
                 };
             }
