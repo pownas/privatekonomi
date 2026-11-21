@@ -17,7 +17,7 @@ public static class ApiSeedPolicy
     {
         var profile = configuration[ProfileKey]?.Trim();
         if (string.IsNullOrWhiteSpace(profile))
-            return;
+            profile = "Mock";
 
         switch (profile.ToLowerInvariant())
         {

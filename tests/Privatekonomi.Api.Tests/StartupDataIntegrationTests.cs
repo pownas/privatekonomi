@@ -185,7 +185,8 @@ public class StartupDataIntegrationTests
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
-                    ["Storage:Provider"] = connection is null ? "InMemory" : "Sqlite",
+                    ["ApiData:Profile"] = connection is null ? "Mock" : "Sqlite",
+                    ["ApiData:SqliteConnectionString"] = "Data Source=:memory:",
                     ["Storage:SeedTestData"] = seed.ToString(),
                     ["DemoUser:Enabled"] = enabled.ToString(),
                     ["DemoUser:Email"] = Email,

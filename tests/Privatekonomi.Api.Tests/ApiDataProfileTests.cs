@@ -20,7 +20,6 @@ public class ApiDataProfileTests
             ["ApiData:Profile"] = profile,
             ["ApiData:SqliteConnectionString"] = "Data Source=privatekonomi-api.db",
             ["ApiData:SqlServerConnectionString"] = "Server=localhost;Database=PrivatekonomiApi;Integrated Security=true",
-            ["Storage:Provider"] = "InMemory",
             ["Storage:SeedTestData"] = seedTestData.ToString()
         };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
@@ -29,6 +28,10 @@ public class ApiDataProfileTests
         ApiSeedPolicy.ApplyDataProfile(configuration, environment);
 
         Assert.AreEqual(expectedProvider, configuration["Storage:Provider"]);
+        if (profile == "Sqlite")
+            Assert.AreEqual("Data Source=privatekonomi-api.db", configuration["Storage:ConnectionString"]);
+        if (profile == "SqlServer")
+            Assert.AreEqual("Server=localhost;Database=PrivatekonomiApi;Integrated Security=true", configuration["Storage:ConnectionString"]);
     }
 
     [TestMethod]
