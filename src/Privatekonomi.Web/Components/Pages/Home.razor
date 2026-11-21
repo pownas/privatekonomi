@@ -65,16 +65,17 @@ else
 {
     @if (_preferences.ShowTotalCards)
     {
-    <MudGrid Class="dashboard-grid mb-4">
-        <MudItem xs="12" md="6" lg="3">
+    <MudGrid Class="dashboard-grid dashboard-summary-grid mb-4">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-income" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Inkomster</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="_totalIncome" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="_totalIncome" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -89,15 +90,16 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-expense" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.TrendingDown" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Utgifter</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="_totalExpenses" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="_totalExpenses" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -112,15 +114,16 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-net" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.AccountBalance" />
                 </div>
                 <div class="card-content">
                     <MudText Class="summary-card-label">Nettoresultat</MudText>
-                    <MudText Typo="Typo.h3" Class="my-2">
-                        <AnimatedNumber Value="@(_totalIncome - _totalExpenses)" />
+                    <MudText Typo="Typo.h3" Class="summary-card-amount my-2">
+                        <AnimatedNumber Value="@(_totalIncome - _totalExpenses)" Format="N0" />
+                        <span class="summary-card-currency">kr</span>
                     </MudText>
                     @if (_trendData != null)
                     {
@@ -135,7 +138,7 @@ else
             </MudPaper>
         </MudItem>
         
-        <MudItem xs="12" md="6" lg="3">
+        <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="summary-card gradient-neutral" Elevation="0">
                 <div class="card-icon-bg">
                     <MudIcon Icon="@Icons.Material.Filled.Receipt" />
@@ -277,6 +280,7 @@ else
                         <div role="img" aria-label="Cirkeldiagram som visar utgiftsfördelning per kategori">
                         <MudChart T="double" ChartType="ChartType.Pie" 
                                   ChartSeries="@_expensePieSeries"
+                                  ChartOptions="@_pieChartOptions"
                                   Width="100%" 
                                   Height="300px"
                                   LegendPosition="Position.Bottom"
@@ -312,6 +316,7 @@ else
                         <div role="img" aria-label="Cirkeldiagram som visar inkomstfördelning per kategori">
                         <MudChart T="double" ChartType="ChartType.Pie" 
                                   ChartSeries="@_incomePieSeries"
+                                  ChartOptions="@_pieChartOptions"
                                   Width="100%" 
                                   Height="300px"
                                   LegendPosition="Position.Bottom"
@@ -389,7 +394,7 @@ else
                                       ChartLabels="@_barChartLabels"
                                       Width="100%" 
                                       Height="400px"
-                                      ChartOptions="@_chartOptions"
+                                      ChartOptions="@_barChartOptions"
                                       Class="chart-responsive chart-height-lg" />
                         </div>
                         <p class="chart-sr-only">
@@ -524,22 +529,79 @@ else
     {
         <MudPaper Class="pa-4 mt-4">
             <MudAlert Severity="Severity.Warning" Class="mb-3">
-                Det finns @_unmappedTransactions.Count() transaktioner utan kategori. Kategorisera dem för att inkludera i budgetanalys.
+                Det finns @_unmappedTransactions.Count importerade transaktioner utan kategori. Kategorisera dem för att inkludera i budgetanalys.
             </MudAlert>
-            <MudText Typo="Typo.h6" Class="mb-4">Transaktioner utan Kategori</MudText>
-            <TransactionListComponent Transactions="@_unmappedTransactions" 
-                                    ShowActions="true"
-                                    OnTransactionUpdated="@LoadData">
-                <CustomActions>
-                    <MudButton Variant="Variant.Text" 
-                             Color="Color.Primary" 
-                             Size="Size.Small"
-                             StartIcon="@Icons.Material.Filled.Category"
-                             Href="@($"/economy/transactions")">
-                        Kategorisera
-                    </MudButton>
-                </CustomActions>
-            </TransactionListComponent>
+            <MudText Typo="Typo.h6" Class="mb-4">Importerade transaktioner utan kategori</MudText>
+            <MudTable Items="@_unmappedTransactions" Dense="true" Hover="true" Striped="true" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>Datum</MudTh>
+                    <MudTh>Beskrivning</MudTh>
+                    <MudTh>Kategori</MudTh>
+                    <MudTh Style="text-align: right">Belopp</MudTh>
+                    <MudTh>Åtgärder</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Datum">@context.Date.ToString("yyyy-MM-dd")</MudTd>
+                    <MudTd DataLabel="Beskrivning">@context.Description</MudTd>
+                    <MudTd DataLabel="Kategori">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   Size="Size.Small"
+                                   OnClick="@(() => OpenTransactionsForMonth(context))">
+                            Okategoriserad
+                        </MudButton>
+                        @if (GetSuggestedCategory(context) is { } suggestedCategory)
+                        {
+                            <div class="d-flex align-center gap-1 mt-1">
+                                <MudText Typo="Typo.caption">@GetQuickCategoryName(suggestedCategory)?</MudText>
+                                <MudButton Size="Size.Small"
+                                           Color="Color.Success"
+                                           OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
+                                    Ja
+                                </MudButton>
+                                <MudButton Size="Size.Small"
+                                           Color="Color.Default"
+                                           OnClick="@(() => DismissCategorySuggestion(context))">
+                                    Nej
+                                </MudButton>
+                            </div>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Belopp" Style="text-align: right">
+                        <MudText Typo="Typo.body2" Color="@(context.IsIncome ? Color.Success : Color.Error)">
+                            @(context.IsIncome ? "+" : "")@context.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
+                        </MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Åtgärder">
+                        <MudMenu Label="Kategorisera"
+                                 Size="Size.Small"
+                                 Variant="Variant.Outlined"
+                                 Color="Color.Primary"
+                                 StartIcon="@Icons.Material.Filled.Category">
+                            @if (GetSuggestedCategory(context) is { } suggestedCategory)
+                            {
+                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
+                                    Förslag: @GetQuickCategoryName(suggestedCategory)
+                                </MudMenuItem>
+                                <MudDivider />
+                            }
+                            @foreach (var category in _quickCategories)
+                            {
+                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, category))">
+                                    @GetQuickCategoryName(category)
+                                </MudMenuItem>
+                            }
+                            <MudDivider />
+                            <MudMenuItem OnClick="@(() => OpenTransactionsForMonth(context))">
+                                Öppna transaktioner för månaden
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+                </PagerContent>
+            </MudTable>
         </MudPaper>
     }
 
@@ -563,7 +625,10 @@ else
 @code {
     private bool _loading = true;
     private IEnumerable<Transaction> _transactions = new List<Transaction>();
-    private IEnumerable<Transaction> _unmappedTransactions = new List<Transaction>();
+    private List<Transaction> _unmappedTransactions = new();
+    private List<Category> _quickCategories = new();
+    private Dictionary<string, Category> _categorySuggestions = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<int> _dismissedSuggestionTransactionIds = new();
     private IEnumerable<Budget> _activeBudgets = new List<Budget>();
     private decimal _totalIncome = 0;
     private decimal _totalExpenses = 0;
@@ -582,11 +647,25 @@ else
     private string[] _barChartLabels = Array.Empty<string>();
     private List<ChartSeries<double>> _cashFlowSeries = new();
     private string[] _cashFlowLabels = Array.Empty<string>();
-    private ChartOptions _chartOptions = new ChartOptions
+    private LineChartOptions _chartOptions = new LineChartOptions
     {
         ChartPalette = new[] { "#4caf50", "#f44336", "#2196f3", "#ff9800", "#9c27b0", "#009688" },
-        TooltipSubtitleFormat = "Kategori: {0}",
-        TooltipTitleFormat = "Belopp: {0:C}",
+        TooltipSubtitleFormat = "{{X_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        XAxisLabelInterval = 3,
+    };
+    private BarChartOptions _barChartOptions = new BarChartOptions
+    {
+        ChartPalette = new[] { "#4caf50", "#f44336", "#2196f3", "#ff9800", "#9c27b0", "#009688" },
+        TooltipSubtitleFormat = "{{X_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+    };
+    private PieChartOptions _pieChartOptions = new PieChartOptions
+    {
+        AggregationOption = MudBlazor.Charts.AggregationOption.GroupByDataSet,
+        ShowAsPercentage = false,
+        TooltipTitleFormat = "{{Y_VALUE}}: {{X_VALUE}} kr",
+        TooltipSubtitleFormat = "",
     };
 
     // Net Worth data
@@ -638,7 +717,13 @@ else
     {
         _loading = true;
         _transactions = await TransactionService.GetAllTransactionsAsync();
-        _unmappedTransactions = await TransactionService.GetUnmappedTransactionsAsync();
+        _unmappedTransactions = (await TransactionService.GetUnmappedTransactionsAsync())
+            .Where(t => t.Imported && !t.IsExcludedFromTotalsTransaction)
+            .ToList();
+        _quickCategories = (await CategoryService.GetAllCategoriesAsync())
+            .OrderBy(category => category.Name)
+            .ToList();
+        BuildCategorySuggestions();
         _activeBudgets = await BudgetService.GetActiveBudgetsAsync();
         
         // Load budget details
@@ -668,11 +753,116 @@ else
             Snackbar.Add($"Kunde inte ladda trenddata: {ex.Message}", Severity.Warning);
         }
         
-        _totalIncome = _transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        _totalExpenses = _transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        _totalIncome = _transactions
+            .Where(t => t.IsIncome && !t.IsExcludedFromTotalsTransaction)
+            .Sum(t => Math.Abs(t.Amount));
+        _totalExpenses = _transactions
+            .Where(t => !t.IsIncome && !t.IsExcludedFromTotalsTransaction)
+            .Sum(t => Math.Abs(t.Amount));
         await UpdateChartData();
         await LoadNetWorthData();
         _loading = false;
+    }
+
+    private void BuildCategorySuggestions()
+    {
+        _categorySuggestions.Clear();
+
+        var categorizedTransactions = _transactions
+            .Where(transaction => !transaction.IsExcludedFromTotalsTransaction && transaction.TransactionCategories.Count == 1)
+            .Select(transaction => new
+            {
+                Description = NormalizeDescription(transaction.Description),
+                Category = transaction.TransactionCategories.First().Category,
+                CategoryId = transaction.TransactionCategories.First().CategoryId
+            })
+            .Where(item => !string.IsNullOrEmpty(item.Description) && item.Category is not null)
+            .GroupBy(item => item.Description, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in categorizedTransactions)
+        {
+            if (group.Count() < 3)
+            {
+                continue;
+            }
+
+            var mostCommonCategory = group
+                .GroupBy(item => item.CategoryId)
+                .OrderByDescending(categoryGroup => categoryGroup.Count())
+                .First();
+
+            if (mostCommonCategory.Count() < 3 || mostCommonCategory.Count() / (double)group.Count() < 0.8)
+            {
+                continue;
+            }
+
+            var category = mostCommonCategory.First().Category;
+            if (category is not null)
+            {
+                _categorySuggestions[group.Key] = category;
+            }
+        }
+    }
+
+    private Category? GetSuggestedCategory(Transaction transaction)
+    {
+        if (_dismissedSuggestionTransactionIds.Contains(transaction.TransactionId))
+        {
+            return null;
+        }
+
+        var description = NormalizeDescription(transaction.Description);
+        return _categorySuggestions.GetValueOrDefault(description);
+    }
+
+    private static string GetQuickCategoryName(Category category)
+    {
+        return category.IsInternalTransferCategory
+            ? "Överföring mellan egna konton"
+            : category.Name;
+    }
+
+    private static string NormalizeDescription(string? description)
+    {
+        return string.Join(' ', (description ?? string.Empty)
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+            .ToUpperInvariant();
+    }
+
+    private async Task CategorizeImportedTransaction(Transaction transaction, Category category)
+    {
+        try
+        {
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = category.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            Snackbar.Add($"Transaktionen kategoriserades som {GetQuickCategoryName(category)}.", Severity.Success);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kunde inte kategorisera transaktionen: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void DismissCategorySuggestion(Transaction transaction)
+    {
+        _dismissedSuggestionTransactionIds.Add(transaction.TransactionId);
+    }
+
+    private void OpenTransactionsForMonth(Transaction transaction)
+    {
+        Navigation.NavigateTo($"/economy/transactions?filterdate={transaction.Date:yyyy-MM}");
     }
 
     private void ToggleBudgetDetails(int budgetId)
@@ -695,51 +885,50 @@ else
 
     private async Task UpdateChartData()
     {
-        var cutoffDate = DateTime.Now.AddMonths(-_selectedMonths);
-        var filteredTransactions = _transactions.Where(t => t.Date >= cutoffDate).ToList();
+        var cutoffDate = DateTime.Today.AddMonths(-_selectedMonths);
+        var filteredTransactions = _transactions.Where(t => t.Date >= cutoffDate && t.Date <= DateTime.Today).ToList();
+        var categoryAmounts = DashboardChartData.GetCategoryAmounts(filteredTransactions).ToList();
+        _chartOptions.XAxisLabelInterval = _barChartOptions.XAxisLabelInterval = _selectedMonths >= 24 ? 6 : _selectedMonths >= 12 ? 3 : 1;
 
         // Pie chart for expenses by category
-        var expensesByCategory = filteredTransactions
+        var expensesByCategory = categoryAmounts
             .Where(t => !t.IsIncome)
-            .SelectMany(t => t.TransactionCategories.Select(tc => new { Category = tc.Category.Name, t.Amount }))
             .GroupBy(x => x.Category)
             .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Amount) })
             .OrderByDescending(x => x.Total)
             .ToList();
 
         _expensePieSeries = expensesByCategory
-            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total) })
+            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total), TooltipYValueFormat = "N2" })
             .ToList();
 
         // Pie chart for income by category
-        var incomeByCategory = filteredTransactions
+        var incomeByCategory = categoryAmounts
             .Where(t => t.IsIncome)
-            .SelectMany(t => t.TransactionCategories.Select(tc => new { Category = tc.Category.Name, t.Amount }))
             .GroupBy(x => x.Category)
             .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Amount) })
             .OrderByDescending(x => x.Total)
             .ToList();
 
         _incomePieSeries = incomeByCategory
-            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total) })
+            .Select(x => new ChartSeries<double> { Name = x.Category, Data = new ChartData<double>((double)x.Total), TooltipYValueFormat = "N2" })
             .ToList();
 
         // Bar chart for monthly category comparison (expenses only)
-        var monthlyData = filteredTransactions
+        var monthlyData = categoryAmounts
             .Where(t => !t.IsIncome)
             .GroupBy(t => new { t.Date.Year, t.Date.Month })
             .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
             .Select(g => new
             {
                 Month = new DateTime(g.Key.Year, g.Key.Month, 1),
-                Categories = g.SelectMany(t => t.TransactionCategories.Select(tc => new { tc.Category.Name, t.Amount }))
-                             .GroupBy(x => x.Name)
+                Categories = g.GroupBy(x => x.Category)
                              .ToDictionary(cg => cg.Key, cg => cg.Sum(x => x.Amount))
             })
             .ToList();
 
-        // Generate chart labels with smart formatting based on number of months
-        _barChartLabels = GenerateChartLabels(monthlyData.Select(m => m.Month).ToList(), _selectedMonths);
+        // Keep labels for every point, even when the axis displays only some of them.
+        _barChartLabels = GenerateChartLabels(monthlyData.Select(m => m.Month).ToList());
 
         // Get top 5 categories by total amount
         var topCategories = expensesByCategory.Take(5).Select(x => x.Category).ToList();
@@ -771,7 +960,7 @@ else
                     return new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), 1);
                 }).ToList();
                 
-                _cashFlowLabels = GenerateChartLabels(cashFlowDates, _selectedMonths);
+                _cashFlowLabels = GenerateChartLabels(cashFlowDates);
                 
             _cashFlowSeries = new List<ChartSeries<double>>
             {
@@ -852,38 +1041,16 @@ else
     }
     
     /// <summary>
-    /// Generates chart labels with smart formatting based on number of months.
-    /// For 12 months: shows every 3rd label (quarterly)
-    /// For 24 months: shows every 6th label (bi-annually)
-    /// For 6 months or less: shows all labels
+    /// Generates complete labels so each point has a period in its tooltip.
     /// </summary>
-    private string[] GenerateChartLabels(List<DateTime> months, int totalMonths)
+    private string[] GenerateChartLabels(List<DateTime> months)
     {
         if (months.Count == 0)
             return Array.Empty<string>();
             
         var culture = new System.Globalization.CultureInfo("sv-SE");
         
-        // For mobile responsiveness, reduce label density for longer periods
-        if (totalMonths >= 24)
-        {
-            // Show every 6th month for 24 months (e.g., "jan. 2024", "juli 2024", "jan. 2025")
-            return months.Select((m, index) => 
-                index % 6 == 0 ? m.ToString("MMM yyyy", culture) : ""
-            ).ToArray();
-        }
-        else if (totalMonths >= 12)
-        {
-            // Show every 3rd month for 12 months (e.g., "jan.", "apr.", "juli", "okt.")
-            return months.Select((m, index) => 
-                index % 3 == 0 ? m.ToString("MMM yyyy", culture) : ""
-            ).ToArray();
-        }
-        else
-        {
-            // Show all labels for 6 months or less
-            return months.Select(m => m.ToString("MMM yyyy", culture)).ToArray();
-        }
+        return months.Select(m => m.ToString("MMM yyyy", culture)).ToArray();
     }
     
     private async Task LoadNetWorthData()
@@ -896,7 +1063,7 @@ else
             {
                 var culture = new System.Globalization.CultureInfo("sv-SE");
                 _netWorthLabels = _netWorthReport.History
-                    .Select(h => h.Date.ToString("MMM yyyy", culture))
+                    .Select(h => h.Date.ToString("yyyy-MM-dd", culture))
                     .ToArray();
                 
                 _netWorthSeries = new List<ChartSeries<double>>

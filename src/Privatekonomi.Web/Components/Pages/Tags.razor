@@ -161,7 +161,10 @@ else
                 <div class="mt-3">
                     <MudText Typo="Typo.body2">
                         <strong>Totalt:</strong> @filteredTransactions.Count() transaktioner, 
-                        summa: @filteredTransactions.Sum(t => t.IsIncome ? t.Amount : -t.Amount).ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                        summa: @filteredTransactions
+                            .Where(t => !t.IsExcludedFromTotalsTransaction)
+                            .Sum(t => t.IsIncome ? t.Amount : -t.Amount)
+                            .ToString("C", new System.Globalization.CultureInfo("sv-SE"))
                     </MudText>
                 </div>
             }

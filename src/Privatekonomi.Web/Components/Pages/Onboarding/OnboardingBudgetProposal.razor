@@ -211,7 +211,8 @@
             var endDate = DateTime.Today;
             var startDate = endDate.AddMonths(-monthsToAnalyze);
             var transactions = await TransactionService.GetTransactionsByDateRangeAsync(startDate, endDate);
-            var incomeTransactions = transactions.Where(t => t.IsIncome);
+            var incomeTransactions = transactions
+                .Where(t => t.IsIncome && !t.IsExcludedFromTotalsTransaction);
             
             if (incomeTransactions.Any())
             {

@@ -15,8 +15,13 @@ public class ReportService : IReportService
 
     public async Task<CashFlowReport> GetCashFlowReportAsync(DateTime fromDate, DateTime toDate, string groupBy = "month", int? householdId = null)
     {
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
         var query = _context.Transactions
-            .Where(t => t.Date >= fromDate && t.Date <= toDate);
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .Where(t => t.Date >= fromDate && t.Date <= toDate)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -33,8 +38,8 @@ public class ReportService : IReportService
             
             foreach (var group in monthlyGroups.OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month))
             {
-                var income = group.Where(t => t.IsIncome).Sum(t => t.Amount);
-                var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Amount);
+                var income = group.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+                var expenses = group.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
                 
                 periods.Add(new CashFlowPeriod
                 {
@@ -58,9 +63,8 @@ public class ReportService : IReportService
             
             foreach (var group in weeklyGroups.OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Week))
             {
-                var income = group.Where(t => t.IsIncome).Sum(t => t.Amount);
-                var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Amount);
-                var firstDate = group.Min(t => t.Date);
+                var income = group.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+                var expenses = group.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
                 
                 periods.Add(new CashFlowPeriod
                 {
@@ -74,8 +78,8 @@ public class ReportService : IReportService
             }
         }
 
-        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        var totalIncome = transactions.Where(t => t.IsIncome).Sum(t => Math.Abs(t.Amount));
+        var totalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => Math.Abs(t.Amount));
 
         return new CashFlowReport
         {
@@ -296,7 +300,8 @@ public class ReportService : IReportService
         var fromDate = DateTime.Now.AddMonths(-months);
         
         var query = _context.Transactions
-            .Where(t => t.Date >= fromDate);
+            .Where(t => t.Date >= fromDate)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -359,7 +364,8 @@ public class ReportService : IReportService
     public async Task<IEnumerable<TopMerchant>> GetTopMerchantsAsync(int limit = 10, DateTime? fromDate = null, DateTime? toDate = null, int? householdId = null)
     {
         var query = _context.Transactions
-            .Where(t => !t.IsIncome); // Only expenses
+            .Where(t => !t.IsIncome)
+            .WhereIncludedInTotals();
 
         if (fromDate.HasValue)
         {
@@ -581,7 +587,11 @@ public class ReportService : IReportService
         var yearAgoPeriodEnd = yearAgoPeriodStart.AddMonths(1).AddDays(-1);
 
         // Get transactions for all periods
-        var query = _context.Transactions.AsQueryable();
+        var query = _context.Transactions
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .WhereIncludedInTotals()
+            .AsQueryable();
         
         if (householdId.HasValue)
         {
@@ -750,7 +760,8 @@ public class ReportService : IReportService
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
         
         var query = _context.Transactions
-            .Where(t => t.Date >= threeMonthsAgo);
+            .Where(t => t.Date >= threeMonthsAgo)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -803,7 +814,8 @@ public class ReportService : IReportService
         // Get annual income
         var oneYearAgo = DateTime.Today.AddYears(-1);
         var query = _context.Transactions
-            .Where(t => t.Date >= oneYearAgo && t.IsIncome);
+            .Where(t => t.Date >= oneYearAgo && t.IsIncome)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -851,7 +863,8 @@ public class ReportService : IReportService
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
         
         var query = _context.Transactions
-            .Where(t => t.Date >= threeMonthsAgo && !t.IsIncome);
+            .Where(t => t.Date >= threeMonthsAgo && !t.IsIncome)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -930,6 +943,7 @@ public class ReportService : IReportService
                            t.Date < currentMonth.AddMonths(1) &&
                            !t.IsIncome &&
                            t.TransactionCategories.Any(tc => tc.CategoryId == budgetCategory.CategoryId))
+                .WhereIncludedInTotals()
                 .SumAsync(t => t.Amount);
 
             if (budgetCategory.PlannedAmount > 0)
@@ -1038,7 +1052,8 @@ public class ReportService : IReportService
         var sixMonthsAgo = DateTime.Today.AddMonths(-6);
         
         var query = _context.Transactions
-            .Where(t => t.Date >= sixMonthsAgo && t.IsIncome);
+            .Where(t => t.Date >= sixMonthsAgo && t.IsIncome)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -1121,7 +1136,8 @@ public class ReportService : IReportService
         var query = _context.Transactions
             .Include(t => t.TransactionCategories)
                 .ThenInclude(tc => tc.Category)
-            .Where(t => !t.IsIncome && t.Date >= fromDate && t.Date <= toDate);
+            .Where(t => !t.IsIncome && t.Date >= fromDate && t.Date <= toDate)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -1187,7 +1203,8 @@ public class ReportService : IReportService
         var previousQuery = _context.Transactions
             .Include(t => t.TransactionCategories)
                 .ThenInclude(tc => tc.Category)
-            .Where(t => !t.IsIncome && t.Date >= previousFromDate && t.Date <= previousToDate);
+            .Where(t => !t.IsIncome && t.Date >= previousFromDate && t.Date <= previousToDate)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {
@@ -1553,7 +1570,8 @@ public class ReportService : IReportService
         var query = _context.Transactions
             .Include(t => t.TransactionCategories)
                 .ThenInclude(tc => tc.Category)
-            .Where(t => t.Date >= monthStart && t.Date <= monthEnd);
+            .Where(t => t.Date >= monthStart && t.Date <= monthEnd)
+            .WhereIncludedInTotals();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -1571,7 +1589,8 @@ public class ReportService : IReportService
         var previousQuery = _context.Transactions
             .Include(t => t.TransactionCategories)
                 .ThenInclude(tc => tc.Category)
-            .Where(t => t.Date >= previousMonthStart && t.Date <= previousMonthEnd);
+            .Where(t => t.Date >= previousMonthStart && t.Date <= previousMonthEnd)
+            .WhereIncludedInTotals();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -1733,6 +1752,7 @@ public class ReportService : IReportService
             var actualAmount = await _context.Transactions
                 .Where(t => t.Date >= monthStart && t.Date <= monthEnd && !t.IsIncome)
                 .Where(t => t.TransactionCategories.Any(tc => tc.CategoryId == budgetCategory.CategoryId))
+                .WhereIncludedInTotals()
                 .SumAsync(t => t.Amount);
 
             var budgetedAmount = budgetCategory.PlannedAmount;
@@ -2192,7 +2212,8 @@ public class ReportService : IReportService
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
         var monthTransactionsQuery = _context.Transactions
-            .Where(t => t.Date >= monthStart && t.Date <= monthEnd);
+            .Where(t => t.Date >= monthStart && t.Date <= monthEnd)
+            .WhereIncludedInTotals();
         if (!string.IsNullOrEmpty(userId))
         {
             monthTransactionsQuery = monthTransactionsQuery.Where(t => t.UserId == userId);

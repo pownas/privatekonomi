@@ -128,6 +128,44 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
+    public async Task UpdateTransactionCategoriesAsyncStoresAndClearsTotalsExclusion()
+    {
+        // Arrange
+        var transaction = new Transaction
+        {
+            Date = DateTime.Today,
+            Amount = 250m,
+            Description = "Uncategorized transaction"
+        };
+
+        _context.Transactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _transactionService.UpdateTransactionCategoriesAsync(
+            transaction.TransactionId,
+            new List<TransactionCategory>(),
+            isExcludedFromTotals: true);
+
+        // Assert
+        await using (var verificationContext = _contextFactory.CreateDbContext())
+        {
+            Assert.IsTrue((await verificationContext.Transactions.SingleAsync()).IsExcludedFromTotals);
+        }
+
+        // Act
+        await _transactionService.UpdateTransactionCategoriesAsync(
+            transaction.TransactionId,
+            new List<TransactionCategory>());
+
+        // Assert
+        await using (var verificationContext = _contextFactory.CreateDbContext())
+        {
+            Assert.IsFalse((await verificationContext.Transactions.SingleAsync()).IsExcludedFromTotals);
+        }
+    }
+
+    [TestMethod]
     public async Task UpdateTransactionWithAuditAsyncAmountZeroThrowsArgumentException()
     {
         // Arrange

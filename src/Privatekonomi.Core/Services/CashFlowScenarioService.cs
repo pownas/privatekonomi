@@ -131,6 +131,7 @@ public class CashFlowScenarioService : ICashFlowScenarioService
         
         // Calculate average monthly income
         var monthlyIncome = transactions
+            .WhereIncludedInTotals()
             .Where(t => t.IsIncome)
             .GroupBy(t => new { t.Date.Year, t.Date.Month })
             .Select(g => g.Sum(t => t.Amount))
@@ -139,6 +140,7 @@ public class CashFlowScenarioService : ICashFlowScenarioService
         
         // Calculate average monthly expenses
         var monthlyExpenses = transactions
+            .WhereIncludedInTotals()
             .Where(t => !t.IsIncome)
             .GroupBy(t => new { t.Date.Year, t.Date.Month })
             .Select(g => g.Sum(t => t.Amount))

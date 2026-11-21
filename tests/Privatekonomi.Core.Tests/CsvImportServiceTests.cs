@@ -198,5 +198,76 @@ public class CsvImportServiceTests : IDisposable
         Assert.IsTrue(
             bankSource.Name.Contains("84525") && bankSource.Name.Contains("1234567891"),
             $"BankSource name should include clearing and account number, got: '{bankSource.Name}'");
+        Assert.AreEqual("#FF7900", bankSource.Color);
+    }
+
+    [TestMethod]
+    public async Task ImportWithJobAsyncCategorizesMatchingTransactionsFromDifferentAccountsAsTransfer()
+    {
+        var transferCategory = new Category
+        {
+            Name = "Överföringar",
+            IsInternalTransferCategory = true
+        };
+        _context.Categories.Add(transferCategory);
+        await _context.SaveChangesAsync();
+
+        const string debitCsv = """
+            Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+            1,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Intern överföring,-250.00,9750.00
+            """;
+        const string creditCsv = """
+            Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+            1,84525,2222222222,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF2,Intern överföring,250.00,10250.00
+            """;
+
+        using var debitStream = new MemoryStream(Encoding.UTF8.GetBytes(debitCsv));
+        var (debitResult, _) = await _service.ImportWithJobAsync(
+            debitStream, "Swedbank", "debit.csv", 512, TestUserId);
+        using var creditStream = new MemoryStream(Encoding.UTF8.GetBytes(creditCsv));
+        var (creditResult, _) = await _service.ImportWithJobAsync(
+            creditStream, "Swedbank", "credit.csv", 512, TestUserId);
+
+        Assert.IsTrue(debitResult.Success);
+        Assert.IsTrue(creditResult.Success);
+        var transactions = await _context.Transactions
+            .Include(t => t.TransactionCategories)
+            .ThenInclude(tc => tc.Category)
+            .Where(t => t.UserId == TestUserId)
+            .ToListAsync();
+
+        Assert.AreEqual(2, transactions.Count);
+        Assert.IsTrue(transactions.All(t => t.IsInternalTransfer));
+        Assert.IsTrue(transactions.All(t => t.TransactionCategories.Single().CategoryId == transferCategory.CategoryId));
+        Assert.AreEqual(0m, creditResult.Summary.TotalAmount);
+    }
+
+    [TestMethod]
+    public async Task ImportWithJobAsyncDoesNotMatchTransferTransactionsOnTheSameAccount()
+    {
+        var transferCategory = new Category
+        {
+            Name = "Överföringar",
+            IsInternalTransferCategory = true
+        };
+        _context.Categories.Add(transferCategory);
+        await _context.SaveChangesAsync();
+
+        const string csv = """
+            Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+            1,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Intern överföring,-250.00,9750.00
+            2,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF2,Intern överföring,250.00,10000.00
+            """;
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var (result, _) = await _service.ImportWithJobAsync(
+            stream, "Swedbank", "same-account.csv", 1024, TestUserId);
+
+        Assert.IsTrue(result.Success);
+        var transactions = await _context.Transactions
+            .Where(t => t.UserId == TestUserId)
+            .ToListAsync();
+        Assert.AreEqual(2, transactions.Count);
+        Assert.IsTrue(transactions.All(t => !t.IsInternalTransfer));
     }
 }

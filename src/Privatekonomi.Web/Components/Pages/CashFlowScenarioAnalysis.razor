@@ -470,7 +470,11 @@ else
     private string[] _xAxisLabels = Array.Empty<string>();
     private List<ChartSeries<double>> _comparisonChartSeries = new();
     private string[] _comparisonXAxisLabels = Array.Empty<string>();
-    private ChartOptions _chartOptions = new ChartOptions();
+    private ChartOptions _chartOptions = new ChartOptions
+    {
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        TooltipSubtitleFormat = "Period: {{X_VALUE}}"
+    };
 
     private List<YearlyBreakdown> _yearlyBreakdown = new();
 
@@ -674,30 +678,29 @@ else
         _comparisonXAxisLabels = sampledIndices
             .Select(i => dataSource[i].Date.ToString("MMM yyyy", SwedishCulture))
             .ToArray();
+        var sampledDates = sampledIndices.Select(i => dataSource[i].Date.Date).ToArray();
+        var currentBalances = _projection.MonthlyData.ToDictionary(d => d.Date.Date, d => d.Balance);
 
         _comparisonChartSeries = new List<ChartSeries<double>>
         {
             new ChartSeries<double>
             {
                 Name = "Nuvarande scenario",
-                Data = sampledIndices
-                    .Select(i => i < _projection.MonthlyData.Count 
-                        ? (double)_projection.MonthlyData[i].Balance 
-                        : 0.0)
-                    .ToArray()
+                Data = new ChartData<double>(sampledDates
+                    .Select(date => currentBalances.TryGetValue(date, out var balance) ? (double?)balance : null)
+                    .ToArray())
             }
         };
 
         foreach (var comp in _comparisonScenarios)
         {
+            var balances = comp.MonthlyData.ToDictionary(d => d.Date.Date, d => d.Balance);
             _comparisonChartSeries.Add(new ChartSeries<double>
             {
                 Name = comp.ScenarioName,
-                Data = sampledIndices
-                    .Select(i => i < comp.MonthlyData.Count 
-                        ? (double)comp.MonthlyData[i].Balance 
-                        : 0.0)
-                    .ToArray()
+                Data = new ChartData<double>(sampledDates
+                    .Select(date => balances.TryGetValue(date, out var balance) ? (double?)balance : null)
+                    .ToArray())
             });
         }
     }

@@ -116,6 +116,14 @@ public class CategoryService : ICategoryService
         var fromDate = toDate.AddMonths(-months);
 
         var transactions = await GetTransactionsByCategoryAsync(categoryId, fromDate, toDate);
+        var allocatedTransactions = transactions
+        .WhereIncludedInTotals()
+        .Select(t => new
+        {
+            t.Date,
+            t.IsIncome,
+            Amount = t.TransactionCategories.Where(tc => tc.CategoryId == categoryId).Sum(tc => Math.Abs(tc.Amount))
+        }).ToList();
 
         var statistics = new CategoryStatistics
         {
@@ -125,12 +133,12 @@ public class CategoryService : ICategoryService
         };
 
         // Calculate totals
-        statistics.TotalIncome = transactions.Where(t => t.IsIncome).Sum(t => t.Amount);
-        statistics.TotalExpenses = transactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
+        statistics.TotalIncome = allocatedTransactions.Where(t => t.IsIncome).Sum(t => t.Amount);
+        statistics.TotalExpenses = allocatedTransactions.Where(t => !t.IsIncome).Sum(t => t.Amount);
         statistics.NetAmount = statistics.TotalIncome - statistics.TotalExpenses;
 
         // Calculate monthly breakdown
-        var monthlyData = transactions
+        var monthlyData = allocatedTransactions
             .GroupBy(t => new { t.Date.Year, t.Date.Month })
             .Select(g => new MonthlyAmount
             {

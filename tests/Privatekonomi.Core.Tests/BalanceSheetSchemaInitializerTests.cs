@@ -96,6 +96,7 @@ public class BalanceSheetSchemaInitializerTests
             ALTER TABLE CurrencyAccounts DROP COLUMN AccountNumber;
             ALTER TABLE Transactions DROP COLUMN AccountNumber;
             ALTER TABLE Transactions DROP COLUMN ClearingNumber;
+            ALTER TABLE Transactions DROP COLUMN IsExcludedFromTotals;
             """);
         context.ChangeTracker.Clear();
 
@@ -109,10 +110,12 @@ public class BalanceSheetSchemaInitializerTests
         Assert.AreEqual("Existing transaction", transaction.Description);
         Assert.IsNull(transaction.AccountNumber);
         Assert.IsNull(transaction.ClearingNumber);
+        Assert.IsFalse(transaction.IsExcludedFromTotals);
 
         account.AccountNumber = "1921";
         transaction.AccountNumber = "123456";
         transaction.ClearingNumber = "9876";
+        transaction.IsExcludedFromTotals = true;
         await context.SaveChangesAsync();
         await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
         context.ChangeTracker.Clear();
@@ -121,6 +124,7 @@ public class BalanceSheetSchemaInitializerTests
         transaction = await context.Transactions.SingleAsync();
         Assert.AreEqual("123456", transaction.AccountNumber);
         Assert.AreEqual("9876", transaction.ClearingNumber);
+        Assert.IsTrue(transaction.IsExcludedFromTotals);
     }
 
     [TestMethod]

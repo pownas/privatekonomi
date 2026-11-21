@@ -389,8 +389,8 @@
     private ChartOptions _chartOptions = new()
     {
         ChartPalette = new[] { "#2196F3", "#4CAF50" },
-        TooltipSubtitleFormat = "{0}: {1:N0} kr",
-        TooltipTitleFormat = "{0}",
+        TooltipSubtitleFormat = "{{X_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
         ShowToolTips = true
     };
     private static readonly System.Globalization.CultureInfo SwedishCulture = System.Globalization.CultureInfo.GetCultureInfo("sv-SE");

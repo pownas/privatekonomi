@@ -676,7 +676,10 @@ else
     {
         transactions ??= await TransactionService.GetAllTransactionsAsync();
         var threeMonthsAgo = DateTime.Now.AddMonths(-3);
-        var recentTransactions = transactions.Where(t => t.Date >= threeMonthsAgo).ToList();
+        var recentTransactions = transactions
+            .Where(t => t.Date >= threeMonthsAgo)
+            .Where(t => !t.IsExcludedFromTotalsTransaction)
+            .ToList();
         
         var monthsCount = 3;
         _monthlyIncome = recentTransactions.Where(t => t.IsIncome).Sum(t => t.Amount) / monthsCount;

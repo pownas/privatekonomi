@@ -144,11 +144,14 @@
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_account.Color" 
-                                 Label="Färg (hex)" 
-                                 Placeholder="#1976D2"
-                                 HelperText="Färgkod i hex-format"
-                                 aria-label="Ange färg i hex-format" />
+                    <MudColorPicker @bind-Value="SelectedColor"
+                                    Label="Kontofärg"
+                                    ColorPickerMode="ColorPickerMode.HEX"
+                                    ShowAlpha="false"
+                                    ShowInputs="true"
+                                    ShowPreview="true"
+                                    HelperText="Välj färgen som används för att identifiera kontot i listor och diagram"
+                                    aria-label="Välj kontofärg" />
                 </MudItem>
 
                 <MudItem xs="12">
@@ -179,6 +182,12 @@
     private DateTime? _openedDate;
     private DateTime? _closedDate;
     private string? _selectedInstitution;
+
+    private MudBlazor.Utilities.MudColor SelectedColor
+    {
+        get => new(_account.Color);
+        set => _account.Color = value.ToString(MudBlazor.Utilities.MudColorOutputFormats.Hex);
+    }
 
     protected override void OnParametersSet()
     {

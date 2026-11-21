@@ -26,7 +26,8 @@ public class HeatmapAnalysisService : IHeatmapAnalysisService
     {
         // Get ALL transactions for the period (both income and expenses)
         var query = _context.Transactions
-            .Where(t => t.Date >= startDate && t.Date <= endDate);
+            .Where(t => t.Date >= startDate && t.Date <= endDate)
+            .WhereIncludedInTotals();
 
         if (householdId.HasValue)
         {

@@ -196,7 +196,13 @@ public class TransactionService : ITransactionService
                     CategoryId = suggestedCategory.CategoryId,
                     Amount = transaction.Amount
                 });
+                transaction.IsInternalTransfer = suggestedCategory.IsInternalTransferCategory;
             }
+        }
+
+        if (transaction.TransactionCategories.Any(tc => tc.Category?.IsInternalTransferCategory == true))
+        {
+            transaction.IsInternalTransfer = true;
         }
 
         context.Transactions.Add(transaction);
@@ -327,6 +333,13 @@ public class TransactionService : ITransactionService
                     Amount = c.Amount
                 })
                 .ToList();
+
+            var transferCategoryIds = await context.Categories
+                .Where(c => c.IsInternalTransferCategory)
+                .Select(c => c.CategoryId)
+                .ToListAsync();
+            transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
+            transaction.IsExcludedFromTotals = false;
         }
 
         await context.SaveChangesAsync();
@@ -437,7 +450,10 @@ public class TransactionService : ITransactionService
         return await query.OrderByDescending(t => t.Date).ToListAsync();
     }
 
-    public async Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories)
+    public async Task UpdateTransactionCategoriesAsync(
+        int transactionId,
+        List<TransactionCategory> categories,
+        bool isExcludedFromTotals = false)
     {
         using var context = _contextFactory.CreateDbContext();
         var transaction = await context.Transactions
@@ -458,6 +474,13 @@ public class TransactionService : ITransactionService
             category.TransactionId = transactionId;
             context.TransactionCategories.Add(category);
         }
+
+        var transferCategoryIds = await context.Categories
+            .Where(c => c.IsInternalTransferCategory)
+            .Select(c => c.CategoryId)
+            .ToListAsync();
+        transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
+        transaction.IsExcludedFromTotals = isExcludedFromTotals;
 
         await context.SaveChangesAsync();
     }
@@ -644,6 +667,11 @@ public class TransactionService : ITransactionService
                     });
                 }
 
+                var transferCategoryIds = await context.Categories
+                    .Where(c => c.IsInternalTransferCategory)
+                    .Select(c => c.CategoryId)
+                    .ToListAsync();
+                transaction.IsInternalTransfer = categories.Any(c => transferCategoryIds.Contains(c.CategoryId));
                 transaction.UpdatedAt = DateTime.UtcNow;
                 result.SuccessCount++;
                 result.SuccessfulIds.Add(id);
@@ -761,7 +789,9 @@ public class TransactionService : ITransactionService
             TransactionId = t.TransactionId,
             HouseholdId = t.HouseholdId,
             CategoryIds = t.TransactionCategories.Select(tc => tc.CategoryId).ToList(),
-            CategoryAmounts = t.TransactionCategories.Select(tc => tc.Amount).ToList()
+            CategoryAmounts = t.TransactionCategories.Select(tc => tc.Amount).ToList(),
+            IsInternalTransfer = t.IsInternalTransfer,
+            IsExcludedFromTotals = t.IsExcludedFromTotals
         }).ToList();
 
         return snapshot;
@@ -845,6 +875,8 @@ public class TransactionService : ITransactionService
                     });
                 }
 
+                transaction.IsInternalTransfer = txSnapshot.IsInternalTransfer;
+                transaction.IsExcludedFromTotals = txSnapshot.IsExcludedFromTotals;
                 transaction.UpdatedAt = DateTime.UtcNow;
                 result.SuccessCount++;
                 result.SuccessfulIds.Add(txSnapshot.TransactionId);

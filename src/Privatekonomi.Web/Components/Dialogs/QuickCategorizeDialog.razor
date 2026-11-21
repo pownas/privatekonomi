@@ -24,51 +24,70 @@
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
             </div>
         }
-        else if (_categories.Any())
-        {
-            <MudText Typo="Typo.subtitle2" Class="mb-2">Välj kategori:</MudText>
-            
-            <div class="d-flex flex-wrap gap-2 mb-4" style="max-height: 300px; overflow-y: auto;">
-                @foreach (var category in _categories.OrderBy(c => c.Name))
-                {
-                    var isSelected = _selectedCategoryId == category.CategoryId;
-                    <MudChip T="string" 
-                             Color="@(isSelected ? Color.Primary : Color.Default)"
-                             Variant="@(isSelected ? Variant.Filled : Variant.Outlined)"
-                             OnClick="@(() => SelectCategory(category.CategoryId))"
-                             Style="@($"border-color: {category.Color}; {(isSelected ? $"background-color: {category.Color}; color: white;" : "")}")">
-                        <MudIcon Icon="@Icons.Material.Filled.Circle" Style="@($"color: {category.Color};")" Size="Size.Small" Class="mr-1" />
-                        @category.Name
-                    </MudChip>
-                }
-            </div>
-
-            <MudDivider Class="my-4" />
-            
-            <MudSwitch @bind-Value="_createRule" 
-                       Color="Color.Primary" 
-                       Label="Skapa kategoriseringsregel"
-                       Class="mb-2" />
-            
-            @if (_createRule)
-            {
-                <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
-                    En regel skapas baserad på transaktionens beskrivning. Liknande transaktioner kommer automatiskt kategoriseras.
-                </MudAlert>
-                
-                <MudTextField @bind-Value="_rulePattern" 
-                              Label="Mönster för regeln" 
-                              Variant="Variant.Outlined"
-                              HelperText="Lämna tomt för att använda transaktionsbeskrivningen"
-                              Placeholder="@Transaction?.Description"
-                              Class="mb-2" />
-            }
-        }
         else
         {
-            <MudAlert Severity="Severity.Info">
-                Inga kategorier tillgängliga. Skapa kategorier först.
-            </MudAlert>
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Snabbval som inte räknas in i inkomst- och utgiftssummor:</MudText>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <MudButton Variant="@(_selectedCategoryId == InternalTransferCategoryId && !_excludeFromTotals ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.SwapHoriz"
+                           OnClick="SelectInternalTransfer">
+                    Överföring mellan egna konton
+                </MudButton>
+                <MudButton Variant="@(_excludeFromTotals ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.RemoveCircleOutline"
+                           OnClick="SelectUncategorized">
+                    Övrig utan kategorisering
+                </MudButton>
+            </div>
+
+            @if (_categories.Any())
+            {
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Välj kategori:</MudText>
+
+                <div class="d-flex flex-wrap gap-2 mb-4" style="max-height: 300px; overflow-y: auto;">
+                    @foreach (var category in _categories.OrderBy(c => c.Name))
+                    {
+                        var isSelected = !_excludeFromTotals && _selectedCategoryId == category.CategoryId;
+                        <MudChip T="string"
+                                 Color="@(isSelected ? Color.Primary : Color.Default)"
+                                 Variant="@(isSelected ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="@(() => SelectCategory(category.CategoryId))"
+                                 Style="@($"border-color: {category.Color}; {(isSelected ? $"background-color: {category.Color}; color: white;" : "")}")">
+                            <MudIcon Icon="@Icons.Material.Filled.Circle" Style="@($"color: {category.Color};")" Size="Size.Small" Class="mr-1" />
+                            @category.Name
+                        </MudChip>
+                    }
+                </div>
+
+                <MudDivider Class="my-4" />
+
+                <MudSwitch @bind-Value="_createRule"
+                           Color="Color.Primary"
+                           Label="Skapa kategoriseringsregel"
+                           Class="mb-2" />
+
+                @if (_createRule)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                        En regel skapas baserad på transaktionens beskrivning. Liknande transaktioner kommer automatiskt kategoriseras.
+                    </MudAlert>
+
+                    <MudTextField @bind-Value="_rulePattern"
+                                  Label="Mönster för regeln"
+                                  Variant="Variant.Outlined"
+                                  HelperText="Lämna tomt för att använda transaktionsbeskrivningen"
+                                  Placeholder="@Transaction?.Description"
+                                  Class="mb-2" />
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">
+                    Inga kategorier tillgängliga. Du kan ändå exkludera transaktionen från totalsummorna.
+                </MudAlert>
+            }
         }
     </DialogContent>
     <DialogActions>
@@ -76,8 +95,8 @@
         <MudButton OnClick="Submit" 
                    Color="Color.Primary" 
                    Variant="Variant.Filled"
-                   Disabled="@(!_selectedCategoryId.HasValue)">
-            Kategorisera
+                   Disabled="@(!_selectedCategoryId.HasValue && !_excludeFromTotals)">
+            @(_excludeFromTotals ? "Spara" : "Kategorisera")
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -93,14 +112,19 @@
     private List<Category> _categories = new();
     private int? _selectedCategoryId;
     private bool _createRule = false;
+    private bool _excludeFromTotals;
     private string? _rulePattern;
+    private int? InternalTransferCategoryId => _categories.FirstOrDefault(c => c.IsInternalTransferCategory)?.CategoryId;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
         
-        // Pre-select the category if transaction already has one
-        if (Transaction?.TransactionCategories?.Any() == true)
+        if (Transaction?.IsExcludedFromTotals == true)
+        {
+            _excludeFromTotals = true;
+        }
+        else if (Transaction?.TransactionCategories?.Any() == true)
         {
             _selectedCategoryId = Transaction.TransactionCategories.First().CategoryId;
         }
@@ -126,6 +150,24 @@
     private void SelectCategory(int categoryId)
     {
         _selectedCategoryId = categoryId;
+        _excludeFromTotals = false;
+    }
+
+    private void SelectInternalTransfer()
+    {
+        if (InternalTransferCategoryId is int categoryId)
+        {
+            _selectedCategoryId = categoryId;
+            _excludeFromTotals = false;
+            _createRule = false;
+        }
+    }
+
+    private void SelectUncategorized()
+    {
+        _selectedCategoryId = null;
+        _excludeFromTotals = true;
+        _createRule = false;
     }
 
     private void Cancel()
@@ -135,16 +177,17 @@
 
     private void Submit()
     {
-        if (!_selectedCategoryId.HasValue)
+        if (!_selectedCategoryId.HasValue && !_excludeFromTotals)
         {
-            Snackbar.Add("Välj en kategori", Severity.Warning);
+            Snackbar.Add("Välj en kategori eller ett snabbval", Severity.Warning);
             return;
         }
 
         var result = new QuickCategorizeResult
         {
-            CategoryId = _selectedCategoryId.Value,
-            CreateRule = _createRule,
+            CategoryId = _selectedCategoryId ?? 0,
+            IsExcludedFromTotals = _excludeFromTotals,
+            CreateRule = _excludeFromTotals ? false : _createRule,
             RulePattern = string.IsNullOrWhiteSpace(_rulePattern) ? null : _rulePattern
         };
 
@@ -154,6 +197,7 @@
     public class QuickCategorizeResult
     {
         public int CategoryId { get; set; }
+        public bool IsExcludedFromTotals { get; set; }
         public bool CreateRule { get; set; }
         public string? RulePattern { get; set; }
     }

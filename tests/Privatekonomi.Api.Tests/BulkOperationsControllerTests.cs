@@ -378,7 +378,7 @@ public class BulkOperationsControllerTests
         public Task DeleteTransactionAsync(int id) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime to) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetUnmappedTransactionsAsync() => throw new NotImplementedException();
-        public Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories) => throw new NotImplementedException();
+        public Task UpdateTransactionCategoriesAsync(int transactionId, List<TransactionCategory> categories, bool isExcludedFromTotals = false) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAsync(int householdId) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetTransactionsByHouseholdAndDateRangeAsync(int householdId, DateTime from, DateTime to) => throw new NotImplementedException();
     }

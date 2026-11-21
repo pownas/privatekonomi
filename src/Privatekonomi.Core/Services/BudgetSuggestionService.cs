@@ -79,7 +79,7 @@ public class BudgetSuggestionService : IBudgetSuggestionService
         var transactions = await _transactionService.GetTransactionsByDateRangeAsync(startDate, endDate);
         
         // Calculate average monthly income
-        var incomeTransactions = transactions.Where(t => t.IsIncome);
+        var incomeTransactions = transactions.WhereIncludedInTotals().Where(t => t.IsIncome);
         decimal averageMonthlyIncome = 30000m; // Default
 
         if (incomeTransactions.Any())

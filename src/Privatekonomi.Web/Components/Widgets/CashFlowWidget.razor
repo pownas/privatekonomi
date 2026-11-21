@@ -39,11 +39,12 @@
     private bool _loading = true;
     private List<ChartSeries<double>> _cashFlowSeries = new();
     private string[] _cashFlowLabels = Array.Empty<string>();
-    private ChartOptions _chartOptions = new ChartOptions
+    private LineChartOptions _chartOptions = new LineChartOptions
     {
         ChartPalette = new[] { "#4caf50", "#f44336", "#2196f3" },
         TooltipSubtitleFormat = "{{X_VALUE}}",
-        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        XAxisLabelInterval = 3,
         ShowToolTips = true,
         ShowLegend = true,
     };
@@ -75,20 +76,17 @@
                     new ChartSeries<double>
                     {
                         Name = "Inkomster",
-                        Data = cashFlowReport.Periods.Select(p => (double)p.Income).ToArray(),
-                        TooltipYValueFormat = "C0"
+                        Data = cashFlowReport.Periods.Select(p => (double)p.Income).ToArray()
                     },
                     new ChartSeries<double>
                     {
                         Name = "Utgifter",
-                        Data = cashFlowReport.Periods.Select(p => (double)p.Expenses).ToArray(),
-                        TooltipYValueFormat = "C0"
+                        Data = cashFlowReport.Periods.Select(p => (double)p.Expenses).ToArray()
                     },
                     new ChartSeries<double>
                     {
                         Name = "Netto",
-                        Data = cashFlowReport.Periods.Select(p => (double)p.NetFlow).ToArray(),
-                        TooltipYValueFormat = "C0"
+                        Data = cashFlowReport.Periods.Select(p => (double)p.NetFlow).ToArray()
                     }
                 };
             }
@@ -109,8 +107,6 @@
             return Array.Empty<string>();
             
         var culture = new System.Globalization.CultureInfo("sv-SE");
-        return months.Select((m, index) =>
-            index % 3 == 0 || index == months.Count - 1 ? m.ToString("MMM yyyy", culture) : string.Empty
-        ).ToArray();
+        return months.Select(m => m.ToString("MMM yyyy", culture)).ToArray();
     }
 }

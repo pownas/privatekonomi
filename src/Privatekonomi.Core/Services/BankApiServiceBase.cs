@@ -75,6 +75,7 @@ public abstract class BankApiServiceBase : IBankApiService
             foreach (var transaction in transactions)
             {
                 transaction.BankSourceId = connection.BankSourceId;
+                transaction.Imported = true;
                 Context.Transactions.Add(transaction);
             }
 

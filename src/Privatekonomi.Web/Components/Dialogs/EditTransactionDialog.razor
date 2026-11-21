@@ -45,7 +45,14 @@
                         <MudSwitch @bind-Value="_transaction.IsIncome" 
                                    Color="Color.Success" 
                                    Label="@(_transaction.IsIncome ? "Inkomst" : "Utgift")"
+                                   Disabled="@_transaction.IsInternalTransfer"
                                    aria-label="Typ av transaktion: inkomst eller utgift" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudSwitch @bind-Value="_transaction.IsInternalTransfer"
+                                   Color="Color.Info"
+                                   Label="Överföring mellan egna konton"
+                                   aria-label="Markera som överföring mellan egna konton" />
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudTextField @bind-Value="_transaction.Payee" 
@@ -346,6 +353,8 @@
             Amount = Transaction.Amount,
             Date = Transaction.Date,
             IsIncome = Transaction.IsIncome,
+            IsInternalTransfer = Transaction.IsInternalTransfer,
+            IsExcludedFromTotals = Transaction.IsExcludedFromTotals,
             BankSourceId = Transaction.BankSourceId,
             HouseholdId = Transaction.HouseholdId,
             Currency = Transaction.Currency,
@@ -484,7 +493,19 @@
             }
             
             _transaction.UpdatedAt = DateTime.UtcNow;
-            
+
+            var categoryIds = _splitMode == SplitMode.Single
+                ? (_selectedCategory == null ? [] : new[] { _selectedCategory.CategoryId })
+                : _categorySplits.Where(s => s.CategoryId.HasValue).Select(s => s.CategoryId!.Value).ToArray();
+            var transferCategorySelected = _availableCategories.Any(c =>
+                categoryIds.Contains(c.CategoryId) && c.IsInternalTransferCategory);
+            _transaction.IsInternalTransfer = _transaction.IsInternalTransfer || transferCategorySelected;
+            var hasCategory = categoryIds.Length > 0;
+            if (hasCategory)
+            {
+                _transaction.IsExcludedFromTotals = false;
+            }
+
             await TransactionService.UpdateTransactionAsync(_transaction);
             
             // Update categories based on mode
@@ -560,7 +581,10 @@
                 }
             }
             
-            await TransactionService.UpdateTransactionCategoriesAsync(_transaction.TransactionId, newCategories);
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                _transaction.TransactionId,
+                newCategories,
+                _transaction.IsExcludedFromTotals && newCategories.Count == 0);
             
             Snackbar.Add("Transaktionen har uppdaterats", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));

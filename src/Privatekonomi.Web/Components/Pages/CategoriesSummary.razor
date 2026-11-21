@@ -113,7 +113,7 @@ else
         </MudPaper>
 
         <MudPaper Class="pa-4 mt-4" Elevation="2">
-            <MudText Typo="Typo.h6" Class="mb-4">Månadsvis Jämförelse - Alla Kategorier</MudText>
+            <MudText Typo="Typo.h6" Class="mb-4">Månadsvis netto per kategori</MudText>
             @if (_monthlyChartSeries.Any())
             {
                 <MudChart ChartType="ChartType.Bar" 
@@ -189,8 +189,8 @@ else
         ChartPalette = new[] { "#4caf50", "#f44336", "#2196f3", "#ff9800", "#9c27b0", "#00bcd4", "#e91e63", "#3f51b5" },
         ShowLegend = true,
         ShowToolTips = true,
-        TooltipTitleFormat = "{0}",
-        TooltipSubtitleFormat = "{0}: {1}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
+        TooltipSubtitleFormat = "Period: {{X_VALUE}}",
     };
 
     protected override async Task OnInitializedAsync()
@@ -252,7 +252,7 @@ else
             Data = allMonths.Select(month =>
             {
                 var monthData = stats.MonthlyBreakdown.FirstOrDefault(m => m.MonthLabel == month);
-                return (double)Math.Abs(monthData?.NetAmount ?? 0);
+                return (double)(monthData?.NetAmount ?? 0);
             }).ToArray()
         }).ToList();
     }

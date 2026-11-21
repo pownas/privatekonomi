@@ -222,6 +222,7 @@ public class BankSourceServiceTests : IDisposable
 
         // Modify the account
         created.Name = "Updated Name";
+        created.Color = "#123456";
         created.AccountNumber = "111222333";
         created.ChartOfAccountsCode = "1920";
 
@@ -231,6 +232,7 @@ public class BankSourceServiceTests : IDisposable
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("Updated Name", result.Name);
+        Assert.AreEqual("#123456", result.Color);
         Assert.AreEqual("111222333", result.AccountNumber);
         Assert.AreEqual("1920", result.ChartOfAccountsCode);
     }

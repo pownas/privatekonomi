@@ -844,7 +844,8 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
             new Category { CategoryId = 31, Name = "Buffert", AccountNumber = "8100", Color = "#2196F3", ParentId = 8, TaxRelated = false, IsSystemCategory = true, OriginalName = "Buffert", OriginalColor = "#2196F3", OriginalAccountNumber = "8100", CreatedAt = DateTime.UtcNow },
             new Category { CategoryId = 32, Name = "Månadsspar Fonder", AccountNumber = "8200", Color = "#42A5F5", ParentId = 8, TaxRelated = false, IsSystemCategory = true, OriginalName = "Månadsspar Fonder", OriginalColor = "#42A5F5", OriginalAccountNumber = "8200", CreatedAt = DateTime.UtcNow },
             new Category { CategoryId = 33, Name = "ISK", AccountNumber = "8300", Color = "#64B5F6", ParentId = 8, TaxRelated = false, IsSystemCategory = true, OriginalName = "ISK", OriginalColor = "#64B5F6", OriginalAccountNumber = "8300", CreatedAt = DateTime.UtcNow },
-            new Category { CategoryId = 34, Name = "Pensionssparande", AccountNumber = "8400", Color = "#90CAF9", ParentId = 8, TaxRelated = false, IsSystemCategory = true, OriginalName = "Pensionssparande", OriginalColor = "#90CAF9", OriginalAccountNumber = "8400", CreatedAt = DateTime.UtcNow }
+            new Category { CategoryId = 34, Name = "Pensionssparande", AccountNumber = "8400", Color = "#90CAF9", ParentId = 8, TaxRelated = false, IsSystemCategory = true, OriginalName = "Pensionssparande", OriginalColor = "#90CAF9", OriginalAccountNumber = "8400", CreatedAt = DateTime.UtcNow },
+            new Category { CategoryId = 35, Name = "Överföringar", AccountNumber = "8999", Color = "#607D8B", TaxRelated = false, IsSystemCategory = true, IsInternalTransferCategory = true, OriginalName = "Överföringar", OriginalColor = "#607D8B", OriginalAccountNumber = "8999", CreatedAt = DateTime.UtcNow }
         );
 
         // Seed initial bank sources

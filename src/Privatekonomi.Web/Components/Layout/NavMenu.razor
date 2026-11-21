@@ -15,22 +15,12 @@
   
     @if (_isSystemAdmin)
     {
-        <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.AdminPanelSettings" Style="color: #ff6b6b;"
-                    OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">
-            Admin Dashboard
-        </MudNavLink>
-        <MudNavLink Href="/admin/drift" Icon="@Icons.Material.Filled.SettingsApplications"
-                   OnClick="@(() => TrackNavigation("/admin/drift", "Drift"))">
-            Drift
-        </MudNavLink>
-        <MudNavLink Href="/admin/site-changes" Icon="@Icons.Material.Filled.SystemUpdateAlt"
-                    OnClick="@(() => TrackNavigation("/admin/site-changes", "Drift och uppdateringar"))">
-            Drift och uppdateringar
-        </MudNavLink>
-        <MudNavLink Href="/admin/logs" Icon="@Icons.Material.Filled.Article"
-                    OnClick="@(() => TrackNavigation("/admin/logs", "Applikationsloggar"))">
-            Applikationsloggar
-        </MudNavLink>
+        <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Class="@GetGroupClass(AdminKey)" Expanded="@IsGroupExpanded(AdminKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(AdminKey, expanded))">
+            <MudNavLink Href="/admin/metrics" Icon="@Icons.Material.Filled.Dashboard" OnClick="@(() => TrackNavigation("/admin/metrics", "Admin Dashboard"))">Admin Dashboard</MudNavLink>
+            <MudNavLink Href="/admin/drift" Icon="@Icons.Material.Filled.SettingsApplications" OnClick="@(() => TrackNavigation("/admin/drift", "Drift"))">Drift</MudNavLink>
+            <MudNavLink Href="/admin/site-changes" Icon="@Icons.Material.Filled.SystemUpdateAlt" OnClick="@(() => TrackNavigation("/admin/site-changes", "Drift och uppdateringar"))">Drift och uppdateringar</MudNavLink>
+            <MudNavLink Href="/admin/logs" Icon="@Icons.Material.Filled.Article" OnClick="@(() => TrackNavigation("/admin/logs", "Applikationsloggar"))">Applikationsloggar</MudNavLink>
+        </MudNavGroup>
     }
 
     <MudNavGroup Title="Ekonomi" Icon="@Icons.Material.Filled.AccountBalance" Class="@GetGroupClass(EconomyKey)" Expanded="@IsGroupExpanded(EconomyKey)" ExpandedChanged="@(expanded => OnGroupExpandedChanged(EconomyKey, expanded))">
@@ -145,6 +135,7 @@
     private const string FamilyKey = "family";
     private const string TaxKey = "tax";
     private const string SettingsKey = "settings";
+    private const string AdminKey = "admin";
     private const string DeveloperKey = "developer";
 
     private string? activeGroupKey = EconomyKey;
@@ -271,15 +262,19 @@
         "settings/bank-connections",
         "settings/import",
         "settings/data-management",
-        "admin",
-        "admin/notifications",
-        "admin/bank-connections",
-        "admin/import",
-        "admin/data-management",
         "notifications",
         "bank-connections",
         "import",
         "data-management",
+    };
+
+    private static readonly string[] AdminRoutes = new[]
+    {
+        "admin",
+        "admin/metrics",
+        "admin/drift",
+        "admin/site-changes",
+        "admin/logs",
     };
 
     private static readonly string[] DeveloperRoutes = new[]
@@ -443,6 +438,11 @@
         if (MatchesRoutes(TaxRoutes))
         {
             return TaxKey;
+        }
+
+        if (MatchesRoutes(AdminRoutes))
+        {
+            return AdminKey;
         }
 
         if (MatchesRoutes(SettingsRoutes))

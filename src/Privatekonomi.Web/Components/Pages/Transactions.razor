@@ -1,5 +1,7 @@
 ﻿@page "/economy/transactions"
+@page "/economy/transactions/{Year:int}/{Month:int}"
 @page "/transactions"
+@page "/transactions/{Year:int}/{Month:int}"
 @rendermode InteractiveServer
 @using Privatekonomi.Web.Components.Dialogs
 @using Privatekonomi.Web.Components.Shared
@@ -334,7 +336,19 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Kategori" Sortable="false">
                     <CellTemplate>
-                        @if (context.Item.TransactionCategories.Any())
+                        @if (context.Item.IsInternalTransferTransaction)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                                Överföring mellan egna konton
+                            </MudChip>
+                        }
+                        else if (context.Item.IsExcludedFromTotals)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                                Övrig utan kategorisering
+                            </MudChip>
+                        }
+                        else if (context.Item.TransactionCategories.Any())
                         {
                             @foreach (var tc in context.Item.TransactionCategories)
                             {
@@ -420,9 +434,34 @@
     private Stack<BulkOperationSnapshot> _undoStack = new();
     private string? _errorMessage = null;
 
-    protected override async Task OnInitializedAsync()
+    [Parameter] public int? Year { get; set; }
+    [Parameter] public int? Month { get; set; }
+    [SupplyParameterFromQuery(Name = "filterdate")] public string? FilterDate { get; set; }
+    [SupplyParameterFromQuery(Name = "search")] public string? SearchFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "category")] public string? CategoryFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "household")] public string? HouseholdFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "minAmount")] public string? MinimumAmountFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "maxAmount")] public string? MaximumAmountFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "dateFrom")] public string? DateFromFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "dateTo")] public string? DateToFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "transactionType")] public string? TransactionTypeFilter { get; set; }
+    private bool _hasLoadedData;
+
+    protected override async Task OnParametersSetAsync()
     {
-        await LoadData();
+        var requestedMonth = GetRequestedMonth();
+        var monthChanged = requestedMonth != _currentMonth;
+        _currentMonth = requestedMonth;
+        RestoreFiltersFromQuery();
+
+        if (!_hasLoadedData || monthChanged)
+        {
+            await LoadData();
+        }
+        else
+        {
+            ApplyFilterCore(updateUrl: false);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -499,24 +538,112 @@
             _households = households.ToList();
             var categories = await CategoryService.GetAllCategoriesAsync();
             _categories = categories.ToList();
+            RestoreFiltersFromQuery();
             var monthStart = _currentMonth;
             var monthEnd = _currentMonth.AddMonths(1).AddTicks(-1);
             _transactions = await TransactionService.GetTransactionsByDateRangeAsync(monthStart, monthEnd);
-            ApplyFilter();
+            ApplyFilterCore(updateUrl: false);
         }
         catch (Exception ex)
         {
             _errorMessage = "Kunde inte ladda transaktioner: " + ex.Message;
             Snackbar.Add(_errorMessage, Severity.Error);
             _transactions = new List<Transaction>();
-            ApplyFilter();
+            ApplyFilterCore(updateUrl: false);
         }
+        _hasLoadedData = true;
         _loading = false;
+        UpdateUrlFromFilters();
     }
 
     private void ApplyFilter()
     {
+        ApplyFilterCore(updateUrl: true);
+    }
+
+    private void ApplyFilterCore(bool updateUrl)
+    {
         _filteredTransactions = _transactions.Where(FilterFunc).ToList();
+        if (updateUrl)
+        {
+            UpdateUrlFromFilters();
+        }
+    }
+
+    private DateTime GetRequestedMonth()
+    {
+        if (DateTime.TryParseExact(FilterDate, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var filterDate) &&
+            !(filterDate.Year == 9999 && filterDate.Month == 12))
+        {
+            return new DateTime(filterDate.Year, filterDate.Month, 1);
+        }
+
+        if (Year is >= 1 and <= 9999 && Month is >= 1 and <= 12 && !(Year == 9999 && Month == 12))
+        {
+            return new DateTime(Year.Value, Month.Value, 1);
+        }
+
+        return new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    }
+
+    private void RestoreFiltersFromQuery()
+    {
+        _searchString = SearchFilter ?? string.Empty;
+        _selectedCategoryId = _categories.FirstOrDefault(category =>
+            string.Equals(category.Name, CategoryFilter, StringComparison.OrdinalIgnoreCase))?.CategoryId ??
+            (int.TryParse(CategoryFilter, out var categoryId) ? categoryId : null);
+        _selectedHouseholdId = _households.FirstOrDefault(household =>
+            string.Equals(household.Name, HouseholdFilter, StringComparison.OrdinalIgnoreCase))?.HouseholdId ??
+            (int.TryParse(HouseholdFilter, out var householdId) ? householdId : null);
+        _minAmount = decimal.TryParse(MinimumAmountFilter, System.Globalization.NumberStyles.Number,
+            System.Globalization.CultureInfo.InvariantCulture, out var minimumAmount) ? minimumAmount : null;
+        _maxAmount = decimal.TryParse(MaximumAmountFilter, System.Globalization.NumberStyles.Number,
+            System.Globalization.CultureInfo.InvariantCulture, out var maximumAmount) ? maximumAmount : null;
+        _dateFrom = ParseQueryDate(DateFromFilter);
+        _dateTo = ParseQueryDate(DateToFilter);
+        _transactionTypeFilter = TransactionTypeFilter is "income" or "expense" or "uncategorized"
+            ? TransactionTypeFilter
+            : null;
+    }
+
+    private static DateTime? ParseQueryDate(string? value)
+    {
+        return DateTime.TryParseExact(value, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var date)
+            ? date
+            : null;
+    }
+
+    private void UpdateUrlFromFilters()
+    {
+        var query = new List<string> { $"filterdate={_currentMonth:yyyy-MM}" };
+        AddQueryParameter(query, "search", _searchString);
+        var selectedCategoryName = _categories.FirstOrDefault(category => category.CategoryId == _selectedCategoryId)?.Name
+            ?? _selectedCategoryId?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var selectedHouseholdName = _households.FirstOrDefault(household => household.HouseholdId == _selectedHouseholdId)?.Name
+            ?? _selectedHouseholdId?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        AddQueryParameter(query, "category", selectedCategoryName);
+        AddQueryParameter(query, "household", selectedHouseholdName);
+        AddQueryParameter(query, "minAmount", _minAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "maxAmount", _maxAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "dateFrom", _dateFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "dateTo", _dateTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+        AddQueryParameter(query, "transactionType", _transactionTypeFilter);
+
+        var relativeUrl = $"economy/transactions?{string.Join('&', query)}";
+        if (!string.Equals(Navigation.ToBaseRelativePath(Navigation.Uri), relativeUrl, StringComparison.Ordinal))
+        {
+            Navigation.NavigateTo($"/{relativeUrl}", replace: true);
+        }
+    }
+
+    private static void AddQueryParameter(List<string> query, string name, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            query.Add($"{name}={Uri.EscapeDataString(value)}");
+        }
     }
 
     private bool FilterFunc(Transaction transaction)
@@ -596,6 +723,12 @@
 
     private void ClearFilters()
     {
+        ResetFilterValues();
+        ApplyFilter();
+    }
+
+    private void ResetFilterValues()
+    {
         _searchString = "";
         _selectedHouseholdId = null;
         _selectedCategoryId = null;
@@ -604,28 +737,29 @@
         _dateFrom = null;
         _dateTo = null;
         _transactionTypeFilter = null;
-        ApplyFilter();
     }
 
-    private async Task NavigateToPreviousMonth()
+    private void NavigateToPreviousMonth()
     {
-        _currentMonth = _currentMonth.AddMonths(-1);
-        ClearFilters();
-        await LoadData();
+        ResetFilterValues();
+        NavigateToMonth(_currentMonth.AddMonths(-1));
     }
 
-    private async Task NavigateToNextMonth()
+    private void NavigateToNextMonth()
     {
-        _currentMonth = _currentMonth.AddMonths(1);
-        ClearFilters();
-        await LoadData();
+        ResetFilterValues();
+        NavigateToMonth(_currentMonth.AddMonths(1));
     }
 
-    private async Task NavigateToCurrentMonth()
+    private void NavigateToCurrentMonth()
     {
-        _currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-        ClearFilters();
-        await LoadData();
+        ResetFilterValues();
+        NavigateToMonth(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1));
+    }
+
+    private void NavigateToMonth(DateTime month)
+    {
+        Navigation.NavigateTo($"/economy/transactions?filterdate={month:yyyy-MM}", replace: true);
     }
 
     private async Task ViewTransactionDetails(Transaction transaction)
@@ -715,6 +849,17 @@
         {
             try
             {
+                if (categorizeResult.IsExcludedFromTotals)
+                {
+                    await TransactionService.UpdateTransactionCategoriesAsync(
+                        transaction.TransactionId,
+                        new List<TransactionCategory>(),
+                        isExcludedFromTotals: true);
+                    Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                    await LoadData();
+                    return;
+                }
+
                 // Update the transaction category
                 var categories = new List<TransactionCategory>
                 {

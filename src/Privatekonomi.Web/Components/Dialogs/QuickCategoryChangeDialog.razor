@@ -22,12 +22,29 @@
                 Välj en ny kategori för transaktionen "@Transaction?.Description"
             </MudText>
 
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Snabbval som inte räknas in i inkomst- och utgiftssummor</MudText>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <MudButton Variant="@(_selectedCategoryId == InternalTransferCategoryId && !_excludeFromTotals ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.SwapHoriz"
+                           Disabled="@(!InternalTransferCategoryId.HasValue)"
+                           OnClick="SelectInternalTransfer">
+                    Överföring mellan egna konton
+                </MudButton>
+                <MudButton Variant="@(_excludeFromTotals ? Variant.Filled : Variant.Outlined)"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.RemoveCircleOutline"
+                           OnClick="SelectUncategorized">
+                    Övrig utan kategorisering
+                </MudButton>
+            </div>
+
             @if (_categories.Any())
             {
                 <div class="d-flex flex-wrap gap-2">
                     @foreach (var category in _categories.OrderBy(c => c.Name))
                     {
-                        var isSelected = _selectedCategoryId == category.CategoryId;
+                        var isSelected = !_excludeFromTotals && _selectedCategoryId == category.CategoryId;
                         <MudChip T="string" 
                                  Color="@(isSelected ? Color.Primary : Color.Default)"
                                  Variant="@(isSelected ? Variant.Filled : Variant.Outlined)"
@@ -64,7 +81,7 @@
         <MudButton OnClick="Submit" 
                    Color="Color.Primary" 
                    Variant="Variant.Filled"
-                   Disabled="@(_selectedCategoryId == 0 || _saving)">
+                   Disabled="@((_selectedCategoryId == 0 && !_excludeFromTotals) || _saving)">
             @if (_saving)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -86,13 +103,18 @@
     private List<Category> _categories = new();
     private int _selectedCategoryId = 0;
     private bool _createRule = false;
+    private bool _excludeFromTotals;
+    private int? InternalTransferCategoryId => _categories.FirstOrDefault(c => c.IsInternalTransferCategory)?.CategoryId;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
-        
-        // Pre-select current category if any
-        if (Transaction?.TransactionCategories.Any() == true)
+
+        if (Transaction?.IsExcludedFromTotals == true)
+        {
+            _excludeFromTotals = true;
+        }
+        else if (Transaction?.TransactionCategories.Any() == true)
         {
             _selectedCategoryId = Transaction.TransactionCategories.First().CategoryId;
         }
@@ -118,6 +140,24 @@
     private void SelectCategory(int categoryId)
     {
         _selectedCategoryId = categoryId;
+        _excludeFromTotals = false;
+    }
+
+    private void SelectInternalTransfer()
+    {
+        if (InternalTransferCategoryId is int categoryId)
+        {
+            _selectedCategoryId = categoryId;
+            _excludeFromTotals = false;
+            _createRule = false;
+        }
+    }
+
+    private void SelectUncategorized()
+    {
+        _selectedCategoryId = 0;
+        _excludeFromTotals = true;
+        _createRule = false;
     }
 
     private void Cancel()
@@ -127,9 +167,9 @@
 
     private async Task Submit()
     {
-        if (Transaction == null || _selectedCategoryId == 0)
+        if (Transaction == null || (_selectedCategoryId == 0 && !_excludeFromTotals))
         {
-            Snackbar.Add("Välj en kategori", Severity.Warning);
+            Snackbar.Add("Välj en kategori eller ett snabbval", Severity.Warning);
             return;
         }
 
@@ -137,19 +177,27 @@
         try
         {
             // Update the transaction categories
-            Transaction.TransactionCategories.Clear();
-            Transaction.TransactionCategories.Add(new TransactionCategory
-            {
-                TransactionId = Transaction.TransactionId,
-                CategoryId = _selectedCategoryId,
-                Amount = Transaction.Amount,
-                Percentage = 100
-            });
-
-            await TransactionService.UpdateTransactionAsync(Transaction);
+            var categories = _excludeFromTotals
+                ? new List<TransactionCategory>()
+                : new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = Transaction.TransactionId,
+                        CategoryId = _selectedCategoryId,
+                        Amount = Transaction.Amount,
+                        Percentage = 100
+                    }
+                };
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                Transaction.TransactionId,
+                categories,
+                _excludeFromTotals);
             
             var categoryName = _categories.FirstOrDefault(c => c.CategoryId == _selectedCategoryId)?.Name ?? "vald kategori";
-            Snackbar.Add($"Transaktion kategoriserad som '{categoryName}'", Severity.Success);
+            Snackbar.Add(_excludeFromTotals
+                ? "Transaktionen lämnas okategoriserad och exkluderas från totalsummorna"
+                : $"Transaktion kategoriserad som '{categoryName}'", Severity.Success);
             
             // If user wants to create a rule, return that info
             if (_createRule)

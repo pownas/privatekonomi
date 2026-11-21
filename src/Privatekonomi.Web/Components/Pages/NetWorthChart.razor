@@ -344,8 +344,8 @@ else
         ChartPalette = GetChartPalette(),
         ShowLegend = true,
         ShowToolTips = true,
-        TooltipSubtitleFormat = "Period: {0}",
-        TooltipTitleFormat = "{0}: {1:C0}",
+        TooltipSubtitleFormat = "Period: {{X_VALUE}}",
+        TooltipTitleFormat = "{{SERIES_NAME}}: {{Y_VALUE}} kr",
         // MaxNumYAxisTicks = 8 // Limit ticks for better readability
     };
 

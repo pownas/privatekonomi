@@ -84,6 +84,10 @@ För att representera olika dataserier i samma graf:
 - **Verktygstips**: Roboto Regular, 14px (0.875rem), Line-height: 1.43
 - **Legend**: Roboto Regular, 14px (0.875rem), Line-height: 1.43
 
+Verktygstips för linje- och stapeldiagram ska visa dataseriens namn, värdet och den fullständiga period- eller kategorietiketten. Använd MudBlazors platshållare `{{SERIES_NAME}}`, `{{Y_VALUE}}` och `{{X_VALUE}}`; .NET-platshållare som `{0}` ersätts inte. Glesa ut axelns etiketter med `XAxisLabelInterval` i stället för att lämna datapunkternas etiketter tomma.
+
+För cirkeldiagram med en serie per kategori används `GroupByDataSet`. I MudBlazors cirkeldiagram är `{{Y_VALUE}}` kategorietiketten och `{{X_VALUE}}` segmentets värde; `ShowAsPercentage` måste vara avstängt när beloppet ska visas.
+
 ### Siffror och Valutor
 - **Format**: Svenska lokalen (sv-SE)
 - **Valuta**: `currency: 'SEK', minimumFractionDigits: 0` för stora belopp
