@@ -553,7 +553,7 @@ else
                         @if (GetSuggestedCategory(context) is { } suggestedCategory)
                         {
                             <div class="d-flex align-center gap-1 mt-1">
-                                <MudText Typo="Typo.caption">@suggestedCategory.Name?</MudText>
+                                <MudText Typo="Typo.caption">@GetQuickCategoryName(suggestedCategory)?</MudText>
                                 <MudButton Size="Size.Small"
                                            Color="Color.Success"
                                            OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
@@ -581,14 +581,14 @@ else
                             @if (GetSuggestedCategory(context) is { } suggestedCategory)
                             {
                                 <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
-                                    Förslag: @suggestedCategory.Name
+                                    Förslag: @GetQuickCategoryName(suggestedCategory)
                                 </MudMenuItem>
                                 <MudDivider />
                             }
                             @foreach (var category in _quickCategories)
                             {
                                 <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, category))">
-                                    @category.Name
+                                    @GetQuickCategoryName(category)
                                 </MudMenuItem>
                             }
                             <MudDivider />
@@ -815,6 +815,13 @@ else
         return _categorySuggestions.GetValueOrDefault(description);
     }
 
+    private static string GetQuickCategoryName(Category category)
+    {
+        return category.IsInternalTransferCategory
+            ? "Överföring mellan egna konton"
+            : category.Name;
+    }
+
     private static string NormalizeDescription(string? description)
     {
         return string.Join(' ', (description ?? string.Empty)
@@ -839,7 +846,7 @@ else
                     }
                 });
 
-            Snackbar.Add($"Transaktionen kategoriserades som {category.Name}.", Severity.Success);
+            Snackbar.Add($"Transaktionen kategoriserades som {GetQuickCategoryName(category)}.", Severity.Success);
             await LoadData();
         }
         catch (Exception ex)
