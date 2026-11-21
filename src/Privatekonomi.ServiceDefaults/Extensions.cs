@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Privatekonomi.ServiceDefaults;
+using Privatekonomi.ServiceDefaults.Telemetry;
 using Serilog;
 using Serilog.Events;
 using OpenTelemetry;
@@ -105,7 +106,8 @@ public static class Extensions
                     .AddHttpClientInstrumentation()
                     // Add Blazor activity source for UI interaction tracing
                     .AddSource("Privatekonomi.Web.Blazor")
-                    .AddSource("Privatekonomi.Navigation");
+                    .AddSource("Privatekonomi.Navigation")
+                    .AddProcessor(new BlazorCircuitNoiseFilter());
             });
 
         builder.AddOpenTelemetryExporters();
