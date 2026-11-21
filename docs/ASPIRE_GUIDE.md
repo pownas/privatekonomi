@@ -73,9 +73,9 @@ Dashboard ger dig:
 
 ### Parametrar
 
-Dashboardens Parameters-vy visar lagringsleverantör och testdatainställning för respektive tjänst samt Webs inställningar för banksynkronisering. Värdena läses från respektive tjänsts `appsettings.json`, miljöspecifika appsettings och, i Development, tjänstens User Secrets; miljövariabler har företräde. Parametrarna skickas vidare till respektive tjänst, så API och Web kan behålla olika standardvärden.
+Dashboardens Parameters-vy visar lagringsleverantör och testdatainställning för respektive tjänst samt Webs inställningar för banksynkronisering. Värdena läses i samma prioritetsordning som tjänsternas konfiguration: appsettings, miljövariabler och därefter, i Development och Local, `appsettings.local.json` och tjänstens User Secrets. Parametrarna skickas vidare till respektive tjänst, så API och Web kan behålla olika standardvärden. Ändringar av parametrar kräver omstart av berörd tjänst.
 
-På macOS behåller `PRIVATEKONOMI_MACOS_STORAGE_CONFIG` sin befintliga prioritet; med JsonFile använder API fortfarande InMemory. En anslutningssträng som skickas via denna konfiguration registreras som en hemlig parameter. Övriga lösenord, API-nycklar och anslutningssträngar från tjänsternas konfiguration kopieras inte till synliga parametrar. Dashboarden kan ändå innehålla känslig driftinformation och bör endast vara åtkomlig för betrodda användare.
+På macOS behåller `PRIVATEKONOMI_MACOS_STORAGE_CONFIG` sin befintliga prioritet; med JsonFile använder API fortfarande InMemory, om inte dess lokala konfiguration anger något annat. En anslutningssträng som skickas via denna konfiguration registreras som en hemlig parameter. Övriga lösenord, API-nycklar och anslutningssträngar från tjänsternas konfiguration kopieras inte till synliga parametrar. Dashboarden kan ändå innehålla känslig driftinformation och bör endast vara åtkomlig för betrodda användare.
 
 ### Åtkomst till tjänsterna
 
