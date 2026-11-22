@@ -141,6 +141,18 @@ window.themeManager = {
     }
 };
 
+window.accessibilityManager = {
+    skipToMainContent: function() {
+        const mainContent = document.getElementById('main-content');
+        if (!mainContent) {
+            return;
+        }
+
+        mainContent.focus({ preventScroll: true });
+        mainContent.scrollIntoView({ block: 'start' });
+    }
+};
+
 // View density management functions
 window.viewDensityManager = {
     getViewDensity: function() {

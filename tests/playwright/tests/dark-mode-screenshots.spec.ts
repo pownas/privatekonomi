@@ -7,6 +7,12 @@ test.describe('Dark Mode Screenshots', () => {
 
     await expect(page.locator('html')).toHaveClass(/mud-theme-dark/);
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)');
+
+    await page.keyboard.press('Tab');
+    const skipLink = page.getByRole('link', { name: 'Hoppa till huvudinnehåll' });
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('main')).toBeFocused();
   });
 
   test('capture light mode and dark mode screenshots', async ({ page }) => {

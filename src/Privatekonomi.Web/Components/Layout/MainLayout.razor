@@ -26,7 +26,7 @@
 <MudDialogProvider CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 
-<a class="skip-link" href="#main-content">Hoppa till huvudinnehåll</a>
+<a class="skip-link" href="#main-content" @onclick="SkipToMainContent" @onclick:preventDefault="true">Hoppa till huvudinnehåll</a>
 
 <MudLayout>
     <MudAppBar Elevation="2">
@@ -308,6 +308,11 @@
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task SkipToMainContent()
+    {
+        await JSRuntime.InvokeVoidAsync("accessibilityManager.skipToMainContent");
     }
     
     private async Task ToggleTheme()
