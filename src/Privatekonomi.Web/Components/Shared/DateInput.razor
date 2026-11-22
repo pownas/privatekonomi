@@ -9,6 +9,7 @@
                PickerVariant="@PickerVariant"
                Required="@Required"
                RequiredError="@RequiredError"
+               Margin="@Margin"
                Variant="@Variant"
                MaxDate="@MaxDate"
                ImmediateText="true" />
@@ -43,6 +44,9 @@
 
     [Parameter]
     public string? RequiredError { get; set; }
+
+    [Parameter]
+    public MudBlazor.Margin Margin { get; set; } = MudBlazor.Margin.None;
 
     [Parameter]
     public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Text;
