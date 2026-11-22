@@ -105,8 +105,8 @@
                                 <tr>
                                     <td><MudChip T="string" Size="Size.Small">@summary.SecurityType</MudChip></td>
                                     <td>@summary.TransactionCount st</td>
-                                    <td style="color: green;">@summary.TotalGain.ToString("N2") kr</td>
-                                    <td style="color: red;">@summary.TotalLoss.ToString("N2") kr</td>
+                                    <td style="color: var(--mud-palette-success);">@summary.TotalGain.ToString("N2") kr</td>
+                                    <td style="color: var(--mud-palette-error);">@summary.TotalLoss.ToString("N2") kr</td>
                                     <td><strong>@summary.NetGain.ToString("N2") kr</strong></td>
                                 </tr>
                             }

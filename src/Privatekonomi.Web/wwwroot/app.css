@@ -311,8 +311,8 @@ h1:focus {
     transition: background-color var(--transition-fast);
 }
 
-.mud-theme-dark .mud-table-row:hover {
-    background-color: rgba(129, 140, 248, 0.08);
+.mud-theme-dark .mud-table-root .mud-table-body .mud-table-row:hover {
+    background-color: #334155;
 }
 
 /* Icon Buttons */

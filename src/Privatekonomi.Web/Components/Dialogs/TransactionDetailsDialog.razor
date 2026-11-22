@@ -29,7 +29,7 @@
                             
                             <MudItem xs="12" sm="6">
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Belopp</MudText>
-                                <MudText Typo="Typo.h6" Style="@($"color: {(Transaction.IsIncome ? "#2e7d32" : "#d32f2f")};")">
+                                <MudText Typo="Typo.h6" Color="@(Transaction.IsIncome ? Color.Success : Color.Error)">
                                     @(Transaction.IsIncome ? "+" : "")@Transaction.Amount.ToString("N2", _svCulture) kr
                                 </MudText>
                             </MudItem>

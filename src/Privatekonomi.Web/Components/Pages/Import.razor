@@ -193,7 +193,7 @@ else if (_currentStep == ImportStep.Preview)
                     {
                         <tr>
                             <td>@transaction.Date</td>
-                            <td style="@(transaction.IsIncome ? "color: green;" : "color: red;")">
+                            <td style="@(transaction.IsIncome ? "color: var(--mud-palette-success);" : "color: var(--mud-palette-error);")">
                                 @(transaction.IsIncome ? "+" : "-")@transaction.Amount.ToString("N2") kr
                             </td>
                             <td>@transaction.Description</td>

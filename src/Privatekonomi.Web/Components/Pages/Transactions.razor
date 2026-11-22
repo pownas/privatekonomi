@@ -377,7 +377,7 @@
                 <TemplateColumn Title="Belopp" Sortable="true" SortBy="@(x => x.Amount)">
                     <CellTemplate>
                         <div Style="text-align: right;">
-                            <MudText Typo="Typo.body1" Style="@($"font-weight: 600; color: {(context.Item.IsIncome ? "#2e7d32" : "#d32f2f")};")">
+                            <MudText Typo="Typo.body1" Color="@(context.Item.IsIncome ? Color.Success : Color.Error)" Style="font-weight: 600;">
                                 @(context.Item.IsIncome ? "+" : "")@context.Item.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
                             </MudText>
                         </div>

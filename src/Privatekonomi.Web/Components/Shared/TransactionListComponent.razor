@@ -150,7 +150,7 @@
             </MudTd>
         }
         <MudTd DataLabel="Belopp" Style="text-align: right; cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
-            <MudText Typo="Typo.body1" Style="@($"font-weight: 600; color: {(context.IsIncome ? "#2e7d32" : "#d32f2f")};")">
+            <MudText Typo="Typo.body1" Color="@(context.IsIncome ? Color.Success : Color.Error)" Style="font-weight: 600;">
                 @(context.IsIncome ? "+" : "")@context.Amount.ToString("N2", _svCulture) kr
             </MudText>
         </MudTd>

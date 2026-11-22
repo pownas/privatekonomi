@@ -4,8 +4,13 @@
                DateFormat="@DateFormat"
                Clearable="@Clearable"
                Editable="@Editable"
+               Color="@Color"
+               OpenTo="@OpenTo"
+               PickerVariant="@PickerVariant"
                Required="@Required"
                RequiredError="@RequiredError"
+               Variant="@Variant"
+               MaxDate="@MaxDate"
                ImmediateText="true" />
 
 @code {
@@ -19,16 +24,31 @@
     public string DateFormat { get; set; } = "yyyy-MM-dd";
 
     [Parameter]
+    public MudBlazor.Color Color { get; set; } = MudBlazor.Color.Primary;
+
+    [Parameter]
     public bool Clearable { get; set; }
 
     [Parameter]
     public bool Editable { get; set; } = true;
 
     [Parameter]
+    public MudBlazor.OpenTo OpenTo { get; set; } = MudBlazor.OpenTo.Date;
+
+    [Parameter]
+    public MudBlazor.PickerVariant PickerVariant { get; set; } = MudBlazor.PickerVariant.Inline;
+
+    [Parameter]
     public bool Required { get; set; }
 
     [Parameter]
     public string? RequiredError { get; set; }
+
+    [Parameter]
+    public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Text;
+
+    [Parameter]
+    public DateTime? MaxDate { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

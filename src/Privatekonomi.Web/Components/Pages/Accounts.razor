@@ -114,7 +114,7 @@ else
                         </MudTd>
                         <MudTd DataLabel="Valuta">@context.Currency</MudTd>
                         <MudTd DataLabel="Saldo">
-                            <span style="@(context.CurrentBalance >= 0 ? "color: green;" : "color: red;")">
+                            <span style="@(context.CurrentBalance >= 0 ? "color: var(--mud-palette-success);" : "color: var(--mud-palette-error);")">
                                 @context.CurrentBalance.ToString("C", new System.Globalization.CultureInfo("sv-SE"))
                             </span>
                         </MudTd>
