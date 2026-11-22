@@ -70,6 +70,38 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+    color-scheme: light;
+}
+
+html.mud-theme-dark {
+    color-scheme: dark;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 2000;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.75rem 1rem;
+    transform: translateY(calc(-100% - 0.5rem));
+    border: 2px solid #4F46E5;
+    border-radius: var(--radius-sm);
+    background: #FFFFFF;
+    color: #111827;
+    font-weight: var(--font-weight-semibold);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+.mud-theme-dark .skip-link {
+    border-color: #A5B4FC;
+    background: #1F2937;
+    color: #FFFFFF;
+}
+
 .net-worth-warning-snackbar,
 .net-worth-warning-snackbar .mud-snackbar-content-message,
 .net-worth-warning-snackbar .mud-snackbar-icon,
@@ -113,9 +145,21 @@ a:hover, .btn-link:hover {
 
 /* Ensure focus is visible in dark mode */
 .mud-theme-dark .mud-button-root:focus-visible,
+.mud-theme-dark .mud-icon-button:focus-visible,
+.mud-theme-dark .mud-nav-link:focus-visible,
 .mud-theme-dark .mud-input:focus-visible,
+.mud-theme-dark .mud-input-control:focus-within,
 .mud-theme-dark .mud-select:focus-visible {
     outline: 2px solid #818CF8;
+    outline-offset: 2px;
+}
+
+.mud-button-root:focus-visible,
+.mud-icon-button:focus-visible,
+.mud-nav-link:focus-visible,
+.mud-input-control:focus-within,
+.mud-select:focus-visible {
+    outline: 2px solid #4F46E5;
     outline-offset: 2px;
 }
 

@@ -21,9 +21,12 @@
 @implements IDisposable
 
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
+<MudThemeProvider Theme="@_darkTheme" IsDarkMode="true" DefaultScrollbar="true" />
 <MudPopoverProvider />
 <MudDialogProvider CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
+
+<a class="skip-link" href="#main-content">Hoppa till huvudinnehåll</a>
 
 <MudLayout>
     <MudAppBar Elevation="2">
@@ -87,7 +90,7 @@
         <NavMenu />
     </MudDrawer>
     
-    <MudMainContent Class="px-2 px-md-6">
+    <MudMainContent Class="px-2 px-md-6" id="main-content" role="main" tabindex="-1">
         @if (_installedBranch is { } branch && branch != "main")
         {
             <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning" Class="mt-3">
@@ -109,6 +112,7 @@
     private bool _isSaving = false;
     private string? _installedBranch;
     private MudThemeProvider? _mudThemeProvider;
+    private MudTheme _darkTheme = new();
     private MudTheme _theme = new MudTheme()
     {
         PaletteLight = new PaletteLight()
@@ -168,7 +172,8 @@
             DrawerWidthLeft = "280px",
             DrawerWidthRight = "280px",
             AppbarHeight = "64px"
-        }
+        },
+        PseudoCss = new PseudoCss { Scope = ":root:not(.mud-theme-dark)" }
     };
 
     private bool IsJsonFileStorage => 
@@ -282,6 +287,17 @@
 
     protected override void OnInitialized()
     {
+        _darkTheme = new MudTheme
+        {
+            PaletteLight = _theme.PaletteLight,
+            PaletteDark = _theme.PaletteDark,
+            Shadows = _theme.Shadows,
+            Typography = _theme.Typography,
+            LayoutProperties = _theme.LayoutProperties,
+            ZIndex = _theme.ZIndex,
+            PseudoCss = new PseudoCss { Scope = ":root.mud-theme-dark" }
+        };
+
         _isDarkMode = ThemeService.IsDarkMode;
         _isCompactView = ViewDensityService.IsCompact;
         _installedBranch = PiUpdates.GetStatus().InstalledBranch;
