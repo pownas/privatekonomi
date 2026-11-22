@@ -71,6 +71,8 @@ support="$HOME/Library/Application Support/Privatekonomi"
 [[ "$(cat "$support/storage-provider")" == "Sqlite" ]]
 grep -Fq 'http://0.0.0.0:5274' "$support/current/Web/appsettings.Production.json"
 grep -Fq 'http://0.0.0.0:5277' "$support/current/Api/appsettings.Production.json"
+grep -Fq '"Profile": "Sqlite"' "$support/current/Api/appsettings.Production.json"
+grep -Fq '"SqliteConnectionString": "Data Source=' "$support/current/Api/appsettings.Production.json"
 grep -Fq '<key>KeepAlive</key><true/>' "$HOME/Library/LaunchAgents/com.privatekonomi.web.plist"
 grep -Fq '<key>RunAtLoad</key><true/>' "$HOME/Library/LaunchAgents/com.privatekonomi.api.plist"
 grep -Fq '<key>StartInterval</key><integer>20</integer>' "$HOME/Library/LaunchAgents/com.privatekonomi.update.plist"
@@ -83,6 +85,7 @@ bash "$repo/scripts/macos/setup-services.sh" JsonFile
 [[ "$(cat "$support/storage-provider")" == "JsonFile" ]]
 grep -Fq '"Provider": "JsonFile"' "$support/current/Web/appsettings.Production.json"
 grep -Fq '"Provider": "InMemory"' "$support/current/Api/appsettings.Production.json"
+grep -Fq '"Profile": "InMemory"' "$support/current/Api/appsettings.Production.json"
 grep -Fq 'Application Support/Privatekonomi/json' "$support/current/Web/appsettings.Production.json"
 
 printf 'fix/old-install\n' > "$support/current/branch"

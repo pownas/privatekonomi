@@ -20,12 +20,14 @@ case "$provider" in
     Sqlite)
         web_provider="Sqlite"
         api_provider="Sqlite"
+        api_data_profile="Sqlite"
         web_connection="$(json_escape "Data Source=$APP_SUPPORT_DIR/privatekonomi.db")"
         api_connection="$web_connection"
         ;;
     JsonFile)
         web_provider="JsonFile"
         api_provider="InMemory"
+        api_data_profile="InMemory"
         web_connection="$(json_escape "$APP_SUPPORT_DIR/json")"
         api_connection=""
         mkdir -p "$APP_SUPPORT_DIR/json"
@@ -62,6 +64,10 @@ EOF
 
 cat > "$api_temp" <<EOF
 {
+  "ApiData": {
+    "Profile": "$api_data_profile",
+    "SqliteConnectionString": "$api_connection"
+  },
   "Storage": {
     "Provider": "$api_provider",
     "ConnectionString": "$api_connection",

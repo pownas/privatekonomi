@@ -9,6 +9,7 @@ public class ApiDataProfileTests
 {
     [TestMethod]
     [DataRow("Mock", "Development", "InMemory", false)]
+    [DataRow("InMemory", "Production", "InMemory", false)]
     [DataRow("Sqlite", "Development", "Sqlite", false)]
     [DataRow("SqlServer", "Development", "SqlServer", false)]
     [DataRow("Sqlite", "Production", "Sqlite", false)]
@@ -30,6 +31,8 @@ public class ApiDataProfileTests
         Assert.AreEqual(expectedProvider, configuration["Storage:Provider"]);
         if (profile == "Sqlite")
             Assert.AreEqual("Data Source=privatekonomi-api.db", configuration["Storage:ConnectionString"]);
+        if (profile == "InMemory")
+            Assert.AreEqual(string.Empty, configuration["Storage:ConnectionString"]);
         if (profile == "SqlServer")
             Assert.AreEqual("Server=localhost;Database=PrivatekonomiApi;Integrated Security=true", configuration["Storage:ConnectionString"]);
     }

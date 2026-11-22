@@ -25,6 +25,10 @@ public static class ApiSeedPolicy
                 configuration["Storage:Provider"] = "InMemory";
                 configuration["Storage:ConnectionString"] = string.Empty;
                 break;
+            case "inmemory":
+                configuration["Storage:Provider"] = "InMemory";
+                configuration["Storage:ConnectionString"] = string.Empty;
+                break;
             case "sqlite":
                 configuration["Storage:Provider"] = "Sqlite";
                 var sqliteConnection = configuration[SqliteConnectionKey];
@@ -40,7 +44,7 @@ public static class ApiSeedPolicy
                 break;
             default:
                 throw new InvalidOperationException(
-                    $"Unknown API data profile '{profile}'. Supported profiles: Mock, Sqlite, SqlServer.");
+                    $"Unknown API data profile '{profile}'. Supported profiles: Mock, InMemory, Sqlite, SqlServer.");
         }
 
         ValidateDataProfile(profile, configuration, environment);
@@ -60,6 +64,11 @@ public static class ApiSeedPolicy
                 throw new InvalidOperationException("Mock API data is not allowed in Production.");
             if (!string.Equals(provider, "InMemory", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Mock API profile requires InMemory storage.");
+        }
+        else if (string.Equals(profile, "InMemory", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(provider, "InMemory", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("InMemory API profile requires InMemory storage.");
         }
         else if (string.Equals(profile, "Sqlite", StringComparison.OrdinalIgnoreCase) &&
                  !string.Equals(provider, "Sqlite", StringComparison.OrdinalIgnoreCase))

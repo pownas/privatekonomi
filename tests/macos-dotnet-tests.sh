@@ -96,6 +96,7 @@ output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDE
 [[ "$output" == *"startar automatiskt när du loggar in"* ]]
 grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Provider": "Sqlite"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
+grep -Fq '"Profile": "Sqlite"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
 grep -Fq 'privatekonomi.db' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5274"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Urls": "http://0.0.0.0:5277"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
@@ -105,6 +106,7 @@ output="$(PRIVATEKONOMI_CONFIG_ROOT="$temp/config" PRIVATEKONOMI_STORAGE_PROVIDE
 grep -Fq 'API-data delas inte med Web och försvinner vid omstart' "$temp/json-warning"
 grep -Fq '"Provider": "JsonFile"' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 grep -Fq '"Provider": "InMemory"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
+grep -Fq '"Profile": "InMemory"' "$temp/config/src/Privatekonomi.Api/appsettings.Production.json"
 grep -Fq 'Application Support/Privatekonomi/json' "$temp/config/src/Privatekonomi.Web/appsettings.Production.json"
 
 source <(/bin/sed -n '/^select_storage_provider() {/,/^}$/p' "$repo/scripts/macos/install.sh")

@@ -62,6 +62,15 @@ public class ApiInfoTests
     }
 
     [TestMethod]
+    public void MetadataAllowsInMemoryDataProfile()
+    {
+        var info = ApiInfoResponse.FromMetadata(null, null, null, null, "Production", "InMemory", "InMemory");
+
+        Assert.AreEqual("InMemory", info.StorageProvider);
+        Assert.AreEqual("InMemory", info.DataProfile);
+    }
+
+    [TestMethod]
     public void MetadataFallsBackToGitHubSha()
     {
         var info = ApiInfoResponse.FromMetadata("0.1.0-alfa", null, "0.1.0-alfa+invalid", "abcdef1234567890", "testing", null);

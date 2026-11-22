@@ -46,7 +46,7 @@ public sealed record ApiInfoResponse(string? Version, string? BuildNumber, strin
             .FirstOrDefault(value => string.Equals(value, name, StringComparison.OrdinalIgnoreCase));
 
     private static string? SafeDataProfile(string? name) =>
-        new[] { "Mock", "Sqlite", "SqlServer" }
+        new[] { "Mock", "InMemory", "Sqlite", "SqlServer" }
             .FirstOrDefault(value => string.Equals(value, name, StringComparison.OrdinalIgnoreCase));
 
     private static string? SafeValue(string? value)
