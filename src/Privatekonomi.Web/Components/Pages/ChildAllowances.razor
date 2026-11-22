@@ -190,7 +190,7 @@ else
             <MudSelectItem Value="@AllowanceFrequency.BiWeekly">Varannan vecka</MudSelectItem>
             <MudSelectItem Value="@AllowanceFrequency.Monthly">Månatligen</MudSelectItem>
         </MudSelect>
-        <MudDatePicker @bind-Date="allowanceStartDate" Label="Startdatum" Required="true" />
+        <DateInput @bind-Date="allowanceStartDate" Label="Startdatum" Required="true" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseCreateAllowanceDialog">Avbryt</MudButton>
@@ -213,7 +213,7 @@ else
         <MudTextField @bind-Value="newTask.Name" Label="Uppdragsnamn" Required="true" />
         <MudTextField @bind-Value="newTask.Description" Label="Beskrivning" Lines="2" />
         <MudNumericField @bind-Value="newTask.RewardAmount" Label="Belöning" Adornment="Adornment.End" AdornmentText="kr" Required="true" />
-        <MudDatePicker @bind-Date="taskDueDate" Label="Förfallodatum" Required="true" />
+        <DateInput @bind-Date="taskDueDate" Label="Förfallodatum" Required="true" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseCreateTaskDialog">Avbryt</MudButton>
@@ -262,7 +262,7 @@ else
     private decimal transactionAmount;
     private string transactionDescription = string.Empty;
     
-    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
 
     protected override async Task OnInitializedAsync()
     {

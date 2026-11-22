@@ -12,6 +12,21 @@ public class CategoryRule
     /// The pattern to match against transaction descriptions or payee names.
     /// </summary>
     public string Pattern { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional exact transaction amount, compared by absolute value.
+    /// </summary>
+    public decimal? ExactAmount { get; set; }
+
+    /// <summary>
+    /// Optional inclusive lower bound for the absolute transaction amount.
+    /// </summary>
+    public decimal? MinimumAmount { get; set; }
+
+    /// <summary>
+    /// Optional inclusive upper bound for the absolute transaction amount.
+    /// </summary>
+    public decimal? MaximumAmount { get; set; }
     
     /// <summary>
     /// The type of pattern matching to use.
@@ -78,6 +93,16 @@ public class CategoryRule
     public DateTime? UpdatedAt { get; set; }
     
     public Category? Category { get; set; }
+}
+
+/// <summary>
+/// Amount condition selected while editing a categorization rule.
+/// </summary>
+public enum RuleAmountMode
+{
+    None,
+    Exact,
+    Range
 }
 
 /// <summary>

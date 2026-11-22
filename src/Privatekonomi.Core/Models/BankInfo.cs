@@ -4,6 +4,7 @@ public static class BankNames
 {
     public const string AllmanOfx = "OFX (Allmän)";
     public const string Avanza = "Avanza";
+    public const string Csn = "CSN";
     public const string Handelsbanken = "Handelsbanken";
     public const string IcaBanken = "ICA-banken";
     public const string Klarna = "Klarna";
@@ -47,6 +48,7 @@ public static class BankRegistry
     public static readonly List<BankInfo> SupportedBanks = new()
     {
         new BankInfo(BankNames.Avanza, "#00C281", "https://www.avanza.se"),
+        new BankInfo(BankNames.Csn, "#64CCC9", "https://www.csn.se"),
         new BankInfo(BankNames.Handelsbanken, "#003781", "https://www.handelsbanken.se"),
         new BankInfo(BankNames.IcaBanken, "#E3000F", "https://www.icabanken.se"),
         new BankInfo(BankNames.Klarna, "#FFB3C7", "https://www.klarna.com/se"),

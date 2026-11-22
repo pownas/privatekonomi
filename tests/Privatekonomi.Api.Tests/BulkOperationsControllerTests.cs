@@ -373,8 +373,8 @@ public class BulkOperationsControllerTests
         public Task<(List<Transaction> Transactions, int TotalCount)> GetTransactionsPageAsync(int? accountId, DateTime? startDate, DateTime? endDate, int? categoryId, int? householdId, int page, int perPage) => throw new NotImplementedException();
         public Task<Transaction?> GetTransactionByIdAsync(int id) => throw new NotImplementedException();
         public Task<Transaction> CreateTransactionAsync(Transaction transaction) => throw new NotImplementedException();
-        public Task<Transaction> UpdateTransactionAsync(Transaction transaction) => throw new NotImplementedException();
-        public Task<Transaction> UpdateTransactionWithAuditAsync(int id, decimal amount, DateTime date, string description, string? payee, string? notes, string? tags, List<(int CategoryId, decimal Amount)>? categories, DateTime? clientUpdatedAt, string? userId, string? ipAddress) => throw new NotImplementedException();
+        public Task<Transaction> UpdateTransactionAsync(Transaction transaction, bool allowImportedAmountChange = false) => throw new NotImplementedException();
+        public Task<Transaction> UpdateTransactionWithAuditAsync(int id, decimal amount, DateTime date, string description, string? payee, string? notes, string? tags, List<(int CategoryId, decimal Amount)>? categories, DateTime? clientUpdatedAt, string? userId, string? ipAddress, bool allowImportedAmountChange = false) => throw new NotImplementedException();
         public Task DeleteTransactionAsync(int id) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime to) => throw new NotImplementedException();
         public Task<IEnumerable<Transaction>> GetUnmappedTransactionsAsync() => throw new NotImplementedException();

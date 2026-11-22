@@ -31,10 +31,12 @@ test.describe('OCR Receipt Scanning Screenshots', () => {
     await page.waitForTimeout(1000);
     
     // Click on "Skanna kvitto (OCR)" button
-    const ocrButton = page.locator('text="Skanna kvitto (OCR)"');
+    const ocrButton = page.getByRole('button', { name: 'Skanna kvitto (OCR)' }).first();
     if (await ocrButton.count() > 0) {
       await ocrButton.click();
       await page.waitForTimeout(1000);
+      const dialog = page.locator('.mud-dialog');
+      await expect(dialog).toBeVisible();
       
       // Take screenshot of the OCR dialog
       await page.screenshot({ 
@@ -45,6 +47,7 @@ test.describe('OCR Receipt Scanning Screenshots', () => {
       
       // Close dialog
       await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
     } else {
       console.log('⚠ OCR scan button not found - skipping');
     }

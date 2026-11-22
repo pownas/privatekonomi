@@ -176,7 +176,8 @@ public class TransactionService : ITransactionService
             {
                 var ruleCategoryId = await _categoryRuleService.ApplyCategoryRulesAsync(
                     transaction.Description, 
-                    transaction.Payee);
+                    transaction.Payee,
+                    amount: transaction.Amount);
                 
                 if (ruleCategoryId.HasValue)
                 {
@@ -234,13 +235,38 @@ public class TransactionService : ITransactionService
         return transaction;
     }
 
-    public async Task<Transaction> UpdateTransactionAsync(Transaction transaction)
+    public async Task<Transaction> UpdateTransactionAsync(
+        Transaction transaction,
+        bool allowImportedAmountChange = false)
     {
         using var context = _contextFactory.CreateDbContext();
-        transaction.UpdatedAt = DateTime.UtcNow;
-        context.Entry(transaction).State = EntityState.Modified;
+        var existingTransaction = await context.Transactions
+            .FirstOrDefaultAsync(t => t.TransactionId == transaction.TransactionId);
+        if (existingTransaction == null)
+        {
+            throw new InvalidOperationException($"Transaction with ID {transaction.TransactionId} not found");
+        }
+
+        if (existingTransaction.Imported && existingTransaction.Amount != transaction.Amount && !allowImportedAmountChange)
+        {
+            throw new InvalidOperationException(
+                $"Transaction {transaction.TransactionId} is imported and its amount is locked. Explicitly unlock it before changing the amount.");
+        }
+
+        existingTransaction.Description = transaction.Description;
+        existingTransaction.Amount = transaction.Amount;
+        existingTransaction.Date = transaction.Date;
+        existingTransaction.IsIncome = transaction.IsIncome;
+        existingTransaction.IsInternalTransfer = transaction.IsInternalTransfer;
+        existingTransaction.HouseholdId = transaction.HouseholdId;
+        existingTransaction.Currency = transaction.Currency;
+        existingTransaction.Payee = transaction.Payee;
+        existingTransaction.Tags = transaction.Tags;
+        existingTransaction.Notes = transaction.Notes;
+        existingTransaction.PaymentMethod = transaction.PaymentMethod;
+        existingTransaction.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
-        return transaction;
+        return existingTransaction;
     }
 
     public async Task<Transaction> UpdateTransactionWithAuditAsync(
@@ -254,7 +280,8 @@ public class TransactionService : ITransactionService
         List<(int CategoryId, decimal Amount)>? categories,
         DateTime? clientUpdatedAt,
         string? userId,
-        string? ipAddress)
+        string? ipAddress,
+        bool allowImportedAmountChange = false)
     {
         using var context = _contextFactory.CreateDbContext();
         // Fetch the existing transaction with related data
@@ -271,6 +298,12 @@ public class TransactionService : ITransactionService
         if (transaction.IsLocked)
         {
             throw new InvalidOperationException($"Transaction {id} is locked and cannot be edited");
+        }
+
+        if (transaction.Imported && transaction.Amount != amount && !allowImportedAmountChange)
+        {
+            throw new InvalidOperationException(
+                $"Transaction {id} is imported and its amount is locked. Explicitly unlock it before changing the amount.");
         }
 
         // Optimistic locking check

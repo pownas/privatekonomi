@@ -1,0 +1,19 @@
+<MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="@Class">
+    <div class="d-flex flex-column flex-sm-row align-center gap-3">
+        <span>@Message</span>
+        <MudButton Color="Color.Inherit" Variant="Variant.Outlined" Href="@LoginUrl">
+            Logga in
+        </MudButton>
+    </div>
+</MudAlert>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Class { get; set; } = "mb-4";
+
+    [Parameter]
+    public string LoginUrl { get; set; } = "/Account/Login";
+}

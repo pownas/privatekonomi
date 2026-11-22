@@ -12,6 +12,10 @@ All telemetri visas i **Aspire Dashboard** tillsammans med övrig observability-
 
 ## Hur det fungerar
 
+### Statiska filer och traces
+
+GET- och HEAD-anrop för vanliga statiska filtyper filtreras bort från serverns traces. Webbläsarens hämtningar av CSS, JavaScript, bilder, fonter och liknande är separata HTTP-anrop; de blir inte barn till sidans trace automatiskt. För att koppla dem till sidvisningen krävs även klienttelemetri som skickar trace-kontext med varje resursanrop.
+
 ### 1. OpenTelemetry Integration
 
 Projektet använder redan .NET Aspire med OpenTelemetry. Vi har lagt till:

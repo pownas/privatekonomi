@@ -5,9 +5,11 @@ namespace Privatekonomi.Core.Services;
 /// <summary>
 /// Service for tracking navigation performance metrics from menu click to page render
 /// </summary>
-public class NavigationPerformanceService : INavigationPerformanceService
+public class NavigationPerformanceService : INavigationPerformanceService, IDisposable
 {
-    private static readonly ActivitySource ActivitySource = new("Privatekonomi.Navigation");
+    public const string ActivitySourceName = "Privatekonomi.Navigation";
+
+    private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
     private readonly Dictionary<string, NavigationMetric> _activeNavigations = new();
     private readonly object _lock = new();
 
@@ -15,21 +17,65 @@ public class NavigationPerformanceService : INavigationPerformanceService
     {
         lock (_lock)
         {
+            StopActiveNavigations("Superseded by another navigation");
+
+            var normalizedTargetUrl = NormalizeTargetUrl(targetUrl);
             var navigationId = Guid.NewGuid().ToString();
             var metric = new NavigationMetric
             {
                 NavigationId = navigationId,
-                TargetUrl = targetUrl,
+                TargetUrl = normalizedTargetUrl,
                 SourceName = sourceName,
                 StartTime = DateTimeOffset.UtcNow,
                 Activity = ActivitySource.StartActivity("Navigation", ActivityKind.Internal)
             };
 
-            metric.Activity?.SetTag("navigation.target_url", targetUrl);
+            metric.Activity?.SetTag("navigation.target_url", normalizedTargetUrl);
             metric.Activity?.SetTag("navigation.source", sourceName);
             metric.Activity?.SetTag("navigation.id", navigationId);
 
-            _activeNavigations[targetUrl] = metric;
+            _activeNavigations[normalizedTargetUrl] = metric;
+        }
+    }
+
+    public Activity? StartPageRender(string targetUrl, string pageName)
+    {
+        lock (_lock)
+        {
+            var normalizedTargetUrl = NormalizeTargetUrl(targetUrl);
+            if (!_activeNavigations.TryGetValue(normalizedTargetUrl, out var metric))
+            {
+                return null;
+            }
+
+            var activity = ActivitySource.StartActivity(
+                "Page.Render",
+                ActivityKind.Internal,
+                metric.Activity?.Context ?? default);
+            activity?.SetTag("navigation.target_url", normalizedTargetUrl);
+            activity?.SetTag("navigation.page_name", pageName);
+            metric.PageRenderActivity = activity;
+            metric.PageRenderStarted = true;
+            return activity;
+        }
+    }
+
+    public void CompletePageRender(string targetUrl, string pageName, Activity? renderActivity)
+    {
+        lock (_lock)
+        {
+            var normalizedTargetUrl = NormalizeTargetUrl(targetUrl);
+            renderActivity?.SetStatus(ActivityStatusCode.Ok);
+            renderActivity?.Stop();
+
+            if (!_activeNavigations.TryGetValue(normalizedTargetUrl, out var metric))
+            {
+                return;
+            }
+
+            metric.PageRenderCompleted = true;
+            metric.PageName = pageName;
+            CompleteNavigationCore(normalizedTargetUrl, metric, pageName);
         }
     }
 
@@ -37,25 +83,14 @@ public class NavigationPerformanceService : INavigationPerformanceService
     {
         lock (_lock)
         {
-            if (_activeNavigations.TryGetValue(targetUrl, out var metric))
+            var normalizedTargetUrl = NormalizeTargetUrl(targetUrl);
+            if (_activeNavigations.TryGetValue(normalizedTargetUrl, out var metric))
             {
-                metric.EndTime = DateTimeOffset.UtcNow;
                 metric.PageName = pageName;
-                metric.DurationMs = (metric.EndTime.Value - metric.StartTime).TotalMilliseconds;
-
-                metric.Activity?.SetTag("navigation.page_name", pageName);
-                metric.Activity?.SetTag("navigation.duration_ms", metric.DurationMs);
-                metric.Activity?.SetStatus(ActivityStatusCode.Ok);
-                metric.Activity?.Stop();
-
-                // Emit custom event for dashboard/reporting
-                using var completionActivity = ActivitySource.StartActivity("NavigationCompleted", ActivityKind.Internal);
-                completionActivity?.SetTag("navigation.target_url", targetUrl);
-                completionActivity?.SetTag("navigation.page_name", pageName);
-                completionActivity?.SetTag("navigation.duration_ms", metric.DurationMs);
-                completionActivity?.SetTag("navigation.source", metric.SourceName);
-
-                _activeNavigations.Remove(targetUrl);
+                if (!metric.PageRenderStarted || metric.PageRenderCompleted)
+                {
+                    CompleteNavigationCore(normalizedTargetUrl, metric, pageName);
+                }
             }
         }
     }
@@ -64,11 +99,13 @@ public class NavigationPerformanceService : INavigationPerformanceService
     {
         lock (_lock)
         {
-            if (_activeNavigations.TryGetValue(targetUrl, out var metric))
+            var normalizedTargetUrl = NormalizeTargetUrl(targetUrl);
+            if (_activeNavigations.TryGetValue(normalizedTargetUrl, out var metric))
             {
+                metric.PageRenderActivity?.Stop();
                 metric.Activity?.SetStatus(ActivityStatusCode.Error, "Navigation cancelled");
                 metric.Activity?.Stop();
-                _activeNavigations.Remove(targetUrl);
+                _activeNavigations.Remove(normalizedTargetUrl);
             }
         }
     }
@@ -77,7 +114,7 @@ public class NavigationPerformanceService : INavigationPerformanceService
     {
         lock (_lock)
         {
-            return _activeNavigations.TryGetValue(targetUrl, out var metric) ? metric : null;
+            return _activeNavigations.TryGetValue(NormalizeTargetUrl(targetUrl), out var metric) ? metric : null;
         }
     }
 
@@ -87,6 +124,70 @@ public class NavigationPerformanceService : INavigationPerformanceService
         {
             return _activeNavigations.Values.ToList();
         }
+    }
+
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            StopActiveNavigations("Navigation service disposed before completion");
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    private void StopActiveNavigations(string reason)
+    {
+        foreach (var metric in _activeNavigations.Values)
+        {
+            metric.PageRenderActivity?.Stop();
+            metric.Activity?.SetStatus(ActivityStatusCode.Error, reason);
+            metric.Activity?.Stop();
+        }
+
+        _activeNavigations.Clear();
+    }
+
+    private void CompleteNavigationCore(string targetUrl, NavigationMetric metric, string pageName)
+    {
+        metric.EndTime = DateTimeOffset.UtcNow;
+        metric.PageName = pageName;
+        metric.DurationMs = (metric.EndTime.Value - metric.StartTime).TotalMilliseconds;
+
+        metric.Activity?.SetTag("navigation.page_name", pageName);
+        metric.Activity?.SetTag("navigation.duration_ms", metric.DurationMs);
+        metric.Activity?.SetStatus(ActivityStatusCode.Ok);
+
+        using (var completionActivity = ActivitySource.StartActivity(
+                   "NavigationCompleted",
+                   ActivityKind.Internal,
+                   metric.Activity?.Context ?? default))
+        {
+            completionActivity?.SetTag("navigation.target_url", targetUrl);
+            completionActivity?.SetTag("navigation.page_name", pageName);
+            completionActivity?.SetTag("navigation.duration_ms", metric.DurationMs);
+            completionActivity?.SetTag("navigation.source", metric.SourceName);
+        }
+
+        metric.Activity?.Stop();
+        _activeNavigations.Remove(targetUrl);
+    }
+
+    private static string NormalizeTargetUrl(string targetUrl)
+    {
+        var queryIndex = targetUrl.IndexOf('?', StringComparison.Ordinal);
+        if (queryIndex >= 0)
+        {
+            targetUrl = targetUrl[..queryIndex];
+        }
+
+        var fragmentIndex = targetUrl.IndexOf('#', StringComparison.Ordinal);
+        if (fragmentIndex >= 0)
+        {
+            targetUrl = targetUrl[..fragmentIndex];
+        }
+
+        return targetUrl.Trim('/');
     }
 }
 
@@ -100,4 +201,7 @@ public class NavigationMetric
     public DateTimeOffset? EndTime { get; set; }
     public double? DurationMs { get; set; }
     public Activity? Activity { get; set; }
+    public Activity? PageRenderActivity { get; set; }
+    public bool PageRenderStarted { get; set; }
+    public bool PageRenderCompleted { get; set; }
 }

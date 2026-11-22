@@ -99,8 +99,10 @@ public class CsvImportServiceTests : IDisposable
         {
             Date = new DateTime(2024, 3, 1),
             Amount = 250.00m,
-            IsIncome = false,
+            IsIncome = true,
             Description = "ICA-Maxi",
+            AccountNumber = "1234567891",
+            Imported = true,
             UserId = TestUserId,
             CreatedAt = DateTime.UtcNow,
             ValidFrom = DateTime.UtcNow
@@ -124,6 +126,8 @@ public class CsvImportServiceTests : IDisposable
             Amount = 250.00m,
             IsIncome = false,
             Description = "ICA-Maxi",
+            AccountNumber = "1234567891",
+            Imported = true,
             UserId = "other-user-456",
             CreatedAt = DateTime.UtcNow,
             ValidFrom = DateTime.UtcNow
@@ -136,6 +140,62 @@ public class CsvImportServiceTests : IDisposable
         Assert.IsTrue(result.Success);
         // The same transaction belonging to a different user must NOT be treated as a duplicate
         Assert.AreEqual(0, result.DuplicateCount);
+    }
+
+    [TestMethod]
+    public async Task PreviewCsvAsyncMatchingManualTransactionIsNotTreatedAsImportedDuplicate()
+    {
+        _context.Transactions.Add(new Transaction
+        {
+            Date = new DateTime(2024, 3, 1),
+            Amount = 250.00m,
+            IsIncome = false,
+            Description = "ICA-Maxi",
+            AccountNumber = "1234567891",
+            UserId = TestUserId,
+            CreatedAt = DateTime.UtcNow,
+            ValidFrom = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(ValidSwedbankCsv));
+        var result = await _service.PreviewCsvAsync(stream, "Swedbank", TestUserId);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(0, result.DuplicateCount);
+        Assert.AreEqual(2, result.ImportedCount);
+    }
+
+    [TestMethod]
+    public async Task ImportWithJobAsyncKeepsSameFileRowsButSkipsEarlierImportsAndImportsNewRows()
+    {
+        const string firstImportCsv = """
+            Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+            1,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Merchant,-50.00,9750.00
+            2,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Merchant,-50.00,9700.00
+            """;
+        using var firstStream = new MemoryStream(Encoding.UTF8.GetBytes(firstImportCsv));
+        var (firstResult, _) = await _service.ImportWithJobAsync(
+            firstStream, "Swedbank", "first.csv", 512, TestUserId);
+
+        Assert.IsTrue(firstResult.Success);
+        Assert.AreEqual(0, firstResult.DuplicateCount);
+        Assert.AreEqual(2, firstResult.ImportedCount);
+
+        const string laterImportCsv = """
+            Radnummer,Clearingnummer,Kontonummer,Produkt,Valuta,Bokföringsdag,Transaktionsdag,Valutadag,Referens,Beskrivning,Belopp,Bokfört saldo
+            1,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Merchant,-50.00,9650.00
+            2,84525,2222222222,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF1,Merchant,-50.00,9950.00
+            3,84525,1111111111,e-sparkonto,SEK,2024-03-01,2024-03-01,2024-03-01,REF2,New merchant,-20.00,9630.00
+            """;
+        using var laterStream = new MemoryStream(Encoding.UTF8.GetBytes(laterImportCsv));
+        var (laterResult, _) = await _service.ImportWithJobAsync(
+            laterStream, "Swedbank", "later.csv", 768, TestUserId);
+
+        Assert.IsTrue(laterResult.Success);
+        Assert.AreEqual(1, laterResult.DuplicateCount);
+        Assert.AreEqual(2, laterResult.ImportedCount);
+        Assert.AreEqual(4, await _context.Transactions.CountAsync(t => t.UserId == TestUserId));
     }
 
     // -------------------------------------------------------------------------

@@ -16,9 +16,10 @@
                                      Alt="Kvittobild" 
                                      ObjectFit="ObjectFit.Contain"
                                      Class="rounded" 
-                                     Style="max-width: 100%; max-height: 500px; width: auto; height: auto; display: block; margin: 0 auto; cursor: pointer;" 
-                                     @onclick="OpenFullscreenImage" />
-                            <MudText Typo="Typo.caption" Class="mt-2 text-center" Color="Color.Secondary">Klicka på bilden för att se i helskärm</MudText>
+                                      Style="max-width: 100%; max-height: 500px; width: auto; height: auto; display: block; margin: 0 auto;" />
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenFullscreenImage" Class="mt-2">
+                                Visa kvittobild i helskärm
+                            </MudButton>
                         </MudPaper>
                     </MudItem>
                 }

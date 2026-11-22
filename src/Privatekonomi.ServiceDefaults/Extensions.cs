@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Privatekonomi.ServiceDefaults;
+using Privatekonomi.ServiceDefaults.Telemetry;
 using Serilog;
 using Serilog.Events;
 using OpenTelemetry;
@@ -18,6 +19,13 @@ namespace Microsoft.Extensions.Hosting;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
+    private static readonly HashSet<string> StaticAssetExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".avif", ".br", ".css", ".dat", ".dll", ".eot", ".gif", ".gz", ".html", ".ico",
+        ".jpeg", ".jpg", ".js", ".map", ".mjs", ".otf", ".pdb", ".png", ".svg",
+        ".ttf", ".wasm", ".webmanifest", ".webp", ".woff", ".woff2"
+    };
+
     public static IHostApplicationBuilder AddPersistentFileLogging(
         this IHostApplicationBuilder builder,
         string applicationName)
@@ -99,17 +107,32 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddAspNetCoreInstrumentation()
+                tracing.AddAspNetCoreInstrumentation(options =>
+                    options.Filter = context => !IsStaticAssetRequest(context.Request.Method, context.Request.Path.Value))
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation()
                     // Add Blazor activity source for UI interaction tracing
-                    .AddSource("Privatekonomi.Web.Blazor");
+                    .AddSource("Privatekonomi.Web.Blazor")
+                    .AddSource("Privatekonomi.Navigation")
+                    .AddProcessor(new BlazorCircuitNoiseFilter());
             });
 
         builder.AddOpenTelemetryExporters();
 
         return builder;
+    }
+
+    private static bool IsStaticAssetRequest(string method, string? requestPath)
+    {
+        if (!(string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase) ||
+              string.Equals(method, "HEAD", StringComparison.OrdinalIgnoreCase)) ||
+            string.IsNullOrEmpty(requestPath))
+        {
+            return false;
+        }
+
+        return StaticAssetExtensions.Contains(Path.GetExtension(requestPath));
     }
 
     private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)

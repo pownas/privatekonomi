@@ -29,7 +29,7 @@
                             
                             <MudItem xs="12" sm="6">
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Belopp</MudText>
-                                <MudText Typo="Typo.h6" Style="@($"color: {(Transaction.IsIncome ? "#2e7d32" : "#d32f2f")};")">
+                                <MudText Typo="Typo.h6" Color="@(Transaction.IsIncome ? Color.Success : Color.Error)">
                                     @(Transaction.IsIncome ? "+" : "")@Transaction.Amount.ToString("N2", _svCulture) kr
                                 </MudText>
                             </MudItem>
@@ -170,6 +170,8 @@
                                 @foreach (var tc in Transaction.TransactionCategories)
                                 {
                                     <MudChip T="string" Size="Size.Medium" Variant="Variant.Filled"
+                                             OnClick="ChangeCategory"
+                                             aria-label="@($"Ändra kategori för {Transaction.Description}")"
                                              Style="@($"background-color: {tc.Category.Color}; color: white;")">
                                         @tc.Category.Name
                                         @if (Transaction.TransactionCategories.Count > 1)
@@ -184,7 +186,9 @@
                         }
                         else
                         {
-                            <MudChip T="string" Size="Size.Medium" Variant="Variant.Outlined" Color="Color.Default">
+                            <MudChip T="string" Size="Size.Medium" Variant="Variant.Outlined" Color="Color.Default"
+                                     OnClick="ChangeCategory"
+                                     aria-label="@($"Ändra kategori för {Transaction.Description}")">
                                 Okategoriserad
                             </MudChip>
                         }
@@ -238,7 +242,7 @@
                                 @foreach (var receipt in Transaction.Receipts)
                                 {
                                     <MudItem xs="12" sm="6" md="4">
-                                        <MudCard Outlined="true" Class="cursor-pointer" @onclick="@(() => ViewReceipt(receipt))">
+                                        <MudCard Outlined="true">
                                             <MudCardHeader>
                                                 <CardHeaderContent>
                                                     <MudText Typo="Typo.body2">@receipt.Merchant</MudText>
@@ -265,6 +269,11 @@
                                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@receipt.ReceiptLineItems.Count radposter</MudText>
                                                 }
                                             </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => ViewReceipt(receipt))">
+                                                    Visa kvitto
+                                                </MudButton>
+                                            </MudCardActions>
                                         </MudCard>
                                     </MudItem>
                                 }

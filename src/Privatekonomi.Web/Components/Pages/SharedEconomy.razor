@@ -198,8 +198,8 @@ else
     <DialogContent>
         <MudTextField @bind-Value="newBudget.Name" Label="Namn" Required="true" />
         <MudTextField @bind-Value="newBudget.Description" Label="Beskrivning" Lines="3" />
-        <MudDatePicker @bind-Date="budgetStartDate" Label="Startdatum" Required="true" />
-        <MudDatePicker @bind-Date="budgetEndDate" Label="Slutdatum" Required="true" />
+        <DateInput @bind-Date="budgetStartDate" Label="Startdatum" Required="true" />
+        <DateInput @bind-Date="budgetEndDate" Label="Slutdatum" Required="true" />
         <MudSelect @bind-Value="newBudget.Period" Label="Period" Required="true">
             <MudSelectItem Value="@BudgetPeriod.Monthly">Månadsvis</MudSelectItem>
             <MudSelectItem Value="@BudgetPeriod.Yearly">Årsvis</MudSelectItem>
@@ -295,7 +295,7 @@ else
     private decimal newDebtAmount = 0;
     private string newDebtDescription = "";
     
-    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
 
     private List<BreadcrumbItem> breadcrumbs = new();
 

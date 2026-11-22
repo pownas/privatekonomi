@@ -172,3 +172,83 @@ test.describe('Transactions Page', () => {
     expect(buttonCount).toBeGreaterThanOrEqual(50);
   });
 });
+
+test.describe('Dashboard uncategorized transactions', () => {
+  test('clicking the category name opens quick categorization without leaving the dashboard', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const section = page.getByText('Importerade transaktioner utan kategori', { exact: true })
+      .locator('xpath=ancestor::*[contains(@class, "mud-paper")][1]');
+    const row = section.locator('table tbody tr').first();
+    const category = row.getByRole('button', { name: /Ändra kategori för/ });
+
+    await expect(category).toBeVisible();
+    await category.click();
+
+    await expect(page.getByText('Snabbkategorisera')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await page.getByRole('button', { name: 'Avbryt' }).click();
+  });
+
+  test('clicking a transaction description opens its details without leaving the dashboard', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const section = page.getByText('Importerade transaktioner utan kategori', { exact: true })
+      .locator('xpath=ancestor::*[contains(@class, "mud-paper")][1]');
+    const description = section.locator('table tbody tr').first().getByRole('button', { name: /Visa transaktionsdetaljer för/ });
+
+    await expect(description).toBeVisible();
+    await description.click();
+
+    await expect(page.getByText('Transaktionsdetaljer')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+test('transaction date fields accept ISO-formatted input', async ({ page }) => {
+  await page.goto('/economy/transactions/new');
+
+  const dateInput = page.getByRole('textbox', { name: 'Välj transaktionsdatum' });
+  await expect(dateInput).toBeEditable();
+  await dateInput.fill('2026-11-22');
+  await dateInput.press('Tab');
+
+  await expect(dateInput).toHaveValue('2026-11-22');
+});
+
+test.describe('Transaction categorization interactions', () => {
+  test('clicking a transaction category opens quick categorization', async ({ page }) => {
+    await page.goto('/economy/transactions');
+    await page.waitForLoadState('networkidle');
+
+    const category = page.getByRole('button', { name: /Ändra kategori för/ }).first();
+    await expect(category).toBeVisible();
+    await category.click();
+
+    await expect(page.getByText('Snabbkategorisera')).toBeVisible();
+    await expect(page.getByText('Välj kategori:')).toBeVisible();
+  });
+
+  test('calendar offers category and rule actions for a transaction', async ({ page }) => {
+    await page.goto('/economy/transactions/calendar');
+    await page.waitForLoadState('networkidle');
+
+    const dayWithTransactions = page.locator('.calendar-day').filter({ has: page.locator('.calendar-day-content') }).first();
+    await expect(dayWithTransactions).toBeVisible();
+    await dayWithTransactions.click();
+
+    const changeCategory = page.getByRole('button', { name: /Ändra kategori för/ }).first();
+    const createRule = page.getByRole('button', { name: /Skapa regel från/ }).first();
+    await expect(changeCategory).toBeVisible();
+    await expect(createRule).toBeVisible();
+
+    await changeCategory.click();
+    await expect(page.getByText('Snabbkategorisera')).toBeVisible();
+    await page.getByRole('button', { name: 'Avbryt' }).click();
+
+    await createRule.click();
+    await expect(page.getByText('Skapa Kategoriseringsregel')).toBeVisible();
+  });
+});

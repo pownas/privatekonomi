@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @inject IRoundUpService RoundUpService
 @inject IGoalService GoalService
+@inject ICurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
 <PageTitle>Round-up Sparande - Privatekonomi</PageTitle>
@@ -14,7 +15,11 @@
     </MudText>
 </div>
 
-@if (_loading)
+@if (_requiresAuthentication)
+{
+    <AuthenticationRequiredAlert Message="Du måste vara inloggad för att använda round-up-sparande." />
+}
+else if (_loading)
 {
     <div class="d-flex flex-column align-center pa-6">
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
@@ -232,6 +237,7 @@ else
     private decimal _monthlyTotal = 0;
     private bool _loading = true;
     private bool _saving = false;
+    private bool _requiresAuthentication;
 
     protected override async Task OnInitializedAsync()
     {
@@ -243,6 +249,14 @@ else
         try
         {
             _loading = true;
+
+            if (!CurrentUserService.IsAuthenticated || string.IsNullOrEmpty(CurrentUserService.UserId))
+            {
+                _requiresAuthentication = true;
+                return;
+            }
+
+            _requiresAuthentication = false;
             
             // Load settings
             _settings = await RoundUpService.GetOrCreateSettingsAsync();
@@ -262,6 +276,14 @@ else
             // Load statistics
             var monthEnd = monthStart.AddMonths(1);
             _statistics = await RoundUpService.GetStatisticsAsync(monthStart, monthEnd);
+        }
+        catch (InvalidOperationException ex) when (string.Equals(ex.Message, "User must be authenticated", StringComparison.Ordinal))
+        {
+            _requiresAuthentication = true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _requiresAuthentication = true;
         }
         catch (Exception ex)
         {
@@ -290,6 +312,14 @@ else
             
             // Reload data to reflect changes
             await LoadDataAsync();
+        }
+        catch (InvalidOperationException ex) when (string.Equals(ex.Message, "User must be authenticated", StringComparison.Ordinal))
+        {
+            _requiresAuthentication = true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _requiresAuthentication = true;
         }
         catch (Exception ex)
         {

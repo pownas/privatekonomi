@@ -70,11 +70,43 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+    color-scheme: light;
+}
+
+html.mud-theme-dark {
+    color-scheme: dark;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 2000;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.75rem 1rem;
+    transform: translateY(calc(-100% - 0.5rem));
+    border: 2px solid #4F46E5;
+    border-radius: var(--radius-sm);
+    background: #FFFFFF;
+    color: #111827;
+    font-weight: var(--font-weight-semibold);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+.mud-theme-dark .skip-link {
+    border-color: #A5B4FC;
+    background: #1F2937;
+    color: #FFFFFF;
+}
+
 .net-worth-warning-snackbar,
 .net-worth-warning-snackbar .mud-snackbar-content-message,
 .net-worth-warning-snackbar .mud-snackbar-icon,
 .net-worth-warning-snackbar .mud-snackbar-content-action > button {
-    color: #1f2937 !important;
+    color: var(--mud-palette-warning-text) !important;
 }
 
 .net-worth-warning-snackbar {
@@ -82,40 +114,60 @@ html, body {
 }
 
 a, .btn-link {
-    color: #3B82F6;
+    color: #1D4ED8;
     transition: color var(--transition-fast);
 }
 
+.mud-theme-dark a, .mud-theme-dark .btn-link {
+    color: #93C5FD;
+}
+
 a:hover, .btn-link:hover {
-    color: #2563EB;
+    color: #1E40AF;
+}
+
+.mud-theme-dark a:hover, .mud-theme-dark .btn-link:hover {
+    color: #BFDBFE;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #6366F1;
-    border-color: #6366F1;
+    background-color: #4F46E5;
+    border-color: #4F46E5;
     transition: all var(--transition-fast);
     font-weight: var(--font-weight-medium);
 }
 
 .btn-primary:hover {
-    background-color: #4F46E5;
-    border-color: #4F46E5;
+    background-color: #4338CA;
+    border-color: #4338CA;
     box-shadow: var(--shadow-md);
 }
 
 /* Enhanced focus indicators for WCAG compliance */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #6366F1;
-    outline: 2px solid #6366F1;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #4F46E5;
+    outline: 2px solid #4F46E5;
     outline-offset: 2px;
 }
 
 /* Ensure focus is visible in dark mode */
 .mud-theme-dark .mud-button-root:focus-visible,
+.mud-theme-dark .mud-icon-button:focus-visible,
+.mud-theme-dark .mud-nav-link:focus-visible,
 .mud-theme-dark .mud-input:focus-visible,
+.mud-theme-dark .mud-input-control:focus-within,
 .mud-theme-dark .mud-select:focus-visible {
     outline: 2px solid #818CF8;
+    outline-offset: 2px;
+}
+
+.mud-button-root:focus-visible,
+.mud-icon-button:focus-visible,
+.mud-nav-link:focus-visible,
+.mud-input-control:focus-within,
+.mud-select:focus-visible {
+    outline: 2px solid #4F46E5;
     outline-offset: 2px;
 }
 
@@ -259,8 +311,8 @@ h1:focus {
     transition: background-color var(--transition-fast);
 }
 
-.mud-theme-dark .mud-table-row:hover {
-    background-color: rgba(129, 140, 248, 0.08);
+.mud-theme-dark .mud-table-hover .mud-table-container .mud-table-root .mud-table-body .mud-table-row:hover {
+    background-color: #334155 !important;
 }
 
 /* Icon Buttons */

@@ -29,6 +29,7 @@
     <None Include="artifacts\**\*.*" />
     <None Include="TestResults\**\*.*" />
     <None Include="wiki\**\*.*" />
+    <None Include="tests\playwright\**" />
   </ItemGroup>
 
   <ItemGroup Label="Include BLOBs in ZIP">

@@ -119,7 +119,7 @@
                                     aria-label="Största belopp" />
                 </MudItem>
                 <MudItem xs="6" md="3">
-                    <MudDatePicker @bind-Date="_dateFrom" 
+                    <DateInput @bind-Date="_dateFrom"
                                    @bind-Date:after="ApplyFilter"
                                    Label="Från datum" 
                                    Variant="Variant.Outlined"
@@ -127,7 +127,7 @@
                                    aria-label="Från datum" />
                 </MudItem>
                 <MudItem xs="6" md="3">
-                    <MudDatePicker @bind-Date="_dateTo" 
+                    <DateInput @bind-Date="_dateTo"
                                    @bind-Date:after="ApplyFilter"
                                    Label="Till datum" 
                                    Variant="Variant.Outlined"
@@ -338,13 +338,17 @@
                     <CellTemplate>
                         @if (context.Item.IsInternalTransferTransaction)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Överföring mellan egna konton
                             </MudChip>
                         }
                         else if (context.Item.IsExcludedFromTotals)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Övrig utan kategorisering
                             </MudChip>
                         }
@@ -353,6 +357,8 @@
                             @foreach (var tc in context.Item.TransactionCategories)
                             {
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                         OnClick="@(() => QuickCategorize(context.Item))"
+                                         aria-label="@($"Ändra kategori för {context.Item.Description}")"
                                          Style="@($"background-color: {tc.Category.Color}; color: white; margin: 2px;")">
                                     @tc.Category.Name
                                 </MudChip>
@@ -360,7 +366,9 @@
                         }
                         else
                         {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Okategoriserad
                             </MudChip>
                         }
@@ -369,7 +377,7 @@
                 <TemplateColumn Title="Belopp" Sortable="true" SortBy="@(x => x.Amount)">
                     <CellTemplate>
                         <div Style="text-align: right;">
-                            <MudText Typo="Typo.body1" Style="@($"font-weight: 600; color: {(context.Item.IsIncome ? "#2e7d32" : "#d32f2f")};")">
+                            <MudText Typo="Typo.body1" Color="@(context.Item.IsIncome ? Color.Success : Color.Error)" Style="font-weight: 600;">
                                 @(context.Item.IsIncome ? "+" : "")@context.Item.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
                             </MudText>
                         </div>
@@ -881,6 +889,9 @@
                     var rule = new CategoryRule
                     {
                         Pattern = pattern,
+                        ExactAmount = categorizeResult.ExactAmount,
+                        MinimumAmount = categorizeResult.MinimumAmount,
+                        MaximumAmount = categorizeResult.MaximumAmount,
                         MatchType = PatternMatchType.Contains,
                         CategoryId = categorizeResult.CategoryId,
                         Field = MatchField.Both,

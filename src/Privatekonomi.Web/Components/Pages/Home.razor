@@ -5,7 +5,7 @@
 @using Privatekonomi.Web.Components.Shared
 @using Privatekonomi.Web.Services
 @inject ITransactionService TransactionService
-@inject ICategoryService CategoryService
+@inject ICategoryRuleService CategoryRuleService
 @inject IBudgetService BudgetService
 @inject IReportService ReportService
 @inject IDashboardService DashboardService
@@ -541,13 +541,27 @@ else
                     <MudTh>Åtgärder</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Datum">@context.Date.ToString("yyyy-MM-dd")</MudTd>
-                    <MudTd DataLabel="Beskrivning">@context.Description</MudTd>
+                    <MudTd DataLabel="Datum" title="Visa transaktionsdetaljer" Style="cursor: pointer;" @onclick="@(() => ViewImportedTransactionDetails(context))">
+                        @context.Date.ToString("yyyy-MM-dd")
+                    </MudTd>
+                    <MudTd DataLabel="Beskrivning">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Default"
+                                   Class="pa-0"
+                                   Style="text-transform: none; min-width: 0;"
+                                   title="Visa transaktionsdetaljer"
+                                   aria-label="@($"Visa transaktionsdetaljer för {context.Description}")"
+                                   OnClick="@(() => ViewImportedTransactionDetails(context))">
+                            @context.Description
+                        </MudButton>
+                    </MudTd>
                     <MudTd DataLabel="Kategori">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Default"
                                    Size="Size.Small"
-                                   OnClick="@(() => OpenTransactionsForMonth(context))">
+                                   title="Klicka för att ändra kategori"
+                                   aria-label="@($"Ändra kategori för {context.Description}")"
+                                   OnClick="@(() => QuickCategorizeImportedTransaction(context))">
                             Okategoriserad
                         </MudButton>
                         @if (GetSuggestedCategory(context) is { } suggestedCategory)
@@ -567,35 +581,19 @@ else
                             </div>
                         }
                     </MudTd>
-                    <MudTd DataLabel="Belopp" Style="text-align: right">
+                    <MudTd DataLabel="Belopp" title="Visa transaktionsdetaljer" Style="text-align: right; cursor: pointer;" @onclick="@(() => ViewImportedTransactionDetails(context))">
                         <MudText Typo="Typo.body2" Color="@(context.IsIncome ? Color.Success : Color.Error)">
                             @(context.IsIncome ? "+" : "")@context.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
                         </MudText>
                     </MudTd>
                     <MudTd DataLabel="Åtgärder">
-                        <MudMenu Label="Kategorisera"
-                                 Size="Size.Small"
-                                 Variant="Variant.Outlined"
-                                 Color="Color.Primary"
-                                 StartIcon="@Icons.Material.Filled.Category">
-                            @if (GetSuggestedCategory(context) is { } suggestedCategory)
-                            {
-                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
-                                    Förslag: @GetQuickCategoryName(suggestedCategory)
-                                </MudMenuItem>
-                                <MudDivider />
-                            }
-                            @foreach (var category in _quickCategories)
-                            {
-                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, category))">
-                                    @GetQuickCategoryName(category)
-                                </MudMenuItem>
-                            }
-                            <MudDivider />
-                            <MudMenuItem OnClick="@(() => OpenTransactionsForMonth(context))">
-                                Öppna transaktioner för månaden
-                            </MudMenuItem>
-                        </MudMenu>
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Category"
+                                   OnClick="@(() => QuickCategorizeImportedTransaction(context))">
+                            Kategorisera
+                        </MudButton>
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
@@ -626,7 +624,6 @@ else
     private bool _loading = true;
     private IEnumerable<Transaction> _transactions = new List<Transaction>();
     private List<Transaction> _unmappedTransactions = new();
-    private List<Category> _quickCategories = new();
     private Dictionary<string, Category> _categorySuggestions = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<int> _dismissedSuggestionTransactionIds = new();
     private IEnumerable<Budget> _activeBudgets = new List<Budget>();
@@ -719,9 +716,6 @@ else
         _transactions = await TransactionService.GetAllTransactionsAsync();
         _unmappedTransactions = (await TransactionService.GetUnmappedTransactionsAsync())
             .Where(t => t.Imported && !t.IsExcludedFromTotalsTransaction)
-            .ToList();
-        _quickCategories = (await CategoryService.GetAllCategoriesAsync())
-            .OrderBy(category => category.Name)
             .ToList();
         BuildCategorySuggestions();
         _activeBudgets = await BudgetService.GetActiveBudgetsAsync();
@@ -829,6 +823,86 @@ else
             .ToUpperInvariant();
     }
 
+    private async Task QuickCategorizeImportedTransaction(Transaction transaction)
+    {
+        var parameters = new DialogParameters<QuickCategorizeDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<QuickCategorizeDialog>(
+            "Snabbkategorisera",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not QuickCategorizeDialog.QuickCategorizeResult categorizeResult)
+        {
+            return;
+        }
+
+        try
+        {
+            if (categorizeResult.IsExcludedFromTotals)
+            {
+                await TransactionService.UpdateTransactionCategoriesAsync(
+                    transaction.TransactionId,
+                    new List<TransactionCategory>(),
+                    isExcludedFromTotals: true);
+                Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                await LoadData();
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = categorizeResult.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            if (categorizeResult.CreateRule)
+            {
+                var rule = new CategoryRule
+                {
+                    Pattern = categorizeResult.RulePattern ?? transaction.Description,
+                    ExactAmount = categorizeResult.ExactAmount,
+                    MinimumAmount = categorizeResult.MinimumAmount,
+                    MaximumAmount = categorizeResult.MaximumAmount,
+                    MatchType = PatternMatchType.Contains,
+                    CategoryId = categorizeResult.CategoryId,
+                    Field = MatchField.Both,
+                    Priority = 50,
+                    IsActive = true,
+                    Description = $"Skapad från transaktion: {transaction.Description}"
+                };
+
+                await CategoryRuleService.CreateRuleAsync(rule);
+            }
+
+            Snackbar.Add(
+                categorizeResult.CreateRule
+                    ? "Transaktionen kategoriserades och regeln skapades!"
+                    : "Transaktion kategoriserad!",
+                Severity.Success);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Fel vid kategorisering: {ex.Message}", Severity.Error);
+        }
+    }
+
     private async Task CategorizeImportedTransaction(Transaction transaction, Category category)
     {
         try
@@ -846,7 +920,15 @@ else
                     }
                 });
 
-            Snackbar.Add($"Transaktionen kategoriserades som {GetQuickCategoryName(category)}.", Severity.Success);
+            Snackbar.Add(
+                $"{transaction.Description} kategoriserades som {GetQuickCategoryName(category)}.",
+                Severity.Success,
+                options =>
+                {
+                    options.Action = "Ångra";
+                    options.ActionColor = Color.Inherit;
+                    options.OnClick = _ => UndoImportedTransactionCategorizationAsync(transaction, category.CategoryId);
+                });
             await LoadData();
         }
         catch (Exception ex)
@@ -855,14 +937,97 @@ else
         }
     }
 
+    private async Task UndoImportedTransactionCategorizationAsync(Transaction transaction, int categoryId)
+    {
+        try
+        {
+            var currentTransaction = await TransactionService.GetTransactionByIdAsync(transaction.TransactionId);
+            if (currentTransaction is null)
+            {
+                Snackbar.Add("Transaktionen kunde inte hittas och kategoriseringen kunde inte ångras.", Severity.Warning);
+                return;
+            }
+
+            if (currentTransaction.TransactionCategories.Count != 1 ||
+                currentTransaction.TransactionCategories.First().CategoryId != categoryId)
+            {
+                Snackbar.Add($"Kategoriseringen av {transaction.Description} kunde inte ångras eftersom transaktionen har ändrats.", Severity.Warning);
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>());
+            Snackbar.Add($"Kategoriseringen av {transaction.Description} har ångrats.", Severity.Info);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kunde inte ångra kategoriseringen av {transaction.Description}: {ex.Message}", Severity.Error);
+        }
+    }
+
     private void DismissCategorySuggestion(Transaction transaction)
     {
         _dismissedSuggestionTransactionIds.Add(transaction.TransactionId);
     }
 
-    private void OpenTransactionsForMonth(Transaction transaction)
+    private async Task ViewImportedTransactionDetails(Transaction transaction)
     {
-        Navigation.NavigateTo($"/economy/transactions?filterdate={transaction.Date:yyyy-MM}");
+        var parameters = new DialogParameters<TransactionDetailsDialog>
+        {
+            { dialog => dialog.Transaction, transaction },
+            { dialog => dialog.OnEdit, EventCallback.Factory.Create<Transaction>(this, EditImportedTransactionFromDetails) },
+            { dialog => dialog.OnDelete, EventCallback.Factory.Create<Transaction>(this, DeleteImportedTransactionFromDetails) }
+        };
+
+        var dialog = await DialogService.ShowAsync<TransactionDetailsDialog>(
+            "Transaktionsdetaljer",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task EditImportedTransactionFromDetails(Transaction transaction)
+    {
+        var parameters = new DialogParameters<EditTransactionDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<EditTransactionDialog>(
+            "Redigera transaktion",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true
+            });
+        await dialog.Result;
+    }
+
+    private async Task DeleteImportedTransactionFromDetails(Transaction transaction)
+    {
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Bekräfta borttagning",
+            "Är du säker på att du vill ta bort denna transaktion?",
+            yesText: "Ja",
+            cancelText: "Avbryt");
+
+        if (result == true)
+        {
+            await TransactionService.DeleteTransactionAsync(transaction.TransactionId);
+            Snackbar.Add("Transaktion borttagen", Severity.Success);
+        }
     }
 
     private void ToggleBudgetDetails(int budgetId)

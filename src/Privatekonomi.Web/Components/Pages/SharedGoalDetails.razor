@@ -2,13 +2,18 @@
 @page "/sharedgoals/{SharedGoalId:int}"
 @rendermode InteractiveServer
 @inject ISharedGoalService SharedGoalService
+@inject ICurrentUserService CurrentUserService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
 <PageTitle>@(_sharedGoal?.Name ?? "Gemensamt Sparmål") - Privatekonomi</PageTitle>
 
-@if (_loading)
+@if (_requiresAuthentication)
+{
+    <AuthenticationRequiredAlert Message="Du måste vara inloggad för att visa det gemensamma sparmålet." />
+}
+else if (_loading)
 {
     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
 }
@@ -255,6 +260,7 @@ else
     private IEnumerable<SharedGoalProposal> _proposals = new List<SharedGoalProposal>();
     private bool _loading = true;
     private bool _isOwner = false;
+    private bool _requiresAuthentication;
     
     private decimal _transactionAmount = 0;
     private string? _transactionDescription;
@@ -272,6 +278,13 @@ else
         
         try
         {
+            if (!CurrentUserService.IsAuthenticated || string.IsNullOrEmpty(CurrentUserService.UserId))
+            {
+                _requiresAuthentication = true;
+                return;
+            }
+
+            _requiresAuthentication = false;
             _sharedGoal = await SharedGoalService.GetSharedGoalByIdAsync(SharedGoalId);
             
             if (_sharedGoal != null)
@@ -289,6 +302,10 @@ else
                     new BreadcrumbItem(_sharedGoal.Name, href: null, disabled: true)
                 };
             }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _requiresAuthentication = true;
         }
         catch (Exception ex)
         {

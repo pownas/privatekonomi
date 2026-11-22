@@ -20,9 +20,12 @@
 @inject ILogger<MainLayout> Logger
 @implements IDisposable
 
+<a class="skip-link" href="#main-content" @onclick="SkipToMainContent">Hoppa till huvudinnehåll</a>
+
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
+<MudThemeProvider Theme="@_darkTheme" IsDarkMode="true" DefaultScrollbar="true" />
 <MudPopoverProvider />
-<MudDialogProvider />
+<MudDialogProvider CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 
 <MudLayout>
@@ -87,7 +90,7 @@
         <NavMenu />
     </MudDrawer>
     
-    <MudMainContent Class="px-2 px-md-6">
+    <MudMainContent Class="px-2 px-md-6" id="main-content" role="main" tabindex="-1">
         @if (_installedBranch is { } branch && branch != "main")
         {
             <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning" Class="mt-3">
@@ -107,20 +110,29 @@
     private bool _isDarkMode = false;
     private bool _isCompactView = false;
     private bool _isSaving = false;
+    private bool _skipToMainContentRequested;
     private string? _installedBranch;
     private MudThemeProvider? _mudThemeProvider;
+    private MudTheme _darkTheme = new();
     private MudTheme _theme = new MudTheme()
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#6366F1",          // Modern indigo
-            Secondary = "#EC4899",         // Vibrant pink
-            Tertiary = "#8B5CF6",         // Purple accent
-            AppbarBackground = "#6366F1",
-            Success = "#10B981",          // Fresh green
-            Info = "#3B82F6",             // Bright blue
-            Warning = "#F59E0B",          // Warm orange
-            Error = "#EF4444",            // Clear red
+            Primary = "#4F46E5",
+            PrimaryContrastText = "#FFFFFF",
+            Secondary = "#BE185D",
+            SecondaryContrastText = "#FFFFFF",
+            Tertiary = "#6D28D9",
+            TertiaryContrastText = "#FFFFFF",
+            AppbarBackground = "#4F46E5",
+            Success = "#047857",
+            SuccessContrastText = "#FFFFFF",
+            Info = "#1D4ED8",
+            InfoContrastText = "#FFFFFF",
+            Warning = "#92400E",
+            WarningContrastText = "#FFFFFF",
+            Error = "#B91C1C",
+            ErrorContrastText = "#FFFFFF",
             Dark = "#1F2937",             // Deep gray
             Background = "#F9FAFB",       // Subtle off-white
             BackgroundGray = "#F3F4F6",   // Light gray
@@ -146,10 +158,17 @@
             DrawerBackground = "#1F2937",
             DrawerText = "rgba(255,255,255, 0.95)",
             DrawerIcon = "rgba(255,255,255, 0.95)",
-            Success = "#34D399",          // Lighter green
+            Success = "#6EE7B7",
+            SuccessContrastText = "#111827",
             Info = "#60A5FA",             // Lighter blue
+            InfoContrastText = "#111827",
             Warning = "#FBBF24",          // Lighter orange
+            WarningContrastText = "#111827",
             Error = "#F87171",            // Lighter red
+            ErrorContrastText = "#111827",
+            PrimaryContrastText = "#111827",
+            SecondaryContrastText = "#111827",
+            TertiaryContrastText = "#111827",
             TextPrimary = "rgba(255,255,255, 0.95)",
             TextSecondary = "rgba(255,255,255, 0.65)",
             ActionDefault = "rgba(255,255,255, 0.95)",
@@ -168,7 +187,8 @@
             DrawerWidthLeft = "280px",
             DrawerWidthRight = "280px",
             AppbarHeight = "64px"
-        }
+        },
+        PseudoCss = new PseudoCss { Scope = ":root:not(.mud-theme-dark)" }
     };
 
     private bool IsJsonFileStorage => 
@@ -211,6 +231,19 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_skipToMainContentRequested)
+        {
+            _skipToMainContentRequested = false;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("accessibilityManager.skipToMainContent");
+            }
+            catch (JSException ex)
+            {
+                Logger.LogWarning(ex, "Could not move focus to the main content from the skip link.");
+            }
+        }
+
         if (firstRender && _mudThemeProvider != null)
         {
             // Initialize theme - critical for proper rendering
@@ -282,6 +315,17 @@
 
     protected override void OnInitialized()
     {
+        _darkTheme = new MudTheme
+        {
+            PaletteLight = _theme.PaletteLight,
+            PaletteDark = _theme.PaletteDark,
+            Shadows = _theme.Shadows,
+            Typography = _theme.Typography,
+            LayoutProperties = _theme.LayoutProperties,
+            ZIndex = _theme.ZIndex,
+            PseudoCss = new PseudoCss { Scope = ":root.mud-theme-dark" }
+        };
+
         _isDarkMode = ThemeService.IsDarkMode;
         _isCompactView = ViewDensityService.IsCompact;
         _installedBranch = PiUpdates.GetStatus().InstalledBranch;
@@ -292,6 +336,11 @@
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private void SkipToMainContent()
+    {
+        _skipToMainContentRequested = true;
     }
     
     private async Task ToggleTheme()

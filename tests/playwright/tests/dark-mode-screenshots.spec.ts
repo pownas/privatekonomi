@@ -1,6 +1,21 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Dark Mode Screenshots', () => {
+  test('applies saved dark mode before interactive rendering', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('darkMode', 'true'));
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('html')).toHaveClass(/mud-theme-dark/);
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)');
+
+    await page.keyboard.press('Tab');
+    const skipLink = page.getByRole('link', { name: 'Hoppa till huvudinnehåll' });
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('main')).toBeFocused();
+  });
+
   test('capture light mode and dark mode screenshots', async ({ page }) => {
     // Navigate to the application
     await page.goto('/');

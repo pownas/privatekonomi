@@ -176,8 +176,8 @@ else
             </MudButton>
 
             <MudStack Row="true" Class="mb-4">
-                <MudDatePicker @bind-Date="activityFilterStartDate" Label="Från datum" Clearable="true" />
-                <MudDatePicker @bind-Date="activityFilterEndDate" Label="Till datum" Clearable="true" />
+                <DateInput @bind-Date="activityFilterStartDate" Label="Från datum" Clearable="true" />
+                <DateInput @bind-Date="activityFilterEndDate" Label="Till datum" Clearable="true" />
                 <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="FilterActivities">Filtrera</MudButton>
             </MudStack>
 
@@ -421,7 +421,7 @@ else
             <MudSelectItem Value="@ExpenseType.Insurance">Försäkring</MudSelectItem>
             <MudSelectItem Value="@ExpenseType.Other">Övrigt</MudSelectItem>
         </MudSelect>
-        <MudDatePicker @bind-Date="expenseDate" Label="Datum" Required="true" />
+        <DateInput @bind-Date="expenseDate" Label="Datum" Required="true" />
         <MudSelect @bind-Value="newExpense.SplitMethod" Label="Fördelningsmetod" Required="true">
             <MudSelectItem Value="@SplitMethod.Equal">Jämnt fördelat</MudSelectItem>
             <MudSelectItem Value="@SplitMethod.ByPercentage">Efter procent</MudSelectItem>
@@ -491,7 +491,7 @@ else
             <MudSelectItem Value="@HouseholdActivityType.Repair">Reparation</MudSelectItem>
             <MudSelectItem Value="@HouseholdActivityType.Other">Övrigt</MudSelectItem>
         </MudSelect>
-        <MudDatePicker @bind-Date="activityCompletedDate" Label="Genomförd datum" Required="true" />
+        <DateInput @bind-Date="activityCompletedDate" Label="Genomförd datum" Required="true" />
         @if (household?.Members.Any(m => m.IsActive) == true)
         {
             <MudSelect @bind-Value="selectedActivityMemberId" Label="Genomförd av (valfritt)">
@@ -575,7 +575,7 @@ else
             <MudSelectItem Value="@HouseholdTaskPriority.Normal">Normal</MudSelectItem>
             <MudSelectItem Value="@HouseholdTaskPriority.High">Hög</MudSelectItem>
         </MudSelect>
-        <MudDatePicker @bind-Date="taskDueDate" Label="Förfaller datum (valfritt)" Clearable="true" />
+        <DateInput @bind-Date="taskDueDate" Label="Förfaller datum (valfritt)" Clearable="true" />
         @if (household?.Members.Any(m => m.IsActive) == true)
         {
             <MudSelect @bind-Value="selectedTaskMemberId" Label="Tilldela till (valfritt)">
@@ -646,8 +646,8 @@ else
     private SharedExpense newExpense = new SharedExpense();
     private SharedExpense? selectedExpense;
     private DateTime? expenseDate = DateTime.Today;
-    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-    private DialogOptions fullscreenDialogOptions = new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true };
+    private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
+    private DialogOptions fullscreenDialogOptions = new DialogOptions { MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, CloseOnEscapeKey = true };
 
     // Timeline (Activity) variables
     private List<HouseholdActivity> filteredActivities = new();

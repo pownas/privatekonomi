@@ -21,7 +21,7 @@
                                       aria-label="Transaktionsbeskrivning" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudDatePicker @bind-Date="_transactionDate" 
+                        <DateInput @bind-Date="_transactionDate"
                                        Label="Datum" 
                                        Variant="Variant.Outlined" 
                                        Required="true"
@@ -39,8 +39,23 @@
                                          RequiredError="Belopp är obligatoriskt"
                                          Adornment="Adornment.End" 
                                          AdornmentText="kr"
+                                          Disabled="@(_transaction.Imported && !_allowImportedAmountEdit)"
+                                          HelperText="@(_transaction.Imported && !_allowImportedAmountEdit ? "Importerade belopp är låsta som standard." : null)"
                                          aria-label="Transaktionsbelopp" />
                     </MudItem>
+                    @if (_transaction.Imported)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Warning" Dense="true">
+                                <MudSwitch @bind-Value="_allowImportedAmountEdit"
+                                           Color="Color.Warning"
+                                           Label="Lås upp beloppet för redigering" />
+                                <MudText Typo="Typo.caption">
+                                    Importerade bankbelopp är låsta för att bevara originaluppgiften. Lås bara upp om beloppet behöver korrigeras.
+                                </MudText>
+                            </MudAlert>
+                        </MudItem>
+                    }
                     <MudItem xs="12" md="6">
                         <MudSwitch @bind-Value="_transaction.IsIncome" 
                                    Color="Color.Success" 
@@ -310,6 +325,7 @@
     private DateTime? _transactionDate;
     private List<Household> _households = new();
     private bool _isSaving = false;
+    private bool _allowImportedAmountEdit;
 
     private IEnumerable<Category> _availableCategories = new List<Category>();
     private Category? _selectedCategory;
@@ -506,7 +522,9 @@
                 _transaction.IsExcludedFromTotals = false;
             }
 
-            await TransactionService.UpdateTransactionAsync(_transaction);
+            await TransactionService.UpdateTransactionAsync(
+                _transaction,
+                allowImportedAmountChange: _allowImportedAmountEdit);
             
             // Update categories based on mode
             List<TransactionCategory> newCategories;

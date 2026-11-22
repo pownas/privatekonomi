@@ -135,21 +135,25 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudDatePicker @bind-Date="_openedDate" 
+                    <DateInput @bind-Date="_openedDate"
                                   Label="Öppningsdatum" 
                                   HelperText="När kontot öppnades (valfritt)"
                                   aria-label="Välj öppningsdatum" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudColorPicker @bind-Value="SelectedColor"
-                                    Label="Kontofärg"
-                                    ColorPickerMode="ColorPickerMode.HEX"
-                                    ShowAlpha="false"
-                                    ShowInputs="true"
-                                    ShowPreview="true"
-                                    HelperText="Välj färgen som används för att identifiera kontot i listor och diagram"
-                                    aria-label="Välj kontofärg" />
+                    <div class="d-flex align-center">
+                        <div aria-hidden="true" style="width: 16px; height: 16px; background-color: @_account.Color; border: 1px solid var(--mud-palette-lines-default); border-radius: 2px; margin-right: 8px; flex: 0 0 16px;"></div>
+                        <MudColorPicker @bind-Value="SelectedColor"
+                                        Label="Kontofärg"
+                                        Editable="true"
+                                        ColorPickerMode="ColorPickerMode.HEX"
+                                        ShowAlpha="false"
+                                        ShowInputs="true"
+                                        ShowPreview="true"
+                                        HelperText="Ange HEX-kod direkt eller välj färgen som identifierar kontot i listor och diagram"
+                                        aria-label="Ange eller välj kontofärg" />
+                    </div>
                 </MudItem>
             </MudGrid>
         </MudForm>

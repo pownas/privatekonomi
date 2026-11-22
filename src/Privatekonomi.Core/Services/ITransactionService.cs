@@ -15,7 +15,7 @@ public interface ITransactionService
         int perPage);
     Task<Transaction?> GetTransactionByIdAsync(int id);
     Task<Transaction> CreateTransactionAsync(Transaction transaction);
-    Task<Transaction> UpdateTransactionAsync(Transaction transaction);
+    Task<Transaction> UpdateTransactionAsync(Transaction transaction, bool allowImportedAmountChange = false);
     
     /// <summary>
     /// Updates a transaction with optimistic locking and audit logging
@@ -43,7 +43,8 @@ public interface ITransactionService
         List<(int CategoryId, decimal Amount)>? categories,
         DateTime? clientUpdatedAt,
         string? userId,
-        string? ipAddress);
+        string? ipAddress,
+        bool allowImportedAmountChange = false);
     
     Task DeleteTransactionAsync(int id);
     Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime toDate);

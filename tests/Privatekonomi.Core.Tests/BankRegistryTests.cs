@@ -19,7 +19,7 @@ public class BankRegistryTests
         // Arrange
         var requiredBanks = new[]
         {
-            BankNames.Handelsbanken, BankNames.IcaBanken, BankNames.Nordea, BankNames.Seb,
+            BankNames.Csn, BankNames.Handelsbanken, BankNames.IcaBanken, BankNames.Nordea, BankNames.Seb,
             BankNames.Swedbank, BankNames.Avanza, BankNames.Nordnet, BankNames.Lysa,
             BankNames.Opti, BankNames.Klarna, BankNames.LantmannenFinans, BankNames.Revolut,
             BankNames.NordiskaBanken, BankNames.Montrose
@@ -75,6 +75,7 @@ public class BankRegistryTests
     
     [TestMethod]
     [DataRow("Handelsbanken", "#003781")]
+    [DataRow("CSN", "#64CCC9")]
     [DataRow("ICA-banken", "#E3000F")]
     [DataRow("Nordea", "#0000A0")]
     [DataRow("SEB", "#60CD18")]

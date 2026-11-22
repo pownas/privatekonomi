@@ -129,7 +129,8 @@ public class RulesController : ControllerBase
         
         var matchingRule = await _categoryRuleService.FindMatchingRuleAsync(
             request.Description, 
-            request.Payee);
+            request.Payee,
+            amount: request.Amount);
         
         if (matchingRule == null)
         {

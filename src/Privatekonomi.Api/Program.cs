@@ -195,6 +195,8 @@ using (var scope = app.Services.CreateScope())
             await persistence.LoadAsync(context);
     }
 
+    await StandardCategoryInitializer.EnsureCategoriesAsync(context);
+
     if (ApiSeedPolicy.CanSeedReferenceData(context))
         TestDataSeeder.SeedProductionReferenceData(context);
     else

@@ -79,39 +79,15 @@
                 </MudText>
 
                 <MudText Typo="Typo.body2" Class="mb-2">
-                    För att spåra navigation performance på dina sidor, gör så här:
+                    Routade sidor spåras automatiskt. Navigeringen och sidans första rendering får en gemensam trace,
+                    där sidrenderingen och slutförandet är barn till navigeringsaktiviteten.
                 </MudText>
-
-                <MudPaper Outlined="true" Class="pa-3 mb-3">
-                    <MudText Typo="Typo.subtitle2" Class="mb-2">1. Ärv från PerformanceTrackedPageBase</MudText>
-                    <pre style="background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); padding: 12px; border-radius: 4px; overflow-x: auto;">@@page "/min-sida"
-@@inherits Privatekonomi.Web.Components.Shared.PerformanceTrackedPageBase
-
-@@code {{
-    protected override string PageName => "Min Sida";
-}}</pre>
-                </MudPaper>
-
-                <MudPaper Outlined="true" Class="pa-3 mb-3">
-                    <MudText Typo="Typo.subtitle2" Class="mb-2">2. Alternativt: Manuell spårning</MudText>
-                    <pre style="background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); padding: 12px; border-radius: 4px; overflow-x: auto;">@@inject INavigationPerformanceService NavigationPerformanceService
-
-@@code {{
-    protected override void OnAfterRender(bool firstRender)
-    {{
-        if (firstRender)
-        {{
-            var currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-            NavigationPerformanceService.CompleteNavigation(currentUrl, "Sidnamn");
-        }}
-    }}
-}}</pre>
-                </MudPaper>
 
                 <MudAlert Severity="Severity.Success" Class="mt-3">
                     <MudText Typo="Typo.body2">
-                        Spårningen sker automatiskt när användaren klickar i menyn och rapporteras när sidan är färdigrenderad.
-                        All data syns i Aspire Dashboard under Traces.
+                        Högvolymiga ComponentHub-anrop och lågnyttiga MudBlazor DOM-event filtreras bort före export.
+                        Egna navigerings- och sidrenderingsaktiviteter visas i Aspire Dashboard under Traces;
+                        andra fristående SignalR-aktiviteter kan fortfarande ha egna trace-ID:n.
                     </MudText>
                 </MudAlert>
             </MudPaper>

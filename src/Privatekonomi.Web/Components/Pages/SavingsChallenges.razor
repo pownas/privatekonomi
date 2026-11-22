@@ -88,7 +88,7 @@
                          Min="1"
                          Class="mb-3" />
 
-        <MudDatePicker @bind-Date="_formChallengeStartDate"
+        <DateInput @bind-Date="_formChallengeStartDate"
                        Label="Startdatum"
                        Variant="Variant.Outlined"
                        Class="mb-3" />
@@ -321,12 +321,12 @@ else
 <!-- Progress Dialog -->
 @if (_showProgressDialog && _selectedChallenge != null)
 {
-    <MudDialog @bind-Visible="_showProgressDialog">
+    <MudDialog @bind-Visible="_showProgressDialog" Options="_progressDialogOptions">
         <TitleContent>
             <MudText Typo="Typo.h6">Registrera framsteg för @_selectedChallenge.Name</MudText>
         </TitleContent>
         <DialogContent>
-            <MudDatePicker @bind-Date="_progressDate"
+            <DateInput @bind-Date="_progressDate"
                            Label="Datum"
                            Variant="Variant.Outlined"
                            Class="mb-3" />
@@ -358,6 +358,7 @@ else
 }
 
 @code {
+    private readonly DialogOptions _progressDialogOptions = new() { CloseOnEscapeKey = true };
     private IEnumerable<SavingsChallenge> _activeChallenges = new List<SavingsChallenge>();
     private IEnumerable<SavingsChallenge> _completedChallenges = new List<SavingsChallenge>();
     private IEnumerable<ChallengeTemplate> _templates = new List<ChallengeTemplate>();

@@ -135,7 +135,8 @@ public class TransactionsController : ControllerBase
                 categories,
                 request.UpdatedAt,
                 userId,
-                ipAddress);
+                ipAddress,
+                request.AllowImportedAmountChange);
 
             return Ok(updatedTransaction);
         }

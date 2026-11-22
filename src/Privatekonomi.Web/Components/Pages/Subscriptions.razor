@@ -109,12 +109,12 @@
             <MudSelectItem Value="@("Quarterly")">Kvartalsvis</MudSelectItem>
         </MudSelect>
 
-        <MudDatePicker @bind-Date="_formStartDate"
+        <DateInput @bind-Date="_formStartDate"
                        Label="Startdatum"
                        Variant="Variant.Outlined"
                        Class="mb-3" />
 
-        <MudDatePicker @bind-Date="_formNextBillingDate"
+        <DateInput @bind-Date="_formNextBillingDate"
                        Label="Nästa fakturadatum (valfritt)"
                        Variant="Variant.Outlined"
                        Class="mb-3" />
@@ -155,7 +155,7 @@
                       MaxLength="500"
                       Class="mb-3" />
 
-        <MudDatePicker @bind-Date="_formCancellationDeadline"
+        <DateInput @bind-Date="_formCancellationDeadline"
                        Label="Uppsägningsfrist (valfritt)"
                        Variant="Variant.Outlined"
                        Class="mb-3"
@@ -168,7 +168,7 @@
                          Class="mb-3"
                          HelperText="Antal dagar innan förnyelse som uppsägning krävs" />
 
-        <MudDatePicker @bind-Date="_formLastUsedDate"
+        <DateInput @bind-Date="_formLastUsedDate"
                        Label="Senast använd (valfritt)"
                        Variant="Variant.Outlined"
                        Class="mb-3"

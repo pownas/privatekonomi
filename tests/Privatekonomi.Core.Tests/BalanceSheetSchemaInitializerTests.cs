@@ -128,6 +128,56 @@ public class BalanceSheetSchemaInitializerTests
     }
 
     [TestMethod]
+    public async Task MissingCategoryRuleAmountColumnsAreAddedAndIdempotent()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>().UseSqlite(connection).Options;
+        await using var context = new PrivatekonomyContext(options);
+        await context.Database.EnsureCreatedAsync();
+        var category = new Category
+        {
+            Name = "Test",
+            Color = "#123456",
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+        var rule = new CategoryRule
+        {
+            Pattern = "Test merchant",
+            CategoryId = category.CategoryId,
+            MatchType = PatternMatchType.Contains,
+            Field = MatchField.Description,
+            RuleType = RuleType.User,
+            CreatedAt = DateTime.UtcNow
+        };
+        context.CategoryRules.Add(rule);
+        await context.SaveChangesAsync();
+
+        await context.Database.ExecuteSqlRawAsync("""
+            ALTER TABLE "CategoryRules" DROP COLUMN "ExactAmount";
+            ALTER TABLE "CategoryRules" DROP COLUMN "MinimumAmount";
+            ALTER TABLE "CategoryRules" DROP COLUMN "MaximumAmount";
+            """);
+        context.ChangeTracker.Clear();
+
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+        var upgradedRule = await context.CategoryRules.SingleAsync();
+        Assert.AreEqual("Test merchant", upgradedRule.Pattern);
+        Assert.IsNull(upgradedRule.ExactAmount);
+        Assert.IsNull(upgradedRule.MinimumAmount);
+        Assert.IsNull(upgradedRule.MaximumAmount);
+
+        upgradedRule.ExactAmount = 123.45m;
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        await BalanceSheetSchemaInitializer.EnsureColumnsAsync(context);
+
+        Assert.AreEqual(123.45m, (await context.CategoryRules.SingleAsync()).ExactAmount);
+    }
+
+    [TestMethod]
     public async Task NewDatabaseAndNonRelationalProviderNeedNoUpgrade()
     {
         await using var context = new PrivatekonomyContext(new DbContextOptionsBuilder<PrivatekonomyContext>()
