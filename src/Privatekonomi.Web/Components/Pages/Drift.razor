@@ -22,6 +22,10 @@
     <MudText Typo="Typo.overline">SYSTEM · DRIFT</MudText>
     <MudText Typo="Typo.h4">Drift</MudText>
     <MudText Class="mb-3">Överblick och säkra driftåtgärder för Privatekonomi.</MudText>
+    <MudButton Href="/admin/logs" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Article" Class="mb-4">
+        Visa applikationsloggar
+    </MudButton>
 
     <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.CheckCircle" Class="mb-4">
         Webbappen är igång. Statusen uppdateras automatiskt var femte sekund.
@@ -75,7 +79,7 @@
 
                 <MudSimpleTable Dense="true" Hover="true">
                     <tbody>
-                        <tr><td>Installerad version</td><td class="text-end drift-commit">@FormatCommit(_history.InstalledCommit)</td></tr>
+                        <tr><td>Installerad version och commit</td><td class="text-end drift-commit">@AppVersionInfo.Current</td></tr>
                         <tr><td>Senaste på main</td><td class="text-end drift-commit">@FormatCommit(_history.LatestCommit)</td></tr>
                     </tbody>
                 </MudSimpleTable>

@@ -8,7 +8,7 @@ public class AppVersionInfoTests
     [TestMethod]
     public void CurrentUsesWebAssemblyVersion()
     {
-        StringAssert.StartsWith(AppVersionInfo.Current, "Version 0.1.0-alfa · Bygge ");
+        StringAssert.StartsWith(AppVersionInfo.Current, "Version 0.1.0-beta · Bygge ");
     }
 
     [TestMethod]

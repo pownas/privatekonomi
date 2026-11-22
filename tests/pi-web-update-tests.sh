@@ -128,6 +128,12 @@ run_worker
 test "$(cat "$root/home/privatekonomi-update/status")" = succeeded
 test "$(cat "$root/home/privatekonomi/publish/Web/Privatekonomi.Web")" = new
 test "$(cat "$root/home/privatekonomi/publish/Api/Privatekonomi.Api")" = new
+test -s "$root/home/privatekonomi-update/log"
+if grep -Ev '^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{4}\] ' \
+    "$root/home/privatekonomi-update/log"; then
+    echo "Expected every Raspberry Pi update log line to have a timestamp." >&2
+    exit 1
+fi
 test "$(cat "$root/home/privatekonomi/publish/Web/appsettings.Production.json")" = settings
 backup=$(find "$root/home/privatekonomi-backups" -maxdepth 1 -type d -name 'web-update-*' -print -quit)
 test "$(cat "$backup/data/privatekonomi.db")" = customer-data

@@ -42,8 +42,18 @@ public static class Extensions
 
         Serilog.Debugging.SelfLog.Enable(Console.Error);
 
+        var minimumLevel = builder.Configuration["Logging:LogLevel:Default"]?.ToLowerInvariant() switch
+        {
+            "trace" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "warning" => LogEventLevel.Warning,
+            "error" => LogEventLevel.Error,
+            "critical" => LogEventLevel.Fatal,
+            _ => LogEventLevel.Information
+        };
+
         var logger = new LoggerConfiguration()
-            .MinimumLevel.Is(LogEventLevel.Information)
+            .MinimumLevel.Is(minimumLevel)
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
             .Enrich.FromLogContext()

@@ -85,6 +85,11 @@ export BACKUP_MARKER="$temp/backup-ran"
 
 bash "$repo/scripts/macos/update-worker.sh"
 [[ "$(cat "$state/status")" == succeeded ]]
+[[ -s "$state/log" ]]
+if grep -Ev '^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{4}\] ' "$state/log"; then
+    echo "Expected every macOS update log line to have a timestamp." >&2
+    exit 1
+fi
 [[ "$(cat "$support/current/commit")" == "$new_release_id" ]]
 [[ "$(cat "$support/current/branch")" == main ]]
 [[ -f "$support/current/Web/Privatekonomi.Web.dll" ]]
