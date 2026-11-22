@@ -66,7 +66,9 @@ else
 
             <!-- Bank Accounts -->
             <MudPaper Class="pa-4 mb-3">
-                <MudText Typo="Typo.h6" Class="mb-2">Bankkonton</MudText>
+                <MudText Typo="Typo.h6" Class="mb-2">
+                    <MudLink Href="/accounts" Typo="Typo.h6" Color="Color.Primary" Underline="Underline.Hover">Bankkonton</MudLink>
+                </MudText>
                 <MudDivider Class="mb-2" />
                 @if (_bankAccounts.Any(account => !BalanceSheetAccountPlan.IsLiabilityBankSource(account)))
                 {
@@ -109,7 +111,9 @@ else
 
             <!-- Investments -->
             <MudPaper Class="pa-4 mb-3">
-                <MudText Typo="Typo.h6" Class="mb-2">Investeringar</MudText>
+                <MudText Typo="Typo.h6" Class="mb-2">
+                    <MudLink Href="/investments/overview" Typo="Typo.h6" Color="Color.Primary" Underline="Underline.Hover">Investeringar</MudLink>
+                </MudText>
                 <MudDivider Class="mb-2" />
                 @if (_investments.Any())
                 {
@@ -138,7 +142,9 @@ else
 
             <!-- Physical Assets -->
             <MudPaper Class="pa-4 mb-3">
-                <MudText Typo="Typo.h6" Class="mb-2">Fysiska Tillgångar</MudText>
+                <MudText Typo="Typo.h6" Class="mb-2">
+                    <MudLink Href="/investments/assets" Typo="Typo.h6" Color="Color.Primary" Underline="Underline.Hover">Fysiska Tillgångar</MudLink>
+                </MudText>
                 <MudDivider Class="mb-2" />
                 @if (_assets.Any())
                 {
@@ -184,7 +190,9 @@ else
 
             <!-- Loans -->
             <MudPaper Class="pa-4 mb-3">
-                <MudText Typo="Typo.h6" Class="mb-2">Lån & Krediter</MudText>
+                <MudText Typo="Typo.h6" Class="mb-2">
+                    <MudLink Href="/investments/loans" Typo="Typo.h6" Color="Color.Primary" Underline="Underline.Hover">Lån &amp; Krediter</MudLink>
+                </MudText>
                 <MudDivider Class="mb-2" />
                 @if (_liabilityBankAccounts.Any() || _loans.Any())
                 {
