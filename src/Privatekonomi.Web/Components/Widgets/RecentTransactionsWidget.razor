@@ -2,6 +2,8 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Web.Components.Shared
 @inject ITransactionService TransactionService
+@inject ICategoryRuleService CategoryRuleService
+@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
@@ -44,7 +46,9 @@
                                     {
                                         <MudChip T="string" 
                                                 Style="@($"background-color: {tc.Category.Color}; color: white;")" 
-                                                Size="Size.Small">
+                                                Size="Size.Small"
+                                                OnClick="@(() => QuickCategorize(transaction))"
+                                                aria-label="@($"Ändra kategori för {transaction.Description}")">
                                             @tc.Category.Name
                                         </MudChip>
                                     }
@@ -102,6 +106,86 @@
         finally
         {
             _loading = false;
+        }
+    }
+
+    private async Task QuickCategorize(Transaction transaction)
+    {
+        var parameters = new DialogParameters<QuickCategorizeDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<QuickCategorizeDialog>(
+            "Snabbkategorisera",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not QuickCategorizeDialog.QuickCategorizeResult categorizeResult)
+        {
+            return;
+        }
+
+        try
+        {
+            if (categorizeResult.IsExcludedFromTotals)
+            {
+                await TransactionService.UpdateTransactionCategoriesAsync(
+                    transaction.TransactionId,
+                    new List<TransactionCategory>(),
+                    isExcludedFromTotals: true);
+                Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                await LoadData();
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = categorizeResult.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            if (categorizeResult.CreateRule)
+            {
+                var rule = new CategoryRule
+                {
+                    Pattern = categorizeResult.RulePattern ?? transaction.Description,
+                    ExactAmount = categorizeResult.ExactAmount,
+                    MinimumAmount = categorizeResult.MinimumAmount,
+                    MaximumAmount = categorizeResult.MaximumAmount,
+                    MatchType = PatternMatchType.Contains,
+                    CategoryId = categorizeResult.CategoryId,
+                    Field = MatchField.Both,
+                    Priority = 50,
+                    IsActive = true,
+                    Description = $"Skapad från transaktion: {transaction.Description}"
+                };
+
+                await CategoryRuleService.CreateRuleAsync(rule);
+                Snackbar.Add("Transaktionen kategoriserades och regeln skapades!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Transaktion kategoriserad!", Severity.Success);
+            }
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Fel vid kategorisering: {ex.Message}", Severity.Error);
         }
     }
 }

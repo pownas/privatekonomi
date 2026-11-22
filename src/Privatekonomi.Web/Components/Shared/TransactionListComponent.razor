@@ -2,6 +2,7 @@
 @using Privatekonomi.Web.Components.Dialogs
 @inject IDialogService DialogService
 @inject ITransactionService TransactionService
+@inject ICategoryRuleService CategoryRuleService
 @inject ISnackbar Snackbar
 
 <MudTable Items="@Transactions" Dense="@Dense" Hover="true" Striped="@Striped" FixedHeader="@FixedHeader" Height="@Height">
@@ -62,16 +63,20 @@
         </MudTd>
         @if (ShowCategory)
         {
-            <MudTd DataLabel="Kategori" Style="cursor: pointer;" @onclick="@(() => ViewTransactionDetails(context))">
+            <MudTd DataLabel="Kategori">
                 @if (context.IsInternalTransferTransaction)
                 {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined"
+                             OnClick="@(() => QuickCategorize(context))"
+                             aria-label="@($"Ändra kategori för {context.Description}")">
                         Överföring mellan egna konton
                     </MudChip>
                 }
                 else if (context.IsExcludedFromTotals)
                 {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                             OnClick="@(() => QuickCategorize(context))"
+                             aria-label="@($"Ändra kategori för {context.Description}")">
                         Övrig utan kategorisering
                     </MudChip>
                 }
@@ -82,6 +87,8 @@
                         <MudChip T="string" 
                                 Size="Size.Small" 
                                 Variant="Variant.Filled"
+                                OnClick="@(() => QuickCategorize(context))"
+                                aria-label="@($"Ändra kategori för {context.Description}")"
                                 Style="@($"background-color: {tc.Category.Color}; color: white; margin: 2px;")">
                             @tc.Category.Name
                         </MudChip>
@@ -89,7 +96,9 @@
                 }
                 else
                 {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default"
+                             OnClick="@(() => QuickCategorize(context))"
+                             aria-label="@($"Ändra kategori för {context.Description}")">
                         Okategoriserad
                     </MudChip>
                 }
@@ -222,6 +231,86 @@
         if (result is not null && !result.Canceled)
         {
             await OnTransactionUpdated.InvokeAsync();
+        }
+    }
+
+    private async Task QuickCategorize(Transaction transaction)
+    {
+        var parameters = new DialogParameters<QuickCategorizeDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<QuickCategorizeDialog>(
+            "Snabbkategorisera",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not QuickCategorizeDialog.QuickCategorizeResult categorizeResult)
+        {
+            return;
+        }
+
+        try
+        {
+            if (categorizeResult.IsExcludedFromTotals)
+            {
+                await TransactionService.UpdateTransactionCategoriesAsync(
+                    transaction.TransactionId,
+                    new List<TransactionCategory>(),
+                    isExcludedFromTotals: true);
+                Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                await OnTransactionUpdated.InvokeAsync();
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = categorizeResult.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            if (categorizeResult.CreateRule)
+            {
+                var rule = new CategoryRule
+                {
+                    Pattern = categorizeResult.RulePattern ?? transaction.Description,
+                    ExactAmount = categorizeResult.ExactAmount,
+                    MinimumAmount = categorizeResult.MinimumAmount,
+                    MaximumAmount = categorizeResult.MaximumAmount,
+                    MatchType = PatternMatchType.Contains,
+                    CategoryId = categorizeResult.CategoryId,
+                    Field = MatchField.Both,
+                    Priority = 50,
+                    IsActive = true,
+                    Description = $"Skapad från transaktion: {transaction.Description}"
+                };
+
+                await CategoryRuleService.CreateRuleAsync(rule);
+                Snackbar.Add("Transaktionen kategoriserades och regeln skapades!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Transaktion kategoriserad!", Severity.Success);
+            }
+
+            await OnTransactionUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Fel vid kategorisering: {ex.Message}", Severity.Error);
         }
     }
 

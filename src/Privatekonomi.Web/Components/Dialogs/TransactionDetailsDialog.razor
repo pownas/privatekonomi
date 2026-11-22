@@ -170,6 +170,8 @@
                                 @foreach (var tc in Transaction.TransactionCategories)
                                 {
                                     <MudChip T="string" Size="Size.Medium" Variant="Variant.Filled"
+                                             OnClick="ChangeCategory"
+                                             aria-label="@($"Ändra kategori för {Transaction.Description}")"
                                              Style="@($"background-color: {tc.Category.Color}; color: white;")">
                                         @tc.Category.Name
                                         @if (Transaction.TransactionCategories.Count > 1)
@@ -184,7 +186,9 @@
                         }
                         else
                         {
-                            <MudChip T="string" Size="Size.Medium" Variant="Variant.Outlined" Color="Color.Default">
+                            <MudChip T="string" Size="Size.Medium" Variant="Variant.Outlined" Color="Color.Default"
+                                     OnClick="ChangeCategory"
+                                     aria-label="@($"Ändra kategori för {Transaction.Description}")">
                                 Okategoriserad
                             </MudChip>
                         }

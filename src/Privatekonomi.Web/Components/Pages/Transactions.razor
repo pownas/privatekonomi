@@ -338,13 +338,17 @@
                     <CellTemplate>
                         @if (context.Item.IsInternalTransferTransaction)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Överföring mellan egna konton
                             </MudChip>
                         }
                         else if (context.Item.IsExcludedFromTotals)
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Övrig utan kategorisering
                             </MudChip>
                         }
@@ -353,6 +357,8 @@
                             @foreach (var tc in context.Item.TransactionCategories)
                             {
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                         OnClick="@(() => QuickCategorize(context.Item))"
+                                         aria-label="@($"Ändra kategori för {context.Item.Description}")"
                                          Style="@($"background-color: {tc.Category.Color}; color: white; margin: 2px;")">
                                     @tc.Category.Name
                                 </MudChip>
@@ -360,7 +366,9 @@
                         }
                         else
                         {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default"
+                                     OnClick="@(() => QuickCategorize(context.Item))"
+                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
                                 Okategoriserad
                             </MudChip>
                         }
