@@ -1,10 +1,10 @@
 ﻿@page "/savings/shared-goals"
 @page "/sharedgoals"
 @rendermode InteractiveServer
-@using Microsoft.AspNetCore.Components.Authorization
 @using System.Linq
 @using Privatekonomi.Web.Components.Shared
 @inject ISharedGoalService SharedGoalService
+@inject ICurrentUserService CurrentUserService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -16,23 +16,19 @@
         <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
         Gemensamma Sparmål
     </MudText>
-    <div class="page-header-buttons">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
-            Nytt Gemensamt Sparmål
-        </MudButton>
-    </div>
+    @if (!_isUnauthorized)
+    {
+        <div class="page-header-buttons">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+                Nytt Gemensamt Sparmål
+            </MudButton>
+        </div>
+    }
 </div>
 
 @if (_isUnauthorized)
 {
-    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
-        <div class="d-flex flex-column flex-sm-row align-center gap-3">
-            <span>Du måste vara inloggad för att visa gemensamma sparmål.</span>
-            <MudButton Color="Color.Primary" Variant="Variant.Outlined" Href="/Account/Login">
-                Logga in
-            </MudButton>
-        </div>
-    </MudAlert>
+    <AuthenticationRequiredAlert Message="Du måste vara inloggad för att visa gemensamma sparmål." />
 }
 else if (_loading)
 {
@@ -212,8 +208,6 @@ else
     private bool _loading = true;
     private bool _isUnauthorized;
 
-    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
-
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
@@ -226,13 +220,9 @@ else
 
         try
         {
-            var authState = await AuthenticationStateTask;
-            var user = authState.User;
-
-            if (user?.Identity is null || !user.Identity.IsAuthenticated)
+            if (!CurrentUserService.IsAuthenticated || string.IsNullOrEmpty(CurrentUserService.UserId))
             {
                 MarkUnauthorized();
-                Snackbar.Add("Du måste vara inloggad för att visa gemensamma sparmål.", Severity.Warning);
                 return;
             }
 
@@ -256,7 +246,6 @@ else
         catch (UnauthorizedAccessException)
         {
             MarkUnauthorized();
-            Snackbar.Add("Du måste vara inloggad för att visa gemensamma sparmål.", Severity.Warning);
         }
         catch (Exception ex)
         {

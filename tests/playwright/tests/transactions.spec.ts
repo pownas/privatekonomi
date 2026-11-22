@@ -172,3 +172,38 @@ test.describe('Transactions Page', () => {
     expect(buttonCount).toBeGreaterThanOrEqual(50);
   });
 });
+
+test.describe('Transaction categorization interactions', () => {
+  test('clicking a transaction category opens quick categorization', async ({ page }) => {
+    await page.goto('/economy/transactions');
+    await page.waitForLoadState('networkidle');
+
+    const category = page.getByRole('button', { name: /Ändra kategori för/ }).first();
+    await expect(category).toBeVisible();
+    await category.click();
+
+    await expect(page.getByText('Snabbkategorisera')).toBeVisible();
+    await expect(page.getByText('Välj kategori:')).toBeVisible();
+  });
+
+  test('calendar offers category and rule actions for a transaction', async ({ page }) => {
+    await page.goto('/economy/transactions/calendar');
+    await page.waitForLoadState('networkidle');
+
+    const dayWithTransactions = page.locator('.calendar-day').filter({ has: page.locator('.calendar-day-content') }).first();
+    await expect(dayWithTransactions).toBeVisible();
+    await dayWithTransactions.click();
+
+    const changeCategory = page.getByRole('button', { name: /Ändra kategori för/ }).first();
+    const createRule = page.getByRole('button', { name: /Skapa regel från/ }).first();
+    await expect(changeCategory).toBeVisible();
+    await expect(createRule).toBeVisible();
+
+    await changeCategory.click();
+    await expect(page.getByText('Snabbkategorisera')).toBeVisible();
+    await page.getByRole('button', { name: 'Avbryt' }).click();
+
+    await createRule.click();
+    await expect(page.getByText('Skapa Kategoriseringsregel')).toBeVisible();
+  });
+});

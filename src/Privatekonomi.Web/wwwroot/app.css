@@ -106,7 +106,7 @@ html.mud-theme-dark {
 .net-worth-warning-snackbar .mud-snackbar-content-message,
 .net-worth-warning-snackbar .mud-snackbar-icon,
 .net-worth-warning-snackbar .mud-snackbar-content-action > button {
-    color: #1f2937 !important;
+    color: var(--mud-palette-warning-text) !important;
 }
 
 .net-worth-warning-snackbar {
@@ -114,32 +114,40 @@ html.mud-theme-dark {
 }
 
 a, .btn-link {
-    color: #3B82F6;
+    color: #1D4ED8;
     transition: color var(--transition-fast);
 }
 
+.mud-theme-dark a, .mud-theme-dark .btn-link {
+    color: #93C5FD;
+}
+
 a:hover, .btn-link:hover {
-    color: #2563EB;
+    color: #1E40AF;
+}
+
+.mud-theme-dark a:hover, .mud-theme-dark .btn-link:hover {
+    color: #BFDBFE;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #6366F1;
-    border-color: #6366F1;
+    background-color: #4F46E5;
+    border-color: #4F46E5;
     transition: all var(--transition-fast);
     font-weight: var(--font-weight-medium);
 }
 
 .btn-primary:hover {
-    background-color: #4F46E5;
-    border-color: #4F46E5;
+    background-color: #4338CA;
+    border-color: #4338CA;
     box-shadow: var(--shadow-md);
 }
 
 /* Enhanced focus indicators for WCAG compliance */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #6366F1;
-    outline: 2px solid #6366F1;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #4F46E5;
+    outline: 2px solid #4F46E5;
     outline-offset: 2px;
 }
 
