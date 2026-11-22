@@ -175,10 +175,7 @@
 
 @if (_loading)
 {
-    <div class="d-flex flex-column align-center pa-6">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">Laddar räkningar...</MudText>
-    </div>
+    <LoadingIndicator Message="Laddar räkningar..." />
 }
 else
 {
