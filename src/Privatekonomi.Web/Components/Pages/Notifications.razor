@@ -19,18 +19,9 @@
     </MudText>
 
     <MudPaper Class="pa-4 mt-4">
-        <div class="page-header mb-4">
-            <MudText Typo="Typo.h6">
-                @if (_showUnreadOnly)
-                {
-                    <text>Olästa notifikationer (@_unreadCount)</text>
-                }
-                else
-                {
-                    <text>Alla notifikationer</text>
-                }
-            </MudText>
-            <div class="page-header-buttons">
+        <PageHeader Title="@(_showUnreadOnly ? $"Olästa notifikationer ({_unreadCount})" : "Alla notifikationer")"
+                    TitleTypo="Typo.h6">
+            <Actions>
                 <MudButton OnClick="ToggleUnreadFilter" 
                            Color="Color.Primary" 
                            Variant="Variant.Outlined" 
@@ -54,8 +45,8 @@
                         Markera alla som lästa
                     </MudButton>
                 }
-            </div>
-        </div>
+            </Actions>
+        </PageHeader>
 
         @if (_loading)
         {

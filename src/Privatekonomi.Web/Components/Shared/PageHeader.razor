@@ -1,7 +1,7 @@
 <div class="page-header @Class">
     @if (string.IsNullOrEmpty(Subtitle))
     {
-        <MudText Typo="Typo.h4">
+        <MudText Typo="@TitleTypo">
             @if (!string.IsNullOrEmpty(Icon))
             {
                 <MudIcon Icon="@Icon" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
@@ -12,7 +12,7 @@
     else
     {
         <div>
-            <MudText Typo="Typo.h4">
+            <MudText Typo="@TitleTypo">
                 @if (!string.IsNullOrEmpty(Icon))
                 {
                     <MudIcon Icon="@Icon" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
@@ -25,7 +25,7 @@
         </div>
     }
 
-    @if (Actions is not null)
+    @if (ShowActions && Actions is not null)
     {
         <div class="page-header-buttons">
             @Actions
@@ -35,9 +35,11 @@
 
 @code {
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public Typo TitleTypo { get; set; } = Typo.h4;
     [Parameter] public string Icon { get; set; } = string.Empty;
     [Parameter] public string Subtitle { get; set; } = string.Empty;
     [Parameter] public string SubtitleClass { get; set; } = string.Empty;
     [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public bool ShowActions { get; set; } = true;
     [Parameter] public string Class { get; set; } = "mb-4";
 }
