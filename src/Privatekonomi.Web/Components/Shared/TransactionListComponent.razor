@@ -64,44 +64,7 @@
         @if (ShowCategory)
         {
             <MudTd DataLabel="Kategori">
-                @if (context.IsInternalTransferTransaction)
-                {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined"
-                             OnClick="@(() => QuickCategorize(context))"
-                             aria-label="@($"Ändra kategori för {context.Description}")">
-                        Överföring mellan egna konton
-                    </MudChip>
-                }
-                else if (context.IsExcludedFromTotals)
-                {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
-                             OnClick="@(() => QuickCategorize(context))"
-                             aria-label="@($"Ändra kategori för {context.Description}")">
-                        Övrig utan kategorisering
-                    </MudChip>
-                }
-                else if (context.TransactionCategories.Any())
-                {
-                    @foreach (var tc in context.TransactionCategories)
-                    {
-                        <MudChip T="string" 
-                                Size="Size.Small" 
-                                Variant="Variant.Filled"
-                                OnClick="@(() => QuickCategorize(context))"
-                                aria-label="@($"Ändra kategori för {context.Description}")"
-                                Style="@($"background-color: {tc.Category.Color}; color: white; margin: 2px;")">
-                            @tc.Category.Name
-                        </MudChip>
-                    }
-                }
-                else
-                {
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default"
-                             OnClick="@(() => QuickCategorize(context))"
-                             aria-label="@($"Ändra kategori för {context.Description}")">
-                        Okategoriserad
-                    </MudChip>
-                }
+                <TransactionCategoryChips Transaction="context" OnCategoryChange="QuickCategorize" />
             </MudTd>
         }
         @if (ShowTags)

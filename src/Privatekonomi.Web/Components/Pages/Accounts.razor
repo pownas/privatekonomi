@@ -219,7 +219,7 @@ else
 
     private async Task ShowAddAccountDialog()
     {
-        var dialog = await DialogService.ShowAsync<AddAccountDialog>("Lägg till konto", new DialogOptions 
+        var dialog = await DialogService.ShowAsync<AccountDialog>("Lägg till konto", new DialogOptions
         { 
             MaxWidth = MaxWidth.Medium, 
             FullWidth = true 
@@ -235,12 +235,12 @@ else
 
     private async Task EditAccount(BankSource account)
     {
-        var parameters = new DialogParameters<EditAccountDialog>
+        var parameters = new DialogParameters<AccountDialog>
         {
             { x => x.Account, account }
         };
 
-        var dialog = await DialogService.ShowAsync<EditAccountDialog>("Redigera konto", parameters, new DialogOptions 
+        var dialog = await DialogService.ShowAsync<AccountDialog>("Redigera konto", parameters, new DialogOptions
         { 
             MaxWidth = MaxWidth.Medium, 
             FullWidth = true 
