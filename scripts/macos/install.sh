@@ -148,6 +148,7 @@ prepare_install_source() {
     fi
 
     INSTALL_SOURCE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/privatekonomi-install.XXXXXXXX")"
+    INSTALL_SOURCE_ROOT="$(cd -- "$INSTALL_SOURCE_ROOT" && pwd -P)"
     git -C "$REPO_ROOT" archive "$INSTALL_COMMIT" | tar -x -C "$INSTALL_SOURCE_ROOT"
 }
 

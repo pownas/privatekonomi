@@ -6,6 +6,7 @@ APP_SUPPORT_DIR="$HOME/Library/Application Support/Privatekonomi"
 BACKUP_DIR="$HOME/Library/Application Support/Privatekonomi-Backups"
 LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 AGENT_DIR="$HOME/Library/LaunchAgents"
+LAUNCHCTL_COMMAND="${LAUNCHCTL_COMMAND:-}"
 AGENT_LABELS=(com.privatekonomi.web com.privatekonomi.api com.privatekonomi.update com.privatekonomi.backup)
 REMOVE_DATA=false
 REMOVE_BACKUPS_AND_LOGS=false
@@ -78,14 +79,14 @@ unload_agent() {
     target="gui/$uid/$label"
     plist="$AGENT_DIR/$label.plist"
 
-    if ! launchctl print "$target" >/dev/null 2>&1; then
+    if ! "$LAUNCHCTL_COMMAND" print "$target" >/dev/null 2>&1; then
         log_info "$label var inte startad."
         return 0
     fi
 
     if [[ -f "$plist" ]]; then
-        if output="$(launchctl bootout "gui/$uid" "$plist" 2>&1)" &&
-           ! launchctl print "$target" >/dev/null 2>&1; then
+        if output="$("$LAUNCHCTL_COMMAND" bootout "gui/$uid" "$plist" 2>&1)" &&
+           ! "$LAUNCHCTL_COMMAND" print "$target" >/dev/null 2>&1; then
             UNLOADED_AGENTS+=("$label")
             log_info "Stoppade $label."
             return 0
@@ -94,9 +95,9 @@ unload_agent() {
         fi
     fi
 
-    if launchctl print "$target" >/dev/null 2>&1; then
-        if output="$(launchctl bootout "$target" 2>&1)" &&
-           ! launchctl print "$target" >/dev/null 2>&1; then
+    if "$LAUNCHCTL_COMMAND" print "$target" >/dev/null 2>&1; then
+        if output="$("$LAUNCHCTL_COMMAND" bootout "$target" 2>&1)" &&
+           ! "$LAUNCHCTL_COMMAND" print "$target" >/dev/null 2>&1; then
             UNLOADED_AGENTS+=("$label")
             log_info "Stoppade $label."
             return 0
@@ -108,7 +109,7 @@ unload_agent() {
         fi
     fi
 
-    if launchctl print "$target" >/dev/null 2>&1; then
+    if "$LAUNCHCTL_COMMAND" print "$target" >/dev/null 2>&1; then
         log_error "Kunde inte stoppa tjänsten $label. launchctl: ${failure_details:-jobbet är fortfarande laddat}"
         return 1
     fi
@@ -125,7 +126,7 @@ restore_unloaded_agents() {
             log_error "Kan inte återstarta $label eftersom dess LaunchAgent-plist saknas: $plist"
             continue
         fi
-        if launchctl bootstrap "gui/$uid" "$plist" >/dev/null 2>&1; then
+        if "$LAUNCHCTL_COMMAND" bootstrap "gui/$uid" "$plist" >/dev/null 2>&1; then
             log_info "Återstartade $label efter avbruten rensning."
         else
             log_error "Kunde inte återstarta $label efter avbruten rensning."
@@ -194,7 +195,10 @@ main() {
         log_error "HOME är tom eller ogiltig; radering avbryts."
         return 1
     fi
-    if ! command -v launchctl >/dev/null 2>&1; then
+    if [[ -z "$LAUNCHCTL_COMMAND" ]]; then
+        LAUNCHCTL_COMMAND="$(command -v launchctl || true)"
+    fi
+    if [[ -z "$LAUNCHCTL_COMMAND" || ! -x "$LAUNCHCTL_COMMAND" ]]; then
         log_error "launchctl saknas; tjänsterna kan inte stoppas säkert."
         return 1
     fi
@@ -235,7 +239,7 @@ main() {
     fi
 
     uid="$(id -u)"
-    if ! launchctl print "gui/$uid" >/dev/null 2>&1; then
+    if ! "$LAUNCHCTL_COMMAND" print "gui/$uid" >/dev/null 2>&1; then
         log_error "Kan inte läsa användarens launchd-domän gui/$uid; inget har raderats."
         return 1
     fi

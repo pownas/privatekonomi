@@ -96,7 +96,7 @@ for label in com.privatekonomi.web com.privatekonomi.api com.privatekonomi.updat
     touch "$agents/$label.plist"
 done
 
-if ! HOME="$app_only_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" \
+if ! HOME="$app_only_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" LAUNCHCTL_COMMAND="$temp/bin/launchctl" \
     bash "$repo/scripts/macos/uninstall.sh" --app-only --yes; then
     cat "$launchctl_state/calls" >&2
     exit 1
@@ -118,7 +118,7 @@ touch "$support/privatekonomi.db" "$support/releases/test/Web/Privatekonomi.Web.
 touch "$agents/com.privatekonomi.web.plist"
 ln -s "$support/releases/test" "$support/current"
 touch "$launchctl_state/web"
-HOME="$fallback_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" FAIL_PATH_BOOTOUT=true \
+HOME="$fallback_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" LAUNCHCTL_COMMAND="$temp/bin/launchctl" FAIL_PATH_BOOTOUT=true \
     bash "$repo/scripts/macos/uninstall.sh" --app-only --yes
 [[ ! -e "$support/current" && -f "$support/privatekonomi.db" ]]
 [[ ! -e "$agents/com.privatekonomi.web.plist" ]]
@@ -135,7 +135,7 @@ for label in com.privatekonomi.web com.privatekonomi.api com.privatekonomi.updat
     touch "$agents/$label.plist"
 done
 
-HOME="$remove_all_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" \
+HOME="$remove_all_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" LAUNCHCTL_COMMAND="$temp/bin/launchctl" \
     bash "$repo/scripts/macos/uninstall.sh" --include-data --delete-backups-and-logs --yes
 [[ ! -e "$support" && ! -e "$backups" && ! -e "$logs" ]]
 for label in com.privatekonomi.web com.privatekonomi.api com.privatekonomi.update com.privatekonomi.backup; do
@@ -148,7 +148,7 @@ agents="$failure_home/Library/LaunchAgents"
 mkdir -p "$support" "$agents"
 touch "$support/privatekonomi.db" "$agents/com.privatekonomi.web.plist" "$agents/com.privatekonomi.update.plist"
 touch "$launchctl_state/web" "$launchctl_state/update"
-if HOME="$failure_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" FAIL_WEB_BOOTOUT=true \
+if HOME="$failure_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" LAUNCHCTL_COMMAND="$temp/bin/launchctl" FAIL_WEB_BOOTOUT=true \
     bash "$repo/scripts/macos/uninstall.sh" --include-data --yes > "$temp/failure-output" 2>&1; then
     echo "Expected uninstall to stop before removing data when a service cannot be unloaded." >&2
     exit 1
