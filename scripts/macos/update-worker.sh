@@ -215,6 +215,7 @@ echo "Startar den nya versionen..."
 start_services
 health_check api http://127.0.0.1:5277/internal/health
 health_check web http://127.0.0.1:5274/internal/health
+printf '%s\n' "$branch" > "$release/branch"
 printf '%s\n' "$commit" > "$state/installed-commit"
 printf '%s\n' "$branch" > "$state/installed-branch"
 cp "$release/update-worker.sh" "$app_support/update-worker.sh"

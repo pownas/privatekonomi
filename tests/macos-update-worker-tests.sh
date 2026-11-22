@@ -98,6 +98,13 @@ fi
 [[ -f "$support/releases/$release_id/Web/Privatekonomi.Web.dll" ]]
 [[ ! -e "$state/transaction" && ! -e "$state/request" ]]
 
+printf 'fix/macos-installer-storage-prompt\n' > "$support/current/branch"
+touch "$state/request"
+printf 'main\n' > "$state/request-branch"
+bash "$repo/scripts/macos/update-worker.sh"
+[[ "$(cat "$support/current/branch")" == main ]]
+[[ "$(cat "$state/installed-branch")" == main ]]
+
 touch "$state/request" "$state/restart-request"
 bash "$repo/scripts/macos/update-worker.sh"
 [[ "$(cat "$state/status")" == restarted ]]
@@ -112,6 +119,7 @@ if bash "$repo/scripts/macos/update-worker.sh"; then
 fi
 [[ "$(cat "$state/status")" == failed ]]
 [[ "$(cat "$support/current/commit")" == "$new_release_id" ]]
+[[ "$(cat "$support/current/branch")" == main ]]
 [[ -f "$state/transaction" && -f "$state/request" ]]
 
 printf 'macOS updater backs up before switching releases, restarts services, and fails closed on unhealthy releases.\n'

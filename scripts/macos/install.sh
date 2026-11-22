@@ -126,7 +126,7 @@ select_repository_branch() {
         default_branch="main"
         printf '%s\n' "$branches" | grep -Fxq -- "$default_branch" || default_branch="${branches%%$'\n'*}"
         printf 'Tillgängliga grenar i Privatekonomi:\n%s\n' "$branches" >&2
-        read -r -p "Välj installationsgren [$default_branch]: " answer || answer=""
+        read -r -p "Välj installationsgren [$default_branch] (Enter = $default_branch): " answer || answer=""
         INSTALL_BRANCH="${answer:-$default_branch}"
     fi
     INSTALL_BRANCH="${INSTALL_BRANCH:-main}"
@@ -256,6 +256,16 @@ main() {
         PRIVATEKONOMI_SOURCE_REPOSITORY="$REPO_ROOT" \
         PRIVATEKONOMI_CONFIG_ROOT="$INSTALL_SOURCE_ROOT" \
         bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
+    local installed_branch_file="$HOME/Library/Application Support/Privatekonomi/current/branch"
+    local installed_branch=""
+    if [[ -s "$installed_branch_file" ]]; then
+        IFS= read -r installed_branch < "$installed_branch_file" || true
+    fi
+    if [[ "$installed_branch" != "$INSTALL_BRANCH" ]]; then
+        log_error "Installerad gren blev '$installed_branch' i stället för vald gren '$INSTALL_BRANCH'. Kontrollera tjänsteinstallationen."
+        return 1
+    fi
+    log_success "Verifierad installerad gren: $installed_branch."
     bash "$SCRIPT_DIR/setup-backup.sh"
 
     log_success "Installationen är klar."
