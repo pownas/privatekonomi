@@ -541,13 +541,27 @@ else
                     <MudTh>Åtgärder</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Datum">@context.Date.ToString("yyyy-MM-dd")</MudTd>
-                    <MudTd DataLabel="Beskrivning">@context.Description</MudTd>
+                    <MudTd DataLabel="Datum" title="Visa transaktionsdetaljer" Style="cursor: pointer;" @onclick="@(() => ViewImportedTransactionDetails(context))">
+                        @context.Date.ToString("yyyy-MM-dd")
+                    </MudTd>
+                    <MudTd DataLabel="Beskrivning">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Default"
+                                   Class="pa-0"
+                                   Style="text-transform: none; min-width: 0;"
+                                   title="Visa transaktionsdetaljer"
+                                   aria-label="@($"Visa transaktionsdetaljer för {context.Description}")"
+                                   OnClick="@(() => ViewImportedTransactionDetails(context))">
+                            @context.Description
+                        </MudButton>
+                    </MudTd>
                     <MudTd DataLabel="Kategori">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Default"
                                    Size="Size.Small"
-                                   OnClick="@(() => OpenTransactionsForMonth(context))">
+                                   title="Klicka för att ändra kategori"
+                                   aria-label="@($"Ändra kategori för {context.Description}")"
+                                   OnClick="@(() => QuickCategorizeImportedTransaction(context))">
                             Okategoriserad
                         </MudButton>
                         @if (GetSuggestedCategory(context) is { } suggestedCategory)
@@ -567,7 +581,7 @@ else
                             </div>
                         }
                     </MudTd>
-                    <MudTd DataLabel="Belopp" Style="text-align: right">
+                    <MudTd DataLabel="Belopp" title="Visa transaktionsdetaljer" Style="text-align: right; cursor: pointer;" @onclick="@(() => ViewImportedTransactionDetails(context))">
                         <MudText Typo="Typo.body2" Color="@(context.IsIncome ? Color.Success : Color.Error)">
                             @(context.IsIncome ? "+" : "")@context.Amount.ToString("N2", new System.Globalization.CultureInfo("sv-SE")) kr
                         </MudText>
@@ -958,9 +972,62 @@ else
         _dismissedSuggestionTransactionIds.Add(transaction.TransactionId);
     }
 
-    private void OpenTransactionsForMonth(Transaction transaction)
+    private async Task ViewImportedTransactionDetails(Transaction transaction)
     {
-        Navigation.NavigateTo($"/economy/transactions?filterdate={transaction.Date:yyyy-MM}");
+        var parameters = new DialogParameters<TransactionDetailsDialog>
+        {
+            { dialog => dialog.Transaction, transaction },
+            { dialog => dialog.OnEdit, EventCallback.Factory.Create<Transaction>(this, EditImportedTransactionFromDetails) },
+            { dialog => dialog.OnDelete, EventCallback.Factory.Create<Transaction>(this, DeleteImportedTransactionFromDetails) }
+        };
+
+        var dialog = await DialogService.ShowAsync<TransactionDetailsDialog>(
+            "Transaktionsdetaljer",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task EditImportedTransactionFromDetails(Transaction transaction)
+    {
+        var parameters = new DialogParameters<EditTransactionDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<EditTransactionDialog>(
+            "Redigera transaktion",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Large,
+                FullWidth = true
+            });
+        await dialog.Result;
+    }
+
+    private async Task DeleteImportedTransactionFromDetails(Transaction transaction)
+    {
+        var result = await DialogService.ShowMessageBoxAsync(
+            "Bekräfta borttagning",
+            "Är du säker på att du vill ta bort denna transaktion?",
+            yesText: "Ja",
+            cancelText: "Avbryt");
+
+        if (result == true)
+        {
+            await TransactionService.DeleteTransactionAsync(transaction.TransactionId);
+            Snackbar.Add("Transaktion borttagen", Severity.Success);
+        }
     }
 
     private void ToggleBudgetDetails(int budgetId)
