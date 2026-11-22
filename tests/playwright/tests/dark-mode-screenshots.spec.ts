@@ -4,6 +4,7 @@ test.describe('Dark Mode Screenshots', () => {
   test('applies saved dark mode before interactive rendering', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('darkMode', 'true'));
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle');
 
     await expect(page.locator('html')).toHaveClass(/mud-theme-dark/);
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(17, 24, 39)');

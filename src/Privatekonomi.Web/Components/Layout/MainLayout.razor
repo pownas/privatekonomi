@@ -20,13 +20,13 @@
 @inject ILogger<MainLayout> Logger
 @implements IDisposable
 
+<a class="skip-link" href="#main-content" @onclick="SkipToMainContent">Hoppa till huvudinnehåll</a>
+
 <MudThemeProvider @ref="@_mudThemeProvider" Theme="@_theme" IsDarkMode="@_isDarkMode" />
 <MudThemeProvider Theme="@_darkTheme" IsDarkMode="true" DefaultScrollbar="true" />
 <MudPopoverProvider />
 <MudDialogProvider CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
-
-<a class="skip-link" href="#main-content" @onclick="SkipToMainContent" @onclick:preventDefault="true">Hoppa till huvudinnehåll</a>
 
 <MudLayout>
     <MudAppBar Elevation="2">
@@ -110,6 +110,7 @@
     private bool _isDarkMode = false;
     private bool _isCompactView = false;
     private bool _isSaving = false;
+    private bool _skipToMainContentRequested;
     private string? _installedBranch;
     private MudThemeProvider? _mudThemeProvider;
     private MudTheme _darkTheme = new();
@@ -216,6 +217,19 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_skipToMainContentRequested)
+        {
+            _skipToMainContentRequested = false;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("accessibilityManager.skipToMainContent");
+            }
+            catch (JSException ex)
+            {
+                Logger.LogWarning(ex, "Could not move focus to the main content from the skip link.");
+            }
+        }
+
         if (firstRender && _mudThemeProvider != null)
         {
             // Initialize theme - critical for proper rendering
@@ -310,9 +324,9 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    private async Task SkipToMainContent()
+    private void SkipToMainContent()
     {
-        await JSRuntime.InvokeVoidAsync("accessibilityManager.skipToMainContent");
+        _skipToMainContentRequested = true;
     }
     
     private async Task ToggleTheme()
