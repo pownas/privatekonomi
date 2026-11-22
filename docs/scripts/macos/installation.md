@@ -50,7 +50,22 @@ bash scripts/macos/uninstall.sh --app-only --yes
 bash scripts/macos/uninstall.sh --include-data --delete-backups-and-logs --yes
 ```
 
-Vid installationen väljer du SQLite (standard) eller JSON-filer. Valet sparas i `~/Library/Application Support/Privatekonomi/storage-provider`; senare starter använder det sparade valet. Om du vill byta provider kan du köra `PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile bash scripts/macos/start.sh` (eller `Sqlite`). Data lagras i samma Privatekonomi-katalog.
+Vid installationen väljer du SQLite (standard) eller JSON-filer. Valet sparas i `$HOME/Library/Application Support/Privatekonomi/storage-provider`; det är en textfil, inte installationsmappen. Senare starter använder det sparade valet. Om du vill byta provider kan du köra `PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile bash scripts/macos/start.sh` (eller `Sqlite`).
+
+Installationsroten är `$HOME/Library/Application Support/Privatekonomi/`. Web och API publiceras separat under `releases/<commit>/Web` och `releases/<commit>/Api`; länken `current` pekar på den aktiva releasen. En förenklad struktur ser ut så här:
+
+```text
+$HOME/Library/Application Support/Privatekonomi/
+├── current -> releases/<commit>
+├── releases/<commit>/
+│   ├── Web/
+│   └── Api/
+├── storage-provider
+├── privatekonomi.db  (när SQLite används)
+└── json/              (när JSON-filer används)
+```
+
+SQLite-databasen ligger alltså i `$HOME/Library/Application Support/Privatekonomi/privatekonomi.db`. Med JSON lagras Web-data i `json/`; API använder minneslagring och dess data försvinner vid omstart. Om du byter provider migreras inte befintliga data.
 
 Providerbyte migrerar inte data eller konton. Med JSON använder Web en egen
 JSON-katalog och API InMemory, vars data försvinner vid omstart. JSON är
