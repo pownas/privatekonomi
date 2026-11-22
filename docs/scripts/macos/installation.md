@@ -41,7 +41,7 @@ Kör från repositoryts rot:
 bash setup-macos.sh uninstall
 ```
 
-Skriptet stoppar och avregistrerar Web-, API-, uppdaterings- och backup-LaunchAgents. Interaktivt kan du välja att ta bort enbart programfilerna (standard) eller även hela `~/Library/Application Support/Privatekonomi`, inklusive SQLite/JSON-data. Backuper i `~/Library/Application Support/Privatekonomi-Backups` och loggar i `~/Library/Logs/Privatekonomi` behålls som standard; de kan väljas bort separat. Källkodsklonen och .NET SDK lämnas kvar. Innan något tas bort krävs bekräftelsen `RADERA`.
+Skriptet stoppar och avregistrerar Web-, API-, uppdaterings- och backup-LaunchAgents. Interaktivt kan du välja att ta bort enbart programfilerna (standard) eller även hela `~/Library/Application Support/Privatekonomi`, inklusive SQLite/JSON-data. Backuper i `~/Library/Application Support/Privatekonomi-Backups` och loggar i `~/Library/Logs/Privatekonomi` behålls som standard; de kan väljas bort separat. Källkodsklonen och .NET SDK lämnas kvar. Innan något tas bort krävs bekräftelsen `RADERA`. Om en tjänst inte går att stoppa avbryts rensningen före filradering och `launchctl`-felet visas.
 
 För användning utan frågor krävs ett uttryckligt omfång och `--yes`:
 

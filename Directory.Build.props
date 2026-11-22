@@ -7,6 +7,8 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <RepositoryUrl>https://github.com/pownas/privatekonomi</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Label="Version metadata">

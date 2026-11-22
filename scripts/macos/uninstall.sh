@@ -12,6 +12,7 @@ REMOVE_BACKUPS_AND_LOGS=false
 MODE_SPECIFIED=false
 BACKUP_CHOICE_SPECIFIED=false
 ASSUME_YES=false
+UNLOADED_AGENTS=()
 
 log_info() { printf '[INFO] %s\n' "$1"; }
 log_success() { printf '[OK] %s\n' "$1"; }
@@ -72,8 +73,68 @@ prompt_for_choices() {
     fi
 }
 
+unload_agent() {
+    local label="$1" target plist output failure_details=""
+    target="gui/$uid/$label"
+    plist="$AGENT_DIR/$label.plist"
+
+    if ! launchctl print "$target" >/dev/null 2>&1; then
+        log_info "$label var inte startad."
+        return 0
+    fi
+
+    if [[ -f "$plist" ]]; then
+        if output="$(launchctl bootout "gui/$uid" "$plist" 2>&1)" &&
+           ! launchctl print "$target" >/dev/null 2>&1; then
+            UNLOADED_AGENTS+=("$label")
+            log_info "Stoppade $label."
+            return 0
+        elif [[ -n "$output" ]]; then
+            failure_details="$output"
+        fi
+    fi
+
+    if launchctl print "$target" >/dev/null 2>&1; then
+        if output="$(launchctl bootout "$target" 2>&1)" &&
+           ! launchctl print "$target" >/dev/null 2>&1; then
+            UNLOADED_AGENTS+=("$label")
+            log_info "Stoppade $label."
+            return 0
+        elif [[ -n "$output" ]]; then
+            if [[ -n "$failure_details" ]]; then
+                failure_details+=$'\n'
+            fi
+            failure_details+="$output"
+        fi
+    fi
+
+    if launchctl print "$target" >/dev/null 2>&1; then
+        log_error "Kunde inte stoppa tjänsten $label. launchctl: ${failure_details:-jobbet är fortfarande laddat}"
+        return 1
+    fi
+
+    UNLOADED_AGENTS+=("$label")
+    log_info "Stoppade $label."
+}
+
+restore_unloaded_agents() {
+    local label plist
+    for label in "${UNLOADED_AGENTS[@]}"; do
+        plist="$AGENT_DIR/$label.plist"
+        if [[ ! -f "$plist" ]]; then
+            log_error "Kan inte återstarta $label eftersom dess LaunchAgent-plist saknas: $plist"
+            continue
+        fi
+        if launchctl bootstrap "gui/$uid" "$plist" >/dev/null 2>&1; then
+            log_info "Återstartade $label efter avbruten rensning."
+        else
+            log_error "Kunde inte återstarta $label efter avbruten rensning."
+        fi
+    done
+}
+
 main() {
-    local uid label target plist unload_failed=false confirmation=""
+    local uid label plist unload_failed=false confirmation=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -180,20 +241,13 @@ main() {
     fi
 
     for label in "${AGENT_LABELS[@]}"; do
-        target="gui/$uid/$label"
-        if launchctl print "$target" >/dev/null 2>&1; then
-            if ! launchctl bootout "$target" >/dev/null 2>&1 ||
-               launchctl print "$target" >/dev/null 2>&1; then
-                log_error "Kunde inte stoppa tjänsten $label; filer lämnas orörda."
-                unload_failed=true
-            else
-                log_info "Stoppade $label."
-            fi
-        else
-            log_info "$label var inte startad."
+        if ! unload_agent "$label"; then
+            unload_failed=true
         fi
     done
     if [[ "$unload_failed" == true ]]; then
+        restore_unloaded_agents
+        log_error "Inga installationsfiler raderades eftersom minst en tjänst fortfarande kör."
         return 1
     fi
 
