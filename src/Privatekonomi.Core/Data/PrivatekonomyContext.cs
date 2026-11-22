@@ -14,6 +14,12 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(InvariantSqliteDecimalCollationInterceptor.Instance);
+        base.OnConfiguring(optionsBuilder);
+    }
+
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<TransactionCategory> TransactionCategories { get; set; }
