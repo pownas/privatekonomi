@@ -20,7 +20,7 @@
                     var isNearAmount = Math.Abs(transaction.Amount - ReceiptAmount) < 1;
                     var isSuggested = isNearDate && isNearAmount;
                     
-                    <MudListItem @onclick="@(() => SelectTransaction(transaction))" Class="@(isSuggested ? "suggested-item" : "")">
+                    <MudListItem OnClick="@(() => SelectTransaction(transaction))" KeyboardEnabled="true" Class="@(isSuggested ? "suggested-item" : "")">
                         <MudGrid>
                             <MudItem xs="12" sm="6">
                                 <MudText Typo="Typo.body1">

@@ -238,7 +238,7 @@
                                 @foreach (var receipt in Transaction.Receipts)
                                 {
                                     <MudItem xs="12" sm="6" md="4">
-                                        <MudCard Outlined="true" Class="cursor-pointer" @onclick="@(() => ViewReceipt(receipt))">
+                                        <MudCard Outlined="true">
                                             <MudCardHeader>
                                                 <CardHeaderContent>
                                                     <MudText Typo="Typo.body2">@receipt.Merchant</MudText>
@@ -265,6 +265,11 @@
                                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@receipt.ReceiptLineItems.Count radposter</MudText>
                                                 }
                                             </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => ViewReceipt(receipt))">
+                                                    Visa kvitto
+                                                </MudButton>
+                                            </MudCardActions>
                                         </MudCard>
                                     </MudItem>
                                 }

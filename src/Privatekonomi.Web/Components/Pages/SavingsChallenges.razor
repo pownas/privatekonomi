@@ -321,7 +321,7 @@ else
 <!-- Progress Dialog -->
 @if (_showProgressDialog && _selectedChallenge != null)
 {
-    <MudDialog @bind-Visible="_showProgressDialog">
+    <MudDialog @bind-Visible="_showProgressDialog" Options="_progressDialogOptions">
         <TitleContent>
             <MudText Typo="Typo.h6">Registrera framsteg för @_selectedChallenge.Name</MudText>
         </TitleContent>
@@ -358,6 +358,7 @@ else
 }
 
 @code {
+    private readonly DialogOptions _progressDialogOptions = new() { CloseOnEscapeKey = true };
     private IEnumerable<SavingsChallenge> _activeChallenges = new List<SavingsChallenge>();
     private IEnumerable<SavingsChallenge> _completedChallenges = new List<SavingsChallenge>();
     private IEnumerable<ChallengeTemplate> _templates = new List<ChallengeTemplate>();
