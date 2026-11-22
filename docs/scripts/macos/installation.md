@@ -33,6 +33,23 @@ Om .NET installeras i `~/.dotnet` läggs sökvägen till i den aktuella shell-pr
 bash setup-macos.sh start
 ```
 
+## Avinstallera eller rensa installationen
+
+Kör från repositoryts rot:
+
+```bash
+bash setup-macos.sh uninstall
+```
+
+Skriptet stoppar och avregistrerar Web-, API-, uppdaterings- och backup-LaunchAgents. Interaktivt kan du välja att ta bort enbart programfilerna (standard) eller även hela `~/Library/Application Support/Privatekonomi`, inklusive SQLite/JSON-data. Backuper i `~/Library/Application Support/Privatekonomi-Backups` och loggar i `~/Library/Logs/Privatekonomi` behålls som standard; de kan väljas bort separat. Källkodsklonen och .NET SDK lämnas kvar. Innan något tas bort krävs bekräftelsen `RADERA`.
+
+För användning utan frågor krävs ett uttryckligt omfång och `--yes`:
+
+```bash
+bash scripts/macos/uninstall.sh --app-only --yes
+bash scripts/macos/uninstall.sh --include-data --delete-backups-and-logs --yes
+```
+
 Vid installationen väljer du SQLite (standard) eller JSON-filer. Valet sparas i `~/Library/Application Support/Privatekonomi/storage-provider`; senare starter använder det sparade valet. Om du vill byta provider kan du köra `PRIVATEKONOMI_STORAGE_PROVIDER=JsonFile bash scripts/macos/start.sh` (eller `Sqlite`). Data lagras i samma Privatekonomi-katalog.
 
 Providerbyte migrerar inte data eller konton. Med JSON använder Web en egen
