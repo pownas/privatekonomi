@@ -246,6 +246,67 @@ public class DataMigrationServiceTests
             File.Delete(missingPath);
     }
 
+    [TestMethod]
+    public async Task JsonSnapshotRejectsTampering()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), $"privatekonomi-checksum-source-{Guid.NewGuid():N}.db");
+        var jsonDirectory = Path.Combine(Path.GetTempPath(), $"privatekonomi-checksum-json-{Guid.NewGuid():N}");
+        var targetPath = Path.Combine(Path.GetTempPath(), $"privatekonomi-checksum-target-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using (var source = CreateSqliteContext(sourcePath))
+            {
+                await source.Database.EnsureCreatedAsync();
+                source.Categories.Add(new Category
+                {
+                    Name = "Original",
+                    Color = "#123456",
+                    TaxRelated = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await source.SaveChangesAsync();
+            }
+
+            var exportResult = await new DataMigrationService().MigrateAsync(new DataMigrationRequest
+            {
+                SourceProvider = "Sqlite",
+                SourceConnectionString = $"Data Source={sourcePath}",
+                TargetProvider = "JsonFile",
+                TargetConnectionString = jsonDirectory
+            });
+            Assert.IsTrue(exportResult.Success, exportResult.Message);
+
+            var snapshotPath = Path.Combine(jsonDirectory, DataMigrationSnapshot.FileName);
+            var snapshot = System.Text.Json.JsonSerializer.Deserialize<DataMigrationSnapshot>(
+                await File.ReadAllTextAsync(snapshotPath))!;
+            var typeName = typeof(Category).FullName!;
+            var categoryRecord = snapshot.Entities[typeName][0];
+            categoryRecord["Name"] = System.Text.Json.JsonSerializer.SerializeToElement("Tampered");
+            await File.WriteAllTextAsync(snapshotPath,
+                System.Text.Json.JsonSerializer.Serialize(snapshot));
+
+            var importResult = await new DataMigrationService().MigrateAsync(new DataMigrationRequest
+            {
+                SourceProvider = "JsonFile",
+                SourceConnectionString = jsonDirectory,
+                TargetProvider = "Sqlite",
+                TargetConnectionString = $"Data Source={targetPath}"
+            });
+
+            Assert.IsFalse(importResult.Success);
+            StringAssert.Contains(importResult.Message, "integritetskontroll");
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            DeleteFile(sourcePath);
+            DeleteFile(targetPath);
+            if (Directory.Exists(jsonDirectory))
+                Directory.Delete(jsonDirectory, recursive: true);
+        }
+    }
+
     private static PrivatekonomyContext CreateSqliteContext(string path)
     {
         var options = new DbContextOptionsBuilder<PrivatekonomyContext>()

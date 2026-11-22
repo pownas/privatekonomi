@@ -64,6 +64,9 @@ Vid JSON-export skapas `privatekonomi-migration.json` i den angivna tomma
 mappen. JSON-filen innehåller hela EF-modellen och Identity-data, inklusive
 lösenordshashar. Skydda den som en känslig fullständig backup.
 
+Snapshotet har versionsnummer och SHA-256-integritetskontroll. Vid import
+avvisas filen om formatet inte stöds eller om innehållet har ändrats.
+
 ## Windows till SQLite eller omvänt
 
 Stoppa Privatekonomi på Windows och säkerhetskopiera SQL Server-databasen.

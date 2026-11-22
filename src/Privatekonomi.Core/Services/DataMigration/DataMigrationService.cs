@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -101,7 +102,9 @@ public sealed class DataMigrationService : IDataMigrationService
                 await targetContext.Database.EnsureCreatedAsync(cancellationToken);
                 await EnsureTargetIsEmptyAsync(targetContext, cancellationToken);
                 var counts = await ImportJsonSnapshotAsync(request.SourceConnectionString, targetContext, cancellationToken);
-                return Success(request, counts);
+                var (verified, verificationSucceeded) =
+                    await VerifyJsonImportAsync(request.SourceConnectionString, targetContext, cancellationToken);
+                return Success(request, counts, verified, verificationSucceeded);
             }
 
             await using var source = CreateContext(sourceProvider, request.SourceConnectionString);
@@ -121,7 +124,10 @@ public sealed class DataMigrationService : IDataMigrationService
             await EnsureTargetIsEmptyAsync(target, cancellationToken);
 
             var migratedCounts = await CopyBetweenRelationalContextsAsync(source, target, cancellationToken);
-            return Success(request, migratedCounts);
+            var verifiedCounts = await VerifyRelationalMigrationAsync(source, target, cancellationToken);
+            var relationalVerificationSucceeded = migratedCounts.Count == 0 || migratedCounts.All(pair =>
+                verifiedCounts.TryGetValue(pair.Key, out var count) && count >= pair.Value);
+            return Success(request, migratedCounts, verifiedCounts, relationalVerificationSucceeded);
         }
         catch (Exception ex)
         {
@@ -145,6 +151,27 @@ public sealed class DataMigrationService : IDataMigrationService
             SourceProvider = request.SourceProvider,
             TargetProvider = request.TargetProvider,
             MigratedCounts = counts
+        };
+    }
+
+    private static DataMigrationResult Success(
+        DataMigrationRequest request,
+        Dictionary<string, int> counts,
+        Dictionary<string, int> verifiedCounts,
+        bool verificationSucceeded = true)
+    {
+        var total = counts.Values.Sum();
+        return new DataMigrationResult
+        {
+            Success = verificationSucceeded,
+            Message = verificationSucceeded
+                ? $"Migreringen slutfördes och verifierades. {total} entiteter flyttades."
+                : $"Migreringen slutfördes men efterkontrollen hittade en avvikelse.",
+            SourceProvider = request.SourceProvider,
+            TargetProvider = request.TargetProvider,
+            MigratedCounts = counts,
+            VerifiedCounts = verifiedCounts,
+            VerificationSucceeded = verificationSucceeded
         };
     }
 
@@ -244,6 +271,49 @@ public sealed class DataMigrationService : IDataMigrationService
         return counts;
     }
 
+    private static async Task<Dictionary<string, int>> VerifyRelationalMigrationAsync(
+        PrivatekonomyContext source,
+        PrivatekonomyContext target,
+        CancellationToken cancellationToken)
+    {
+        var sourceCounts = await CountEntitiesAsync(source, cancellationToken);
+        var targetCounts = await CountEntitiesAsync(target, cancellationToken);
+        var verified = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var pair in sourceCounts)
+        {
+            if (targetCounts.TryGetValue(pair.Key, out var targetCount))
+                verified[pair.Key] = targetCount;
+        }
+
+        return verified;
+    }
+
+    private static async Task<(Dictionary<string, int> Verified, bool Succeeded)> VerifyJsonImportAsync(
+        string sourceDirectory,
+        PrivatekonomyContext target,
+        CancellationToken cancellationToken)
+    {
+        var snapshotCounts = await ReadJsonSnapshotCountsAsync(sourceDirectory, cancellationToken);
+        var targetCounts = await CountEntitiesAsync(target, cancellationToken);
+        var verified = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var pair in snapshotCounts)
+        {
+            var targetTypeName = pair.Key.Split('.').Last();
+            if (targetCounts.TryGetValue(targetTypeName, out var targetCount))
+                verified[targetTypeName] = targetCount;
+        }
+
+        var succeeded = snapshotCounts.All(pair =>
+        {
+            var targetTypeName = pair.Key.Split('.').Last();
+            return targetCounts.TryGetValue(targetTypeName, out var targetCount) &&
+                   targetCount >= pair.Value;
+        });
+        return (verified, succeeded);
+    }
+
     private static void ValidateJsonTargetDirectory(string targetDirectory)
     {
         if (string.IsNullOrWhiteSpace(targetDirectory))
@@ -273,7 +343,26 @@ public sealed class DataMigrationService : IDataMigrationService
             JsonOptions,
             cancellationToken) ?? throw new InvalidOperationException("JSON-snapshot kunde inte läsas.");
 
+        ValidateSnapshotIntegrity(snapshot);
         return snapshot.Entities.ToDictionary(pair => pair.Key, pair => pair.Value.Count);
+    }
+
+    private static void ValidateSnapshotIntegrity(DataMigrationSnapshot snapshot)
+    {
+        if (snapshot.Version != 1)
+            throw new InvalidOperationException(
+                $"JSON-snapshot-version {snapshot.Version} stöds inte. Förväntad version är 1.");
+        if (string.IsNullOrWhiteSpace(snapshot.ChecksumSha256))
+            throw new InvalidOperationException(
+                "JSON-snapshot saknar integritetskontroll (ChecksumSha256).");
+
+        var entityBytes = JsonSerializer.SerializeToUtf8Bytes(snapshot.Entities, JsonOptions);
+        var expected = Convert.ToHexString(SHA256.HashData(entityBytes)).ToLowerInvariant();
+        if (!CryptographicOperations.FixedTimeEquals(
+                System.Text.Encoding.UTF8.GetBytes(snapshot.ChecksumSha256.ToLowerInvariant()),
+                System.Text.Encoding.UTF8.GetBytes(expected)))
+            throw new InvalidOperationException(
+                "JSON-snapshotets integritetskontroll misslyckades. Filen kan vara ändrad eller skadad.");
     }
 
     private static async Task<DataMigrationPreview> PreviewJsonTargetAsync(
@@ -386,7 +475,7 @@ public sealed class DataMigrationService : IDataMigrationService
                 {
                     try
                     {
-                        await target.Database.ExecuteSqlRawAsync(
+                        await target.Database.ExecuteSqlInterpolatedAsync(
                             $"SET IDENTITY_INSERT {tableName} ON",
                             cancellationToken);
                         enabledIdentityTables.Add(tableName);
@@ -406,7 +495,7 @@ public sealed class DataMigrationService : IDataMigrationService
             {
                 foreach (var tableName in enabledIdentityTables)
                 {
-                    await target.Database.ExecuteSqlRawAsync(
+                    await target.Database.ExecuteSqlInterpolatedAsync(
                         $"SET IDENTITY_INSERT {tableName} OFF",
                         cancellationToken);
                 }
@@ -507,6 +596,9 @@ public sealed class DataMigrationService : IDataMigrationService
             snapshot.Entities[entityType.ClrType.FullName ?? entityType.ClrType.Name] = records;
         }
 
+        var entityBytes = JsonSerializer.SerializeToUtf8Bytes(snapshot.Entities, JsonOptions);
+        snapshot.ChecksumSha256 = Convert.ToHexString(SHA256.HashData(entityBytes)).ToLowerInvariant();
+
         var snapshotPath = Path.Combine(targetDirectory, DataMigrationSnapshot.FileName);
         await using var stream = new FileStream(snapshotPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         await JsonSerializer.SerializeAsync(stream, snapshot, JsonOptions, cancellationToken);
@@ -533,6 +625,7 @@ public sealed class DataMigrationService : IDataMigrationService
         await using var stream = File.OpenRead(snapshotPath);
         var snapshot = await JsonSerializer.DeserializeAsync<DataMigrationSnapshot>(stream, JsonOptions, cancellationToken)
                        ?? throw new InvalidOperationException("JSON-snapshot kunde inte läsas.");
+        ValidateSnapshotIntegrity(snapshot);
 
         var counts = new Dictionary<string, int>();
         await using var transaction = await target.Database.BeginTransactionAsync(cancellationToken);
@@ -599,7 +692,7 @@ public sealed class DataMigrationService : IDataMigrationService
                         : $"[{schemaName.Replace("]", "]]")}].[{tableName.Replace("]", "]]")}]";
                     try
                     {
-                        await target.Database.ExecuteSqlRawAsync(
+                        await target.Database.ExecuteSqlInterpolatedAsync(
                             $"SET IDENTITY_INSERT {sqlTableName} ON",
                             cancellationToken);
                         enabledIdentityTables.Add(sqlTableName);
@@ -623,7 +716,7 @@ public sealed class DataMigrationService : IDataMigrationService
         {
             foreach (var tableName in enabledIdentityTables)
             {
-                await target.Database.ExecuteSqlRawAsync(
+                await target.Database.ExecuteSqlInterpolatedAsync(
                     $"SET IDENTITY_INSERT {tableName} OFF",
                     cancellationToken);
             }

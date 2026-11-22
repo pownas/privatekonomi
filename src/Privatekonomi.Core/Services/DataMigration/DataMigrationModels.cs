@@ -15,6 +15,8 @@ public sealed class DataMigrationResult
     public string SourceProvider { get; init; } = string.Empty;
     public string TargetProvider { get; init; } = string.Empty;
     public Dictionary<string, int> MigratedCounts { get; init; } = new();
+    public Dictionary<string, int> VerifiedCounts { get; init; } = new();
+    public bool VerificationSucceeded { get; init; }
 }
 
 public sealed class DataMigrationPreview

@@ -152,12 +152,14 @@
             <MudTextField @bind-Value="_migrationSourceConnection" @bind-Value:after="ResetMigrationPreview"
                           Label="Källans anslutningssträng eller JSON-mapp"
                           Variant="Variant.Outlined"
+                          InputType="InputType.Password"
                           Lines="2" />
         </MudItem>
         <MudItem xs="12" md="6">
             <MudTextField @bind-Value="_migrationTargetConnection" @bind-Value:after="ResetMigrationPreview"
                           Label="Målets anslutningssträng eller JSON-mapp"
                           Variant="Variant.Outlined"
+                          InputType="InputType.Password"
                           Lines="2" />
         </MudItem>
     </MudGrid>
@@ -650,6 +652,12 @@
                 var counts = string.Join(", ",
                     result.MigratedCounts.Select(pair => $"{pair.Key}: {pair.Value}"));
                 _migrationResultMessage += $" Migrerat: {counts}.";
+            }
+            if (result.VerificationSucceeded && result.VerifiedCounts.Count > 0)
+            {
+                var verified = string.Join(", ",
+                    result.VerifiedCounts.Select(pair => $"{pair.Key}: {pair.Value}"));
+                _migrationResultMessage += $" Verifierat i målet: {verified}.";
             }
 
             Snackbar.Add(_migrationResultMessage,

@@ -186,6 +186,7 @@ public class JsonFilePersistenceService : IDataPersistenceService
         await using var stream = File.OpenRead(snapshotPath);
         var snapshot = await JsonSerializer.DeserializeAsync<DataMigrationSnapshot>(stream, _jsonOptions)
                        ?? throw new InvalidOperationException("JSON-migrationssnapshot kunde inte läsas.");
+        snapshot.ValidateIntegrity(_jsonOptions);
 
         foreach (var entityType in context.Model.GetEntityTypes())
         {
