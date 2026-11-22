@@ -17,7 +17,7 @@ public class AssetService : IAssetService
 
     public async Task<IEnumerable<Asset>> GetAllAssetsAsync()
     {
-        var query = _context.Assets.AsQueryable();
+        var query = _context.Assets.AsNoTracking().AsQueryable();
 
         // Filter by current user if authenticated
         if (_currentUserService?.IsAuthenticated == true && _currentUserService.UserId != null)
@@ -58,8 +58,19 @@ public class AssetService : IAssetService
 
     public async Task UpdateAssetAsync(Asset asset)
     {
-        asset.UpdatedAt = DateTime.UtcNow;
-        _context.Assets.Update(asset);
+        var existingAsset = await GetAssetByIdAsync(asset.AssetId)
+            ?? throw new InvalidOperationException($"Asset with ID {asset.AssetId} not found");
+
+        existingAsset.Name = asset.Name;
+        existingAsset.Type = asset.Type;
+        existingAsset.Description = asset.Description;
+        existingAsset.PurchaseValue = asset.PurchaseValue;
+        existingAsset.CurrentValue = asset.CurrentValue;
+        existingAsset.PurchaseDate = asset.PurchaseDate;
+        existingAsset.Location = asset.Location;
+        existingAsset.ChartOfAccountsCode = asset.ChartOfAccountsCode;
+        existingAsset.UpdatedAt = DateTime.UtcNow;
+
         await _context.SaveChangesAsync();
     }
 

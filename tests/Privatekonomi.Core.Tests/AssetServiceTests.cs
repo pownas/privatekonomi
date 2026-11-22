@@ -79,4 +79,90 @@ public sealed class AssetServiceTests
             CultureInfo.CurrentUICulture = previousUiCulture;
         }
     }
+
+    [TestMethod]
+    public async Task UpdateAssetAsyncUpdatesTrackedAssetWithoutAttachingDuplicate()
+    {
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+            .UseSqlite("Data Source=:memory:")
+            .Options;
+        await using var context = new PrivatekonomyContext(options);
+        await context.Database.OpenConnectionAsync();
+        await context.Database.EnsureCreatedAsync();
+
+        var original = new Asset
+        {
+            Name = "Bostaden",
+            Type = "Fastighet",
+            Description = "Hemma bostaden",
+            PurchaseValue = 2_100_000m,
+            CurrentValue = 2_400_000m,
+            Currency = "EUR",
+            CreatedAt = new DateTime(2025, 1, 17),
+            ValidFrom = new DateTime(2025, 1, 17)
+        };
+        context.Assets.Add(original);
+        await context.SaveChangesAsync();
+
+        var service = new AssetService(context);
+        var trackedAsset = await service.GetAssetByIdAsync(original.AssetId);
+        var editedAsset = new Asset
+        {
+            AssetId = original.AssetId,
+            Name = "Uppdaterad bostad",
+            Type = "Fastighet",
+            Description = "Uppdaterad beskrivning",
+            PurchaseValue = 2_200_000m,
+            CurrentValue = 2_500_000m,
+            PurchaseDate = new DateTime(2025, 1, 17),
+            Location = "Ny adress",
+            ChartOfAccountsCode = "1110"
+        };
+
+        await service.UpdateAssetAsync(editedAsset);
+
+        Assert.AreSame(trackedAsset, await service.GetAssetByIdAsync(original.AssetId));
+        Assert.AreEqual("Uppdaterad bostad", trackedAsset!.Name);
+        Assert.AreEqual(2_500_000m, trackedAsset.CurrentValue);
+        Assert.AreEqual("EUR", trackedAsset.Currency);
+        Assert.AreEqual(original.CreatedAt, trackedAsset.CreatedAt);
+        Assert.AreEqual(original.ValidFrom, trackedAsset.ValidFrom);
+        Assert.IsNotNull(trackedAsset.UpdatedAt);
+    }
+
+    [TestMethod]
+    public async Task CreateAssetAsyncWorksAfterLoadingExistingAssets()
+    {
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var context = new PrivatekonomyContext(options);
+        context.Assets.Add(new Asset
+        {
+            Name = "Bostaden",
+            Type = "Fastighet",
+            PurchaseValue = 2_100_000m,
+            CurrentValue = 2_400_000m,
+            CreatedAt = DateTime.UtcNow,
+            ValidFrom = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var service = new AssetService(context);
+        await service.GetAllAssetsAsync();
+
+        Assert.AreEqual(0, context.ChangeTracker.Entries<Asset>().Count());
+
+        var created = await service.CreateAssetAsync(new Asset
+        {
+            Name = "Ford Focus",
+            Type = "Fordon",
+            PurchaseValue = 190_000m,
+            CurrentValue = 160_000m
+        });
+
+        Assert.AreNotEqual(0, created.AssetId);
+        Assert.AreEqual(2, await context.Assets.CountAsync());
+    }
 }
