@@ -20,18 +20,7 @@
                 <MudCard>
                     <MudCardContent>
                         <MudText Typo="Typo.h6">Installerad version</MudText>
-                        <MudText Typo="Typo.body1">
-                            @if (GetCommitUrl(_history.InstalledCommit) is { } installedCommitUrl)
-                            {
-                                <a href="@installedCommitUrl" target="_blank" rel="noopener noreferrer">
-                                    @FormatCommit(_history.InstalledCommit, "Versionsinformation saknas")
-                                </a>
-                            }
-                            else
-                            {
-                                @FormatCommit(_history.InstalledCommit, "Versionsinformation saknas")
-                            }
-                        </MudText>
+                        <MudText Typo="Typo.body1">@AppVersionInfo.Current</MudText>
                         @if (_history.InstalledCommit is not null && _history.LatestCommit is not null && _history.InstalledCommit == _history.LatestCommit)
                         {
                             <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined" Class="mt-2">Senaste versionen är installerad</MudChip>

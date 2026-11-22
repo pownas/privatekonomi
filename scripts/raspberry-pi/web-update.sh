@@ -106,7 +106,9 @@ trap 'exit 1' INT TERM HUP
 
 # A reboot or SIGKILL can leave both request and transaction behind.
 if [ -f "$state/transaction" ]; then
-    exec >> "$state/log" 2>&1
+    exec > >(while IFS= read -r line; do
+        printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S%z')" "$line"
+    done >> "$state/log") 2>&1
     echo "Avbruten uppdatering upptäckt."
     if recover; then
         printf 'failed\n' > "$state/status"
@@ -123,7 +125,9 @@ fi
 rm -f -- "$state/backup-ready"
 printf 'running\n' > "$state/status"
 : > "$state/log"
-exec >> "$state/log" 2>&1
+exec > >(while IFS= read -r line; do
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S%z')" "$line"
+done >> "$state/log") 2>&1
 
 if [ -f "$state/restart-request" ]; then
     restart_requested=1

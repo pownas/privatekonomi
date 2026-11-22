@@ -141,7 +141,9 @@ if [[ ! -f "$state/enabled" || ! -f "$state/request" ]]; then
 fi
 write_status running
 : > "$state/log"
-exec >> "$state/log" 2>&1
+exec > >(while IFS= read -r line; do
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S%z')" "$line"
+done >> "$state/log") 2>&1
 
 if [[ -f "$state/restart-request" ]]; then
     restart_requested=1
