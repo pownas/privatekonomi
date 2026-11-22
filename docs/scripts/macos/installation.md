@@ -75,6 +75,64 @@ Installationsvalet SQLite konfigurerar däremot samma databasfil för Web och AP
 för isolering, konfigurera separata databaser och secrets per tjänst och miljö.
 Se [lagringsguiden](../../STORAGE_GUIDE.md).
 
+## Öppna SQLite och ge ditt konto systemadministratörsbehörighet
+
+macOS har normalt SQLite-kommandoradsverktyget `sqlite3` inbyggt; kontrollera med:
+
+```bash
+sqlite3 --version
+```
+
+Appen behöver ingen separat SQLite-serverinstallation. Om `sqlite3` saknas och
+Homebrew redan finns kan kommandoradsverktyget installeras med `brew install sqlite`.
+
+För att ge ett befintligt konto systemadministratörsbehörighet i SQLite:
+
+1. Stoppa Web och API så att de inte skriver till databasen medan den ändras:
+
+   ```bash
+   launchctl bootout "gui/$(id -u)/com.privatekonomi.web"
+   launchctl bootout "gui/$(id -u)/com.privatekonomi.api"
+   ```
+
+2. Ta en verifierbar SQLite-backup:
+
+   ```bash
+   DB="$HOME/Library/Application Support/Privatekonomi/privatekonomi.db"
+   BACKUP_DIR="$HOME/Library/Application Support/Privatekonomi-Backups"
+   mkdir -p "$BACKUP_DIR"
+   BACKUP="$BACKUP_DIR/privatekonomi-before-admin-$(date +%Y%m%d-%H%M%S).db"
+   sqlite3 "$DB" ".backup '$BACKUP'"
+   ```
+
+3. Hämta konto-ID:t och kontrollera den nuvarande behörigheten:
+
+   ```bash
+   DB="$HOME/Library/Application Support/Privatekonomi/privatekonomi.db"
+   sqlite3 -header -column "$DB" \
+     "SELECT Id, UserName, Email, IsSystemAdmin FROM AspNetUsers;"
+   ```
+
+4. Byt ut `<USER_ID>` mot ID:t för ditt eget konto och uppdatera enbart den raden:
+
+   ```bash
+   DB="$HOME/Library/Application Support/Privatekonomi/privatekonomi.db"
+   sqlite3 "$DB" \
+     "UPDATE AspNetUsers SET IsSystemAdmin = 1 WHERE Id = '<USER_ID>';"
+   sqlite3 "$DB" \
+     "SELECT Id, UserName, Email, IsSystemAdmin FROM AspNetUsers WHERE Id = '<USER_ID>';"
+   ```
+
+   Kontrollera att `IsSystemAdmin` visar `1`. Appens systemadministratörsbehörighet
+   baseras på den här kolumnen i `AspNetUsers`, inte på en Identity-roll. Ändra inte
+   databasen utan backup och lämna alltid villkoret `WHERE Id = ...` kvar.
+
+5. Starta om tjänsterna och logga ut/in för att uppdatera gränssnittet:
+
+   ```bash
+   bash setup-macos.sh start
+   ```
+
 Web och API körs i bakgrunden och övervakas av `launchd`. De startas automatiskt när macOS-användaren loggar in och startas om om en process oväntat avslutas. Det går inte att starta en personlig LaunchAgent före inloggning; datorn måste vara på och användarkontot inloggat. Startkommandot uppdaterar tjänstekonfigurationen och startar om tjänsterna. Loggar finns under `~/Library/Logs/Privatekonomi/`.
 
 Webappen finns på `http://localhost:5274` och API:t på `http://localhost:5277`. Tjänsterna lyssnar på nätverksgränssnitten, så enheter på samma hemnätverk kan använda `http://<Macens-IP-adress>:5274`. macOS-brandväggen kan behöva tillåta inkommande anslutningar för .NET. LAN-anslutningen använder HTTP och är endast avsedd för ett betrott privat nätverk. Öppna inte portarna mot internet; HTTP krypterar inte trafik. Aspire Dashboard startas inte av dessa tjänster.
