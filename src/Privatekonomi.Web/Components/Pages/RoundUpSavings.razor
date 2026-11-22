@@ -8,12 +8,7 @@
 
 <PageTitle>Round-up Sparande - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Savings" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Round-up Sparande
-    </MudText>
-</div>
+<PageHeader Title="Round-up Sparande" Icon="@Icons.Material.Filled.Savings" />
 
 @if (_requiresAuthentication)
 {
@@ -21,10 +16,7 @@
 }
 else if (_loading)
 {
-    <div class="d-flex flex-column align-center pa-6">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">Laddar inställningar...</MudText>
-    </div>
+    <LoadingIndicator Message="Laddar inställningar..." />
 }
 else
 {

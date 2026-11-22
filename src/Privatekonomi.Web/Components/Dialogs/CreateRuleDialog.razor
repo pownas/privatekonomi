@@ -23,45 +23,16 @@
         }
         else
         {
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_pattern" 
-                                 Label="Mönster" 
-                                 Variant="Variant.Outlined" 
-                                 Required="true"
-                                 HelperText="Text att matcha mot transaktionsbeskrivning eller betalningsmottagare"
-                                 MaxLength="500"
-                                 Class="mb-3" />
-                </MudItem>
-                
-                <MudItem xs="12" md="6">
-                    <MudSelect @bind-Value="_matchType" 
-                              Label="Matchningstyp" 
-                              Variant="Variant.Outlined"
-                              Class="mb-3">
-                        <MudSelectItem Value="@PatternMatchType.Contains">Innehåller</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.Exact">Exakt matchning</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.StartsWith">Börjar med</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.EndsWith">Slutar med</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
+            <CategoryRuleFormFields @bind-Pattern="_pattern"
+                                    @bind-MatchType="_matchType"
+                                    AmountCriteria="_amountCriteria"
+                                    @bind-Field="_field"
+                                    @bind-Priority="_priority"
+                                    @bind-IsActive="_isActive"
+                                    @bind-Description="_description"
+                                    @ref="_formFields" />
 
-                <MudItem xs="12">
-                    <RuleAmountCriteriaEditor Rule="_amountCriteria" @ref="_amountCriteriaEditor" />
-                </MudItem>
-                
-                <MudItem xs="12" md="6">
-                    <MudSelect @bind-Value="_field" 
-                              Label="Fält att matcha" 
-                              Variant="Variant.Outlined"
-                              Class="mb-3">
-                        <MudSelectItem Value="@MatchField.Both">Beskrivning och Betalningsmottagare</MudSelectItem>
-                        <MudSelectItem Value="@MatchField.Description">Endast Beskrivning</MudSelectItem>
-                        <MudSelectItem Value="@MatchField.Payee">Endast Betalningsmottagare</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
-                
+            <MudGrid>
                 <MudItem xs="12">
                     <MudSelect @bind-Value="_categoryId" 
                               Label="Kategori" 
@@ -80,32 +51,6 @@
                     </MudSelect>
                 </MudItem>
                 
-                <MudItem xs="12" md="6">
-                    <MudNumericField @bind-Value="_priority" 
-                                    Label="Prioritet" 
-                                    Variant="Variant.Outlined"
-                                    HelperText="Högre nummer = högre prioritet (används vid flera matchande regler)"
-                                    Min="0"
-                                    Max="1000"
-                                    Class="mb-3" />
-                </MudItem>
-                
-                <MudItem xs="12" md="6">
-                    <MudSwitch @bind-Value="_isActive" 
-                              Label="Aktiv" 
-                              Color="Color.Primary"
-                              Class="mb-3" />
-                </MudItem>
-                
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_description" 
-                                 Label="Beskrivning (valfritt)" 
-                                 Variant="Variant.Outlined"
-                                 Lines="2"
-                                 HelperText="En beskrivning av regeln för dokumentation"
-                                 MaxLength="500"
-                                 Class="mb-3" />
-                </MudItem>
             </MudGrid>
 
             @if (!string.IsNullOrWhiteSpace(_pattern) && _categoryId > 0)
@@ -166,7 +111,7 @@
     private bool _isActive = true;
     private string _description = string.Empty;
     private CategoryRule _amountCriteria = new();
-    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
+    private CategoryRuleFormFields? _formFields;
 
     private bool IsValid => !string.IsNullOrWhiteSpace(_pattern) && _categoryId > 0;
 
@@ -265,9 +210,9 @@
             return;
         }
 
-        if (_amountCriteriaEditor is { IsValid: false })
+        if (_formFields is { IsAmountCriteriaValid: false })
         {
-            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            Snackbar.Add(_formFields.AmountCriteriaValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
             return;
         }
 

@@ -8,17 +8,13 @@
 
 <PageTitle>Kontanter/Valutor - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Kontanter/Valutor
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Kontanter/Valutor" Icon="@Icons.Material.Filled.AttachMoney">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Valuta
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

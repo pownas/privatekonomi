@@ -11,20 +11,16 @@
 
 <PageTitle>Abonnemang - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Autorenew" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        📋 Smart Avtalshantering
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="📋 Smart Avtalshantering" Icon="@Icons.Material.Filled.Autorenew">
+    <Actions>
         <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Search" OnClick="DetectSubscriptions">
             Upptäck Abonnemang
         </MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Nytt Abonnemang
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @* Alerts for unused subscriptions and cancellation deadlines *@
 @if (!_loading && (_unusedSubscriptions.Any() || _upcomingDeadlines.Any()))
@@ -194,10 +190,7 @@
 
 @if (_loading)
 {
-    <div class="d-flex flex-column align-center pa-6">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">Laddar abonnemang...</MudText>
-    </div>
+    <LoadingIndicator Message="Laddar abonnemang..." />
 }
 else
 {

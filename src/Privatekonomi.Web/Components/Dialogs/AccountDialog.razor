@@ -1,4 +1,4 @@
-﻿@using Privatekonomi.Core.Models
+@using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @inject IBankSourceService BankSourceService
 @inject IHouseholdService HouseholdService
@@ -10,18 +10,19 @@
         <MudForm @ref="_form" @bind-IsValid="@_isValid">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_account.Name" 
-                                  Label="Kontonamn" 
+                    <MudTextField @bind-Value="_account.Name"
+                                  Label="Kontonamn"
                                   Required="true"
                                   RequiredError="Kontonamn är obligatoriskt"
+                                  Placeholder="@(!IsEdit ? "T.ex. Mitt lönekonto, Nordea sparkonto" : null)"
                                   aria-label="Ange kontonamn" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect @bind-Value="_account.AccountType" 
-                              Label="Kontotyp" 
-                              Required="true"
-                              aria-label="Välj kontotyp">
+                    <MudSelect @bind-Value="_account.AccountType"
+                               Label="Kontotyp"
+                               Required="true"
+                               aria-label="Välj kontotyp">
                         <MudSelectItem Value="@("checking")">
                             <div class="d-flex align-center">
                                 <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Small" Class="mr-2" />
@@ -74,12 +75,13 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect Value="_selectedInstitution" 
-                              ValueChanged="OnInstitutionChanged"
-                              Label="Bank/Institution" 
-                              aria-label="Välj bank eller institution"
-                                   Clearable="true"
-                              T="string">
+                    <MudSelect Value="_selectedInstitution"
+                               ValueChanged="OnInstitutionChanged"
+                               Label="Bank/Institution"
+                               Placeholder="@(!IsEdit ? "Välj bank" : null)"
+                               aria-label="Välj bank eller institution"
+                               Clearable="true"
+                               T="string">
                         @foreach (var bank in BankRegistry.SupportedBanks)
                         {
                             <MudSelectItem Value="@bank.Name">
@@ -93,30 +95,33 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_account.ClearingNumber" 
-                                  Label="Clearingnummer" 
+                    <MudTextField @bind-Value="_account.ClearingNumber"
+                                  Label="Clearingnummer"
+                                  Placeholder="@(!IsEdit ? "T.ex. 8327" : null)"
                                   HelperText="För svenska bankkonton"
                                   aria-label="Ange clearingnummer" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_account.AccountNumber" 
-                                  Label="Kontonummer" 
+                    <MudTextField @bind-Value="_account.AccountNumber"
+                                  Label="Kontonummer"
+                                  Placeholder="@(!IsEdit ? "T.ex. 123456789" : null)"
                                   aria-label="Ange kontonummer" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_account.Currency" 
-                                  Label="Valuta" 
+                    <MudTextField @bind-Value="_account.Currency"
+                                  Label="Valuta"
                                   Required="true"
                                   RequiredError="Valuta är obligatoriskt"
                                   aria-label="Ange valuta" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_account.ChartOfAccountsCode" 
-                                  Label="Kontoplan (BAS)" 
-                                  HelperText="Koppla till BAS-kontoplan"
+                    <MudTextField @bind-Value="_account.ChartOfAccountsCode"
+                                  Label="Kontoplan (BAS)"
+                                  Placeholder="@(!IsEdit ? "T.ex. 1930, 1510" : null)"
+                                  HelperText="@(IsEdit ? "Koppla till BAS-kontoplan" : "Koppla till BAS-kontoplan för redovisning")"
                                   aria-label="Ange kontoplan" />
                 </MudItem>
 
@@ -134,30 +139,33 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudNumericField @bind-Value="_account.InitialBalance" 
-                                    Label="Ingående saldo" 
-                                    Format="N2"
-                                    Culture="@(new System.Globalization.CultureInfo("sv-SE"))"
-                                    Adornment="Adornment.Start"
-                                    AdornmentText="kr"
-                                    HelperText="Saldo när kontot öppnades"
-                                    aria-label="Ange ingående saldo" />
+                    <MudNumericField @bind-Value="_account.InitialBalance"
+                                     Label="Ingående saldo"
+                                     Format="N2"
+                                     Culture="@(new System.Globalization.CultureInfo("sv-SE"))"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="kr"
+                                     HelperText="Saldo när kontot öppnades"
+                                     aria-label="Ange ingående saldo" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
                     <DateInput @bind-Date="_openedDate"
-                                  Label="Öppningsdatum" 
-                                  HelperText="När kontot öppnades"
-                                  aria-label="Välj öppningsdatum" />
+                               Label="Öppningsdatum"
+                               HelperText="@(!IsEdit ? "När kontot öppnades (valfritt)" : "När kontot öppnades")"
+                               aria-label="Välj öppningsdatum" />
                 </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <DateInput @bind-Date="_closedDate"
-                                  Label="Stängningsdatum" 
+                @if (IsEdit)
+                {
+                    <MudItem xs="12" md="6">
+                        <DateInput @bind-Date="_closedDate"
+                                   Label="Stängningsdatum"
                                    Clearable="true"
-                                  HelperText="Lämna tomt om kontot är aktivt"
-                                  aria-label="Välj stängningsdatum" />
-                </MudItem>
+                                   HelperText="Lämna tomt om kontot är aktivt"
+                                   aria-label="Välj stängningsdatum" />
+                    </MudItem>
+                }
 
                 <MudItem xs="12">
                     <div class="d-flex align-center">
@@ -174,18 +182,21 @@
                     </div>
                 </MudItem>
 
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        <strong>Aktuellt saldo:</strong> @_account.CurrentBalance.ToString("C", new System.Globalization.CultureInfo("sv-SE"))
-                        (beräknat från ingående saldo och transaktioner)
-                    </MudText>
-                </MudItem>
+                @if (IsEdit)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <strong>Aktuellt saldo:</strong> @_account.CurrentBalance.ToString("C", new System.Globalization.CultureInfo("sv-SE"))
+                            (beräknat från ingående saldo och transaktioner)
+                        </MudText>
+                    </MudItem>
+                }
             </MudGrid>
         </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Avbryt</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="!_isValid">Spara</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="!_isValid">@(IsEdit ? "Spara" : "Lägg till")</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -194,11 +205,19 @@
     IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
-    public BankSource Account { get; set; } = new();
+    public BankSource? Account { get; set; }
 
+    private bool IsEdit => Account is not null;
     private MudForm? _form;
     private bool _isValid;
-    private BankSource _account = new();
+    private BankSource _account = new()
+    {
+        Name = "",
+        AccountType = "checking",
+        Currency = "SEK",
+        Color = "#1976D2",
+        InitialBalance = 0
+    };
     private DateTime? _openedDate;
     private DateTime? _closedDate;
     private string? _selectedInstitution;
@@ -212,7 +231,11 @@
 
     protected override void OnParametersSet()
     {
-        // Create a copy to edit
+        if (Account is null)
+        {
+            return;
+        }
+
         _account = new BankSource
         {
             BankSourceId = Account.BankSourceId,
@@ -252,13 +275,12 @@
             .OrderBy(household => household.Name)
             .ToList();
     }
-    
+
     private void OnInstitutionChanged(string? institution)
     {
         _selectedInstitution = institution;
         _account.Institution = institution;
-        
-        // Auto-set color based on selected bank
+
         var bankColor = BankRegistry.GetBankColor(institution);
         if (!string.IsNullOrEmpty(bankColor))
         {
@@ -281,20 +303,33 @@
 
         try
         {
-            // Set dates
-            _account.OpenedDate = _openedDate;
-            _account.ClosedDate = _closedDate;
+            if (IsEdit)
+            {
+                _account.OpenedDate = _openedDate;
+                _account.ClosedDate = _closedDate;
+                _account.UpdatedAt = DateTime.UtcNow;
+                await BankSourceService.UpdateBankSourceAsync(_account);
+                Snackbar.Add("Konto uppdaterat", Severity.Success);
+            }
+            else
+            {
+                if (_openedDate.HasValue)
+                {
+                    _account.OpenedDate = _openedDate.Value;
+                }
 
-            // Set update tracking
-            _account.UpdatedAt = DateTime.UtcNow;
+                _account.ValidFrom = DateTime.UtcNow;
+                _account.CreatedAt = DateTime.UtcNow;
+                await BankSourceService.CreateBankSourceAsync(_account);
+                Snackbar.Add("Konto skapat", Severity.Success);
+            }
 
-            await BankSourceService.UpdateBankSourceAsync(_account);
-            Snackbar.Add("Konto uppdaterat", Severity.Success);
             MudDialog?.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Fel vid uppdatering av konto: {ex.Message}", Severity.Error);
+            var operation = IsEdit ? "uppdatering" : "skapande";
+            Snackbar.Add($"Fel vid {operation} av konto: {ex.Message}", Severity.Error);
         }
     }
 

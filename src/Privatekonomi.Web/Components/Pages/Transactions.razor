@@ -186,10 +186,7 @@
 
     @if (_loading)
     {
-        <div class="d-flex flex-column align-center pa-6">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-4">Laddar transaktioner...</MudText>
-        </div>
+        <LoadingIndicator Message="Laddar transaktioner..." />
     }
     else if (!_transactions.Any())
     {
@@ -336,42 +333,7 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Kategori" Sortable="false">
                     <CellTemplate>
-                        @if (context.Item.IsInternalTransferTransaction)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined"
-                                     OnClick="@(() => QuickCategorize(context.Item))"
-                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
-                                Överföring mellan egna konton
-                            </MudChip>
-                        }
-                        else if (context.Item.IsExcludedFromTotals)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
-                                     OnClick="@(() => QuickCategorize(context.Item))"
-                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
-                                Övrig utan kategorisering
-                            </MudChip>
-                        }
-                        else if (context.Item.TransactionCategories.Any())
-                        {
-                            @foreach (var tc in context.Item.TransactionCategories)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                         OnClick="@(() => QuickCategorize(context.Item))"
-                                         aria-label="@($"Ändra kategori för {context.Item.Description}")"
-                                         Style="@($"background-color: {tc.Category.Color}; color: white; margin: 2px;")">
-                                    @tc.Category.Name
-                                </MudChip>
-                            }
-                        }
-                        else
-                        {
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default"
-                                     OnClick="@(() => QuickCategorize(context.Item))"
-                                     aria-label="@($"Ändra kategori för {context.Item.Description}")">
-                                Okategoriserad
-                            </MudChip>
-                        }
+                        <TransactionCategoryChips Transaction="context.Item" OnCategoryChange="QuickCategorize" />
                     </CellTemplate>
                 </TemplateColumn>
                 <TemplateColumn Title="Belopp" Sortable="true" SortBy="@(x => x.Amount)">
