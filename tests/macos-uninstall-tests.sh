@@ -96,6 +96,10 @@ for label in com.privatekonomi.web com.privatekonomi.api com.privatekonomi.updat
     touch "$agents/$label.plist"
 done
 
+if ! LAUNCHCTL_STATE_DIR="$launchctl_state" "$temp/bin/launchctl" print "gui/$(id -u)"; then
+    echo "Expected the launchctl mock to accept the GUI domain."
+    exit 1
+fi
 if ! HOME="$app_only_home" PATH="$temp/bin:$system_path" LAUNCHCTL_STATE_DIR="$launchctl_state" LAUNCHCTL_COMMAND="$temp/bin/launchctl" \
     bash "$repo/scripts/macos/uninstall.sh" --app-only --yes; then
     cat "$launchctl_state/calls" >&2
