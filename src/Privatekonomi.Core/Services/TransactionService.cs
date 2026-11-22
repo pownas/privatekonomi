@@ -176,7 +176,8 @@ public class TransactionService : ITransactionService
             {
                 var ruleCategoryId = await _categoryRuleService.ApplyCategoryRulesAsync(
                     transaction.Description, 
-                    transaction.Payee);
+                    transaction.Payee,
+                    amount: transaction.Amount);
                 
                 if (ruleCategoryId.HasValue)
                 {

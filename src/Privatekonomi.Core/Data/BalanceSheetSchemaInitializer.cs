@@ -8,7 +8,7 @@ using Privatekonomi.Core.Models;
 namespace Privatekonomi.Core.Data;
 
 /// <summary>
-/// Adds balance-sheet columns to existing databases, including those created without migration history.
+/// Adds financial-data columns to existing databases, including those created without migration history.
 /// </summary>
 public static class BalanceSheetSchemaInitializer
 {
@@ -42,7 +42,10 @@ public static class BalanceSheetSchemaInitializer
             new AddColumnOperation { Table = "CurrencyAccounts", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Households", Name = "ShareBalanceSheet", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "HouseholdMembers", Name = "ShareBalanceSheetConsent", ClrType = typeof(bool), DefaultValue = false },
-            new AddColumnOperation { Table = "Loans", Name = "ExcludeFromBalanceSheet", ClrType = typeof(bool), DefaultValue = false }
+            new AddColumnOperation { Table = "Loans", Name = "ExcludeFromBalanceSheet", ClrType = typeof(bool), DefaultValue = false },
+            new AddColumnOperation { Table = "CategoryRules", Name = "ExactAmount", ClrType = typeof(decimal), IsNullable = true, Precision = 18, Scale = 2 },
+            new AddColumnOperation { Table = "CategoryRules", Name = "MinimumAmount", ClrType = typeof(decimal), IsNullable = true, Precision = 18, Scale = 2 },
+            new AddColumnOperation { Table = "CategoryRules", Name = "MaximumAmount", ClrType = typeof(decimal), IsNullable = true, Precision = 18, Scale = 2 }
         };
 
         await context.Database.OpenConnectionAsync(cancellationToken);

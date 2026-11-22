@@ -1,5 +1,6 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
+@using Privatekonomi.Web.Components.Shared
 @inject ICategoryService CategoryService
 @inject ICategoryRuleService CategoryRuleService
 @inject ISnackbar Snackbar
@@ -44,6 +45,10 @@
                         <MudSelectItem Value="@PatternMatchType.EndsWith">Slutar med</MudSelectItem>
                         <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
                     </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <RuleAmountCriteriaEditor Rule="_amountCriteria" @ref="_amountCriteriaEditor" />
                 </MudItem>
                 
                 <MudItem xs="12" md="6">
@@ -143,6 +148,8 @@
     private bool _isActive = true;
     private bool _caseSensitive = false;
     private string _description = string.Empty;
+    private CategoryRule _amountCriteria = new();
+    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -204,6 +211,12 @@
             return;
         }
 
+        if (_amountCriteriaEditor is { IsValid: false })
+        {
+            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            return;
+        }
+
         try
         {
             _saving = true;
@@ -211,6 +224,9 @@
             var rule = new CategoryRule
             {
                 Pattern = _pattern,
+                ExactAmount = _amountCriteria.ExactAmount,
+                MinimumAmount = _amountCriteria.MinimumAmount,
+                MaximumAmount = _amountCriteria.MaximumAmount,
                 MatchType = _matchType,
                 CategoryId = _selectedCategoryId.Value,
                 Field = _field,

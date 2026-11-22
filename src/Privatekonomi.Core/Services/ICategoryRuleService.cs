@@ -55,13 +55,21 @@ public interface ICategoryRuleService
     /// Finds the first matching category rule for a transaction.
     /// Returns null if no rule matches.
     /// </summary>
-    Task<CategoryRule?> FindMatchingRuleAsync(string description, string? payee = null, string? userId = null);
+    Task<CategoryRule?> FindMatchingRuleAsync(
+        string description,
+        string? payee = null,
+        string? userId = null,
+        decimal? amount = null);
     
     /// <summary>
     /// Applies categorization rules to a transaction.
     /// Returns the category ID if a rule matches, otherwise null.
     /// </summary>
-    Task<int?> ApplyCategoryRulesAsync(string description, string? payee = null, string? userId = null);
+    Task<int?> ApplyCategoryRulesAsync(
+        string description,
+        string? payee = null,
+        string? userId = null,
+        decimal? amount = null);
     
     /// <summary>
     /// Applies categorization rules to multiple transactions in bulk.

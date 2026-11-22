@@ -1,0 +1,116 @@
+@using System.Globalization
+@using Privatekonomi.Core.Models
+
+<MudGrid Class="mb-3">
+    <MudItem xs="12">
+        <MudSelect T="RuleAmountMode"
+                   Value="@_mode"
+                   ValueChanged="SetMode"
+                   Label="Beloppsvillkor"
+                   Variant="Variant.Outlined">
+            <MudSelectItem Value="@RuleAmountMode.None">Inget beloppsvillkor</MudSelectItem>
+            <MudSelectItem Value="@RuleAmountMode.Exact">Exakt belopp</MudSelectItem>
+            <MudSelectItem Value="@RuleAmountMode.Range">Beloppsintervall</MudSelectItem>
+        </MudSelect>
+        <MudText Typo="Typo.caption" Color="Color.Secondary">
+            Beloppet jämförs utan hänsyn till om transaktionen är inkomst eller utgift.
+        </MudText>
+    </MudItem>
+
+    @if (_mode == RuleAmountMode.Exact)
+    {
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal?"
+                             @bind-Value="Rule.ExactAmount"
+                             Label="Exakt belopp"
+                             Variant="Variant.Outlined"
+                             Format="N2"
+                             Culture="@SwedishCulture"
+                             Adornment="Adornment.End"
+                             AdornmentText="kr" />
+        </MudItem>
+    }
+    else if (_mode == RuleAmountMode.Range)
+    {
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal?"
+                             @bind-Value="Rule.MinimumAmount"
+                             Label="Minsta belopp"
+                             Variant="Variant.Outlined"
+                             Format="N2"
+                             Culture="@SwedishCulture"
+                             Adornment="Adornment.End"
+                             AdornmentText="kr" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal?"
+                             @bind-Value="Rule.MaximumAmount"
+                             Label="Största belopp"
+                             Variant="Variant.Outlined"
+                             Format="N2"
+                             Culture="@SwedishCulture"
+                             Adornment="Adornment.End"
+                             AdornmentText="kr" />
+        </MudItem>
+    }
+
+    @if (ValidationMessage is { } validationMessage)
+    {
+        <MudItem xs="12">
+            <MudAlert Severity="Severity.Warning" Dense="true">@validationMessage</MudAlert>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private static readonly CultureInfo SwedishCulture = CultureInfo.GetCultureInfo("sv-SE");
+    private CategoryRule? _currentRule;
+    private RuleAmountMode _mode;
+
+    [Parameter, EditorRequired]
+    public CategoryRule Rule { get; set; } = default!;
+
+    public bool IsValid => ValidationMessage is null;
+
+    public string? ValidationMessage => _mode switch
+    {
+        RuleAmountMode.Exact when Rule.ExactAmount is < 0 => "Beloppet måste vara noll eller större.",
+        RuleAmountMode.Exact when !Rule.ExactAmount.HasValue => "Ange ett exakt belopp eller välj inget beloppsvillkor.",
+        RuleAmountMode.Range when Rule.MinimumAmount is < 0 || Rule.MaximumAmount is < 0 => "Beloppen måste vara noll eller större.",
+        RuleAmountMode.Range when !Rule.MinimumAmount.HasValue || !Rule.MaximumAmount.HasValue => "Ange både minsta och största belopp för intervallet.",
+        RuleAmountMode.Range when Rule.MinimumAmount!.Value > Rule.MaximumAmount!.Value => "Största beloppet måste vara lika med eller större än minsta beloppet.",
+        _ => null
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_currentRule, Rule))
+        {
+            return;
+        }
+
+        _currentRule = Rule;
+        _mode = Rule.ExactAmount.HasValue
+            ? RuleAmountMode.Exact
+            : Rule.MinimumAmount.HasValue || Rule.MaximumAmount.HasValue
+                ? RuleAmountMode.Range
+                : RuleAmountMode.None;
+    }
+
+    private Task SetMode(RuleAmountMode mode)
+    {
+        _mode = mode;
+        if (mode != RuleAmountMode.Exact)
+        {
+            Rule.ExactAmount = null;
+        }
+
+        if (mode != RuleAmountMode.Range)
+        {
+            Rule.MinimumAmount = null;
+            Rule.MaximumAmount = null;
+        }
+
+        return Task.CompletedTask;
+    }
+}

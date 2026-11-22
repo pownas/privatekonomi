@@ -55,6 +55,10 @@
                     <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
                 </MudSelect>
             </MudItem>
+
+                <MudItem xs="12">
+                    <RuleAmountCriteriaEditor Rule="_formAmountCriteria" @ref="_amountCriteriaEditor" />
+                </MudItem>
             
             <MudItem xs="12" md="6">
                 <MudSelect @bind-Value="_formCategoryId" 
@@ -169,6 +173,10 @@
                     {
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Description</MudText>
                     }
+                    @if (GetAmountCriteriaLabel(context) is { } amountCriteriaLabel)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@amountCriteriaLabel</MudText>
+                    }
                     @if (context.OverridesSystemRuleId != null)
                     {
                         <MudText Typo="Typo.caption" Color="Color.Warning">Skriver över systemregel #@context.OverridesSystemRuleId</MudText>
@@ -250,7 +258,7 @@
             <EmptyState IconName="@Icons.Material.Filled.AutoAwesome"
                         IconColor="Color.Secondary"
                         Title="Inga kategoriseringsregler än"
-                        Description="Skapa regler för att automatiskt kategorisera transaktioner baserat på text i beskrivning eller betalningsmottagare."
+                        Description="Skapa regler för att automatiskt kategorisera transaktioner baserat på text i beskrivning eller betalningsmottagare, med valfritt beloppsvillkor."
                         ActionText="Skapa regel"
                         ActionIcon="@Icons.Material.Filled.Add"
                         OnActionClick="ToggleCreateForm" />
@@ -274,6 +282,8 @@
     private bool _formIsActive = true;
     private bool _formCaseSensitive = false;
     private string _formDescription = string.Empty;
+    private CategoryRule _formAmountCriteria = new();
+    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -308,6 +318,7 @@
         _formIsActive = true;
         _formCaseSensitive = false;
         _formDescription = string.Empty;
+        _formAmountCriteria = new CategoryRule();
     }
 
     private void EditRule(CategoryRule rule)
@@ -321,6 +332,12 @@
         _formIsActive = rule.IsActive;
         _formCaseSensitive = rule.CaseSensitive;
         _formDescription = rule.Description ?? string.Empty;
+        _formAmountCriteria = new CategoryRule
+        {
+            ExactAmount = rule.ExactAmount,
+            MinimumAmount = rule.MinimumAmount,
+            MaximumAmount = rule.MaximumAmount
+        };
         _showCreateForm = true;
     }
 
@@ -345,6 +362,12 @@
             return;
         }
 
+        if (_amountCriteriaEditor is { IsValid: false })
+        {
+            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            return;
+        }
+
         try
         {
             if (_editingRule != null)
@@ -358,6 +381,9 @@
                 _editingRule.IsActive = _formIsActive;
                 _editingRule.CaseSensitive = _formCaseSensitive;
                 _editingRule.Description = string.IsNullOrWhiteSpace(_formDescription) ? null : _formDescription;
+                _editingRule.ExactAmount = _formAmountCriteria.ExactAmount;
+                _editingRule.MinimumAmount = _formAmountCriteria.MinimumAmount;
+                _editingRule.MaximumAmount = _formAmountCriteria.MaximumAmount;
 
                 await CategoryRuleService.UpdateRuleAsync(_editingRule);
                 Snackbar.Add("Regel uppdaterad!", Severity.Success);
@@ -368,6 +394,9 @@
                 var rule = new CategoryRule
                 {
                     Pattern = _formPattern,
+                    ExactAmount = _formAmountCriteria.ExactAmount,
+                    MinimumAmount = _formAmountCriteria.MinimumAmount,
+                    MaximumAmount = _formAmountCriteria.MaximumAmount,
                     MatchType = _formMatchType,
                     CategoryId = _formCategoryId,
                     Field = _formField,
@@ -423,6 +452,12 @@
         _formIsActive = systemRule.IsActive;
         _formCaseSensitive = systemRule.CaseSensitive;
         _formDescription = $"Användarändring av: {systemRule.Description ?? systemRule.Pattern}";
+        _formAmountCriteria = new CategoryRule
+        {
+            ExactAmount = systemRule.ExactAmount,
+            MinimumAmount = systemRule.MinimumAmount,
+            MaximumAmount = systemRule.MaximumAmount
+        };
         
         _editingRule = null;
         _showCreateForm = true;
@@ -455,6 +490,29 @@
                 Snackbar.Add($"Fel vid återställning: {ex.Message}", Severity.Error);
             }
         }
+    }
+
+    private static string? GetAmountCriteriaLabel(CategoryRule rule)
+    {
+        var culture = System.Globalization.CultureInfo.GetCultureInfo("sv-SE");
+        if (rule.ExactAmount.HasValue)
+        {
+            return $"Exakt belopp: {rule.ExactAmount.Value.ToString("N2", culture)} kr";
+        }
+
+        if (rule.MinimumAmount.HasValue && rule.MaximumAmount.HasValue)
+        {
+            return $"Beloppsintervall: {rule.MinimumAmount.Value.ToString("N2", culture)}–{rule.MaximumAmount.Value.ToString("N2", culture)} kr";
+        }
+
+        if (rule.MinimumAmount.HasValue)
+        {
+            return $"Minsta belopp: {rule.MinimumAmount.Value.ToString("N2", culture)} kr";
+        }
+
+        return rule.MaximumAmount.HasValue
+            ? $"Största belopp: {rule.MaximumAmount.Value.ToString("N2", culture)} kr"
+            : null;
     }
 
     private string GetMatchTypeLabel(PatternMatchType matchType)

@@ -72,6 +72,8 @@ public class CategoryRuleService : ICategoryRuleService
 
     public async Task<CategoryRule> CreateRuleAsync(CategoryRule rule, string? userId = null, bool isAdmin = false)
     {
+        ValidateAmountCriteria(rule);
+
         // Use provided userId or current user
         var effectiveUserId = userId ?? _currentUserService?.UserId;
         
@@ -94,6 +96,8 @@ public class CategoryRuleService : ICategoryRuleService
 
     public async Task<CategoryRule> UpdateRuleAsync(CategoryRule rule, string? userId = null, bool isAdmin = false)
     {
+        ValidateAmountCriteria(rule);
+
         var existingRule = await _context.CategoryRules.FindAsync(rule.CategoryRuleId);
         if (existingRule == null)
         {
@@ -143,6 +147,8 @@ public class CategoryRuleService : ICategoryRuleService
 
     public async Task<CategoryRule> CreateOverrideAsync(int systemRuleId, CategoryRule overrideRule, string userId)
     {
+        ValidateAmountCriteria(overrideRule);
+
         var systemRule = await _context.CategoryRules.FindAsync(systemRuleId);
         if (systemRule == null)
         {
@@ -185,13 +191,17 @@ public class CategoryRuleService : ICategoryRuleService
         }
     }
 
-    public async Task<CategoryRule?> FindMatchingRuleAsync(string description, string? payee = null, string? userId = null)
+    public async Task<CategoryRule?> FindMatchingRuleAsync(
+        string description,
+        string? payee = null,
+        string? userId = null,
+        decimal? amount = null)
     {
         var rules = await GetActiveRulesAsync(userId);
         
         foreach (var rule in rules)
         {
-            if (IsMatch(rule, description, payee))
+            if (IsMatch(rule, description, payee, amount))
             {
                 return rule;
             }
@@ -200,9 +210,13 @@ public class CategoryRuleService : ICategoryRuleService
         return null;
     }
 
-    public async Task<int?> ApplyCategoryRulesAsync(string description, string? payee = null, string? userId = null)
+    public async Task<int?> ApplyCategoryRulesAsync(
+        string description,
+        string? payee = null,
+        string? userId = null,
+        decimal? amount = null)
     {
-        var matchingRule = await FindMatchingRuleAsync(description, payee, userId);
+        var matchingRule = await FindMatchingRuleAsync(description, payee, userId, amount);
         return matchingRule?.CategoryId;
     }
 
@@ -219,7 +233,7 @@ public class CategoryRuleService : ICategoryRuleService
         {
             foreach (var rule in rules)
             {
-                if (IsMatch(rule, transaction.Description, transaction.Payee))
+                if (IsMatch(rule, transaction.Description, transaction.Payee, transaction.Amount))
                 {
                     results[transaction.TransactionId] = rule.CategoryId;
                     break; // Use first matching rule (highest priority)
@@ -233,8 +247,13 @@ public class CategoryRuleService : ICategoryRuleService
     /// <summary>
     /// Checks if a rule matches the given description and/or payee.
     /// </summary>
-    private bool IsMatch(CategoryRule rule, string description, string? payee)
+    private bool IsMatch(CategoryRule rule, string description, string? payee, decimal? amount)
     {
+        if (!MatchesAmount(rule, amount))
+        {
+            return false;
+        }
+
         bool descriptionMatches = false;
         bool payeeMatches = false;
         
@@ -258,6 +277,53 @@ public class CategoryRuleService : ICategoryRuleService
             MatchField.Both => descriptionMatches || payeeMatches,
             _ => false
         };
+    }
+
+    private static bool MatchesAmount(CategoryRule rule, decimal? amount)
+    {
+        var hasExactAmount = rule.ExactAmount.HasValue;
+        var hasRange = rule.MinimumAmount.HasValue || rule.MaximumAmount.HasValue;
+        if (!hasExactAmount && !hasRange)
+        {
+            return true;
+        }
+
+        if (!amount.HasValue || (hasExactAmount && hasRange) ||
+            (hasRange && (!rule.MinimumAmount.HasValue || !rule.MaximumAmount.HasValue)))
+        {
+            return false;
+        }
+
+        var absoluteAmount = Math.Abs(amount.Value);
+        if (hasExactAmount)
+        {
+            return absoluteAmount == rule.ExactAmount!.Value;
+        }
+
+        return absoluteAmount >= rule.MinimumAmount!.Value && absoluteAmount <= rule.MaximumAmount!.Value;
+    }
+
+    private static void ValidateAmountCriteria(CategoryRule rule)
+    {
+        if (rule.ExactAmount.HasValue && (rule.MinimumAmount.HasValue || rule.MaximumAmount.HasValue))
+        {
+            throw new ArgumentException("Ange antingen ett exakt belopp eller ett beloppsintervall, inte båda.", nameof(rule));
+        }
+
+        if (rule.ExactAmount is < 0 || rule.MinimumAmount is < 0 || rule.MaximumAmount is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rule), "Beloppsvillkor anges som positiva belopp utan tecken.");
+        }
+
+        if (rule.MinimumAmount.HasValue != rule.MaximumAmount.HasValue)
+        {
+            throw new ArgumentException("Fyll i både min- och maxbelopp för ett intervall.", nameof(rule));
+        }
+
+        if (rule.MinimumAmount > rule.MaximumAmount)
+        {
+            throw new ArgumentException("Maxbeloppet måste vara större än eller lika med minbeloppet.", nameof(rule));
+        }
     }
 
     /// <summary>

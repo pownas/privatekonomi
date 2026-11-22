@@ -862,6 +862,9 @@ else
                 var rule = new CategoryRule
                 {
                     Pattern = categorizeResult.RulePattern ?? transaction.Description,
+                    ExactAmount = categorizeResult.ExactAmount,
+                    MinimumAmount = categorizeResult.MinimumAmount,
+                    MaximumAmount = categorizeResult.MaximumAmount,
                     MatchType = PatternMatchType.Contains,
                     CategoryId = categorizeResult.CategoryId,
                     Field = MatchField.Both,

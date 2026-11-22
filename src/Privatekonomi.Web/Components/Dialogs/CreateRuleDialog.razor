@@ -1,5 +1,6 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
+@using Privatekonomi.Web.Components.Shared
 @inject ICategoryRuleService CategoryRuleService
 @inject ICategoryService CategoryService
 @inject ISnackbar Snackbar
@@ -44,6 +45,10 @@
                         <MudSelectItem Value="@PatternMatchType.EndsWith">Slutar med</MudSelectItem>
                         <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
                     </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <RuleAmountCriteriaEditor Rule="_amountCriteria" @ref="_amountCriteriaEditor" />
                 </MudItem>
                 
                 <MudItem xs="12" md="6">
@@ -113,6 +118,14 @@
                         i @GetFieldDescription() kommer automatiskt att kategoriseras som 
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Style="@GetCategoryStyle()">@GetCategoryName()</MudChip>
                     </MudText>
+                    @if (_amountCriteria.ExactAmount.HasValue)
+                    {
+                        <MudText Typo="Typo.caption">Endast när beloppet är exakt @_amountCriteria.ExactAmount.Value.ToString("N2") kr.</MudText>
+                    }
+                    else if (_amountCriteria.MinimumAmount.HasValue && _amountCriteria.MaximumAmount.HasValue)
+                    {
+                        <MudText Typo="Typo.caption">Endast när beloppet är mellan @_amountCriteria.MinimumAmount.Value.ToString("N2") och @_amountCriteria.MaximumAmount.Value.ToString("N2") kr.</MudText>
+                    }
                 </MudPaper>
             }
         }
@@ -152,6 +165,8 @@
     private int _priority = 50;
     private bool _isActive = true;
     private string _description = string.Empty;
+    private CategoryRule _amountCriteria = new();
+    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
 
     private bool IsValid => !string.IsNullOrWhiteSpace(_pattern) && _categoryId > 0;
 
@@ -250,11 +265,20 @@
             return;
         }
 
+        if (_amountCriteriaEditor is { IsValid: false })
+        {
+            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            return;
+        }
+
         try
         {
             var rule = new CategoryRule
             {
                 Pattern = _pattern,
+                ExactAmount = _amountCriteria.ExactAmount,
+                MinimumAmount = _amountCriteria.MinimumAmount,
+                MaximumAmount = _amountCriteria.MaximumAmount,
                 MatchType = _matchType,
                 CategoryId = _categoryId,
                 Field = _field,

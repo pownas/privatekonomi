@@ -695,66 +695,66 @@ namespace Privatekonomi.Core.Migrations
                             BankSourceId = 1,
                             AccountType = "checking",
                             Color = "#DC143C",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7416),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4196),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "ICA-banken",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7524)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4325)
                         },
                         new
                         {
                             BankSourceId = 2,
                             AccountType = "checking",
                             Color = "#FF8C00",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7756),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4583),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "Swedbank",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7757)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4584)
                         },
                         new
                         {
                             BankSourceId = 3,
                             AccountType = "checking",
                             Color = "#0066CC",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7759),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4586),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "SEB",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7759)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4588)
                         },
                         new
                         {
                             BankSourceId = 4,
                             AccountType = "checking",
                             Color = "#00A9CE",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7762),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4591),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "Nordea",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7762)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4592)
                         },
                         new
                         {
                             BankSourceId = 5,
                             AccountType = "checking",
                             Color = "#003366",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7765),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4594),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "Handelsbanken",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7765)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4596)
                         },
                         new
                         {
                             BankSourceId = 6,
                             AccountType = "investment",
                             Color = "#006400",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7768),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4600),
                             Currency = "SEK",
                             InitialBalance = 0m,
                             Name = "Avanza",
-                            ValidFrom = new DateTime(2026, 11, 21, 10, 51, 33, 798, DateTimeKind.Utc).AddTicks(7769)
+                            ValidFrom = new DateTime(2026, 11, 22, 0, 16, 37, 253, DateTimeKind.Utc).AddTicks(4600)
                         });
                 });
 
@@ -1455,6 +1455,9 @@ namespace Privatekonomi.Core.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsInternalTransferCategory")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsSystemCategory")
                         .HasColumnType("INTEGER");
 
@@ -1496,7 +1499,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 1,
                             AccountNumber = "5000",
                             Color = "#FF6B6B",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8169),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(7901),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Mat & Dryck",
                             OriginalAccountNumber = "5000",
@@ -1509,7 +1513,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 2,
                             AccountNumber = "6000",
                             Color = "#4ECDC4",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8297),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8071),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Transport",
                             OriginalAccountNumber = "6000",
@@ -1522,7 +1527,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 3,
                             AccountNumber = "4000",
                             Color = "#45B7D1",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8300),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8075),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Boende",
                             OriginalAccountNumber = "4000",
@@ -1535,7 +1541,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 4,
                             AccountNumber = "7000",
                             Color = "#FFA07A",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8303),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8080),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Nöje",
                             OriginalAccountNumber = "7000",
@@ -1548,7 +1555,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 5,
                             AccountNumber = "5500",
                             Color = "#98D8C8",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8324),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8083),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Shopping",
                             OriginalAccountNumber = "5500",
@@ -1561,7 +1569,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 6,
                             AccountNumber = "7500",
                             Color = "#6BCF7F",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8327),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8087),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Hälsa",
                             OriginalAccountNumber = "7500",
@@ -1574,7 +1583,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 7,
                             AccountNumber = "3000",
                             Color = "#4CAF50",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8331),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8091),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Lön",
                             OriginalAccountNumber = "3000",
@@ -1587,7 +1597,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 8,
                             AccountNumber = "8000",
                             Color = "#2196F3",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8334),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8130),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Sparande",
                             OriginalAccountNumber = "8000",
@@ -1600,7 +1611,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 9,
                             AccountNumber = "6900",
                             Color = "#9E9E9E",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8336),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8133),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Övrigt",
                             OriginalAccountNumber = "6900",
@@ -1613,7 +1625,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 10,
                             AccountNumber = "5100",
                             Color = "#FF6B6B",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8498),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8280),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Livsmedel",
                             OriginalAccountNumber = "5100",
@@ -1627,7 +1640,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 11,
                             AccountNumber = "5200",
                             Color = "#FF5252",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8502),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8286),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Restaurang",
                             OriginalAccountNumber = "5200",
@@ -1641,7 +1655,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 12,
                             AccountNumber = "5300",
                             Color = "#FF8A80",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8506),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8291),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Café",
                             OriginalAccountNumber = "5300",
@@ -1655,7 +1670,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 13,
                             AccountNumber = "6100",
                             Color = "#4ECDC4",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8518),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8295),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Kollektivtrafik",
                             OriginalAccountNumber = "6100",
@@ -1669,7 +1685,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 14,
                             AccountNumber = "6200",
                             Color = "#26A69A",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8521),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8301),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Bensin",
                             OriginalAccountNumber = "6200",
@@ -1683,7 +1700,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 15,
                             AccountNumber = "6500",
                             Color = "#80CBC4",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8524),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8321),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Parkering",
                             OriginalAccountNumber = "6500",
@@ -1697,7 +1715,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 16,
                             AccountNumber = "4100",
                             Color = "#45B7D1",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8527),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8326),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Hyra/Avgift",
                             OriginalAccountNumber = "4100",
@@ -1711,7 +1730,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 17,
                             AccountNumber = "4200",
                             Color = "#29B6F6",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8531),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8331),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "El",
                             OriginalAccountNumber = "4200",
@@ -1725,7 +1745,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 18,
                             AccountNumber = "4300",
                             Color = "#81D4FA",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8535),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8336),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Bredband",
                             OriginalAccountNumber = "4300",
@@ -1739,7 +1760,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 19,
                             AccountNumber = "4400",
                             Color = "#4FC3F7",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8538),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8341),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Hemförsäkring",
                             OriginalAccountNumber = "4400",
@@ -1753,7 +1775,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 20,
                             AccountNumber = "7100",
                             Color = "#FFA07A",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8549),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8346),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Streaming",
                             OriginalAccountNumber = "7100",
@@ -1767,7 +1790,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 21,
                             AccountNumber = "7300",
                             Color = "#FF8A65",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8552),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8350),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Gym",
                             OriginalAccountNumber = "7300",
@@ -1781,7 +1805,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 22,
                             AccountNumber = "7400",
                             Color = "#FFAB91",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8556),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8371),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Resor",
                             OriginalAccountNumber = "7400",
@@ -1795,7 +1820,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 23,
                             AccountNumber = "5510",
                             Color = "#98D8C8",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8560),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8375),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Kläder",
                             OriginalAccountNumber = "5510",
@@ -1809,7 +1835,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 24,
                             AccountNumber = "5520",
                             Color = "#80CBC4",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8577),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8380),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Hygienartiklar",
                             OriginalAccountNumber = "5520",
@@ -1823,7 +1850,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 25,
                             AccountNumber = "5550",
                             Color = "#B2DFDB",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8581),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8383),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Elektronik",
                             OriginalAccountNumber = "5550",
@@ -1837,7 +1865,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 26,
                             AccountNumber = "7510",
                             Color = "#6BCF7F",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8583),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8388),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Tandvård",
                             OriginalAccountNumber = "7510",
@@ -1851,7 +1880,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 27,
                             AccountNumber = "7520",
                             Color = "#81C784",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8595),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8394),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Läkarvård",
                             OriginalAccountNumber = "7520",
@@ -1865,7 +1895,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 28,
                             AccountNumber = "7530",
                             Color = "#A5D6A7",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8598),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8398),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Medicin",
                             OriginalAccountNumber = "7530",
@@ -1879,7 +1910,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 29,
                             AccountNumber = "3010",
                             Color = "#66BB6A",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8601),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8414),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Bonus",
                             OriginalAccountNumber = "3010",
@@ -1893,7 +1925,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 30,
                             AccountNumber = "3020",
                             Color = "#81C784",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8604),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8419),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Semesterersättning",
                             OriginalAccountNumber = "3020",
@@ -1907,7 +1940,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 31,
                             AccountNumber = "8100",
                             Color = "#2196F3",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8608),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8424),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Buffert",
                             OriginalAccountNumber = "8100",
@@ -1921,7 +1955,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 32,
                             AccountNumber = "8200",
                             Color = "#42A5F5",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8612),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8428),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Månadsspar Fonder",
                             OriginalAccountNumber = "8200",
@@ -1935,7 +1970,8 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 33,
                             AccountNumber = "8300",
                             Color = "#64B5F6",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8615),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8433),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "ISK",
                             OriginalAccountNumber = "8300",
@@ -1949,13 +1985,28 @@ namespace Privatekonomi.Core.Migrations
                             CategoryId = 34,
                             AccountNumber = "8400",
                             Color = "#90CAF9",
-                            CreatedAt = new DateTime(2026, 11, 21, 10, 51, 33, 797, DateTimeKind.Utc).AddTicks(8627),
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8439),
+                            IsInternalTransferCategory = false,
                             IsSystemCategory = true,
                             Name = "Pensionssparande",
                             OriginalAccountNumber = "8400",
                             OriginalColor = "#90CAF9",
                             OriginalName = "Pensionssparande",
                             ParentId = 8,
+                            TaxRelated = false
+                        },
+                        new
+                        {
+                            CategoryId = 35,
+                            AccountNumber = "8999",
+                            Color = "#607D8B",
+                            CreatedAt = new DateTime(2026, 11, 22, 0, 16, 37, 252, DateTimeKind.Utc).AddTicks(8575),
+                            IsInternalTransferCategory = true,
+                            IsSystemCategory = true,
+                            Name = "Överföringar",
+                            OriginalAccountNumber = "8999",
+                            OriginalColor = "#607D8B",
+                            OriginalName = "Överföringar",
                             TaxRelated = false
                         });
                 });
@@ -1979,6 +2030,10 @@ namespace Privatekonomi.Core.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("ExactAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Field")
                         .HasColumnType("INTEGER");
 
@@ -1987,6 +2042,14 @@ namespace Privatekonomi.Core.Migrations
 
                     b.Property<int>("MatchType")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("MaximumAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MinimumAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OverridesSystemRuleId")
                         .HasColumnType("INTEGER");
@@ -5623,7 +5686,13 @@ namespace Privatekonomi.Core.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsExcludedFromTotals")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsIncome")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInternalTransfer")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsLocked")
@@ -5899,8 +5968,6 @@ namespace Privatekonomi.Core.Migrations
                     b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
                         {
                             b1.Property<byte[]>("IdentityUserPasskeyCredentialId");
-
-                            b1.Property<byte[]>("Aaguid");
 
                             b1.Property<byte[]>("AttestationObject")
                                 .IsRequired();

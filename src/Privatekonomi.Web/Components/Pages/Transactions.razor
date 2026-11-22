@@ -881,6 +881,9 @@
                     var rule = new CategoryRule
                     {
                         Pattern = pattern,
+                        ExactAmount = categorizeResult.ExactAmount,
+                        MinimumAmount = categorizeResult.MinimumAmount,
+                        MaximumAmount = categorizeResult.MaximumAmount,
                         MatchType = PatternMatchType.Contains,
                         CategoryId = categorizeResult.CategoryId,
                         Field = MatchField.Both,

@@ -122,7 +122,8 @@ public class CategoryRulesController : ControllerBase
         
         var matchingRule = await _categoryRuleService.FindMatchingRuleAsync(
             request.Description, 
-            request.Payee);
+            request.Payee,
+            amount: request.Amount);
         
         if (matchingRule == null)
         {
@@ -207,4 +208,5 @@ public class TestRuleRequest
 {
     public string Description { get; set; } = string.Empty;
     public string? Payee { get; set; }
+    public decimal? Amount { get; set; }
 }

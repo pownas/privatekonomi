@@ -254,6 +254,9 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasKey(e => e.CategoryRuleId);
             entity.Property(e => e.Pattern).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ExactAmount).HasPrecision(18, 2);
+            entity.Property(e => e.MinimumAmount).HasPrecision(18, 2);
+            entity.Property(e => e.MaximumAmount).HasPrecision(18, 2);
             entity.Property(e => e.MatchType).IsRequired();
             entity.Property(e => e.Priority).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();

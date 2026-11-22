@@ -1,5 +1,6 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
+@using Privatekonomi.Web.Components.Shared
 @inject ICategoryService CategoryService
 @inject ISnackbar Snackbar
 
@@ -80,6 +81,7 @@
                                   HelperText="Lämna tomt för att använda transaktionsbeskrivningen"
                                   Placeholder="@Transaction?.Description"
                                   Class="mb-2" />
+                    <RuleAmountCriteriaEditor Rule="_amountCriteria" @ref="_amountCriteriaEditor" />
                 }
             }
             else
@@ -114,6 +116,8 @@
     private bool _createRule = false;
     private bool _excludeFromTotals;
     private string? _rulePattern;
+    private CategoryRule _amountCriteria = new();
+    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
     private int? InternalTransferCategoryId => _categories.FirstOrDefault(c => c.IsInternalTransferCategory)?.CategoryId;
 
     protected override async Task OnInitializedAsync()
@@ -183,12 +187,21 @@
             return;
         }
 
+        if (_createRule && _amountCriteriaEditor is { IsValid: false })
+        {
+            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            return;
+        }
+
         var result = new QuickCategorizeResult
         {
             CategoryId = _selectedCategoryId ?? 0,
             IsExcludedFromTotals = _excludeFromTotals,
             CreateRule = _excludeFromTotals ? false : _createRule,
-            RulePattern = string.IsNullOrWhiteSpace(_rulePattern) ? null : _rulePattern
+            RulePattern = string.IsNullOrWhiteSpace(_rulePattern) ? null : _rulePattern,
+            ExactAmount = _amountCriteria.ExactAmount,
+            MinimumAmount = _amountCriteria.MinimumAmount,
+            MaximumAmount = _amountCriteria.MaximumAmount
         };
 
         MudDialog.Close(DialogResult.Ok(result));
@@ -200,5 +213,8 @@
         public bool IsExcludedFromTotals { get; set; }
         public bool CreateRule { get; set; }
         public string? RulePattern { get; set; }
+        public decimal? ExactAmount { get; set; }
+        public decimal? MinimumAmount { get; set; }
+        public decimal? MaximumAmount { get; set; }
     }
 }
