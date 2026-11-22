@@ -173,6 +173,17 @@ test.describe('Transactions Page', () => {
   });
 });
 
+test('transaction date fields accept ISO-formatted input', async ({ page }) => {
+  await page.goto('/economy/transactions/new');
+
+  const dateInput = page.getByRole('textbox', { name: 'Välj transaktionsdatum' });
+  await expect(dateInput).toBeEditable();
+  await dateInput.fill('2026-11-22');
+  await dateInput.press('Tab');
+
+  await expect(dateInput).toHaveValue('2026-11-22');
+});
+
 test.describe('Transaction categorization interactions', () => {
   test('clicking a transaction category opens quick categorization', async ({ page }) => {
     await page.goto('/economy/transactions');

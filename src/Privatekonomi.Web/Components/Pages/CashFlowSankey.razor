@@ -30,12 +30,12 @@ else
     <MudPaper Class="pa-4 mb-4" Elevation="2">
         <MudText Typo="Typo.subtitle1" Class="mb-2">Filtrera period</MudText>
         <div class="d-flex gap-3 flex-wrap">
-            <MudDatePicker @bind-Date="_startDate" 
+            <DateInput @bind-Date="_startDate"
                            Label="Från datum" 
                            Variant="Variant.Outlined"
                            Editable="true"
                            DateFormat="yyyy-MM-dd" />
-            <MudDatePicker @bind-Date="_endDate" 
+            <DateInput @bind-Date="_endDate"
                            Label="Till datum" 
                            Variant="Variant.Outlined"
                            Editable="true"

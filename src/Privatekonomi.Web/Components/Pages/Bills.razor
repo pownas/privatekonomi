@@ -48,13 +48,13 @@
                                  Class="mb-3" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="_formIssueDate"
+                <DateInput @bind-Date="_formIssueDate"
                                Label="Utställningsdatum"
                                Variant="Variant.Outlined"
                                Class="mb-3" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudDatePicker @bind-Date="_formDueDate"
+                <DateInput @bind-Date="_formDueDate"
                                Label="Förfallodatum"
                                Variant="Variant.Outlined"
                                Class="mb-3" />
@@ -411,7 +411,7 @@ else
         <MudText Typo="Typo.subtitle2" Class="mb-2">Lägg till påminnelse</MudText>
         <MudGrid>
             <MudItem xs="12" md="5">
-                <MudDatePicker @bind-Date="_newReminderDate"
+                <DateInput @bind-Date="_newReminderDate"
                                Label="Påminnelsedatum"
                                Variant="Variant.Outlined"
                                Class="mb-2" />

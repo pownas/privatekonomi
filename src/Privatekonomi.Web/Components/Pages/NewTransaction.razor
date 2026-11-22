@@ -25,7 +25,7 @@
     <EditForm Model="@_transaction" OnValidSubmit="OnValidSubmit" FormName="NewTransactionForm">
         <MudGrid>
             <MudItem xs="12" md="6">
-                <MudDatePicker Label="Datum" 
+                <DateInput Label="Datum"
                                @bind-Date="_date" 
                                Required="true"
                                aria-label="Välj transaktionsdatum" />

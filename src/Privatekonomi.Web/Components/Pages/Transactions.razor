@@ -119,7 +119,7 @@
                                     aria-label="Största belopp" />
                 </MudItem>
                 <MudItem xs="6" md="3">
-                    <MudDatePicker @bind-Date="_dateFrom" 
+                    <DateInput @bind-Date="_dateFrom"
                                    @bind-Date:after="ApplyFilter"
                                    Label="Från datum" 
                                    Variant="Variant.Outlined"
@@ -127,7 +127,7 @@
                                    aria-label="Från datum" />
                 </MudItem>
                 <MudItem xs="6" md="3">
-                    <MudDatePicker @bind-Date="_dateTo" 
+                    <DateInput @bind-Date="_dateTo"
                                    @bind-Date:after="ApplyFilter"
                                    Label="Till datum" 
                                    Variant="Variant.Outlined"

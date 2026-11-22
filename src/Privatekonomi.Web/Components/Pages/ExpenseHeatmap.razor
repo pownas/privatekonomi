@@ -31,12 +31,12 @@ else
     <!-- Filter Controls -->
     <MudPaper Class="pa-4 mb-4" Elevation="2">
         <div class="d-flex flex-column flex-md-row gap-3 align-end">
-            <MudDatePicker Label="Startdatum" 
+            <DateInput Label="Startdatum"
                           @bind-Date="_startDate"
                           DateFormat="yyyy-MM-dd"
                           Color="Color.Primary" />
             
-            <MudDatePicker Label="Slutdatum" 
+            <DateInput Label="Slutdatum"
                           @bind-Date="_endDate"
                           DateFormat="yyyy-MM-dd"
                           Color="Color.Primary" />

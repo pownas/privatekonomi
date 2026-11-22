@@ -1,0 +1,41 @@
+<MudDatePicker @attributes="AdditionalAttributes"
+               Date="Date"
+               DateChanged="HandleDateChanged"
+               DateFormat="@DateFormat"
+               Clearable="@Clearable"
+               Editable="@Editable"
+               Required="@Required"
+               RequiredError="@RequiredError"
+               ImmediateText="true" />
+
+@code {
+    [Parameter]
+    public DateTime? Date { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> DateChanged { get; set; }
+
+    [Parameter]
+    public string DateFormat { get; set; } = "yyyy-MM-dd";
+
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    [Parameter]
+    public bool Editable { get; set; } = true;
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public string? RequiredError { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private async Task HandleDateChanged(DateTime? date)
+    {
+        Date = date;
+        await DateChanged.InvokeAsync(date);
+    }
+}
