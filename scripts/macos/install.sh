@@ -9,6 +9,11 @@ LOG_DIR="$HOME/Library/Logs/Privatekonomi"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/install-$(date '+%Y%m%d-%H%M%S').log"
 BUILD_LOG_FILE="${LOG_FILE%.log}-build.log"
+REPOSITORY_URL="https://github.com/pownas/Privatekonomi.git"
+INSTALL_BRANCH="${PRIVATEKONOMI_BRANCH:-}"
+INSTALL_COMMIT=""
+INSTALL_SOURCE_ROOT=""
+SKIP_INTERACTIVE="${PRIVATEKONOMI_SKIP_INTERACTIVE:-false}"
 touch "$BUILD_LOG_FILE"
 export PRIVATEKONOMI_BUILD_LOG_FILE="$BUILD_LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -105,7 +110,95 @@ select_storage_provider() {
     esac
 }
 
+select_repository_branch() {
+    local remote_refs branches branch default_branch answer
+    remote_refs="$(git ls-remote --heads "$REPOSITORY_URL")" || {
+        log_error "Kunde inte hämta grenar från GitHub."
+        return 1
+    }
+    branches="$(printf '%s\n' "$remote_refs" | awk '$2 ~ /^refs\/heads\// { sub(/^refs\/heads\//, "", $2); print $2 }')"
+    if [[ -z "$branches" ]]; then
+        log_error "Inga grenar hittades i GitHub-repot."
+        return 1
+    fi
+
+    if [[ -z "$INSTALL_BRANCH" && -t 0 && "$SKIP_INTERACTIVE" != true ]]; then
+        default_branch="main"
+        printf '%s\n' "$branches" | grep -Fxq -- "$default_branch" || default_branch="${branches%%$'\n'*}"
+        printf 'Tillgängliga grenar i Privatekonomi:\n%s\n' "$branches" >&2
+        read -r -p "Välj installationsgren [$default_branch] (Enter = $default_branch): " answer || answer=""
+        INSTALL_BRANCH="${answer:-$default_branch}"
+    fi
+    INSTALL_BRANCH="${INSTALL_BRANCH:-main}"
+
+    if ! printf '%s\n' "$branches" | grep -Fxq -- "$INSTALL_BRANCH"; then
+        log_error "Grenen '$INSTALL_BRANCH' finns inte i GitHub-repot."
+        return 1
+    fi
+    log_info "Vald installationsgren: $INSTALL_BRANCH"
+}
+
+prepare_install_source() {
+    CURRENT_STEP="hämtning av vald installationsgren"
+    git -C "$REPO_ROOT" fetch --no-tags "$REPOSITORY_URL" "refs/heads/$INSTALL_BRANCH"
+    INSTALL_COMMIT="$(git -C "$REPO_ROOT" rev-parse FETCH_HEAD)"
+    if [[ ! "$INSTALL_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+        log_error "Kunde inte verifiera committen för grenen '$INSTALL_BRANCH'."
+        return 1
+    fi
+
+    INSTALL_SOURCE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/privatekonomi-install.XXXXXXXX")"
+    git -C "$REPO_ROOT" archive "$INSTALL_COMMIT" | tar -x -C "$INSTALL_SOURCE_ROOT"
+}
+
+cleanup_install_source() {
+    if [[ -n "$INSTALL_SOURCE_ROOT" && -d "$INSTALL_SOURCE_ROOT" ]]; then
+        rm -rf -- "$INSTALL_SOURCE_ROOT"
+    fi
+}
+
+show_help() {
+    printf 'Användning: bash scripts/macos/install.sh [--branch BRANCH] [--skip-interactive]\n'
+    printf '  --branch BRANCH       Installera senaste versionen från vald GitHub-gren.\n'
+    printf '  --skip-interactive    Använd standardgrenen main utan frågor.\n'
+    printf '  --help, -h            Visa denna hjälp.\n'
+    printf '  PRIVATEKONOMI_BRANCH  Kan också användas för att ange gren.\n'
+}
+
 main() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --branch)
+                if [[ $# -lt 2 || -z "$2" ]]; then
+                    log_error "--branch kräver ett grennamn."
+                    return 2
+                fi
+                INSTALL_BRANCH="$2"
+                shift
+                ;;
+            --branch=*)
+                INSTALL_BRANCH="${1#--branch=}"
+                if [[ -z "$INSTALL_BRANCH" ]]; then
+                    log_error "--branch kräver ett grennamn."
+                    return 2
+                fi
+                ;;
+            --skip-interactive)
+                SKIP_INTERACTIVE=true
+                ;;
+            --help|-h)
+                show_help
+                return 0
+                ;;
+            *)
+                log_error "Okänt argument: $1"
+                show_help >&2
+                return 2
+                ;;
+        esac
+        shift
+    done
+
     log_info "Installationslogg: $LOG_FILE"
     log_info "Separat bygglogg: $BUILD_LOG_FILE"
     CURRENT_STEP="kontroll av macOS"
@@ -124,21 +217,26 @@ main() {
         return 1
     fi
 
-    cd "$REPO_ROOT"
+    CURRENT_STEP="val av installationsgren"
+    select_repository_branch
+    trap cleanup_install_source EXIT
+    prepare_install_source
+
+    cd "$INSTALL_SOURCE_ROOT"
     install_dotnet_11
 
     CURRENT_STEP="NuGet-återställning"
     run_with_progress "Återställer NuGet-paket" "$BUILD_LOG_FILE" \
-        dotnet restore Privatekonomi.slnx
+        dotnet restore "$INSTALL_SOURCE_ROOT/Privatekonomi.slnx"
 
     CURRENT_STEP="bygge av lösningen"
     run_with_progress "Bygger lösningen" "$BUILD_LOG_FILE" \
-        dotnet build Privatekonomi.slnx --configuration Debug --verbosity minimal --nologo --no-restore
+        dotnet build "$INSTALL_SOURCE_ROOT/Privatekonomi.slnx" --configuration Debug --verbosity minimal --nologo --no-restore
 
-    local tessdata_dir="$REPO_ROOT/src/Privatekonomi.Web/tessdata"
+    local tessdata_dir="$INSTALL_SOURCE_ROOT/src/Privatekonomi.Web/tessdata"
     if [[ ! -s "$tessdata_dir/eng.traineddata" || ! -s "$tessdata_dir/swe.traineddata" ]]; then
         CURRENT_STEP="hämtning av OCR-språkdata"
-        if ! bash "$REPO_ROOT/scripts/linux/setup-tesseract.sh"; then
+        if ! bash "$INSTALL_SOURCE_ROOT/scripts/linux/setup-tesseract.sh"; then
             log_warning "OCR-språkdata kunde inte hämtas. Appen kan starta, men kvitto-OCR är inte tillgänglig förrän bash scripts/linux/setup-tesseract.sh körs."
         fi
     fi
@@ -152,7 +250,22 @@ main() {
     else
         log_info "Vald datalagring: JSON-filer."
     fi
-    bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
+    PRIVATEKONOMI_INSTALL_SOURCE_ROOT="$INSTALL_SOURCE_ROOT" \
+        PRIVATEKONOMI_INSTALL_COMMIT="$INSTALL_COMMIT" \
+        PRIVATEKONOMI_INSTALL_BRANCH="$INSTALL_BRANCH" \
+        PRIVATEKONOMI_SOURCE_REPOSITORY="$REPO_ROOT" \
+        PRIVATEKONOMI_CONFIG_ROOT="$INSTALL_SOURCE_ROOT" \
+        bash "$SCRIPT_DIR/setup-services.sh" "$storage_provider"
+    local installed_branch_file="$HOME/Library/Application Support/Privatekonomi/current/branch"
+    local installed_branch=""
+    if [[ -s "$installed_branch_file" ]]; then
+        IFS= read -r installed_branch < "$installed_branch_file" || true
+    fi
+    if [[ "$installed_branch" != "$INSTALL_BRANCH" ]]; then
+        log_error "Installerad gren blev '$installed_branch' i stället för vald gren '$INSTALL_BRANCH'. Kontrollera tjänsteinstallationen."
+        return 1
+    fi
+    log_success "Verifierad installerad gren: $installed_branch."
     bash "$SCRIPT_DIR/setup-backup.sh"
 
     log_success "Installationen är klar."

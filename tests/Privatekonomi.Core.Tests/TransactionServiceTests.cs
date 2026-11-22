@@ -214,6 +214,28 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
+    public async Task CreateTransactionAsyncInheritsHouseholdFromLinkedAccount()
+    {
+        var household = new Household { Name = "Gemensamt hushåll" };
+        var account = new BankSource { Name = "Gemensamt konto", Household = household };
+        _context.Households.Add(household);
+        _context.BankSources.Add(account);
+        await _context.SaveChangesAsync();
+
+        var transaction = new Transaction
+        {
+            BankSourceId = account.BankSourceId,
+            Amount = 75m,
+            Date = new DateTime(2026, 11, 22),
+            Description = "Ny kontotransaktion"
+        };
+
+        var created = await _transactionService.CreateTransactionAsync(transaction);
+
+        Assert.AreEqual(household.HouseholdId, created.HouseholdId);
+    }
+
+    [TestMethod]
     public async Task UpdateTransactionCategoriesAsyncStoresAndClearsTotalsExclusion()
     {
         // Arrange

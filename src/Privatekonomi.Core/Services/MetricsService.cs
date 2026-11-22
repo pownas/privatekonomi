@@ -292,7 +292,7 @@ public class MetricsService : IMetricsService
         
         var errorLogs = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.ToLower().Contains("error"))
+                       EF.Functions.Like(a.Action, "%error%"))
             .CountAsync();
 
         return new PerformanceMetrics
@@ -310,7 +310,7 @@ public class MetricsService : IMetricsService
         var errorLogs = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       a.Action.ToLower().Contains("error"))
+                       EF.Functions.Like(a.Action, "%error%"))
             .CountAsync();
 
         return new PerformanceMetrics
@@ -339,13 +339,13 @@ public class MetricsService : IMetricsService
         // Failed login attempts - would need audit logging of login attempts
         var totalLoginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       (a.Action.ToLower().Contains("login") ||
-                        a.Action.ToLower().Contains("signin")))
+                       (EF.Functions.Like(a.Action, "%login%") ||
+                        EF.Functions.Like(a.Action, "%signin%")))
             .CountAsync();
 
         var failedLoginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.ToLower().Contains("failed login"))
+                       EF.Functions.Like(a.Action, "%failed login%"))
             .CountAsync();
 
         var failedLoginPercent = totalLoginAttempts > 0 
@@ -355,7 +355,7 @@ public class MetricsService : IMetricsService
         // Security incidents
         var securityIncidents = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startOfMonth && 
-                       a.Action.ToLower().Contains("security"))
+                       EF.Functions.Like(a.Action, "%security%"))
             .CountAsync();
 
         return new SecurityMetrics
@@ -377,14 +377,14 @@ public class MetricsService : IMetricsService
         var loginAttempts = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       (a.Action.ToLower().Contains("login") ||
-                        a.Action.ToLower().Contains("signin")))
+                       (EF.Functions.Like(a.Action, "%login%") ||
+                        EF.Functions.Like(a.Action, "%signin%")))
             .CountAsync();
 
         var failedLogins = await _context.AuditLogs
             .Where(a => a.CreatedAt >= startDate && 
                        a.CreatedAt <= endDate &&
-                       a.Action.ToLower().Contains("failed login"))
+                       EF.Functions.Like(a.Action, "%failed login%"))
             .CountAsync();
 
         return new SecurityMetrics

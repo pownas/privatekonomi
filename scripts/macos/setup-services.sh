@@ -3,8 +3,13 @@ set -Eeuo pipefail
 umask 077
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="${PRIVATEKONOMI_INSTALL_SOURCE_ROOT:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 CONFIG_ROOT="${PRIVATEKONOMI_CONFIG_ROOT:-$REPO_ROOT}"
+SOURCE_REPOSITORY="${PRIVATEKONOMI_SOURCE_REPOSITORY:-$REPO_ROOT}"
+INSTALL_COMMIT="${PRIVATEKONOMI_INSTALL_COMMIT:-}"
+INSTALL_BRANCH="${PRIVATEKONOMI_INSTALL_BRANCH:-}"
+EXPLICIT_INSTALL_COMMIT="$INSTALL_COMMIT"
+EXPLICIT_INSTALL_BRANCH="$INSTALL_BRANCH"
 source "$SCRIPT_DIR/dotnet.sh"
 source "$SCRIPT_DIR/../common/run-with-progress.sh"
 
@@ -38,6 +43,13 @@ if [[ -z "$PROVIDER" && -f "$APP_SUPPORT_DIR/storage-provider" ]]; then
     IFS= read -r PROVIDER < "$APP_SUPPORT_DIR/storage-provider" || true
 fi
 PROVIDER="${PROVIDER:-Sqlite}"
+if [[ -z "$INSTALL_COMMIT" ]]; then
+    INSTALL_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || printf 'local')"
+fi
+if [[ -z "$INSTALL_BRANCH" ]]; then
+    INSTALL_BRANCH="$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || true)"
+fi
+INSTALL_BRANCH="${INSTALL_BRANCH:-main}"
 
 mkdir -p "$APP_SUPPORT_DIR" "$LOG_DIR" "$AGENT_DIR" "$RELEASE_DIR" "$STATE_DIR"
 chmod 700 "$APP_SUPPORT_DIR" "$STATE_DIR"
@@ -77,14 +89,14 @@ if [[ -f "$STATE_DIR/worker-lock/pid" ]]; then
     rm -f "$STATE_DIR/worker-lock/pid"
     rmdir "$STATE_DIR/worker-lock" 2>/dev/null || true
 fi
-PRIVATEKONOMI_CONFIG_ROOT="$CONFIG_ROOT" bash "$SCRIPT_DIR/configure-production.sh" "$PROVIDER"
+PRIVATEKONOMI_CONFIG_ROOT="$CONFIG_ROOT" bash "$REPO_ROOT/scripts/macos/configure-production.sh" "$PROVIDER"
 
 release_is_complete() {
     [[ -f "$1/Web/Privatekonomi.Web.dll" && -f "$1/Api/Privatekonomi.Api.dll" ]]
 }
 
-if ! release_is_complete "$CURRENT_DIR"; then
-    commit="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || printf 'local')"
+if [[ -n "$EXPLICIT_INSTALL_COMMIT" ]] || ! release_is_complete "$CURRENT_DIR"; then
+    commit="$INSTALL_COMMIT"
     initial_release="$RELEASE_DIR/$commit"
     if ! release_is_complete "$initial_release"; then
         rm -rf -- "$initial_release"
@@ -110,24 +122,24 @@ launchctl bootout "gui/$(id -u)/com.privatekonomi.api" >/dev/null 2>&1 || true
 cp "$CONFIG_ROOT/src/Privatekonomi.Web/appsettings.Production.json" "$CURRENT_DIR/Web/appsettings.Production.json"
 cp "$CONFIG_ROOT/src/Privatekonomi.Api/appsettings.Production.json" "$CURRENT_DIR/Api/appsettings.Production.json"
 if [[ ! -s "$CURRENT_DIR/update-worker.sh" ]]; then
-    cp "$SCRIPT_DIR/update-worker.sh" "$CURRENT_DIR/update-worker.sh"
+    cp "$REPO_ROOT/scripts/macos/update-worker.sh" "$CURRENT_DIR/update-worker.sh"
 fi
 printf '%s\n' "$PROVIDER" > "$APP_SUPPORT_DIR/storage-provider"
 chmod 600 "$APP_SUPPORT_DIR/storage-provider"
 
 current_commit_file="$CURRENT_DIR/commit"
 current_branch_file="$CURRENT_DIR/branch"
-if [[ ! -s "$current_commit_file" ]]; then
-    git -C "$REPO_ROOT" rev-parse HEAD > "$current_commit_file" 2>/dev/null || printf 'local\n' > "$current_commit_file"
+if [[ -n "$EXPLICIT_INSTALL_COMMIT" || ! -s "$current_commit_file" ]]; then
+    printf '%s\n' "$INSTALL_COMMIT" > "$current_commit_file"
 fi
-if [[ ! -s "$current_branch_file" ]]; then
-    git -C "$REPO_ROOT" branch --show-current > "$current_branch_file" 2>/dev/null || printf 'main\n' > "$current_branch_file"
+if [[ -n "$EXPLICIT_INSTALL_BRANCH" || ! -s "$current_branch_file" ]]; then
+    printf '%s\n' "$INSTALL_BRANCH" > "$current_branch_file"
 fi
 touch "$STATE_DIR/enabled"
 if [[ -f "$CURRENT_DIR/update-worker.sh" ]]; then
     cp "$CURRENT_DIR/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
 else
-    cp "$SCRIPT_DIR/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
+    cp "$REPO_ROOT/scripts/macos/update-worker.sh" "$APP_SUPPORT_DIR/update-worker.sh"
 fi
 chmod 700 "$APP_SUPPORT_DIR/update-worker.sh"
 
@@ -217,7 +229,7 @@ write_worker_agent() {
         $DOTNET_ROOT_ENTRY
         <key>PRIVATEKONOMI_UPDATE_STATE</key><string>$(escape_xml "$STATE_DIR")</string>
         <key>PRIVATEKONOMI_APP_SUPPORT</key><string>$(escape_xml "$APP_SUPPORT_DIR")</string>
-        <key>PRIVATEKONOMI_SOURCE_REPOSITORY</key><string>$(escape_xml "$REPO_ROOT")</string>
+        <key>PRIVATEKONOMI_SOURCE_REPOSITORY</key><string>$(escape_xml "$SOURCE_REPOSITORY")</string>
         <key>PRIVATEKONOMI_WEB_PLIST</key><string>$(escape_xml "$AGENT_DIR/com.privatekonomi.web.plist")</string>
         <key>PRIVATEKONOMI_API_PLIST</key><string>$(escape_xml "$AGENT_DIR/com.privatekonomi.api.plist")</string>
     </dict>

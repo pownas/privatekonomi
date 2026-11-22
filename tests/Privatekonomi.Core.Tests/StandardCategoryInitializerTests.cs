@@ -7,7 +7,7 @@ namespace Privatekonomi.Core.Tests;
 public class StandardCategoryInitializerTests
 {
     [TestMethod]
-    public async Task EnsureCategoriesAsync_AddsDigitalPhoneAndDanceCategoriesIdempotently()
+    public async Task EnsureCategoriesAsyncAddsDigitalPhoneAndDanceCategoriesIdempotently()
     {
         await using var context = new PrivatekonomyContext(new DbContextOptionsBuilder<PrivatekonomyContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

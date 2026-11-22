@@ -152,6 +152,20 @@ public class TransactionService : ITransactionService
         {
             transaction.UserId = _currentUserService.UserId;
         }
+
+        if (transaction.BankSourceId.HasValue && transaction.HouseholdId is null)
+        {
+            var bankSourceQuery = context.BankSources.AsNoTracking()
+                .Where(bankSource => bankSource.BankSourceId == transaction.BankSourceId.Value);
+            if (_currentUserService?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(_currentUserService.UserId))
+            {
+                bankSourceQuery = bankSourceQuery.Where(bankSource => bankSource.UserId == _currentUserService.UserId);
+            }
+
+            transaction.HouseholdId = await bankSourceQuery
+                .Select(bankSource => bankSource.HouseholdId)
+                .FirstOrDefaultAsync();
+        }
         
         // Auto-categorize based on ML, rules, or similar descriptions if no categories assigned
         if (!transaction.TransactionCategories.Any())

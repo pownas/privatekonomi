@@ -72,9 +72,14 @@ public abstract class BankApiServiceBase : IBankApiService
             }
 
             // Import non-duplicate transactions
+            var householdId = await Context.BankSources
+                .Where(bankSource => bankSource.BankSourceId == connection.BankSourceId)
+                .Select(bankSource => bankSource.HouseholdId)
+                .FirstOrDefaultAsync();
             foreach (var transaction in transactions)
             {
                 transaction.BankSourceId = connection.BankSourceId;
+                transaction.HouseholdId = householdId;
                 transaction.Imported = true;
                 Context.Transactions.Add(transaction);
             }

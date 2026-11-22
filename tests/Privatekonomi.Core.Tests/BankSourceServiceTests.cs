@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 
 using Privatekonomi.Core.Data;
 using Privatekonomi.Core.Models;
@@ -235,6 +236,69 @@ public class BankSourceServiceTests : IDisposable
         Assert.AreEqual("#123456", result.Color);
         Assert.AreEqual("111222333", result.AccountNumber);
         Assert.AreEqual("1920", result.ChartOfAccountsCode);
+    }
+
+    [TestMethod]
+    public async Task UpdateBankSourceAsyncLinksAccountAndItsTransactionsToActiveHousehold()
+    {
+        var household = new Household
+        {
+            Name = "Gemensamt hushåll",
+            Members = [new HouseholdMember { Name = "Medlem", UserId = _testUserId, IsActive = true }]
+        };
+        var account = new BankSource { Name = "Gemensamt konto", UserId = _testUserId };
+        _context.Households.Add(household);
+        _context.BankSources.Add(account);
+        _context.Transactions.AddRange(
+            new Transaction { BankSource = account, UserId = _testUserId, Description = "Befintlig transaktion" },
+            new Transaction { BankSource = account, UserId = _testUserId, Description = "En till transaktion" });
+        await _context.SaveChangesAsync();
+
+        var currentUser = Mock.Of<ICurrentUserService>(service =>
+            service.IsAuthenticated && service.UserId == _testUserId);
+        var service = new BankSourceService(_context, currentUser);
+        account.HouseholdId = household.HouseholdId;
+
+        await service.UpdateBankSourceAsync(account);
+
+        Assert.AreEqual(household.HouseholdId, account.HouseholdId);
+        Assert.AreEqual(2, await _context.Transactions.CountAsync(transaction =>
+            transaction.HouseholdId == household.HouseholdId));
+    }
+
+    [TestMethod]
+    public async Task UpdateBankSourceAsyncRejectsHouseholdWithoutActiveMembership()
+    {
+        var household = new Household
+        {
+            Name = "Annat hushåll",
+            Members = [new HouseholdMember { Name = "Annan", UserId = "other-user", IsActive = true }]
+        };
+        var account = new BankSource { Name = "Personligt konto", UserId = _testUserId };
+        _context.Households.Add(household);
+        _context.BankSources.Add(account);
+        await _context.SaveChangesAsync();
+
+        var currentUser = Mock.Of<ICurrentUserService>(service =>
+            service.IsAuthenticated && service.UserId == _testUserId);
+        var service = new BankSourceService(_context, currentUser);
+        account.HouseholdId = household.HouseholdId;
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedAccessException>(() => service.UpdateBankSourceAsync(account));
+        await _context.Entry(account).ReloadAsync();
+        Assert.IsNull(account.HouseholdId);
+    }
+
+    [TestMethod]
+    public void HouseholdAccountMigrationIsDiscoverable()
+    {
+        var options = new DbContextOptionsBuilder<PrivatekonomyContext>()
+            .UseSqlite("Data Source=:memory:")
+            .Options;
+        using var context = new PrivatekonomyContext(options);
+
+        Assert.IsTrue(context.Database.GetMigrations()
+            .Contains("20261122173352_AddHouseholdToBankSource"));
     }
 
     [TestMethod]

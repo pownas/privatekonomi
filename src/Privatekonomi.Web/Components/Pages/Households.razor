@@ -25,6 +25,12 @@
             <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
         </MudItem>
     }
+    else if (!CurrentUserService.IsAuthenticated)
+    {
+        <MudItem xs="12">
+            <MudAlert Severity="Severity.Info">Logga in för att visa och hantera hushåll.</MudAlert>
+        </MudItem>
+    }
     else if (!households.Any())
     {
         <MudItem xs="12">
@@ -110,12 +116,26 @@
     </DialogActions>
 </MudDialog>
 
+<MudDialog @bind-Visible="showAuthenticationDialog" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Inloggning krävs</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Du måste vara inloggad för att skapa och hantera hushåll.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseAuthenticationDialog">Stäng</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/Account/Login?returnUrl=%2Fhouseholds">Logga in</MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private List<Household>? households;
     private bool CanManageHousehold(Household household) => CurrentUserService.IsAuthenticated &&
         household.Members.Any(member => member.IsActive && member.UserId == CurrentUserService.UserId);
     private bool showCreateDialog = false;
     private bool showEditDialog = false;
+    private bool showAuthenticationDialog = false;
     private Household newHousehold = new Household();
     private Household editHousehold = new Household();
     private DialogOptions dialogOptions = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
@@ -127,14 +147,31 @@
 
     private async Task LoadHouseholds()
     {
+        if (!CurrentUserService.IsAuthenticated || string.IsNullOrWhiteSpace(CurrentUserService.UserId))
+        {
+            households = [];
+            return;
+        }
+
         var result = await HouseholdService.GetAllHouseholdsAsync();
         households = result.ToList();
     }
 
     private void OpenCreateDialog()
     {
+        if (!CurrentUserService.IsAuthenticated || string.IsNullOrWhiteSpace(CurrentUserService.UserId))
+        {
+            showAuthenticationDialog = true;
+            return;
+        }
+
         newHousehold = new Household();
         showCreateDialog = true;
+    }
+
+    private void CloseAuthenticationDialog()
+    {
+        showAuthenticationDialog = false;
     }
 
     private void CloseCreateDialog()
@@ -144,12 +181,27 @@
 
     private async Task CreateHousehold()
     {
+        if (!CurrentUserService.IsAuthenticated || string.IsNullOrWhiteSpace(CurrentUserService.UserId))
+        {
+            CloseCreateDialog();
+            showAuthenticationDialog = true;
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(newHousehold.Name))
             return;
 
-        await HouseholdService.CreateHouseholdAsync(newHousehold);
-        await LoadHouseholds();
-        CloseCreateDialog();
+        try
+        {
+            await HouseholdService.CreateHouseholdAsync(newHousehold);
+            await LoadHouseholds();
+            CloseCreateDialog();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            CloseCreateDialog();
+            showAuthenticationDialog = true;
+        }
     }
 
     private void OpenEditDialog(Household household)

@@ -42,6 +42,7 @@ public static class BalanceSheetSchemaInitializer
             new AddColumnOperation { Table = "CurrencyAccounts", Name = "AccountNumber", ClrType = typeof(string), IsNullable = true, MaxLength = 20 },
             new AddColumnOperation { Table = "Households", Name = "ShareBalanceSheet", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "HouseholdMembers", Name = "ShareBalanceSheetConsent", ClrType = typeof(bool), DefaultValue = false },
+            new AddColumnOperation { Table = "BankSources", Name = "HouseholdId", ClrType = typeof(int), IsNullable = true },
             new AddColumnOperation { Table = "Loans", Name = "ExcludeFromBalanceSheet", ClrType = typeof(bool), DefaultValue = false },
             new AddColumnOperation { Table = "CategoryRules", Name = "ExactAmount", ClrType = typeof(decimal), IsNullable = true, Precision = 18, Scale = 2 },
             new AddColumnOperation { Table = "CategoryRules", Name = "MinimumAmount", ClrType = typeof(decimal), IsNullable = true, Precision = 18, Scale = 2 },

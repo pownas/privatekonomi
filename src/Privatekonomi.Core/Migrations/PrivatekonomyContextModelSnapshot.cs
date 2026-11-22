@@ -653,6 +653,9 @@ namespace Privatekonomi.Core.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("HouseholdId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Logo")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
@@ -678,6 +681,8 @@ namespace Privatekonomi.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("BankSourceId");
+
+                    b.HasIndex("HouseholdId");
 
                     b.HasIndex("UserId");
 
@@ -6078,6 +6083,13 @@ namespace Privatekonomi.Core.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Privatekonomi.Core.Models.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Household");
+
                     b.Navigation("User");
                 });
 
@@ -7363,6 +7375,8 @@ namespace Privatekonomi.Core.Migrations
 
             modelBuilder.Entity("Privatekonomi.Core.Models.BankSource", b =>
                 {
+                    b.Navigation("Household");
+
                     b.Navigation("Transactions");
                 });
 

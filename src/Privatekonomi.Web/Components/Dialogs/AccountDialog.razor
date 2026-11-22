@@ -1,6 +1,8 @@
 @using Privatekonomi.Core.Models
 @using Privatekonomi.Core.Services
 @inject IBankSourceService BankSourceService
+@inject IHouseholdService HouseholdService
+@inject ICurrentUserService CurrentUserService
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -123,6 +125,19 @@
                                   aria-label="Ange kontoplan" />
                 </MudItem>
 
+                <MudItem xs="12">
+                    <MudSelect T="int?" @bind-Value="_account.HouseholdId" Label="Koppla kontot till hushåll" Clearable="false">
+                        <MudSelectItem T="int?" Value="@((int?)null)">Inget hushåll (personligt konto)</MudSelectItem>
+                        @foreach (var household in _households)
+                        {
+                            <MudSelectItem T="int?" Value="@((int?)household.HouseholdId)">@household.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Kontots befintliga och kommande transaktioner kopplas till det valda hushållet.
+                    </MudText>
+                </MudItem>
+
                 <MudItem xs="12" md="6">
                     <MudNumericField @bind-Value="_account.InitialBalance"
                                      Label="Ingående saldo"
@@ -206,6 +221,7 @@
     private DateTime? _openedDate;
     private DateTime? _closedDate;
     private string? _selectedInstitution;
+    private List<Household> _households = [];
 
     private MudBlazor.Utilities.MudColor SelectedColor
     {
@@ -235,6 +251,7 @@
             ClosedDate = Account.ClosedDate,
             Color = Account.Color,
             UserId = Account.UserId,
+            HouseholdId = Account.HouseholdId,
             ValidFrom = Account.ValidFrom,
             ValidTo = Account.ValidTo,
             CreatedAt = Account.CreatedAt,
@@ -245,6 +262,18 @@
         _openedDate = Account.OpenedDate;
         _closedDate = Account.ClosedDate;
         _selectedInstitution = Account.Institution;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!CurrentUserService.IsAuthenticated || string.IsNullOrWhiteSpace(CurrentUserService.UserId))
+            return;
+
+        _households = (await HouseholdService.GetAllHouseholdsAsync())
+            .Where(household => household.Members.Any(member =>
+                member.IsActive && member.UserId == CurrentUserService.UserId))
+            .OrderBy(household => household.Name)
+            .ToList();
     }
 
     private void OnInstitutionChanged(string? institution)

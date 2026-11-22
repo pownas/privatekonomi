@@ -49,6 +49,21 @@ public class HouseholdServiceTests : IDisposable
     #region Household CRUD Tests
 
     [TestMethod]
+    public async Task GetAllHouseholdsAsyncReturnsNoHouseholdsForAnonymousUser()
+    {
+        _context.Households.Add(new Household
+        {
+            Name = "Privat hushåll",
+            Members = [new HouseholdMember { Name = "Creator", UserId = "creator", IsActive = true }]
+        });
+        await _context.SaveChangesAsync();
+
+        var anonymousService = new HouseholdService(_context, Mock.Of<ICurrentUserService>());
+
+        Assert.AreEqual(0, (await anonymousService.GetAllHouseholdsAsync()).Count());
+    }
+
+    [TestMethod]
     public async Task CreatorIsLinkedAtomicallyAndInvitedMembersMustLinkAndConsentThemselves()
     {
         var created = await _householdService.CreateHouseholdAsync(new Household
