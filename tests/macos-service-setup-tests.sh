@@ -85,4 +85,18 @@ grep -Fq '"Provider": "JsonFile"' "$support/current/Web/appsettings.Production.j
 grep -Fq '"Provider": "InMemory"' "$support/current/Api/appsettings.Production.json"
 grep -Fq 'Application Support/Privatekonomi/json' "$support/current/Web/appsettings.Production.json"
 
+printf 'fix/old-install\n' > "$support/current/branch"
+bash "$repo/scripts/macos/setup-services.sh" JsonFile
+[[ "$(cat "$support/current/branch")" == "fix/old-install" ]]
+install_commit="$(git -C "$repo" rev-parse HEAD)"
+PRIVATEKONOMI_INSTALL_SOURCE_ROOT="$repo" \
+    PRIVATEKONOMI_INSTALL_COMMIT="$install_commit" \
+    PRIVATEKONOMI_INSTALL_BRANCH=main \
+    PRIVATEKONOMI_SOURCE_REPOSITORY="$repo" \
+    PRIVATEKONOMI_CONFIG_ROOT="$temp/config" \
+    bash "$repo/scripts/macos/setup-services.sh" JsonFile
+[[ "$(cat "$support/current/branch")" == "main" ]]
+[[ "$(cat "$support/current/commit")" == "$install_commit" ]]
+grep -Fq "<string>$repo</string>" "$HOME/Library/LaunchAgents/com.privatekonomi.update.plist"
+
 printf 'macOS service setup publishes services, installs launch agents, and updates provider configuration.\n'
