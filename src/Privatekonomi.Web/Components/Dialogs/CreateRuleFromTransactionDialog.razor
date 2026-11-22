@@ -25,42 +25,21 @@
         }
         else
         {
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_pattern" 
-                                  Label="Mönster" 
-                                  Variant="Variant.Outlined" 
-                                  Required="true"
-                                  HelperText="Text att matcha mot (t.ex. 'ICA', 'Spotify')"
-                                  MaxLength="500" />
-                </MudItem>
-                
-                <MudItem xs="12" md="6">
-                    <MudSelect @bind-Value="_matchType" 
-                              Label="Matchningstyp" 
-                              Variant="Variant.Outlined">
-                        <MudSelectItem Value="@PatternMatchType.Contains">Innehåller</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.Exact">Exakt matchning</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.StartsWith">Börjar med</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.EndsWith">Slutar med</MudSelectItem>
-                        <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
+            <CategoryRuleFormFields @bind-Pattern="_pattern"
+                                    @bind-MatchType="_matchType"
+                                    AmountCriteria="_amountCriteria"
+                                    @bind-Field="_field"
+                                    @bind-Priority="_priority"
+                                    @bind-IsActive="_isActive"
+                                    @bind-CaseSensitive="_caseSensitive"
+                                    @bind-Description="_description"
+                                    ShowCaseSensitive="true"
+                                    PatternHelperText="Text att matcha mot (t.ex. 'ICA', 'Spotify')"
+                                    PriorityHelperText="Högre nummer = högre prioritet"
+                                    DescriptionHelperText="En beskrivning av regeln"
+                                    @ref="_formFields" />
 
-                <MudItem xs="12">
-                    <RuleAmountCriteriaEditor Rule="_amountCriteria" @ref="_amountCriteriaEditor" />
-                </MudItem>
-                
-                <MudItem xs="12" md="6">
-                    <MudSelect @bind-Value="_field" 
-                              Label="Fält att matcha" 
-                              Variant="Variant.Outlined">
-                        <MudSelectItem Value="@MatchField.Both">Beskrivning och Betalningsmottagare</MudSelectItem>
-                        <MudSelectItem Value="@MatchField.Description">Endast Beskrivning</MudSelectItem>
-                        <MudSelectItem Value="@MatchField.Payee">Endast Betalningsmottagare</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
-                
+            <MudGrid>
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Kategori:</MudText>
                     <div class="d-flex flex-wrap gap-2" style="max-height: 200px; overflow-y: auto;">
@@ -79,33 +58,6 @@
                     </div>
                 </MudItem>
                 
-                <MudItem xs="12" md="4">
-                    <MudNumericField @bind-Value="_priority" 
-                                    Label="Prioritet" 
-                                    Variant="Variant.Outlined"
-                                    HelperText="Högre nummer = högre prioritet" />
-                </MudItem>
-                
-                <MudItem xs="12" md="4">
-                    <MudSwitch @bind-Value="_isActive" 
-                              Label="Aktiv" 
-                              Color="Color.Primary" />
-                </MudItem>
-                
-                <MudItem xs="12" md="4">
-                    <MudSwitch @bind-Value="_caseSensitive" 
-                              Label="Skiftlägeskänslig" 
-                              Color="Color.Primary" />
-                </MudItem>
-                
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_description" 
-                                  Label="Beskrivning (valfritt)" 
-                                  Variant="Variant.Outlined"
-                                  Lines="2"
-                                  HelperText="En beskrivning av regeln"
-                                  MaxLength="500" />
-                </MudItem>
             </MudGrid>
         }
     </DialogContent>
@@ -149,7 +101,7 @@
     private bool _caseSensitive = false;
     private string _description = string.Empty;
     private CategoryRule _amountCriteria = new();
-    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
+    private CategoryRuleFormFields? _formFields;
 
     protected override async Task OnInitializedAsync()
     {
@@ -211,9 +163,9 @@
             return;
         }
 
-        if (_amountCriteriaEditor is { IsValid: false })
+        if (_formFields is { IsAmountCriteriaValid: false })
         {
-            Snackbar.Add(_amountCriteriaEditor.ValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
+            Snackbar.Add(_formFields.AmountCriteriaValidationMessage ?? "Beloppsvillkoret är ogiltigt.", Severity.Warning);
             return;
         }
 

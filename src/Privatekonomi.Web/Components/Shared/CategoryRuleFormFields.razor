@@ -1,0 +1,110 @@
+@using Privatekonomi.Core.Models
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudTextField Value="Pattern"
+                      ValueChanged="PatternChanged"
+                      Label="Mönster"
+                      Variant="Variant.Outlined"
+                      Required="true"
+                      HelperText="@PatternHelperText"
+                      MaxLength="500"
+                      Class="mb-3" />
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudSelect Value="MatchType"
+                   ValueChanged="MatchTypeChanged"
+                   Label="Matchningstyp"
+                   Variant="Variant.Outlined"
+                   Class="mb-3">
+            <MudSelectItem Value="@PatternMatchType.Contains">Innehåller</MudSelectItem>
+            <MudSelectItem Value="@PatternMatchType.Exact">Exakt matchning</MudSelectItem>
+            <MudSelectItem Value="@PatternMatchType.StartsWith">Börjar med</MudSelectItem>
+            <MudSelectItem Value="@PatternMatchType.EndsWith">Slutar med</MudSelectItem>
+            <MudSelectItem Value="@PatternMatchType.Regex">Reguljärt uttryck (Regex)</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+
+    <MudItem xs="12">
+        <RuleAmountCriteriaEditor Rule="AmountCriteria" @ref="_amountCriteriaEditor" />
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudSelect Value="Field"
+                   ValueChanged="FieldChanged"
+                   Label="Fält att matcha"
+                   Variant="Variant.Outlined"
+                   Class="mb-3">
+            <MudSelectItem Value="@MatchField.Both">Beskrivning och Betalningsmottagare</MudSelectItem>
+            <MudSelectItem Value="@MatchField.Description">Endast Beskrivning</MudSelectItem>
+            <MudSelectItem Value="@MatchField.Payee">Endast Betalningsmottagare</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudNumericField Value="Priority"
+                         ValueChanged="PriorityChanged"
+                         Label="Prioritet"
+                         Variant="Variant.Outlined"
+                         HelperText="@PriorityHelperText"
+                         Min="0"
+                         Max="1000"
+                         Class="mb-3" />
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudSwitch Value="IsActive"
+                   ValueChanged="IsActiveChanged"
+                   Label="Aktiv"
+                   Color="Color.Primary"
+                   Class="mb-3" />
+    </MudItem>
+
+    @if (ShowCaseSensitive)
+    {
+        <MudItem xs="12" md="6">
+            <MudSwitch Value="CaseSensitive"
+                       ValueChanged="CaseSensitiveChanged"
+                       Label="Skiftlägeskänslig"
+                       Color="Color.Primary" />
+        </MudItem>
+    }
+
+    <MudItem xs="12">
+        <MudTextField Value="Description"
+                      ValueChanged="DescriptionChanged"
+                      Label="Beskrivning (valfritt)"
+                      Variant="Variant.Outlined"
+                      Lines="2"
+                      HelperText="@DescriptionHelperText"
+                      MaxLength="500"
+                      Class="mb-3" />
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public string Pattern { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> PatternChanged { get; set; }
+    [Parameter] public PatternMatchType MatchType { get; set; } = PatternMatchType.Contains;
+    [Parameter] public EventCallback<PatternMatchType> MatchTypeChanged { get; set; }
+    [Parameter] public CategoryRule AmountCriteria { get; set; } = new();
+    [Parameter] public MatchField Field { get; set; } = MatchField.Both;
+    [Parameter] public EventCallback<MatchField> FieldChanged { get; set; }
+    [Parameter] public int Priority { get; set; } = 50;
+    [Parameter] public EventCallback<int> PriorityChanged { get; set; }
+    [Parameter] public bool IsActive { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsActiveChanged { get; set; }
+    [Parameter] public bool CaseSensitive { get; set; }
+    [Parameter] public EventCallback<bool> CaseSensitiveChanged { get; set; }
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> DescriptionChanged { get; set; }
+    [Parameter] public bool ShowCaseSensitive { get; set; }
+    [Parameter] public string PatternHelperText { get; set; } = "Text att matcha mot transaktionsbeskrivning eller betalningsmottagare";
+    [Parameter] public string PriorityHelperText { get; set; } = "Högre nummer = högre prioritet (används vid flera matchande regler)";
+    [Parameter] public string DescriptionHelperText { get; set; } = "En beskrivning av regeln för dokumentation";
+
+    private RuleAmountCriteriaEditor? _amountCriteriaEditor;
+    public bool IsAmountCriteriaValid => _amountCriteriaEditor is not { IsValid: false };
+    public string? AmountCriteriaValidationMessage => _amountCriteriaEditor?.ValidationMessage;
+}

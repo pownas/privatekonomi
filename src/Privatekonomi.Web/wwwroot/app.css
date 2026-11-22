@@ -151,24 +151,25 @@ a:hover, .btn-link:hover {
     outline-offset: 2px;
 }
 
-/* Ensure focus is visible in dark mode */
+/* Keep keyboard focus visible while matching the form-control shape. */
 .mud-theme-dark .mud-button-root:focus-visible,
 .mud-theme-dark .mud-icon-button:focus-visible,
-.mud-theme-dark .mud-nav-link:focus-visible,
-.mud-theme-dark .mud-input:focus-visible,
-.mud-theme-dark .mud-input-control:focus-within,
-.mud-theme-dark .mud-select:focus-visible {
+.mud-theme-dark .mud-nav-link:focus-visible {
     outline: 2px solid #818CF8;
     outline-offset: 2px;
 }
 
 .mud-button-root:focus-visible,
 .mud-icon-button:focus-visible,
-.mud-nav-link:focus-visible,
-.mud-input-control:focus-within,
-.mud-select:focus-visible {
+.mud-nav-link:focus-visible {
     outline: 2px solid #4F46E5;
     outline-offset: 2px;
+}
+
+.mud-input-control:focus-within {
+    border-radius: var(--radius-md);
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 3px;
 }
 
 /* Mobile Touch Target Sizes (min 44x44px for WCAG) */
@@ -1206,12 +1207,6 @@ html {
     text-transform: none !important;
 }
 
-/* Focus animation for input fields */
-.login-form .mud-input-outlined:focus-within {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-    transition: box-shadow var(--transition-base);
-}
-
 /* Entrance animation */
 @keyframes loginFadeInUp {
     from {
@@ -1350,15 +1345,10 @@ html {
 
 /* ===== FORMULÄR OCH INPUTS ===== */
 
-/* Focus ring animation */
+/* Smooth form border transitions */
 .mud-input-outlined,
 .mud-input-filled {
-    transition: box-shadow var(--transition-base), border-color var(--transition-base);
-}
-
-.mud-input-outlined:focus-within,
-.mud-input-filled:focus-within {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    transition: border-color var(--transition-base);
 }
 
 /* Checkmark animation */

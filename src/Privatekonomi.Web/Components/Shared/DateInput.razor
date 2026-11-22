@@ -1,6 +1,8 @@
 <MudDatePicker @attributes="AdditionalAttributes"
                Date="Date"
                DateChanged="HandleDateChanged"
+               PickerMonth="_pickerMonth"
+               PickerMonthChanged="HandlePickerMonthChanged"
                DateFormat="@DateFormat"
                Clearable="@Clearable"
                Editable="@Editable"
@@ -20,6 +22,12 @@
 
     [Parameter]
     public EventCallback<DateTime?> DateChanged { get; set; }
+
+    [Parameter]
+    public DateTime? PickerMonth { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> PickerMonthChanged { get; set; }
 
     [Parameter]
     public string DateFormat { get; set; } = "yyyy-MM-dd";
@@ -49,7 +57,7 @@
     public MudBlazor.Margin Margin { get; set; } = MudBlazor.Margin.None;
 
     [Parameter]
-    public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Text;
+    public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Outlined;
 
     [Parameter]
     public DateTime? MaxDate { get; set; }
@@ -57,9 +65,37 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    private DateTime? _pickerMonth = DateTime.Today;
+    private DateTime? _previousDate;
+    private DateTime? _previousPickerMonth;
+    private bool _hasInitializedPickerMonth;
+
+    protected override void OnParametersSet()
+    {
+        if (!_hasInitializedPickerMonth || Date != _previousDate)
+        {
+            _pickerMonth = PickerMonth ?? Date ?? DateTime.Today;
+        }
+        else if (PickerMonth.HasValue && PickerMonth != _previousPickerMonth)
+        {
+            _pickerMonth = PickerMonth;
+        }
+
+        _previousDate = Date;
+        _previousPickerMonth = PickerMonth;
+        _hasInitializedPickerMonth = true;
+    }
+
     private async Task HandleDateChanged(DateTime? date)
     {
         Date = date;
         await DateChanged.InvokeAsync(date);
+    }
+
+    private async Task HandlePickerMonthChanged(DateTime? pickerMonth)
+    {
+        _pickerMonth = pickerMonth;
+        PickerMonth = pickerMonth;
+        await PickerMonthChanged.InvokeAsync(pickerMonth);
     }
 }
