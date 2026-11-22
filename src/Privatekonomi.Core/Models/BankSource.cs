@@ -27,6 +27,9 @@ public class BankSource : ITemporalEntity
     // User ownership
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
+
+    public int? HouseholdId { get; set; }
+    public Household? Household { get; set; }
     
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     

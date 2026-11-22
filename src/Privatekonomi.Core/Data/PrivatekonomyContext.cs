@@ -191,8 +191,14 @@ public class PrivatekonomyContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Household)
+                .WithMany()
+                .HasForeignKey(e => e.HouseholdId)
+                .OnDelete(DeleteBehavior.SetNull);
             
             entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.HouseholdId);
             entity.HasIndex(e => e.ValidFrom);
             entity.HasIndex(e => e.ValidTo);
             entity.HasIndex(e => new { e.ValidFrom, e.ValidTo });

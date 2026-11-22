@@ -18,7 +18,13 @@ public class HouseholdService : IHouseholdService
     // Household operations
     public async Task<IEnumerable<Household>> GetAllHouseholdsAsync()
     {
+        var userId = _currentUserService.IsAuthenticated ? _currentUserService.UserId : null;
+        if (string.IsNullOrWhiteSpace(userId))
+            return [];
+
         return await _context.Households
+            .Where(household => household.Members.Any(member =>
+                member.IsActive && member.UserId == userId))
             .Include(h => h.Members)
             .Include(h => h.SharedExpenses)
             .ToListAsync();

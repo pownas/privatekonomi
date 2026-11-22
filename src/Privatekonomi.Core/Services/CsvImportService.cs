@@ -178,6 +178,7 @@ public class CsvImportService : ICsvImportService
                 foreach (var transaction in accountGroup)
                 {
                     transaction.BankSourceId = bankSource?.BankSourceId;
+                    transaction.HouseholdId = bankSource?.HouseholdId ?? transaction.HouseholdId;
                     transaction.Imported = true;
                     transaction.ImportSource = importSource;
                     transaction.CreatedAt = DateTime.UtcNow;
@@ -272,6 +273,7 @@ public class CsvImportService : ICsvImportService
                 foreach (var transaction in accountGroup)
                 {
                     transaction.BankSourceId = bankSource?.BankSourceId;
+                    transaction.HouseholdId = bankSource?.HouseholdId ?? transaction.HouseholdId;
                     transaction.Imported = true;
                     transaction.ImportSource = importSource;
                     transaction.UserId = userId;
@@ -495,6 +497,7 @@ public class CsvImportService : ICsvImportService
         foreach (var transaction in transactionsWithoutAccountNumber)
         {
             transaction.BankSourceId = bankSource.BankSourceId;
+            transaction.HouseholdId = bankSource.HouseholdId ?? transaction.HouseholdId;
         }
     }
 

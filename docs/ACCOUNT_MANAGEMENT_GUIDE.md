@@ -51,8 +51,10 @@ Navigera till **Inställningar → Konton** i huvudmenyn.
 
 1. Klicka på redigeringsikonen (penna) för kontot du vill ändra
 2. Uppdatera informationen du vill ändra
-3. För att stänga ett konto, ange ett **Stängningsdatum**
-4. Klicka på **"Spara"**
+3. Välj vid behov ett **Hushåll** för att koppla kontot till ett hushåll där du är aktiv medlem
+4. När du sparar kopplas både befintliga och kommande transaktioner på kontot till hushållet. Välj **Inget hushåll** för att ta bort kopplingen och göra kontots transaktioner personliga
+5. För att stänga ett konto, ange ett **Stängningsdatum**
+6. Klicka på **"Spara"**
 
 ### Ta bort ett konto
 
@@ -168,5 +170,6 @@ För utvecklare och tekniskt intresserade:
 - Konton lagras i `BankSource`-tabellen i databasen
 - Kontotyper är strängvärden: "checking", "savings", "credit_card", "investment", "loan", "pension", "cash"
 - Kontonummer och clearingnummer lagras separat för flexibilitet
+- Ett valfritt `HouseholdId` på kontot kopplar dess transaktioner till hushållet
 - BAS-kontoplan-kod lagras i fältet `ChartOfAccountsCode`
 - Aktuellt saldo beräknas dynamiskt: `InitialBalance + Σ(Transaktioner)`

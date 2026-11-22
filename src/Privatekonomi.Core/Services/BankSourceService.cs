@@ -63,6 +63,16 @@ public class BankSourceService : IBankSourceService
             throw new InvalidOperationException($"Bank source with ID {bankSource.BankSourceId} not found");
         }
 
+        if (bankSource.HouseholdId.HasValue)
+        {
+            var userId = _currentUserService?.IsAuthenticated == true ? _currentUserService.UserId : null;
+            if (string.IsNullOrWhiteSpace(userId) || !await _context.HouseholdMembers.AnyAsync(member =>
+                    member.HouseholdId == bankSource.HouseholdId.Value && member.UserId == userId && member.IsActive))
+            {
+                throw new UnauthorizedAccessException("Endast en aktiv, kopplad hushållsmedlem kan koppla kontot till hushållet.");
+            }
+        }
+
         if (_currentUserService?.IsAuthenticated == true)
         {
             existingBankSource.UserId = _currentUserService.UserId;
@@ -80,7 +90,16 @@ public class BankSourceService : IBankSourceService
         existingBankSource.InitialBalance = bankSource.InitialBalance;
         existingBankSource.OpenedDate = bankSource.OpenedDate;
         existingBankSource.ClosedDate = bankSource.ClosedDate;
+        existingBankSource.HouseholdId = bankSource.HouseholdId;
         existingBankSource.UpdatedAt = DateTime.UtcNow;
+
+        var accountTransactions = await _context.Transactions
+            .Where(transaction => transaction.BankSourceId == existingBankSource.BankSourceId)
+            .ToListAsync();
+        foreach (var transaction in accountTransactions)
+        {
+            transaction.HouseholdId = bankSource.HouseholdId;
+        }
 
         await _context.SaveChangesAsync();
         return existingBankSource;
