@@ -5,7 +5,7 @@
 @using Privatekonomi.Web.Components.Shared
 @using Privatekonomi.Web.Services
 @inject ITransactionService TransactionService
-@inject ICategoryService CategoryService
+@inject ICategoryRuleService CategoryRuleService
 @inject IBudgetService BudgetService
 @inject IReportService ReportService
 @inject IDashboardService DashboardService
@@ -573,29 +573,13 @@ else
                         </MudText>
                     </MudTd>
                     <MudTd DataLabel="Åtgärder">
-                        <MudMenu Label="Kategorisera"
-                                 Size="Size.Small"
-                                 Variant="Variant.Outlined"
-                                 Color="Color.Primary"
-                                 StartIcon="@Icons.Material.Filled.Category">
-                            @if (GetSuggestedCategory(context) is { } suggestedCategory)
-                            {
-                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, suggestedCategory))">
-                                    Förslag: @GetQuickCategoryName(suggestedCategory)
-                                </MudMenuItem>
-                                <MudDivider />
-                            }
-                            @foreach (var category in _quickCategories)
-                            {
-                                <MudMenuItem OnClick="@(() => CategorizeImportedTransaction(context, category))">
-                                    @GetQuickCategoryName(category)
-                                </MudMenuItem>
-                            }
-                            <MudDivider />
-                            <MudMenuItem OnClick="@(() => OpenTransactionsForMonth(context))">
-                                Öppna transaktioner för månaden
-                            </MudMenuItem>
-                        </MudMenu>
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Category"
+                                   OnClick="@(() => QuickCategorizeImportedTransaction(context))">
+                            Kategorisera
+                        </MudButton>
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
@@ -626,7 +610,6 @@ else
     private bool _loading = true;
     private IEnumerable<Transaction> _transactions = new List<Transaction>();
     private List<Transaction> _unmappedTransactions = new();
-    private List<Category> _quickCategories = new();
     private Dictionary<string, Category> _categorySuggestions = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<int> _dismissedSuggestionTransactionIds = new();
     private IEnumerable<Budget> _activeBudgets = new List<Budget>();
@@ -719,9 +702,6 @@ else
         _transactions = await TransactionService.GetAllTransactionsAsync();
         _unmappedTransactions = (await TransactionService.GetUnmappedTransactionsAsync())
             .Where(t => t.Imported && !t.IsExcludedFromTotalsTransaction)
-            .ToList();
-        _quickCategories = (await CategoryService.GetAllCategoriesAsync())
-            .OrderBy(category => category.Name)
             .ToList();
         BuildCategorySuggestions();
         _activeBudgets = await BudgetService.GetActiveBudgetsAsync();
@@ -827,6 +807,83 @@ else
         return string.Join(' ', (description ?? string.Empty)
             .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
             .ToUpperInvariant();
+    }
+
+    private async Task QuickCategorizeImportedTransaction(Transaction transaction)
+    {
+        var parameters = new DialogParameters<QuickCategorizeDialog>
+        {
+            { dialog => dialog.Transaction, transaction }
+        };
+
+        var dialog = await DialogService.ShowAsync<QuickCategorizeDialog>(
+            "Snabbkategorisera",
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            });
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not QuickCategorizeDialog.QuickCategorizeResult categorizeResult)
+        {
+            return;
+        }
+
+        try
+        {
+            if (categorizeResult.IsExcludedFromTotals)
+            {
+                await TransactionService.UpdateTransactionCategoriesAsync(
+                    transaction.TransactionId,
+                    new List<TransactionCategory>(),
+                    isExcludedFromTotals: true);
+                Snackbar.Add("Transaktionen lämnas okategoriserad och exkluderas från totalsummorna", Severity.Success);
+                await LoadData();
+                return;
+            }
+
+            await TransactionService.UpdateTransactionCategoriesAsync(
+                transaction.TransactionId,
+                new List<TransactionCategory>
+                {
+                    new()
+                    {
+                        TransactionId = transaction.TransactionId,
+                        CategoryId = categorizeResult.CategoryId,
+                        Amount = transaction.Amount,
+                        Percentage = 100
+                    }
+                });
+
+            if (categorizeResult.CreateRule)
+            {
+                var rule = new CategoryRule
+                {
+                    Pattern = categorizeResult.RulePattern ?? transaction.Description,
+                    MatchType = PatternMatchType.Contains,
+                    CategoryId = categorizeResult.CategoryId,
+                    Field = MatchField.Both,
+                    Priority = 50,
+                    IsActive = true,
+                    Description = $"Skapad från transaktion: {transaction.Description}"
+                };
+
+                await CategoryRuleService.CreateRuleAsync(rule);
+            }
+
+            Snackbar.Add(
+                categorizeResult.CreateRule
+                    ? "Transaktionen kategoriserades och regeln skapades!"
+                    : "Transaktion kategoriserad!",
+                Severity.Success);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Fel vid kategorisering: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task CategorizeImportedTransaction(Transaction transaction, Category category)
