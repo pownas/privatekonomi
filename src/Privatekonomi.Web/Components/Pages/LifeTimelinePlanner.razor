@@ -8,20 +8,15 @@
 
 <PageTitle>Livslinjeplanering - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <div>
-        <MudText Typo="Typo.h4">
-            <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-            🗓️ Livslinjeplanering
-        </MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary">Långsiktig ekonomisk planering över hela livet</MudText>
-    </div>
-    <div class="page-header-buttons">
+<PageHeader Title="🗓️ Livslinjeplanering"
+            Icon="@Icons.Material.Filled.Timeline"
+            Subtitle="Långsiktig ekonomisk planering över hela livet">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleMilestoneForm">
             Ny Milstolpe
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_loading)
 {

@@ -7,17 +7,13 @@
 
 <PageTitle>Pension - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Elderly" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Pension
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Pension" Icon="@Icons.Material.Filled.Elderly">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Pension
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

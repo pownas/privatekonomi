@@ -8,17 +8,13 @@
 
 <PageTitle>Tillgångar - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Tillgångar
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Tillgångar" Icon="@Icons.Material.Filled.BusinessCenter">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Tillgång
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

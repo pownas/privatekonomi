@@ -25,12 +25,8 @@ else
 {
     <MudBreadcrumbs Items="_breadcrumbs" Class="mb-4"></MudBreadcrumbs>
     
-    <div class="page-header mb-4">
-        <MudText Typo="Typo.h4">
-            <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-            @_sharedGoal.Name
-        </MudText>
-        <div class="page-header-buttons">
+    <PageHeader Title="@_sharedGoal.Name" Icon="@Icons.Material.Filled.Groups">
+        <Actions>
             @if (_isOwner)
             {
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenInviteDialog">
@@ -40,8 +36,8 @@ else
             <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.ExitToApp" OnClick="LeaveGoal">
                 Lämna
             </MudButton>
-        </div>
-    </div>
+        </Actions>
+    </PageHeader>
 
     @if (!string.IsNullOrEmpty(_sharedGoal.Description))
     {

@@ -10,22 +10,16 @@
 
 <PageTitle>Automatiska Kategoriseringsregler - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <div>
-        <MudText Typo="Typo.h4">
-            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-            Automatiska Kategoriseringsregler
-        </MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
-            Definiera regler för att automatiskt kategorisera transaktioner baserat på beskrivning eller betalningsmottagare.
-        </MudText>
-    </div>
-    <div class="page-header-buttons">
+<PageHeader Title="Automatiska Kategoriseringsregler"
+            Icon="@Icons.Material.Filled.AutoAwesome"
+            Subtitle="Definiera regler för att automatiskt kategorisera transaktioner baserat på beskrivning eller betalningsmottagare."
+            SubtitleClass="mt-2">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Regel
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

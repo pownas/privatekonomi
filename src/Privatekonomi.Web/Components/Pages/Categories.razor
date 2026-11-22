@@ -8,17 +8,13 @@
 
 <PageTitle>Kategorier - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Kategorier
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Kategorier" Icon="@Icons.Material.Filled.Label">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
             Ny Kategori
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 <MudPaper Class="pa-4">
     @if (_loading)

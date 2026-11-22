@@ -9,17 +9,13 @@
 
 <PageTitle>Löneutveckling - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.WorkHistory" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Löneutveckling
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Löneutveckling" Icon="@Icons.Material.Filled.WorkHistory">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Lönepost
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

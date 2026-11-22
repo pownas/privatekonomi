@@ -43,12 +43,8 @@
     </MudPaper>
 }
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Budgethantering
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Budgethantering" Icon="@Icons.Material.Filled.PieChart">
+    <Actions>
         <MudButton Variant="Variant.Outlined" 
                    Color="Color.Default" 
                    StartIcon="@Icons.Material.Filled.Settings"
@@ -73,8 +69,8 @@
                    OnClick="ToggleCreateForm">
             Ny Budget
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm || _editingBudget != null)
 {

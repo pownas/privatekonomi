@@ -12,20 +12,16 @@
 
 <PageTitle>Kvitton - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Kvitton
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Kvitton" Icon="@Icons.Material.Filled.Receipt">
+    <Actions>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Scanner" OnClick="OpenOcrScanDialog">
             Skanna kvitto (OCR)
         </MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Nytt Kvitto
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 @if (_showCreateForm)
 {

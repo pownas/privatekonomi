@@ -9,17 +9,13 @@
 
 <PageTitle>Sparfickor - Privatekonomi</PageTitle>
 
-<div class="page-header mb-4">
-    <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Wallet" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
-        Sparfickor
-    </MudText>
-    <div class="page-header-buttons">
+<PageHeader Title="Sparfickor" Icon="@Icons.Material.Filled.Wallet">
+    <Actions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="ToggleCreateForm">
             Ny Sparficka
         </MudButton>
-    </div>
-</div>
+    </Actions>
+</PageHeader>
 
 <MudText Typo="Typo.body1" Class="mb-4">
     Skapa virtuella fickor på dina sparkonton för att öronmärka pengar för olika ändamål. 

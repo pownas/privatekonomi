@@ -1,0 +1,43 @@
+<div class="page-header @Class">
+    @if (string.IsNullOrEmpty(Subtitle))
+    {
+        <MudText Typo="Typo.h4">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <MudIcon Icon="@Icon" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
+            }
+            @Title
+        </MudText>
+    }
+    else
+    {
+        <div>
+            <MudText Typo="Typo.h4">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <MudIcon Icon="@Icon" Color="Color.Primary" Class="mr-2" aria-hidden="true" />
+                }
+                @Title
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="@SubtitleClass">
+                @Subtitle
+            </MudText>
+        </div>
+    }
+
+    @if (Actions is not null)
+    {
+        <div class="page-header-buttons">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string SubtitleClass { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public string Class { get; set; } = "mb-4";
+}
