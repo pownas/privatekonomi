@@ -76,7 +76,7 @@
                               ValueChanged="OnInstitutionChanged"
                               Label="Bank/Institution" 
                               aria-label="Välj bank eller institution"
-                              Clearable="true"
+                                   Clearable="true"
                               T="string">
                         @foreach (var bank in BankRegistry.SupportedBanks)
                         {
@@ -139,6 +139,7 @@
                 <MudItem xs="12" md="6">
                     <DateInput @bind-Date="_closedDate"
                                   Label="Stängningsdatum" 
+                                   Clearable="true"
                                   HelperText="Lämna tomt om kontot är aktivt"
                                   aria-label="Välj stängningsdatum" />
                 </MudItem>
