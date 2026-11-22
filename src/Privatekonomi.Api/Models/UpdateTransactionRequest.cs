@@ -41,6 +41,11 @@ public class UpdateTransactionRequest
     /// If provided, must match the current UpdatedAt in the database
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Explicitly allows changing the amount of an imported transaction.
+    /// </summary>
+    public bool AllowImportedAmountChange { get; set; }
 }
 
 /// <summary>

@@ -114,7 +114,9 @@ public class CsvImportService : ICsvImportService
                 rowNumber++;
             }
 
-            // Check for duplicates — scoped to the importing user when userId is available
+            await AssignKnownBankSourcesAsync(validTransactions, bankName, userId);
+
+            // Check for duplicates against transactions imported earlier, scoped to the user when available.
             var duplicates = await FindDuplicatesAsync(validTransactions, userId);
             result.DuplicateCount = duplicates.Count;
 
@@ -425,8 +427,8 @@ public class CsvImportService : ICsvImportService
     {
         var duplicates = new List<Transaction>();
 
-        // Build a query window: only look at existing transactions within the date range of the import batch
-        // to avoid scanning the entire transactions table.
+        // Compare only with earlier imports; repeated rows in this file remain distinct transactions.
+        // Restrict the query to this batch's date range to avoid scanning the entire transactions table.
         if (transactions.Count == 0)
             return duplicates;
 
@@ -434,7 +436,7 @@ public class CsvImportService : ICsvImportService
         var maxDate = transactions.Max(t => t.Date);
 
         var query = _context.Transactions
-            .Where(t => t.Date >= minDate && t.Date <= maxDate);
+            .Where(t => t.Imported && t.Date >= minDate && t.Date <= maxDate);
 
         if (!string.IsNullOrWhiteSpace(userId))
         {
@@ -464,13 +466,60 @@ public class CsvImportService : ICsvImportService
         return duplicates;
     }
 
-    private bool IsDuplicate(Transaction t1, Transaction t2)
+    private async Task AssignKnownBankSourcesAsync(
+        List<Transaction> transactions,
+        string bankName,
+        string? userId)
     {
-        return t1.Date == t2.Date &&
-               t1.Amount == t2.Amount &&
-               t1.IsIncome == t2.IsIncome &&
-               string.Equals(t1.Description, t2.Description, StringComparison.OrdinalIgnoreCase);
+        var transactionsWithoutAccountNumber = transactions
+            .Where(t => string.IsNullOrWhiteSpace(t.AccountNumber))
+            .ToList();
+        if (transactionsWithoutAccountNumber.Count == 0)
+        {
+            return;
+        }
+
+        var query = _context.BankSources.Where(bankSource =>
+            bankSource.Name == bankName || bankSource.Institution == bankName);
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            query = query.Where(bankSource => bankSource.UserId == userId);
+        }
+
+        var bankSource = await query.FirstOrDefaultAsync();
+        if (bankSource == null)
+        {
+            return;
+        }
+
+        foreach (var transaction in transactionsWithoutAccountNumber)
+        {
+            transaction.BankSourceId = bankSource.BankSourceId;
+        }
     }
+
+    private static bool IsDuplicate(Transaction t1, Transaction t2)
+    {
+        return HasSameAccount(t1, t2) &&
+               t1.Date == t2.Date &&
+               t1.Amount == t2.Amount &&
+               string.Equals(t1.Description.Trim(), t2.Description.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasSameAccount(Transaction t1, Transaction t2)
+    {
+        var accountNumber1 = NormalizeAccountNumber(t1.AccountNumber);
+        var accountNumber2 = NormalizeAccountNumber(t2.AccountNumber);
+        if (accountNumber1 != null && accountNumber2 != null)
+        {
+            return string.Equals(accountNumber1, accountNumber2, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return t1.BankSourceId.HasValue && t1.BankSourceId == t2.BankSourceId;
+    }
+
+    private static string? NormalizeAccountNumber(string? accountNumber) =>
+        string.IsNullOrWhiteSpace(accountNumber) ? null : accountNumber.Trim();
 
     private ImportSummary CalculateSummary(List<Transaction> transactions)
     {

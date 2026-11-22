@@ -108,6 +108,92 @@ public class TransactionServiceTests : IDisposable
     }
 
     [TestMethod]
+    public async Task UpdateTransactionAsyncImportedAmountRequiresExplicitUnlockAndPreservesAccountIdentity()
+    {
+        var importedTransaction = new Transaction
+        {
+            Amount = 100m,
+            Date = new DateTime(2024, 3, 1),
+            Description = "Imported transaction",
+            AccountNumber = "1234567891",
+            ClearingNumber = "84525",
+            Imported = true,
+            ImportSource = "Swedbank CSV (manuell)",
+            UserId = "testuser",
+            CreatedAt = DateTime.UtcNow,
+            ValidFrom = DateTime.UtcNow
+        };
+        _context.Transactions.Add(importedTransaction);
+        await _context.SaveChangesAsync();
+        var update = new Transaction
+        {
+            TransactionId = importedTransaction.TransactionId,
+            Amount = 125m,
+            Date = importedTransaction.Date,
+            Description = "Corrected description"
+        };
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => _transactionService.UpdateTransactionAsync(update));
+
+        var updatedTransaction = await _transactionService.UpdateTransactionAsync(
+            update,
+            allowImportedAmountChange: true);
+
+        Assert.AreEqual(125m, updatedTransaction.Amount);
+        Assert.IsTrue(updatedTransaction.Imported);
+        Assert.AreEqual("Swedbank CSV (manuell)", updatedTransaction.ImportSource);
+        Assert.AreEqual("1234567891", updatedTransaction.AccountNumber);
+        Assert.AreEqual("84525", updatedTransaction.ClearingNumber);
+        Assert.AreEqual("testuser", updatedTransaction.UserId);
+    }
+
+    [TestMethod]
+    public async Task UpdateTransactionWithAuditAsyncImportedAmountRequiresExplicitUnlock()
+    {
+        var importedTransaction = new Transaction
+        {
+            Amount = 100m,
+            Date = new DateTime(2024, 3, 1),
+            Description = "Imported transaction",
+            Imported = true,
+            CreatedAt = DateTime.UtcNow,
+            ValidFrom = DateTime.UtcNow
+        };
+        _context.Transactions.Add(importedTransaction);
+        await _context.SaveChangesAsync();
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => _transactionService.UpdateTransactionWithAuditAsync(
+            importedTransaction.TransactionId,
+            125m,
+            importedTransaction.Date,
+            importedTransaction.Description,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "testuser",
+            "127.0.0.1"));
+
+        var updatedTransaction = await _transactionService.UpdateTransactionWithAuditAsync(
+            importedTransaction.TransactionId,
+            125m,
+            importedTransaction.Date,
+            importedTransaction.Description,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "testuser",
+            "127.0.0.1",
+            allowImportedAmountChange: true);
+
+        Assert.AreEqual(125m, updatedTransaction.Amount);
+    }
+
+    [TestMethod]
     public async Task CreateTransactionAsyncNormalizesTimeComponentToMidnight()
     {
         // Arrange
