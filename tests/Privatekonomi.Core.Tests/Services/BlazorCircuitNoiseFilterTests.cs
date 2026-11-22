@@ -9,7 +9,7 @@ public class BlazorCircuitNoiseFilterTests
     private const string SignalRActivitySourceName = "Microsoft.AspNetCore.SignalR.Server";
 
     [TestMethod]
-    public void OnEnd_DropsBlazorComponentHubActivities()
+    public void OnEndDropsBlazorComponentHubActivities()
     {
         using var listener = CreateListener(SignalRActivitySourceName);
         ActivitySource.AddActivityListener(listener);
@@ -28,7 +28,7 @@ public class BlazorCircuitNoiseFilterTests
     }
 
     [TestMethod]
-    public void OnEnd_PreservesOtherSignalRActivities()
+    public void OnEndPreservesOtherSignalRActivities()
     {
         using var listener = CreateListener(SignalRActivitySourceName);
         ActivitySource.AddActivityListener(listener);
@@ -46,7 +46,7 @@ public class BlazorCircuitNoiseFilterTests
     }
 
     [TestMethod]
-    public void OnEnd_DropsMudBlazorEventActivities()
+    public void OnEndDropsMudBlazorEventActivities()
     {
         const string activitySourceName = "Microsoft.AspNetCore.Components.Server.Circuits";
         using var listener = CreateListener(activitySourceName);
