@@ -1,16 +1,16 @@
 ﻿# 🛡️ Security & SBOM Scan Report
-*Genererad den: 2026-11-21 13:30:33*
+*Genererad den: 2026-11-23 05:25:38*
 *Genererad av [SbomScanner.csproj](../tests/SbomScanner/SbomScanner.csproj)*
 
-Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
+Sårbarhetsdata: NuGet, hämtad 2026-11-23 05:25:37Z.
 
 ## 📊 Översikt
 <table width="100%">
   <tr>
-    <td align="center" width="25%" style="background-color:#f6f8fa; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #d0d7de;"><b>Totalt skannade</b><br><font size="5" color="#1f2328">212</font></td>
+    <td align="center" width="25%" style="background-color:#f6f8fa; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #d0d7de;"><b>Totalt skannade</b><br><font size="5" color="#1f2328">214</font></td>
     <td align="center" width="25%" style="background-color:#ffebe9; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #ffc1c0;"><b>⚠️ Aktiva sårbarheter</b><br><font size="5" color="#cf222e"><b>0</b></font></td>
     <td align="center" width="25%" style="background-color:#fff8c5; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #eee0b0;"><b>🔄 Olika paketversioner</b><br><font size="5" color="#9a6700"><b>3</b></font></td>
-    <td align="center" width="25%" style="background-color:#ddf4ff; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #b6e3ff;"><b>📦 Outdaterade paket</b><br><font size="5" color="#0969da"><b>92</b></font></td>
+    <td align="center" width="25%" style="background-color:#ddf4ff; color:#1f2328; padding:15px; border-radius:6px; border:1px solid #b6e3ff;"><b>📦 Outdaterade paket</b><br><font size="5" color="#0969da"><b>94</b></font></td>
   </tr>
 </table>
 
@@ -434,21 +434,21 @@ Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
       <td><b>Microsoft.EntityFrameworkCore</b></td>
       <td><code>10.0.12</code></td>
       <td><code>11.0.0</code></td>
-      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational</font></td>
+      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Npgsql.EntityFrameworkCore.PostgreSQL</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">🔄 Uppdatering</span></td>
       <td><b>Microsoft.EntityFrameworkCore.Abstractions</b></td>
       <td><code>10.0.12</code></td>
       <td><code>11.0.0</code></td>
-      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational</font></td>
+      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Npgsql.EntityFrameworkCore.PostgreSQL</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">🔄 Uppdatering</span></td>
       <td><b>Microsoft.EntityFrameworkCore.Analyzers</b></td>
       <td><code>10.0.12</code></td>
       <td><code>11.0.0</code></td>
-      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational</font></td>
+      <td><font size="2">Nej<br>Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Npgsql.EntityFrameworkCore.PostgreSQL</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">🔄 Uppdatering</span></td>
@@ -588,7 +588,7 @@ Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
       <td><b>Microsoft.Extensions.DependencyInjection</b></td>
       <td><code>11.0.0</code></td>
       <td><code>11.0.0</code></td>
-      <td><font size="2">Nej<br>Aspire.Hosting.AppHost, Microsoft.EntityFrameworkCore.Design, Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Microsoft.EntityFrameworkCore.Sqlite, Microsoft.EntityFrameworkCore.SqlServer, Microsoft.Extensions.Http, Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.AspNetCore.Mvc.Testing</font></td>
+      <td><font size="2">Nej<br>Aspire.Hosting.AppHost, Microsoft.EntityFrameworkCore.Design, Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Sqlite, Microsoft.EntityFrameworkCore.SqlServer, Microsoft.Extensions.Http, Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.AspNetCore.Mvc.Testing</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#dafbe1; color:#1f883d; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">✓ OK</span></td>
@@ -721,7 +721,7 @@ Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
       <td><b>Microsoft.Extensions.Logging</b></td>
       <td><code>11.0.0</code></td>
       <td><code>11.0.0</code></td>
-      <td><font size="2">Nej<br>Aspire.Hosting.AppHost, Microsoft.EntityFrameworkCore.Design, Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Microsoft.EntityFrameworkCore.Sqlite, Microsoft.EntityFrameworkCore.SqlServer, Microsoft.Extensions.Http, Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.AspNetCore.Mvc.Testing</font></td>
+      <td><font size="2">Nej<br>Aspire.Hosting.AppHost, Microsoft.EntityFrameworkCore.Design, Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.Relational, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Sqlite, Microsoft.EntityFrameworkCore.SqlServer, Microsoft.Extensions.Http, Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.AspNetCore.Mvc.Testing</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#dafbe1; color:#1f883d; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">✓ OK</span></td>
@@ -1135,6 +1135,20 @@ Sårbarhetsdata: NuGet, hämtad 2026-11-21 12:30:29Z.
       <td><code>13.0.4</code></td>
       <td><code>13.0.4</code></td>
       <td><font size="2">Nej<br>Aspire.Hosting.AppHost, Microsoft.EntityFrameworkCore.Design, Microsoft.ML</font></td>
+    </tr>
+    <tr>
+      <td><span style="background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">🔄 Uppdatering</span></td>
+      <td><b>Npgsql</b></td>
+      <td><code>10.0.3</code></td>
+      <td><code>11.0.0</code></td>
+      <td><font size="2">Nej<br>Npgsql.EntityFrameworkCore.PostgreSQL</font></td>
+    </tr>
+    <tr>
+      <td><span style="background-color:#ddf4ff; color:#0969da; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">🔄 Uppdatering</span></td>
+      <td><b>Npgsql.EntityFrameworkCore.PostgreSQL</b></td>
+      <td><code>10.0.3</code></td>
+      <td><code>11.0.0</code></td>
+      <td><font size="2">Ja (10.0.3)</font></td>
     </tr>
     <tr>
       <td><span style="background-color:#dafbe1; color:#1f883d; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:inline-block;">✓ OK</span></td>
